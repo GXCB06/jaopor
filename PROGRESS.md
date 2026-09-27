@@ -12,6 +12,18 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-27 — VS Code workspace settings
+
+**Done:**
+
+- `.vscode/settings.json`: Prettier format-on-save, ESLint fix-on-save, workspace TypeScript, Tailwind IntelliSense for `cn()`, i18n-ally pointed at `messages/` (th source, en display), logs/.next excluded from search
+- `.vscode/extensions.json`: recommends Prettier, ESLint, Tailwind CSS, i18n Ally, Supabase, Claude Code
+- Opened the project in VS Code
+
+**Files:** `.vscode/settings.json`, `.vscode/extensions.json`
+**Verified:** `npx prettier --check .vscode` ✓; `code C:\Users\ACER\MRRMafia` launched
+**Next:** restart the Claude session in this folder so hooks go live (still no hook logs this session), then review Project.md + Design.md
+
 ## 2026-09-27 — Phase 0: docs + Claude Code harness (5 layers)
 
 **Done:**
