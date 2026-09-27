@@ -1,0 +1,203 @@
+# MRRMafia — Design System
+
+> Based on TrustMRR's UI (measured live on 2026-09-27): dark, monospaced, data-dense, calm. **We copy the style and patterns, not the brand**: no TrustMRR logo, star mark, copy or screenshots.
+> Rule: build every screen from the tokens and components below. If a screen needs a new pattern, **add it here first**, then build it.
+
+## 1. Principles
+
+1. **Numbers are the hero.** Revenue, MRR, price and multiple are the most prominent things on every card and page. Decoration stays minimal.
+2. **Dense but quiet.** Small uppercase labels, big numbers, thin borders, no shadows, no gradients.
+3. **Monospace everywhere.** Gives a "terminal/ledger" feel that signals data and honesty.
+4. **Dark by default.** Neutral greys. Colour appears only for meaning: green = growth/revenue, red = decline, amber = for sale, brand crimson = MRRMafia identity/verified.
+5. **Trust is visible.** Every verified number sits near a "Verified with {provider} · updated {time}" stamp.
+6. **Bilingual-first.** Every string comes from `messages/{th,en}.json`. Layouts must survive Thai text, which is ~20–30% longer and taller.
+
+## 2. Color tokens
+
+Defined in `src/app/globals.css` (shadcn variables). The `.dark` values are the ones in use; they equal TrustMRR's measured values.
+
+| Token                                  | Dark value                   | Use                                                                   |
+| -------------------------------------- | ---------------------------- | --------------------------------------------------------------------- |
+| `--background`                         | `oklch(0.145 0 0)`           | Page background                                                       |
+| `--foreground`                         | `oklch(0.985 0 0)`           | Primary text, numbers                                                 |
+| `--card` / `--popover`                 | `oklch(0.205 0 0)`           | Raised surfaces, dialogs                                              |
+| `--secondary` / `--accent` / `--muted` | `oklch(0.269 0 0)`           | Hover fills, secondary buttons, chips                                 |
+| `--muted-foreground`                   | `oklch(0.708 0 0)`           | Labels, captions, secondary text                                      |
+| `--primary`                            | `oklch(0.922 0 0)`           | Primary button background (light on dark)                             |
+| `--primary-foreground`                 | `oklch(0.205 0 0)`           | Primary button text                                                   |
+| `--border`                             | `oklch(1 0 0 / 10%)`         | All borders and dividers                                              |
+| `--input`                              | `oklch(1 0 0 / 15%)`         | Input borders; input fill is `bg-input/30`                            |
+| `--ring`                               | `oklch(0.556 0 0)`           | Focus ring                                                            |
+| `--destructive`                        | `oklch(0.704 0.191 22.216)`  | Errors, negative growth                                               |
+| `--chart-1`                            | `oklch(0.488 0.243 264.376)` | Secondary series (previous period), links in charts                   |
+| `--chart-2`                            | `oklch(0.696 0.17 162.48)`   | **Revenue line / positive growth** (green)                            |
+| `--brand` ★                            | `oklch(0.637 0.237 25.3)`    | MRRMafia accent: logo, verified stamp, active nav. **Use sparingly.** |
+
+Semantic Tailwind usage:
+
+- Growth up: `text-emerald-400`; growth down: `text-red-400`
+- FOR SALE tag: `bg-amber-900/30 text-amber-400`
+- Medals: 🥇🥈🥉 emoji (ranks 1–3), plain `#n` after that
+
+★ The brand accent is the one place we intentionally differ from TrustMRR. Crimson is the working choice; change it only in `globals.css`.
+
+## 3. Typography
+
+- **Font:** `Inconsolata` (Latin, via `next/font`) → fallback `IBM Plex Sans Thai` (Thai glyphs) → `ui-monospace`. Set as `--font-sans` and `--font-mono`.
+- `:lang(th)` sets `line-height: 1.6`, because Thai has stacked vowels and tone marks.
+
+| Role                | Classes                                                                          |
+| ------------------- | -------------------------------------------------------------------------------- |
+| Hero H1             | `text-3xl md:text-5xl font-bold tracking-tight mb-3`                             |
+| Hero subline        | `text-sm md:text-base text-muted-foreground max-w-2xl mx-auto`                   |
+| Page H1 (profile)   | `text-2xl md:text-3xl font-bold tracking-tight`                                  |
+| Section H2          | `text-sm font-semibold` + optional "View all ›" link on the right                |
+| Card title (H3)     | `text-sm font-semibold truncate`                                                 |
+| Metric label        | `text-[9px] uppercase tracking-wider font-semibold text-muted-foreground mb-0.5` |
+| Metric value (card) | `text-sm font-bold tabular-nums`                                                 |
+| Big stat (tile)     | `text-2xl md:text-3xl font-bold tabular-nums`                                    |
+| Body                | `text-sm` (14/20)                                                                |
+| Caption / meta      | `text-xs text-muted-foreground`                                                  |
+| Tag                 | `text-[9px] font-bold uppercase`                                                 |
+
+Numbers are always `tabular-nums`. Money is formatted compactly on cards (`$4.3k`, `$300k`, `$1.2M`) and in full on the profile (`$14,903`). THB is secondary, shown as `≈ ฿154k` in muted text.
+
+## 4. Layout
+
+- **Container:** hero and leaderboard use `max-w-2xl` (~672px) centered. Directory and marketplace grids use `max-w-6xl`.
+- **Sponsor rails:** at `xl` (≥1280px), a fixed-width column (~180px) of stacked `SponsorCard`s on each side of the main column. The last item is an "Advertise" link. Hidden below `xl`; on mobile, sponsors appear inline every N rows.
+- **Gutter:** `px-4` (16px) on mobile; no horizontal scroll at 375px.
+- **Spacing rhythm:** 4px base. Cards `p-3`; sections `mt-10`; card grids `gap-3`.
+- **Radius:** `--radius: 0.625rem`. Cards `rounded-lg`, buttons and inputs `rounded-md` (8px), tags `rounded-bl-lg` on the corner only.
+- **Elevation:** none. Separation comes from borders (`border`) and background steps (`bg-background/60` → `hover:bg-background`).
+
+## 5. Components
+
+Each component lives in `src/components/` (shadcn primitives in `src/components/ui/`).
+
+### Header / Nav
+
+- A minimal top bar: logo (brand mark + "MRRMafia" wordmark) on the left.
+- Links: Buy/Sell · Stats · Dashboard (plus TH/EN switch).
+- The homepage hero repeats the logo centred above the H1.
+
+### SearchBar
+
+- shadcn `Input`, `h-9 rounded-md border-input bg-input/30 px-10 text-sm`
+- Leading search icon (lucide `Search`, muted)
+- Placeholder is an example query in quotes, e.g. `"SaaS over $10K/mo"` / `"SaaS รายได้เกิน $10K/เดือน"`
+- To the right, a secondary button: `+ Add startup`
+
+### Buttons
+
+- **Primary:** `bg-primary text-primary-foreground h-9 px-4 rounded-md text-sm font-medium` (light on dark)
+- **Outline:** `border border-input bg-background hover:bg-accent px-6 py-2 rounded-md text-sm font-medium`
+- **Text link:** `text-xs font-medium text-muted-foreground hover:text-foreground` with a trailing `›` (e.g. "View all ›")
+
+### StartupCard (listing / grid)
+
+```
+┌───────────────────────────────┬─FOR SALE┐
+│ [logo 32] Name                          │
+│           Category                      │
+│ REVENUE     PRICE       MULTIPLE        │
+│ $4.3k       $300k       5.8x            │
+└─────────────────────────────────────────┘
+```
+
+- `relative flex flex-col overflow-hidden rounded-lg border p-3 bg-background/60 hover:border-primary/30 hover:bg-background transition-all`
+- FOR SALE tag: `absolute top-0 right-0 rounded-bl-lg bg-amber-900/30 px-2 py-0.5 text-[9px] font-bold text-amber-400`
+- Metric row: 3 equal columns, each a _metric label_ over a _metric value_. When the startup is not for sale, the row is Revenue (30d) · MRR · Growth.
+- The **large variant** (marketplace grid) adds a 2–3 line description (`text-xs text-muted-foreground line-clamp-3`) and a growth % beside the revenue.
+- A horizontal-scroll row of cards is used for "Recently listed" and "Best deals this week".
+
+### LeaderboardTable
+
+- shadcn `Table`; rows `border-b hover:bg-muted/50 transition-colors`
+- Columns: `#` (🥇🥈🥉 or number) · logo + name · founder (avatar 20px + handle) · MRR (right-aligned, bold) · MoM growth (emerald or red, right-aligned)
+- Shows 50 rows, then a "Show more" outline button
+
+### StatTile (profile)
+
+- A bordered box: _metric label_ → _big stat_ → caption (`text-xs text-muted-foreground`, e.g. "Ranked #1460", "25 active subscriptions", "180 followers on 𝕏")
+- Laid out in a 2×2 grid on mobile and 4-across on desktop: All-time revenue · MRR · Founder · Founded (with country flag)
+
+### RevenueChart
+
+- Recharts area/line, last 30 days, `--chart-2` line with a subtle area fill. The previous period is a dashed `--chart-1` line when "Compare" is on.
+- Header: 30d total (big) + `▲ 9% vs. prev period` + profit margin
+- Toggles (shadcn `ToggleGroup`, `text-xs`): Compare previous period · Trend / Classic
+- Footer: `VerifiedStamp`
+
+### VerifiedStamp
+
+- `text-xs text-muted-foreground`: "Revenue is verified with **Stripe** API key. Last updated: {datetime}"
+- The provider name is in `text-foreground font-medium`, preceded by a small brand-coloured check icon
+- If the last sync failed or is older than 48h: show amber "Sync pending"
+
+### InsightsGrid (profile "Startup insights")
+
+- Label/value blocks in 2 columns (1 on mobile). Each: _metric label_ → content.
+- Order: Value proposition · Problem solved · Audience (B2B/B2C chip + user count) · Pricing · Team size · Funding · Domain Rating (`48 /100` + domain + helper text) · Marketing channels (chips) · Market (chips) · Tech stack (grouped Frontend/Backend chips) · **AI build tools** (chips with tool icons; MRRMafia-specific) · Additional info
+- Chips: `rounded-md border px-2 py-0.5 text-xs`
+
+### ForSaleBanner (profile top)
+
+- A full-width bar above the header: "This startup is for sale. Asking price: **$300,000**" · `5.8x revenue` · "👁 111 people saw this"
+- Actions: Earn (affiliate) · Save (outline) · **Contact Seller** (primary)
+
+### ScreenshotViewer
+
+- A bordered frame of the startup's site screenshot at fixed height, scrollable inside, with a "View full page" link
+
+### FounderMessage
+
+- A quote card: `"…message…"`, then the founder avatar, name, and "Founder of {startup}"
+
+### SponsorCard
+
+- `rounded-lg border p-3 text-center` with a **tinted background colour chosen by the sponsor** (e.g. `bg-emerald-950/60`, `bg-purple-950/60`), a logo 24px, `text-xs font-bold` name, and a 2-line `text-[10px] text-muted-foreground` tagline
+
+### Footer
+
+- A multi-column link list: Navigation · Browse startups (categories) · API · About/legal. Tagline, then "Add startup" and "Browse N verified startups".
+
+## 6. Page templates
+
+| Route              | Structure (top → bottom)                                                                                                                                                                                                                |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/` Home           | Sponsor rails · logo · H1 · subline (visitor count + marketplace link) · SearchBar + Add startup · nav links · **Recently listed** row · **Best deals this week** row · **Leaderboard** (top 50) · Footer                               |
+| `/startups`        | H1 + count · filter chips (category, country, provider, AI tool) · grid of StartupCards · pagination                                                                                                                                    |
+| `/acquire`         | H1 + count · filter bar (revenue, MRR, growth, price, max multiple, margin, audience, mobile app, listing age, founded, country) · sort (Best deals default) · large StartupCard grid                                                   |
+| `/startup/[slug]`  | ForSaleBanner (if listed) · header (logo, name, Share, Visit) · description · StatTiles · RevenueChart · InsightsGrid · ScreenshotViewer · FounderMessage · affiliate CTA · "More startups for sale" grid · "AI-readable Markdown" link |
+| `/stats`           | Headline totals · chart sections (see Project.md Phase 4)                                                                                                                                                                               |
+| `/dashboard`       | Tabs: My startups · Saved · Conversations · Settings                                                                                                                                                                                    |
+| Add-startup wizard | 3 steps with progress: Basics → Connect revenue (provider picker + read-only-key instructions) → Insights                                                                                                                               |
+
+## 7. States
+
+- **Loading:** skeletons shaped like the final component (`bg-muted animate-pulse rounded`). No spinners in content areas.
+- **Empty:** muted one-liner + a primary action (e.g. "No startups in this category yet — Add yours").
+- **Error:** `text-destructive text-sm` inline, plus a retry. Never show raw errors or stack traces.
+- **Unverified:** numbers the founder typed themselves (not synced) are never shown as revenue. Show "Not verified yet" in muted text.
+
+## 8. Responsive
+
+- Breakpoints: Tailwind defaults. Test at **375**, 768, 1024 and 1440.
+- The leaderboard hides the founder column below `sm` and keeps rank, name, MRR and growth.
+- Card rows scroll horizontally on mobile with `snap-x`.
+- Sponsor rails only at `xl`.
+
+## 9. Share assets
+
+- **OG image** (`/startup/[slug]/opengraph-image`): 1200×630, dark background, logo + name, big MRR / 30-day revenue, "Verified with Stripe", MRRMafia mark. Uses the Thai font for Thai names. Checked in the Facebook Sharing Debugger and the LINE preview.
+- **Embeddable badge** (SVG): `Verified on MRRMafia · $2.9k MRR`, dark and light variants, linking to the profile.
+
+## 10. Do / Don't
+
+- ✅ Use tokens (`bg-background`, `text-muted-foreground`, `border`), never raw hex
+- ✅ `tabular-nums` on every number; compact money on cards
+- ✅ Every string goes through next-intl
+- ❌ No shadows, gradients or glassmorphism, and no more than one accent colour per view
+- ❌ No TrustMRR logo, star mark, wording or screenshots
+- ❌ No light theme until it's explicitly designed (the `:root` light tokens exist but are unused)

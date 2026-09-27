@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# claude code harness
+/.claude/logs/
+/.claude/settings.local.json
+
+# supabase
+/supabase/.temp/
+/supabase/.branches/

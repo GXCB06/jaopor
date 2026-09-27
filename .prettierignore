@@ -1,0 +1,9 @@
+.next
+node_modules
+package-lock.json
+supabase/.temp
+.claude/logs
+.claude/skills/supabase
+.claude/skills/supabase-postgres-best-practices
+skills-lock.json
+supabase/config.toml

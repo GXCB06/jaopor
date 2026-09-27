@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(npm ls *)",
+      "Bash(npx next typegen*)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+      "Bash(npx prettier *)",
+      "Bash(npx shadcn@latest add *)",
+      "Bash(npx vitest *)",
+      "Bash(npx playwright test*)",
+      "Bash(npx supabase start*)",
+      "Bash(npx supabase stop*)",
+      "Bash(npx supabase status*)",
+      "Bash(npx supabase migration *)",
+      "Bash(npx supabase db diff*)",
+      "Bash(npx supabase gen types*)",
+      "Bash(node scripts/*)",
+      "Bash(node .claude/hooks/*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git branch*)",
+      "Bash(git switch *)",
+      "Bash(git stash*)",
+      "PowerShell(npm run *)",
+      "PowerShell(git status*)",
+      "PowerShell(git diff*)",
+      "PowerShell(git log*)",
+      "mcp__2ee34a22-947f-4fa6-bea1-d35e8216282f__list_tables",
+      "mcp__2ee34a22-947f-4fa6-bea1-d35e8216282f__list_migrations",
+      "mcp__2ee34a22-947f-4fa6-bea1-d35e8216282f__get_advisors",
+      "mcp__2ee34a22-947f-4fa6-bea1-d35e8216282f__generate_typescript_types",
+      "mcp__2ee34a22-947f-4fa6-bea1-d35e8216282f__search_docs",
+      "mcp__2ee34a22-947f-4fa6-bea1-d35e8216282f__query_logs",
+      "mcp__7d9986d2-fdb9-4b53-b80d-0318c7dd228d__list_deployments",
+      "mcp__7d9986d2-fdb9-4b53-b80d-0318c7dd228d__get_deployment",
+      "mcp__7d9986d2-fdb9-4b53-b80d-0318c7dd228d__get_runtime_logs",
+      "mcp__7d9986d2-fdb9-4b53-b80d-0318c7dd228d__search_vercel_documentation"
+    ],
+    "ask": [
+      "Bash(git push*)",
+      "Bash(npx vercel*)",
+      "Bash(vercel *)",
+      "Bash(npx supabase db push*)",
+      "Bash(npx supabase link*)",
+      "Bash(npx supabase db reset*)",
+      "mcp__2ee34a22-947f-4fa6-bea1-d35e8216282f__apply_migration",
+      "mcp__2ee34a22-947f-4fa6-bea1-d35e8216282f__execute_sql",
+      "mcp__2ee34a22-947f-4fa6-bea1-d35e8216282f__deploy_edge_function",
+      "mcp__2ee34a22-947f-4fa6-bea1-d35e8216282f__merge_branch",
+      "mcp__7d9986d2-fdb9-4b53-b80d-0318c7dd228d__create_deployment",
+      "mcp__7d9986d2-fdb9-4b53-b80d-0318c7dd228d__request_promote",
+      "mcp__7d9986d2-fdb9-4b53-b80d-0318c7dd228d__create_project_env",
+      "mcp__7d9986d2-fdb9-4b53-b80d-0318c7dd228d__edit_project_env"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Edit(./.env)",
+      "Edit(./.env.*)",
+      "Read(./**/secrets/**)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(npx supabase db reset --linked*)",
+      "Bash(cat .env*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-context.mjs\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/protect-files.mjs\"",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-shell.mjs\"",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/log-tool.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/quality.mjs\"",
+            "timeout": 120,
+            "statusMessage": "Formatting, linting, typechecking…"
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/log-tool.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/log-tool.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/progress-gate.mjs\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
