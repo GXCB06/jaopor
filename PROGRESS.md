@@ -12,6 +12,25 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-29 — Block C: Stripe verification (code + unit tests; live key test pending)
+
+**Done:**
+
+- `src/lib/revenue/`:
+  - `types.ts`: `RevenueProvider`, normalized charge/subscription types, `ProviderError`
+  - `providers/stripe.ts`: REST over `fetch`. Accepts `rk_` keys only (rejects `sk_`), checks Charges/Subscriptions read, proves the key can't write (invalid-param POST must get 403), paginates with retry.
+  - `metrics.ts`: MRR normalized by interval, excludes trials; 30-day / previous 30-day / all-time revenue net of refunds; subscriptions; customers; zero-filled 30-day series
+  - `fx.ts`: USD via ECB/Frankfurter; zero-decimal currencies handled; missing rates flagged, never guessed
+  - `sync.ts`: sync + connect, writes to the DB with the admin client
+- `src/lib/crypto/keys.ts`: AES-256-GCM envelope plus key hint. `src/lib/supabase/{admin,server}.ts`, `src/lib/env.ts`, `src/lib/http.ts` (CSRF guard, constant-time compare).
+- Routes: `POST/PATCH /api/startups/[id]/stripe` (connect / refresh, 10-minute cooldown), `GET /api/cron/sync` (bearer `CRON_SECRET`); `vercel.json` cron runs daily at 20:00 UTC (03:00 ICT)
+- Vitest set up (`vitest.config.mts`, `npm test`); `@types/node` bumped 20 → 24 (Vitest 5 peer requirement); `server-only` added
+- Docs: CLAUDE.md test commands + revenue architecture; add-payment-provider skill paths fixed (`src/lib/revenue/…`)
+
+**Files:** `src/lib/revenue/**`, `src/lib/crypto/keys.ts`, `src/lib/supabase/{admin,server}.ts`, `src/lib/env.ts`, `src/lib/http.ts`, `src/app/api/**`, `vercel.json`, `vitest.config.mts`, `package.json`, `CLAUDE.md`, `.claude/skills/add-payment-provider/SKILL.md`
+**Verified:** `npm test` 20/20 ✓ (metrics 7, crypto 5, stripe 8); `npm run typecheck` ✓; `npm run lint` ✓; `npm run build` ✓ (both API routes are dynamic). **Not verified:** a live run with a Stripe test-mode restricted key; the write-probe behaviour still needs confirming against the real API.
+**Next:** block D (UI + connect form), then the live key test
+
 ## 2026-09-29 — Block B: schema v1 + RLS (live on `mrrmafia`)
 
 **Done:**

@@ -16,25 +16,29 @@ Verified revenue is MRRMafia's whole trust promise, so a provider integration ha
    - list subscriptions (status, interval, amount, currency)
    - a cheap "who am I" call for key validation
    - rate limits
-3. Read `src/lib/providers/types.ts` (the `RevenueProvider` interface) and one existing provider, e.g. `stripe.ts`, and copy its structure. If `types.ts` doesn't exist yet, create it from the interface in Project.md §5.
+3. Read `src/lib/revenue/types.ts` (the `RevenueProvider` interface, `NormalizedCharge`, `NormalizedSubscription`, `ProviderError`) and the reference implementation `src/lib/revenue/providers/stripe.ts`. Copy its structure: plain `fetch` with an injectable `fetchImpl` for tests, `request` with retry/backoff, and a paginated `list` generator.
 
 ## Implement
 
-- `src/lib/providers/<id>.ts` exports an object implementing `RevenueProvider`:
-  - `validateKey(key)`: call the whoami endpoint. Return `{ ok, readOnly, accountName }`. **Detect and reject write-capable keys.**
-  - `fetchTransactions(key, since)` / `fetchSubscriptions(key)`: async generators that page through results and yield `NormalizedTxn` / `NormalizedSub`:
-    - amounts are integer minor units plus an ISO currency
-    - refunds are negative txns
-    - trials are excluded from MRR
-    - yearly plans are normalized by the engine, not here
-  - Never read, return or log customer names, emails or other personal data. Aggregate fields only.
-  - Respect rate limits with backoff. Surface errors as typed `ProviderError`s (`invalid_key`, `not_read_only`, `rate_limited`, `upstream`).
-- Register it in `src/lib/providers/index.ts`. Add the provider to the `provider` enum in a **new** Supabase migration if the column is an enum.
+- `src/lib/revenue/providers/<id>.ts` exports `create<Id>Provider(fetchImpl = fetch): RevenueProvider`:
+  - `validateKey(key)`:
+    - reject full-access key formats before any network call
+    - check the read permissions you need
+    - **prove the key can't write**
+    - return `{ accountName, mode }`
+  - `fetchCharges(key)` / `fetchSubscriptions(key)`: async generators that page through results and yield normalized objects:
+    - integer minor units plus a lowercase ISO currency
+    - charges already net of refunds
+    - status mapped to `active | past_due | trialing | other`
+    - yearly and weekly plans are normalized by the engine (`metrics.ts`), not here
+  - Never read, return or log customer names, emails or other personal data. `customerRef` is an opaque id, used only for counting.
+  - Respect rate limits with backoff. Surface errors as typed `ProviderError`s (`invalid_key`, `not_read_only`, `missing_permission`, `rate_limited`, `upstream`).
+- Register it in `src/lib/revenue/providers/index.ts`. Add the id to `ProviderId`, and to the `provider` / `verified_provider` check constraints in a **new** migration.
 - Connect wizard: add the provider card and "how to create a read-only key" steps (Thai and English strings in `messages/*.json`). Follow Design.md.
 
 ## Test
 
-- `src/lib/providers/<id>.test.ts` (Vitest) with recorded fixtures. Test these cases:
+- `src/lib/revenue/providers/<id>.test.ts` (Vitest, mocked `fetchImpl`, like `stripe.test.ts`). Test these cases:
   - pagination
   - a refund
   - a trial
@@ -45,6 +49,6 @@ Verified revenue is MRRMafia's whole trust promise, so a provider integration ha
 
 ## Finish
 
-- `npm run typecheck && npm run lint && npx vitest run providers` all pass.
+- `npm run typecheck && npm run lint && npm test` all pass.
 - Project.md: tick the provider in the parity matrix and add any decisions (e.g. how that provider reports MRR).
 - Run `/log-progress`.

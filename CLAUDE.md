@@ -28,6 +28,8 @@ npm run typecheck      # next typegen && tsc --noEmit (typegen is needed after a
 npm run lint           # eslint
 npm run format         # prettier --write . (sorts Tailwind classes)
 npm run harness:report # summarize tool-call logs in .claude/logs (observability)
+npm test               # vitest run (unit tests: src/**/*.test.ts)
+npx vitest run src/lib/revenue/metrics.test.ts   # one file; add -t "<test name>" for one test
 npx supabase migration new <name>   # new SQL migration in supabase/migrations
 npx shadcn@latest add <component>   # add a shadcn/ui primitive into src/components/ui
 ```
@@ -40,7 +42,13 @@ npx shadcn@latest add <component>   # add a shadcn/ui primitive into src/compone
 4. Run [supabase/tests/rls_smoke.sql](supabase/tests/rls_smoke.sql) via `execute_sql`. Every line must read good/expected. Afterwards reset `private.founding_number_seq`.
 5. Regenerate `src/lib/supabase/database.types.ts` (MCP `generate_typescript_types`).
 
-There is no JS test runner yet. Vitest (metrics engine) and Playwright (end-to-end) arrive in Phase 1b; update this section when they're added.
+Unit tests use **Vitest** (`vitest.config.mts`; `server-only` is stubbed in tests). Playwright end-to-end tests arrive in Phase 1b.
+
+**Revenue verification** (`src/lib/revenue/`):
+
+- `providers/*.ts` fetch and normalize, `metrics.ts` computes everything (pure, tested), `fx.ts` converts to USD, `sync.ts` writes to the DB with the admin client.
+- Routes: `POST/PATCH /api/startups/[id]/stripe` (connect / refresh) and `GET /api/cron/sync` (Vercel Cron, bearer `CRON_SECRET`).
+- Keys are encrypted in `src/lib/crypto/keys.ts`.
 
 ## Architecture
 
