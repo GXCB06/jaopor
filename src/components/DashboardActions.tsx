@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, useRouter } from "@/i18n/navigation";
+import type { SourceId } from "@/lib/sources/catalog";
 import { createClient } from "@/lib/supabase/client";
 
 /** Design.md §5 Dashboard startup card: ONE primary action + an overflow "⋯" menu. */
@@ -26,13 +27,14 @@ export function DashboardActions({
   id,
   slug,
   name,
-  connected,
+  refreshSource,
   verified,
 }: {
   id: number;
   slug: string;
   name: string;
-  connected: boolean;
+  /** Source re-synced by "Refresh" (null = nothing connected). */
+  refreshSource: SourceId | null;
   verified: boolean;
 }) {
   const t = useTranslations("Dashboard");
@@ -42,7 +44,7 @@ export function DashboardActions({
 
   async function refresh() {
     setBusy(true);
-    const res = await fetch(`/api/startups/${id}/stripe`, {
+    const res = await fetch(`/api/startups/${id}/sources/${refreshSource}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: "{}",
@@ -55,7 +57,9 @@ export function DashboardActions({
     } else {
       const code = body.error ?? "server";
       toast.error(
-        errors.has(code) ? errors(code as "server") : errors("server"),
+        errors.has(code)
+          ? errors(code as "server", { source: refreshSource ?? "", detail: "" })
+          : errors("server"),
       );
     }
   }
@@ -88,7 +92,7 @@ export function DashboardActions({
         </Button>
       ) : (
         <Button asChild size="sm" className="px-4">
-          <Link href={`/dashboard/${id}/edit#revenue`}>{t("connect")}</Link>
+          <Link href={`/dashboard/${id}/edit#verify`}>{t("connect")}</Link>
         </Button>
       )}
       <DropdownMenu>
@@ -114,7 +118,7 @@ export function DashboardActions({
               {t("edit")}
             </Link>
           </DropdownMenuItem>
-          {connected && (
+          {refreshSource && (
             <DropdownMenuItem onSelect={refresh}>
               <RefreshCwIcon />
               {t("refresh")}

@@ -42,12 +42,15 @@ export function EmptyValue({
   const { isOwner, startupId } = useContext(Ctx);
   const t = useTranslations("Profile");
   if (isOwner) {
+    // "revenue" / "verify-*" open the VerifyPanel group; everything else the field itself.
+    const anchor = field === "revenue" ? "verify-revenue" : field;
+    const verify = anchor.startsWith("verify");
     return (
       <Link
-        href={`/dashboard/${startupId}/edit#${field}`}
+        href={`/dashboard/${startupId}/edit#${anchor}`}
         className="inline-flex rounded-md border border-dashed border-brand/50 px-2 py-0.5 text-xs text-brand hover:bg-brand/10"
       >
-        {field === "revenue" ? t("connectStripe") : t("add")}
+        {verify ? t("connect") : t("add")}
       </Link>
     );
   }

@@ -2,6 +2,7 @@ import { CheckCircle2Icon } from "lucide-react";
 import Image from "next/image";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { isSyncStale, type Owner, type StartupRow } from "@/lib/data/startups";
+import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { cn } from "@/lib/utils";
 import { EmptyValue } from "./profile/Owner";
 import { Chip, MetricLabel } from "./StartupBits";
@@ -48,7 +49,9 @@ export async function VerifiedStamp({ startup }: { startup: StartupRow }) {
     <p className="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
       <CheckCircle2Icon className="size-3.5 text-brand" aria-hidden="true" />
       {t.rich("stamp", {
-        provider: "Stripe",
+        provider: isSource(startup.verified_provider)
+          ? SOURCE_NAME[startup.verified_provider]
+          : "",
         b: (chunks) => <b>{chunks}</b>,
       })}
       {synced && (

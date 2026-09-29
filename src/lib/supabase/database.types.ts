@@ -49,8 +49,9 @@ export type Database = {
       provider_connections: {
         Row: {
           account_name: string | null;
+          config: Json;
           created_at: string;
-          encrypted_key: string;
+          encrypted_key: string | null;
           id: number;
           key_hint: string | null;
           last_error: string | null;
@@ -62,8 +63,9 @@ export type Database = {
         };
         Insert: {
           account_name?: string | null;
+          config?: Json;
           created_at?: string;
-          encrypted_key: string;
+          encrypted_key?: string | null;
           id?: never;
           key_hint?: string | null;
           last_error?: string | null;
@@ -75,8 +77,9 @@ export type Database = {
         };
         Update: {
           account_name?: string | null;
+          config?: Json;
           created_at?: string;
-          encrypted_key?: string;
+          encrypted_key?: string | null;
           id?: never;
           key_hint?: string | null;
           last_error?: string | null;
@@ -128,8 +131,16 @@ export type Database = {
       startups: {
         Row: {
           active_subscriptions: number | null;
+          active_users: number | null;
           ai_tools: string[];
+          app_store_url: string | null;
           audience: string | null;
+          build_ai_commits: number | null;
+          build_commits: number | null;
+          build_first_commit_at: string | null;
+          build_stars: number | null;
+          build_story: string | null;
+          build_synced_at: string | null;
           category: string;
           country: string;
           created_at: string;
@@ -139,13 +150,18 @@ export type Database = {
           founder_message: string | null;
           founding_number: number | null;
           funding: string | null;
+          github_repo: string | null;
+          github_url: string | null;
           id: number;
           last_synced_at: string | null;
+          line_url: string | null;
           logo_path: string | null;
+          looking_for: string[];
           marketing_channels: string[];
           mrr_cents: number | null;
           name: string;
           owner_id: string;
+          play_store_url: string | null;
           pricing: string | null;
           problem_solved: string | null;
           province: string | null;
@@ -157,16 +173,28 @@ export type Database = {
           tagline: string | null;
           team_size: string | null;
           tech_stack: string[];
+          traffic_provider: string | null;
+          traffic_synced_at: string | null;
           updated_at: string;
           value_proposition: string | null;
           verification_status: string;
           verified_provider: string | null;
-          website_url: string;
+          visitors_30d: number | null;
+          visitors_prev_30d: number | null;
+          website_url: string | null;
         };
         Insert: {
           active_subscriptions?: number | null;
+          active_users?: number | null;
           ai_tools?: string[];
+          app_store_url?: string | null;
           audience?: string | null;
+          build_ai_commits?: number | null;
+          build_commits?: number | null;
+          build_first_commit_at?: string | null;
+          build_stars?: number | null;
+          build_story?: string | null;
+          build_synced_at?: string | null;
           category?: string;
           country?: string;
           created_at?: string;
@@ -176,13 +204,18 @@ export type Database = {
           founder_message?: string | null;
           founding_number?: number | null;
           funding?: string | null;
+          github_repo?: string | null;
+          github_url?: string | null;
           id?: never;
           last_synced_at?: string | null;
+          line_url?: string | null;
           logo_path?: string | null;
+          looking_for?: string[];
           marketing_channels?: string[];
           mrr_cents?: number | null;
           name: string;
           owner_id: string;
+          play_store_url?: string | null;
           pricing?: string | null;
           problem_solved?: string | null;
           province?: string | null;
@@ -194,16 +227,28 @@ export type Database = {
           tagline?: string | null;
           team_size?: string | null;
           tech_stack?: string[];
+          traffic_provider?: string | null;
+          traffic_synced_at?: string | null;
           updated_at?: string;
           value_proposition?: string | null;
           verification_status?: string;
           verified_provider?: string | null;
-          website_url: string;
+          visitors_30d?: number | null;
+          visitors_prev_30d?: number | null;
+          website_url?: string | null;
         };
         Update: {
           active_subscriptions?: number | null;
+          active_users?: number | null;
           ai_tools?: string[];
+          app_store_url?: string | null;
           audience?: string | null;
+          build_ai_commits?: number | null;
+          build_commits?: number | null;
+          build_first_commit_at?: string | null;
+          build_stars?: number | null;
+          build_story?: string | null;
+          build_synced_at?: string | null;
           category?: string;
           country?: string;
           created_at?: string;
@@ -213,13 +258,18 @@ export type Database = {
           founder_message?: string | null;
           founding_number?: number | null;
           funding?: string | null;
+          github_repo?: string | null;
+          github_url?: string | null;
           id?: never;
           last_synced_at?: string | null;
+          line_url?: string | null;
           logo_path?: string | null;
+          looking_for?: string[];
           marketing_channels?: string[];
           mrr_cents?: number | null;
           name?: string;
           owner_id?: string;
+          play_store_url?: string | null;
           pricing?: string | null;
           problem_solved?: string | null;
           province?: string | null;
@@ -231,11 +281,15 @@ export type Database = {
           tagline?: string | null;
           team_size?: string | null;
           tech_stack?: string[];
+          traffic_provider?: string | null;
+          traffic_synced_at?: string | null;
           updated_at?: string;
           value_proposition?: string | null;
           verification_status?: string;
           verified_provider?: string | null;
-          website_url?: string;
+          visitors_30d?: number | null;
+          visitors_prev_30d?: number | null;
+          website_url?: string | null;
         };
         Relationships: [
           {
@@ -243,6 +297,32 @@ export type Database = {
             columns: ["owner_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      traffic_snapshots: {
+        Row: {
+          day: string;
+          startup_id: number;
+          visitors: number;
+        };
+        Insert: {
+          day: string;
+          startup_id: number;
+          visitors?: number;
+        };
+        Update: {
+          day?: string;
+          startup_id?: number;
+          visitors?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "traffic_snapshots_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
             referencedColumns: ["id"];
           },
         ];

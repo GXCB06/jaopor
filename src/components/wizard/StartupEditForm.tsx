@@ -16,10 +16,19 @@ import {
 } from "@/lib/catalog";
 import type { Tables } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/client";
+import {
+  LINK_COLUMN,
+  LINK_KINDS,
+  LOOKING_FOR,
+  parseProjectLink,
+  websiteHost,
+  type LinkKind,
+  type LookingFor,
+} from "@/lib/links";
 import { cn } from "@/lib/utils";
 import { Field, Select, ToggleChips, inputClass } from "./fields";
-import { StripeConnect } from "./StripeConnect";
-import { normalizeUrl, uploadLogo } from "./StartupWizard";
+import { uploadLogo } from "./StartupWizard";
+import { VerifyPanel, type ConnectionInfo } from "./VerifyPanel";
 
 // One page with every field. Each field wrapper has id="<field>" so the profile's "+ Add"
 // cards can deep-link (/dashboard/[id]/edit#pricing) and the field gets highlighted.
@@ -45,6 +54,13 @@ const COUNTRIES = [
   "CA",
 ];
 const MAX_LOGO_BYTES = 1024 * 1024;
+const LINK_PLACEHOLDER: Record<LinkKind, string> = {
+  website: "yourapp.com",
+  app_store: "https://apps.apple.com/th/app/…",
+  play_store: "https://play.google.com/store/apps/details?id=…",
+  line: "@yourbot",
+  github: "https://github.com/you/app",
+};
 
 const list = (s: string, max: number) =>
   s
@@ -56,12 +72,19 @@ const list = (s: string, max: number) =>
 export function StartupEditForm({
   userId,
   startup,
+  connections,
+  githubLogin,
 }: {
   userId: string;
   startup: Tables<"startups">;
+  connections: ConnectionInfo[];
+  githubLogin: string | null;
 }) {
   const t = useTranslations("Wizard");
   const p = useTranslations("Profile");
+  const lt = useTranslations("Links");
+  const lf = useTranslations("LookingFor");
+  const st = useTranslations("Sources");
   const common = useTranslations("Common");
   const cat = useTranslations("Catalog");
   const locale = useLocale();
@@ -75,7 +98,11 @@ export function StartupEditForm({
   const [error, setError] = useState<string | null>(null);
   const [f, setF] = useState({
     name: startup.name,
-    website: startup.website_url,
+    links: Object.fromEntries(
+      LINK_KINDS.map((k) => [k, startup[LINK_COLUMN[k]] ?? ""]),
+    ) as Record<LinkKind, string>,
+    lookingFor: startup.looking_for as LookingFor[],
+    buildStory: startup.build_story ?? "",
     tagline: startup.tagline ?? "",
     description: startup.description ?? "",
     category: startup.category,
@@ -120,6 +147,15 @@ export function StartupEditForm({
     e.preventDefault();
     setError(null);
     if (logo && logo.size > MAX_LOGO_BYTES) return setError(t("logoTooBig"));
+    // Each link box only accepts its own kind (a Play link in the LINE box is an error).
+    const links: Record<string, string | null> = {};
+    for (const kind of LINK_KINDS) {
+      const raw = f.links[kind].trim();
+      const parsed = raw ? parseProjectLink(raw) : null;
+      if (raw && parsed?.kind !== kind) return setError(lt("invalid"));
+      links[LINK_COLUMN[kind]] = parsed?.url ?? null;
+    }
+    if (Object.values(links).every((v) => !v)) return setError(lt("needOne"));
     setBusy(true);
     try {
       const logoPath = logo
@@ -129,7 +165,9 @@ export function StartupEditForm({
         .from("startups")
         .update({
           name: f.name.trim(),
-          website_url: normalizeUrl(f.website),
+          ...links,
+          looking_for: f.lookingFor,
+          build_story: f.buildStory.trim() || null,
           tagline: f.tagline.trim() || null,
           description: f.description.trim() || null,
           category: f.category,
@@ -188,16 +226,14 @@ export function StartupEditForm({
 
   return (
     <div className="space-y-10">
-      <section id="revenue" className="space-y-3 rounded-lg border p-4">
-        <h2 className="text-sm font-semibold">{t("revenueTitle")}</h2>
-        {startup.verification_status === "verified" ? (
-          <p className="text-sm text-muted-foreground">✓ Stripe</p>
-        ) : (
-          <StripeConnect
-            startupId={startup.id}
-            onVerified={() => router.refresh()}
-          />
-        )}
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold">{st("title")}</h2>
+        <VerifyPanel
+          startupId={startup.id}
+          connections={connections}
+          websiteHost={websiteHost(startup.website_url)}
+          githubLogin={githubLogin}
+        />
       </section>
 
       <form onSubmit={save} className="grid gap-4 sm:grid-cols-2">
@@ -214,17 +250,37 @@ export function StartupEditForm({
             className={inputClass}
           />
         </Field>
-        <Field id="website" label={t("website")} htmlFor="website-input">
-          <input
-            id="website-input"
-            required
-            inputMode="url"
-            maxLength={300}
-            value={f.website}
-            onChange={(e) => set("website")(e.target.value)}
-            className={inputClass}
+        <Field id="looking_for" label={t("lookingFor")} optional={common("optional")}>
+          <ToggleChips
+            options={LOOKING_FOR.map((x) => ({ value: x, label: lf(x) }))}
+            value={f.lookingFor}
+            onChange={set("lookingFor")}
           />
         </Field>
+        <fieldset id="links" className="grid scroll-mt-24 gap-4 sm:col-span-2 sm:grid-cols-2">
+          <legend className="mb-2 text-xs font-medium">{t("links")}</legend>
+          {LINK_KINDS.map((kind) => (
+            <Field
+              key={kind}
+              id={LINK_COLUMN[kind]}
+              label={lt(kind)}
+              htmlFor={`${kind}-input`}
+              optional={common("optional")}
+            >
+              <input
+                id={`${kind}-input`}
+                inputMode="url"
+                maxLength={300}
+                placeholder={LINK_PLACEHOLDER[kind]}
+                value={f.links[kind]}
+                onChange={(e) =>
+                  set("links")({ ...f.links, [kind]: e.target.value })
+                }
+                className={inputClass}
+              />
+            </Field>
+          ))}
+        </fieldset>
         {text("tagline", "tagline", t("tagline"), 140, true)}
         <Field
           id="description"
@@ -384,6 +440,22 @@ export function StartupEditForm({
           true,
           "Facebook, SEO, TikTok",
         )}
+        <Field
+          id="build_story"
+          label={t("buildStory")}
+          htmlFor="story-input"
+          hint={t("buildStoryHint")}
+          optional={common("optional")}
+          className="sm:col-span-2"
+        >
+          <Textarea
+            id="story-input"
+            maxLength={280}
+            rows={2}
+            value={f.buildStory}
+            onChange={(e) => set("buildStory")(e.target.value)}
+          />
+        </Field>
         <Field
           id="founder_message"
           label={t("founderMessage")}

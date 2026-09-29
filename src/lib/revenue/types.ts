@@ -1,7 +1,7 @@
 // Provider-agnostic revenue model (Project.md §5). Providers only fetch + normalize;
 // the metrics engine computes every number the same way for all providers.
 
-export type ProviderId = "stripe";
+export type ProviderId = "stripe" | "revenuecat";
 
 /** A successful payment, net of refunds. Amounts are integer minor units (cents, satang…). */
 export type NormalizedCharge = {
@@ -36,7 +36,12 @@ export type ProviderErrorCode =
   | "not_read_only" // key can write → we refuse to store it
   | "missing_permission" // read-only but lacks a permission we need
   | "rate_limited"
-  | "upstream"; // provider outage / unexpected response
+  | "upstream" // provider outage / unexpected response
+  | "not_found" // project / site / repo does not exist (or the key cannot see it)
+  | "domain_mismatch" // analytics site is not the project's website
+  | "not_owner" // GitHub repo does not belong to the signed-in founder
+  | "no_github_identity" // founder did not sign in with GitHub
+  | "no_website"; // traffic proof needs a website link first
 
 export class ProviderError extends Error {
   constructor(
@@ -50,8 +55,11 @@ export class ProviderError extends Error {
   }
 }
 
+/** Providers that hand us raw transactions for the metrics engine (RevenueCat is pre-aggregated). */
+export type TransactionProviderId = Extract<ProviderId, "stripe">;
+
 export interface RevenueProvider {
-  id: ProviderId;
+  id: TransactionProviderId;
   /** Throws ProviderError("invalid_key" | "not_read_only" | "missing_permission"). */
   validateKey(key: string): Promise<KeyValidation>;
   fetchCharges(key: string): AsyncIterable<NormalizedCharge>;

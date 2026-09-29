@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { StartupEditForm } from "@/components/wizard/StartupEditForm";
 import { requireUserId } from "@/lib/auth";
+import { getConnections, getGithubLogin } from "@/lib/data/connections";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { robots: { index: false } };
@@ -23,14 +24,23 @@ export default async function EditStartupPage({
     .maybeSingle();
   if (!startup) notFound();
 
-  const t = await getTranslations("Profile");
+  const [t, connections, githubLogin] = await Promise.all([
+    getTranslations("Profile"),
+    getConnections(startup.id),
+    getGithubLogin(),
+  ]);
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">
         {t("editProfile")} · {startup.name}
       </h1>
-      <StartupEditForm userId={userId} startup={startup} />
+      <StartupEditForm
+        userId={userId}
+        startup={startup}
+        connections={connections}
+        githubLogin={githubLogin}
+      />
     </main>
   );
 }

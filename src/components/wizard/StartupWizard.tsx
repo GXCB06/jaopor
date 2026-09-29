@@ -5,17 +5,30 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "@/i18n/navigation";
 import { AI_TOOLS, CATEGORIES, slugify, type AiTool } from "@/lib/catalog";
+import {
+  LOOKING_FOR,
+  parseProjectLink,
+  websiteHost,
+  type LinkColumn,
+  type LookingFor,
+} from "@/lib/links";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Field, Select, ToggleChips, inputClass } from "./fields";
-import { StripeConnect } from "./StripeConnect";
+import { VerifyPanel } from "./VerifyPanel";
 
 // Design.md §6 Add-startup wizard — 2 short steps (feedback: "too much to fill in").
-// 1) name · website · category · built with (+ optional logo)  2) Stripe (or skip).
+// 1) name · ONE project link (website / store / LINE / GitHub, auto-detected) · category ·
+//    built with · looking for (+ optional logo)   2) VerifyPanel (or skip).
 // Everything else is added later via the profile's "+ Add" cards → /dashboard/[id]/edit.
 
 const MAX_LOGO_BYTES = 1024 * 1024;
 const LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];
+
+/** 4 random base-36 chars for a slug clash (kept outside render for react-hooks/purity). */
+function randomSuffix(): string {
+  return Math.random().toString(36).slice(2, 6);
+}
 
 export async function uploadLogo(userId: string, file: File): Promise<string> {
   const ext =
@@ -32,27 +45,43 @@ export async function uploadLogo(userId: string, file: File): Promise<string> {
   return path;
 }
 
-export function StartupWizard({ userId }: { userId: string }) {
+export function StartupWizard({
+  userId,
+  githubLogin,
+}: {
+  userId: string;
+  githubLogin: string | null;
+}) {
   const t = useTranslations("Wizard");
   const common = useTranslations("Common");
   const cat = useTranslations("Catalog");
+  const lt = useTranslations("Links");
+  const lf = useTranslations("LookingFor");
   const router = useRouter();
 
   const [step, setStep] = useState<1 | 2>(1);
-  const [saved, setSaved] = useState<{ id: number; slug: string } | null>(null);
+  const [saved, setSaved] = useState<{
+    id: number;
+    slug: string;
+    website: string | null;
+  } | null>(null);
   const [verified, setVerified] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState("");
-  const [website, setWebsite] = useState("");
+  const [link, setLink] = useState("");
   const [category, setCategory] = useState("ai");
   const [aiTools, setAiTools] = useState<AiTool[]>(["claude-code"]);
+  const [lookingFor, setLookingFor] = useState<LookingFor[]>([]);
   const [logo, setLogo] = useState<File | null>(null);
+
+  const parsed = parseProjectLink(link);
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!parsed) return setError(lt("invalid"));
     if (logo && logo.size > MAX_LOGO_BYTES) return setError(t("logoTooBig"));
     const base = slugify(name) || "startup";
     setBusy(true);
@@ -62,7 +91,7 @@ export function StartupWizard({ userId }: { userId: string }) {
       // Auto slug; on a clash retry once with a short random suffix (no slug field to fill in).
       for (const slug of [
         base,
-        `${base.slice(0, 44)}-${Math.random().toString(36).slice(2, 6)}`,
+        `${base.slice(0, 44)}-${randomSuffix()}`,
       ]) {
         const { data, error: dbErr } = await supabase
           .from("startups")
@@ -70,15 +99,18 @@ export function StartupWizard({ userId }: { userId: string }) {
             owner_id: userId,
             name: name.trim(),
             slug,
-            website_url: normalizeUrl(website),
+            ...({ [parsed.column]: parsed.url } as Partial<
+              Record<LinkColumn, string>
+            >),
             category,
             ai_tools: aiTools,
+            looking_for: lookingFor,
             logo_path: logoPath,
           })
-          .select("id, slug")
+          .select("id, slug, website_url")
           .single();
         if (!dbErr) {
-          setSaved(data);
+          setSaved({ id: data.id, slug: data.slug, website: data.website_url });
           setStep(2);
           return;
         }
@@ -97,7 +129,8 @@ export function StartupWizard({ userId }: { userId: string }) {
     saved &&
     router.push({
       pathname: `/startup/${saved.slug}`,
-      query: verified ? { verified: "1" } : {},
+      // Post-listing share moment (Design.md §9): the profile opens the share dialog.
+      query: verified ? { verified: "1" } : { new: "1" },
     });
 
   return (
@@ -132,15 +165,25 @@ export function StartupWizard({ userId }: { userId: string }) {
                 className={inputClass}
               />
             </Field>
-            <Field label={t("website")} htmlFor="website">
+            <Field
+              label={t("projectLink")}
+              htmlFor="link"
+              hint={
+                link.trim()
+                  ? parsed
+                    ? lt("detected", { kind: lt(parsed.kind) })
+                    : lt("invalid")
+                  : t("projectLinkHint")
+              }
+            >
               <input
-                id="website"
+                id="link"
                 required
                 inputMode="url"
-                placeholder="yourstartup.com"
+                placeholder="yourapp.com · @yourbot"
                 maxLength={300}
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
                 className={inputClass}
               />
             </Field>
@@ -179,6 +222,17 @@ export function StartupWizard({ userId }: { userId: string }) {
                 onChange={setAiTools}
               />
             </Field>
+            <Field
+              label={t("lookingFor")}
+              optional={common("optional")}
+              className="sm:col-span-2"
+            >
+              <ToggleChips
+                options={LOOKING_FOR.map((x) => ({ value: x, label: lf(x) }))}
+                value={lookingFor}
+                onChange={setLookingFor}
+              />
+            </Field>
           </div>
           {error && (
             <p role="alert" className="text-sm text-destructive">
@@ -193,14 +247,16 @@ export function StartupWizard({ userId }: { userId: string }) {
 
       {step === 2 && saved && (
         <div className="space-y-5">
-          <h2 className="text-sm font-semibold">{t("revenueTitle")}</h2>
-          <StripeConnect
+          <VerifyPanel
             startupId={saved.id}
-            onVerified={() => setVerified(true)}
+            connections={[]}
+            websiteHost={websiteHost(saved.website)}
+            githubLogin={githubLogin}
+            onConnected={() => setVerified(true)}
           />
           <div className="flex items-center justify-between gap-3 border-t pt-4">
             <p className="text-xs text-muted-foreground">
-              {verified ? "" : t("noStripe")}
+              {verified ? "" : t("skipVerify")}
             </p>
             <Button
               variant={verified ? "default" : "outline"}
@@ -214,10 +270,4 @@ export function StartupWizard({ userId }: { userId: string }) {
       )}
     </div>
   );
-}
-
-/** "yourstartup.com" → "https://yourstartup.com" (the DB requires an http(s) URL). */
-export function normalizeUrl(input: string): string {
-  const v = input.trim();
-  return /^https?:\/\//i.test(v) ? v : `https://${v}`;
 }

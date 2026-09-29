@@ -80,7 +80,8 @@
       "v0": "v0",
       "replit": "Replit",
       "bolt": "Bolt",
-      "other": "อื่น ๆ"
+      "other": "อื่น ๆ",
+      "claude": "Claude (แชท)"
     },
     "audience": {
       "b2b": "B2B (ธุรกิจ)",
@@ -105,7 +106,9 @@
     "growth": "เติบโต",
     "copyLink": "คัดลอกลิงก์",
     "linkCopied": "คัดลอกลิงก์แล้ว",
-    "foundingBadge": "เจ้าพ่อรุ่นบุกเบิก #{n}"
+    "foundingBadge": "เจ้าพ่อรุ่นบุกเบิก #{n}",
+    "visitors": "ผู้เข้าชม 30 วัน",
+    "commits": "Commits"
   },
   "Leaderboard": {
     "rank": "#",
@@ -163,7 +166,18 @@
     "description": "รายละเอียด",
     "location": "ที่ตั้ง",
     "ownerBar": "นี่คือโปรไฟล์ของคุณ — กรอกข้อมูลให้ครบเพื่อให้โดดเด่นขึ้น",
-    "editProfile": "แก้ไขโปรไฟล์"
+    "editProfile": "แก้ไขโปรไฟล์",
+    "traction": "ตัวเลขที่ยืนยันแล้ว",
+    "visitors30d": "ผู้เข้าชม (30 วัน)",
+    "activeUsers": "ผู้ใช้ที่แอคทีฟ (28 วัน)",
+    "buildProof": "หลักฐานการสร้าง",
+    "commits": "{count, plural, other {# commits}}",
+    "claudeShare": "{pct}% ร่วมเขียนกับ Claude",
+    "firstCommit": "commit แรก {date}",
+    "via": "ยืนยันผ่าน {source}",
+    "connect": "+ เชื่อม",
+    "buildStory": "เรื่องการสร้าง",
+    "stars": "{count} ดาว"
   },
   "Verified": {
     "stamp": "รายได้ยืนยันผ่าน API key ของ <b>{provider}</b>",
@@ -183,7 +197,7 @@
     "title": "เพิ่ม Startup ของคุณ",
     "step": "ขั้นตอน {current} จาก {total}",
     "stepBasics": "ข้อมูลพื้นฐาน",
-    "stepRevenue": "ยืนยันรายได้",
+    "stepRevenue": "ยืนยันตัวเลข",
     "stepInsights": "ข้อมูลเพิ่มเติม",
     "name": "ชื่อสตาร์ทอัพ",
     "website": "เว็บไซต์",
@@ -226,31 +240,43 @@
     "finish": "เผยแพร่โปรไฟล์",
     "limitReached": "เพิ่มได้สูงสุด 5 สตาร์ทอัพต่อคน",
     "choose": "เลือก…",
-    "basicsIntro": "ใช้เวลาไม่ถึง 1 นาที — ข้อมูลอื่น ๆ เพิ่มทีหลังได้จากหน้าโปรไฟล์",
+    "basicsIntro": "ใช้เวลาไม่ถึง 1 นาที ลิงก์เดียวก็พอ ข้อมูลอื่นเพิ่มทีหลังได้จากหน้าโปรไฟล์",
     "openStripe": "เปิดหน้าสร้างคีย์ใน Stripe",
     "openStripeTest": "โหมดทดสอบ",
     "writeAccessOn": "คีย์นี้ยังมีสิทธิ์เขียนที่: {resources} — เปลี่ยนเป็น Read หรือ None แล้ววางใหม่",
     "goToProfile": "ไปที่โปรไฟล์",
-    "skipToProfile": "ข้ามไปก่อน"
+    "skipToProfile": "ข้ามไปก่อน",
+    "projectLink": "ลิงก์ผลงาน",
+    "projectLinkHint": "เว็บไซต์ · App Store · Google Play · LINE OA (@id) · GitHub",
+    "lookingFor": "กำลังหาอะไรอยู่?",
+    "links": "ลิงก์",
+    "buildStory": "เล่าการสร้าง",
+    "buildStoryHint": "เช่น ทำคนเดียว 2 สัปดาห์ด้วย Claude Code, 700 commits",
+    "skipVerify": "ยังไม่พร้อม? ข้ามไปก่อน แล้วค่อยยืนยันทีหลังจากหน้าแก้ไข"
   },
   "Errors": {
-    "invalid_key": "คีย์นี้ไม่ใช่ Restricted key ของ Stripe ที่ถูกต้อง",
-    "not_read_only": "คีย์นี้เขียนข้อมูลใน Stripe ได้ กรุณาสร้าง Restricted key ที่ตั้งสิทธิ์เป็น Read อย่างเดียว",
-    "missing_permission": "คีย์ต้องมีสิทธิ์ Read สำหรับ Charges และ Subscriptions",
-    "rate_limited": "Stripe จำกัดจำนวนคำขอชั่วคราว ลองใหม่ในอีกสักครู่",
-    "upstream": "Stripe ตอบกลับผิดปกติ ลองใหม่อีกครั้งภายหลัง",
+    "invalid_key": "{source} ไม่ยอมรับคีย์หรือลิงก์นี้ — ตรวจแล้ววางใหม่อีกครั้ง",
+    "not_read_only": "คีย์นี้มีสิทธิ์มากกว่าอ่านอย่างเดียว ({detail}) — แก้สิทธิ์ให้อ่านอย่างเดียวแล้ววางใหม่",
+    "missing_permission": "คีย์ยังขาดสิทธิ์อ่านที่จำเป็น — ดูขั้นตอนด้านบน",
+    "rate_limited": "{source} จำกัดจำนวนคำขอชั่วคราว ลองใหม่ในอีกสักครู่",
+    "upstream": "{source} ตอบกลับผิดปกติ ลองใหม่อีกครั้งภายหลัง",
     "cooldown": "เพิ่งรีเฟรชไป ลองใหม่อีกไม่กี่นาที",
     "unauthorized": "กรุณาเข้าสู่ระบบอีกครั้ง",
-    "server": "ระบบของเรามีปัญหา กรุณาลองใหม่"
+    "server": "ระบบของเรามีปัญหา กรุณาลองใหม่",
+    "not_found": "ไม่พบโปรเจค เว็บไซต์ หรือ repo นี้ — ตรวจ ID หรือลิงก์อีกครั้ง",
+    "domain_mismatch": "เว็บใน analytics ({detail}) ไม่ใช่เว็บไซต์ของโปรเจคนี้",
+    "not_owner": "Repo นี้ไม่ได้เป็นของบัญชี GitHub ที่คุณเข้าสู่ระบบ",
+    "no_github_identity": "ต้องเข้าสู่ระบบด้วย GitHub อย่างน้อยหนึ่งครั้ง เพื่อยืนยันว่า repo เป็นของคุณ",
+    "no_website": "เพิ่มลิงก์เว็บไซต์ก่อน — ผู้เข้าชมจะถูกจับคู่กับเว็บไซต์นั้น"
   },
   "Dashboard": {
     "title": "สตาร์ทอัพของคุณ",
     "empty": "คุณยังไม่ได้เพิ่ม Startup",
     "view": "ดู",
     "edit": "แก้ไข",
-    "connect": "เชื่อม Stripe",
-    "refresh": "รีเฟรชรายได้",
-    "refreshed": "รีเฟรชรายได้แล้ว",
+    "connect": "ยืนยันตัวเลข",
+    "refresh": "รีเฟรชตัวเลข",
+    "refreshed": "อัปเดตตัวเลขแล้ว",
     "delete": "ลบ",
     "deleteConfirm": "ลบ {name}? โปรไฟล์และประวัติรายได้จะถูกลบทั้งหมด",
     "deleted": "ลบสตาร์ทอัพแล้ว",
@@ -270,5 +296,80 @@
     "mrr": "MRR",
     "revenue30d": "รายได้ (30 วัน)",
     "lastSyncLabel": "ซิงก์ล่าสุด"
+  },
+  "Links": {
+    "website": "เว็บไซต์",
+    "app_store": "App Store",
+    "play_store": "Google Play",
+    "line": "LINE OA",
+    "github": "GitHub",
+    "detected": "ตรวจพบ: {kind}",
+    "invalid": "ลิงก์นี้ใช้ไม่ได้ — ลิงก์ Google Play ต้องเป็นหน้าแอป และ GitHub ต้องเป็น github.com/ชื่อ/repo",
+    "needOne": "ใส่ลิงก์อย่างน้อย 1 ลิงก์"
+  },
+  "LookingFor": {
+    "title": "กำลังหา",
+    "users": "ผู้ใช้",
+    "feedback": "Feedback",
+    "testers": "คนช่วยทดสอบ",
+    "cofounder": "Co-founder",
+    "buyer": "ผู้ซื้อกิจการ",
+    "investor": "นักลงทุน",
+    "tryIt": "ลองใช้เลย",
+    "tag": "กำลังหา{what}"
+  },
+  "Sources": {
+    "title": "ยืนยันตัวเลข",
+    "intro": "เชื่อมแบบอ่านอย่างเดียว คีย์ถูกเข้ารหัสและไม่แสดงซ้ำ ตัวเลขอัปเดตทุกวัน เลือกอย่างน้อยหนึ่งอย่าง",
+    "revenue": "รายได้",
+    "traffic": "ผู้เข้าชม",
+    "build": "หลักฐานการสร้าง",
+    "revenueHint": "เว็บ SaaS ใช้ Stripe · แอปมือถือใช้ RevenueCat",
+    "trafficHint": "ผู้เข้าชมจริงจาก analytics ของเว็บคุณ (ต้องเป็นโดเมนเดียวกับเว็บไซต์)",
+    "buildHint": "จำนวน commit, commit แรก และสัดส่วนที่ร่วมเขียนกับ Claude จาก repo สาธารณะ",
+    "connect": "ยืนยัน",
+    "verifying": "กำลังตรวจสอบ…",
+    "connected": "เชื่อมแล้ว",
+    "refresh": "รีเฟรช",
+    "refreshed": "อัปเดตตัวเลขแล้ว",
+    "disconnect": "ยกเลิกการเชื่อม",
+    "disconnectConfirm": "ยกเลิกการเชื่อม {source}? ตัวเลขที่ยืนยันแล้วจะถูกลบ",
+    "disconnected": "ยกเลิกการเชื่อมแล้ว",
+    "replaceNote": "เชื่อม {source} จะแทนที่ {current} ที่เชื่อมอยู่",
+    "lastSync": "ซิงก์ล่าสุด {time}",
+    "neverSynced": "ยังไม่เคยซิงก์",
+    "success": "ยืนยันแล้ว! ตัวเลขขึ้นบนโปรไฟล์ของคุณแล้ว",
+    "open": "เปิดหน้าตั้งค่า {source}",
+    "openTest": "โหมดทดสอบ",
+    "stripe": {
+      "howTo1": "กดปุ่มด้านล่าง → ตั้งชื่อคีย์ เช่น JaoPor",
+      "howTo2": "ตั้ง Charges → Read และ Subscriptions → Read (ที่เหลือปล่อยเป็น None)",
+      "howTo3": "กด Create key → คัดลอกคีย์ที่ขึ้นต้นด้วย rk_ → วางด้านล่าง",
+      "key": "Restricted key (rk_…)"
+    },
+    "revenuecat": {
+      "howTo1": "RevenueCat → Project settings → API keys → + New secret API key → เลือก V2",
+      "howTo2": "ตั้ง Charts & metrics → Read only และส่วนอื่นทั้งหมด → No access",
+      "howTo3": "คัดลอกคีย์ sk_… และ Project ID (อยู่ใน URL: app.revenuecat.com/projects/<ID>/…)",
+      "key": "V2 secret key (sk_…)",
+      "projectId": "Project ID"
+    },
+    "plausible": {
+      "howTo1": "Plausible → Account settings → API keys → New API key → เลือก Stats API",
+      "howTo2": "คัดลอกคีย์มาวาง และตรวจว่าโดเมนตรงกับที่แสดงใน Plausible",
+      "key": "Stats API key",
+      "siteId": "โดเมนใน Plausible"
+    },
+    "umami": {
+      "howTo1": "Umami → Websites → Edit → เปิด Share URL",
+      "howTo2": "คัดลอกลิงก์ …/share/… มาวาง (ลิงก์นี้ดูสถิติได้อย่างเดียว)",
+      "shareUrl": "Share URL"
+    },
+    "github": {
+      "howTo1": "Repo ต้องเป็นสาธารณะ และเป็นของบัญชี GitHub ที่คุณใช้เข้าสู่ระบบ (หรือ org ที่คุณเป็นสมาชิกแบบเปิดเผย)",
+      "howTo2": "เราไม่ขอสิทธิ์ใด ๆ — อ่านข้อมูลสาธารณะของ repo เท่านั้น",
+      "repo": "ลิงก์ GitHub repo",
+      "needGithub": "ต้องเข้าสู่ระบบด้วย GitHub ก่อน เพื่อยืนยันว่า repo เป็นของคุณ"
+    }
   }
 }

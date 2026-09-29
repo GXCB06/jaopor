@@ -12,6 +12,7 @@ import {
 } from "@/components/StartupBits";
 import { Link } from "@/i18n/navigation";
 import { requireUserId } from "@/lib/auth";
+import { isSource, type SourceId } from "@/lib/sources/catalog";
 import { moneyCompact } from "@/lib/format";
 import type { Tables } from "@/lib/supabase/database.types";
 import { logoUrl } from "@/lib/supabase/public";
@@ -26,10 +27,26 @@ export async function generateMetadata({
   return { title: t("title"), robots: { index: false } };
 }
 
+/** Any verified source: revenue, visitors or build proof. */
+function hasVerifiedNumbers(s: Tables<"startups">) {
+  return (
+    s.verification_status === "verified" ||
+    s.visitors_30d !== null ||
+    s.build_commits !== null
+  );
+}
+
+/** Source to re-sync from the card menu (revenue first). */
+function refreshSource(s: Tables<"startups">): SourceId | null {
+  const candidates = [s.verified_provider, s.traffic_provider];
+  const found = candidates.find((c): c is SourceId => isSource(c));
+  return found ?? (s.github_repo ? "github" : null);
+}
+
 /** Fields that make a profile "complete" (Design.md §5 Dashboard startup card). */
 function completeness(s: Tables<"startups">) {
   const checks = [
-    s.verification_status === "verified",
+    hasVerifiedNumbers(s),
     Boolean(s.logo_path),
     Boolean(s.tagline),
     Boolean(s.description),
@@ -43,6 +60,7 @@ function completeness(s: Tables<"startups">) {
     s.tech_stack.length > 0,
     s.marketing_channels.length > 0,
     Boolean(s.founder_message),
+    Boolean(s.build_story),
   ];
   const done = checks.filter(Boolean).length;
   return {
@@ -65,9 +83,10 @@ export default async function DashboardPage({
     .eq("owner_id", userId)
     .order("created_at", { ascending: false });
 
-  const [t, nav, format] = await Promise.all([
+  const [t, nav, p, format] = await Promise.all([
     getTranslations("Dashboard"),
     getTranslations("Nav"),
+    getTranslations("Profile"),
     getFormatter(),
   ]);
 
@@ -98,7 +117,7 @@ export default async function DashboardPage({
       ) : (
         <ul className="space-y-4">
           {startups.map((s) => {
-            const verified = s.verification_status === "verified";
+            const verified = hasVerifiedNumbers(s);
             const status = verified
               ? "statusVerified"
               : s.verification_status === "error"
@@ -141,7 +160,7 @@ export default async function DashboardPage({
                     id={s.id}
                     slug={s.slug}
                     name={s.name}
-                    connected={s.verification_status !== "unverified"}
+                    refreshSource={refreshSource(s)}
                     verified={verified}
                   />
                 </div>
@@ -150,21 +169,25 @@ export default async function DashboardPage({
                   <div>
                     <MetricLabel>{t("mrr")}</MetricLabel>
                     <p className="text-sm font-bold tabular-nums">
-                      {verified ? moneyCompact(s.mrr_cents) : "—"}
+                      {s.verification_status === "verified"
+                        ? moneyCompact(s.mrr_cents)
+                        : "—"}
                     </p>
                   </div>
                   <div>
-                    <MetricLabel>{t("revenue30d")}</MetricLabel>
+                    <MetricLabel>{p("visitors30d")}</MetricLabel>
                     <p className="text-sm font-bold tabular-nums">
-                      {verified ? moneyCompact(s.revenue_30d_cents) : "—"}
+                      {s.visitors_30d !== null
+                        ? format.number(s.visitors_30d, { notation: "compact" })
+                        : "—"}
                     </p>
                   </div>
                   <div>
-                    <MetricLabel>{t("lastSyncLabel")}</MetricLabel>
-                    <p className="truncate text-xs text-muted-foreground tabular-nums">
-                      {s.last_synced_at
-                        ? format.relativeTime(new Date(s.last_synced_at))
-                        : t("neverSynced")}
+                    <MetricLabel>{p("buildProof")}</MetricLabel>
+                    <p className="text-sm font-bold tabular-nums">
+                      {s.build_commits !== null
+                        ? p("commits", { count: s.build_commits })
+                        : "—"}
                     </p>
                   </div>
                 </div>

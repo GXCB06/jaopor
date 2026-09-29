@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { StartupRow } from "@/lib/data/startups";
+import type { LookingFor } from "@/lib/links";
 import { growthPct, moneyCompact } from "@/lib/format";
 import { logoUrl } from "@/lib/supabase/public";
 import { cn } from "@/lib/utils";
@@ -12,7 +13,13 @@ import {
   StartupLogo,
 } from "./StartupBits";
 
-/** Design.md §5 StartupCard. Not-for-sale variant: Revenue (30d) · MRR · Growth. */
+/**
+ * Design.md §5 StartupCard. Not-for-sale variant: Revenue (30d) · MRR · Growth; without verified
+ * revenue it shows verified traction instead (Visitors · Growth · Commits).
+ */
+const compact = (n: number) =>
+  new Intl.NumberFormat("en", { notation: "compact" }).format(n);
+
 export function StartupCard({
   startup,
   large = false,
@@ -25,7 +32,11 @@ export function StartupCard({
   const t = useTranslations("Card");
   const cat = useTranslations("Catalog.category");
   const common = useTranslations("Common");
+  const lf = useTranslations("LookingFor");
   const verified = startup.verification_status === "verified";
+  const traction =
+    startup.visitors_30d !== null || startup.build_commits !== null;
+  const ask = startup.looking_for[0] as LookingFor | undefined;
   const href = `/startup/${startup.slug}`;
 
   return (
@@ -83,6 +94,32 @@ export function StartupCard({
               />
             </div>
           </>
+        ) : traction ? (
+          <>
+            <div>
+              <MetricLabel>{t("visitors")}</MetricLabel>
+              <p className="text-sm font-bold tabular-nums">
+                {startup.visitors_30d !== null
+                  ? compact(startup.visitors_30d)
+                  : "—"}
+              </p>
+            </div>
+            <div>
+              <MetricLabel>{t("growth")}</MetricLabel>
+              <GrowthValue
+                className="text-sm font-bold"
+                pct={growthPct(startup.visitors_30d, startup.visitors_prev_30d)}
+              />
+            </div>
+            <div>
+              <MetricLabel>{t("commits")}</MetricLabel>
+              <p className="text-sm font-bold tabular-nums">
+                {startup.build_commits !== null
+                  ? compact(startup.build_commits)
+                  : "—"}
+              </p>
+            </div>
+          </>
         ) : (
           <p className="col-span-3 text-xs text-muted-foreground">
             {common("notVerified")}
@@ -90,9 +127,14 @@ export function StartupCard({
         )}
       </div>
 
-      {startup.founding_number !== null && (
-        <div className="mt-2">
+      {(startup.founding_number !== null || ask) && (
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <FoundingBadge n={startup.founding_number} />
+          {ask && (
+            <span className="text-[9px] font-bold text-brand uppercase">
+              {lf("tag", { what: lf(ask) })}
+            </span>
+          )}
         </div>
       )}
     </div>

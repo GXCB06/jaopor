@@ -1,4 +1,5 @@
-// Fixed vocabularies. Must match the CHECK constraints in supabase/migrations/*_schema_v1.sql.
+// Fixed vocabularies. Must match the CHECK constraints in supabase/migrations (schema_v1,
+// projects_links_traction).
 // Labels live in messages/{th,en}.json under Catalog.*
 
 export const CATEGORIES = [
@@ -21,6 +22,7 @@ export type Category = (typeof CATEGORIES)[number];
 
 export const AI_TOOLS = [
   "claude-code",
+  "claude",
   "opencode",
   "cursor",
   "codex",

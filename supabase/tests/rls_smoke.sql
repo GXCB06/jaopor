@@ -56,6 +56,31 @@ begin
   get diagnostics n = row_count;
   out := out || format('T6 A edits own tagline: %s row (expect 1) | ', n);
 
+  -- v2 (projects_links_traction): LINE-only project, asks, and server-only traction columns.
+  update public.startups
+  set website_url = null, line_url = 'https://lin.ee/abc123', looking_for = array['users', 'feedback']
+  where id = sid;
+  get diagnostics n = row_count;
+  out := out || format('T12 A switches to LINE-only + looking_for: %s row (expect 1) | ', n);
+
+  begin
+    update public.startups set line_url = null where id = sid;
+    out := out || 'T13 project with no link: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T13 project with no link: denied (good) | ';
+  end;
+
+  begin
+    update public.startups set visitors_30d = 999999 where id = sid;
+    out := out || 'T14 A writes visitors_30d: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T14 A writes visitors_30d: denied (good) | ';
+  end;
+
+  begin
+    insert into public.traffic_snapshots (startup_id, day, visitors) values (sid, current_date, 5);
+    out := out || 'T15 A inserts traffic snapshot: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T15 A inserts traffic snapshot: denied (good) | ';
+  end;
+
   execute 'reset role';
   perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
   execute 'set local role authenticated';

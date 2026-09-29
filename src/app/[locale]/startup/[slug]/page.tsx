@@ -1,4 +1,3 @@
-import { ExternalLinkIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
@@ -12,6 +11,11 @@ import {
   OwnerProvider,
 } from "@/components/profile/Owner";
 import {
+  LookingForBanner,
+  ProjectLinks,
+  TractionTiles,
+} from "@/components/profile/ProjectBlocks";
+import {
   FounderMessage,
   InsightsGrid,
   StatTile,
@@ -24,7 +28,6 @@ import {
   MetricLabel,
   StartupLogo,
 } from "@/components/StartupBits";
-import { Button } from "@/components/ui/button";
 import {
   getRank,
   getRevenueSeries,
@@ -76,6 +79,9 @@ export default async function StartupPage({ params }: Props) {
   const location = [startup.province, startup.country]
     .filter(Boolean)
     .join(", ");
+  const tractionFirst =
+    !verified &&
+    (startup.visitors_30d !== null || startup.build_commits !== null);
   const notVerified = (
     <EmptyValue field="revenue" visitorText={common("notVerified")} />
   );
@@ -109,17 +115,9 @@ export default async function StartupPage({ params }: Props) {
                 <FoundingBadge n={startup.founding_number} />
               </div>
             </div>
-            <Button asChild variant="outline" size="sm">
-              <a
-                href={startup.website_url}
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-              >
-                {t("visit")}
-                <ExternalLinkIcon />
-              </a>
-            </Button>
           </div>
+          <ProjectLinks startup={startup} />
+          <LookingForBanner startup={startup} />
           <div className="rounded-lg border p-3">
             <MetricLabel>{t("description")}</MetricLabel>
             <div className="mt-1">
@@ -133,6 +131,9 @@ export default async function StartupPage({ params }: Props) {
             </div>
           </div>
         </header>
+
+        {/* A project without verified revenue leads with the numbers it does have (visitors, build). */}
+        {tractionFirst && <TractionTiles startup={startup} />}
 
         <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <StatTile
@@ -184,7 +185,7 @@ export default async function StartupPage({ params }: Props) {
           />
         </section>
 
-        {verified ? (
+        {verified && startup.verified_provider === "stripe" ? (
           <section className="space-y-3 rounded-lg border p-4">
             <RevenueChart
               current={series.slice(30)}
@@ -193,12 +194,14 @@ export default async function StartupPage({ params }: Props) {
             <VerifiedStamp startup={startup} />
           </section>
         ) : (
-          startup.verification_status === "error" && (
+          startup.verification_status !== "unverified" && (
             <div className="flex justify-center">
               <VerifiedStamp startup={startup} />
             </div>
           )
         )}
+
+        {!tractionFirst && <TractionTiles startup={startup} />}
 
         <InsightsGrid startup={startup} />
         <FounderMessage

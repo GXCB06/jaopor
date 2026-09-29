@@ -14,4 +14,6 @@ export const serverEnv = {
   supabaseSecretKey: () => required("SUPABASE_SECRET_KEY"),
   keyEncryptionSecret: () => required("KEY_ENCRYPTION_SECRET"),
   cronSecret: () => required("CRON_SECRET"),
+  /** Optional: a read-only (public repos) GitHub token raises the API limit from 60 to 5,000 req/h. */
+  githubToken: () => process.env.GITHUB_TOKEN?.trim() || undefined,
 };

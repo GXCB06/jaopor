@@ -1,10 +1,12 @@
 import { CheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-// Design.md §5 ProviderStrip — "Revenue verified by:" (TrustMRR pattern). Move a name from
-// UPCOMING to LIVE when its connector ships (/add-payment-provider).
-const LIVE = ["Stripe"];
-const UPCOMING = ["Polar", "Lemon Squeezy", "Paddle", "RevenueCat"];
+import { SOURCES, SOURCE_NAME } from "@/lib/sources/catalog";
+
+// Design.md §5 ProviderStrip — "Numbers verified by:" (TrustMRR pattern). LIVE comes from the
+// sources catalog; move a name out of UPCOMING when its connector ships (/add-payment-provider).
+const LIVE = SOURCES.map((s) => SOURCE_NAME[s]);
+const UPCOMING = ["Polar", "Lemon Squeezy", "Paddle", "App Store"];
 
 export function ProviderStrip() {
   const t = useTranslations("Home");
