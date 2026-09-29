@@ -2,6 +2,7 @@ import { PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { BrandLogo } from "./BrandLogo";
+import { CurrencyToggle } from "./CurrencyToggle";
 import { HeaderAuth } from "./HeaderAuth";
 import { LocaleSwitch } from "./LocaleSwitch";
 import { SearchShortcut } from "./SearchShortcut";
@@ -34,6 +35,7 @@ export function SiteHeader() {
           </Link>
         </nav>
         <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          <CurrencyToggle />
           <SearchShortcut />
           <Link
             href="/new"

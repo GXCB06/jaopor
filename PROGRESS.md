@@ -12,6 +12,29 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — THB/USD switch, grid card rows, demo logos, login 404 diagnosis
+
+**Done:**
+
+- **Currency switch ฿ THB / $ USD:**
+  - Header toggle, remembered in `localStorage`. Thai pages default to THB, English pages to USD.
+  - The server renders both values (`<Money>`) and a `<head>` script + CSS shows one, so there's no flash and pages stay ISR.
+  - The rate is the ECB rate via Frankfurter, cached 6 h. If the rate is unavailable, only USD is shown.
+  - Covers cards, leaderboard, profile tiles, chart (headline, axis, tooltip) and dashboard. Share images, OG and the badge stay USD.
+- **Home "Recently added" / "Top traction"** are a plain grid now (2 → 3 → 5 columns), no horizontal sliding.
+- **Each demo project has its own logo:** Lucide icons (ISC) on coloured tiles, bundled in `public/demo-logos/`. `logoUrl()` accepts only `demo-logos/<name>.png` besides Storage paths; the OG card gets the absolute URL.
+- **Login 404 diagnosed:** the site now runs at `https://jaopor.vercel.app`, but Supabase's Site URL/redirect allow-list and Vercel's `NEXT_PUBLIC_SITE_URL` still point at the deleted `mrr-mafia.vercel.app`, so OAuth falls back to the dead domain. The fix is in the dashboards (steps given to the user); OG/share URLs are wrong for the same reason.
+
+**Files:** `src/lib/{currency,currency-script,format}.ts`, `src/lib/data/fx.ts`, `src/components/{CurrencyToggle,StartupBits,StartupCard,LeaderboardCard,RevenueChart,SiteHeader}.tsx`, `src/app/[locale]/{layout,page}.tsx`, `src/app/[locale]/{startup/[slug],startups,dashboard}/page.tsx`, `src/lib/supabase/public.ts`, `public/demo-logos/*`, `supabase/demo_projects.sql`, `Design.md`, `messages/*.json`
+**Verified:**
+
+- `npm run typecheck` ✓ · `npm run lint` ✓ · `npm test` 108/108 ✓ (new `format.test.ts`: USD compact/full, THB conversion, no-rate fallback)
+- Headless Chrome, 1280px dark: `/th` shows ฿ everywhere (e.g. ฿62,003 MRR, ฿114,621) with the grid rows and demo logos; `/en` demo profile shows $ with the chart and the sample-data line.
+- Production checks: `jaopor.vercel.app` serves the app and `/api/health` is ok; og:image still points at `mrr-mafia.vercel.app`.
+- **Not verified:** the switch clicked in a real browser (the pane was closed) and a true 375px pass.
+
+**Next:** user updates the Supabase URL configuration + Vercel `NEXT_PUBLIC_SITE_URL` to `https://jaopor.vercel.app` and redeploys, then retries sign-in
+
 ## 2026-09-30 — Real provider logos, new header/hero logos, 5 demo projects
 
 **Done:**

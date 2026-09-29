@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { routing } from "@/i18n/routing";
 import { publicEnv } from "@/lib/public-env";
+import { currencyInitScript } from "@/lib/currency-script";
 import { themeInitScript } from "@/lib/theme-script";
 import { cn } from "@/lib/utils";
 import "../globals.css";
@@ -61,7 +62,11 @@ export default async function LocaleLayout({
       )}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: themeInitScript + currencyInitScript,
+          }}
+        />
       </head>
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>

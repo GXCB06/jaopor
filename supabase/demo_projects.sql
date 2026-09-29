@@ -3,7 +3,8 @@
 -- Thailand "อวดโปรเจค" thread (docs/research §2): a shop POS, a LINE calorie bot, a guesthouse
 -- system, a construction takeoff tool and a price-history app. Names, numbers and people are made
 -- up; every row has is_demo = true, so the UI labels it "Demo" and share images/badges show no
--- numbers. Links point to example.com (reserved), never to a real product.
+-- numbers. Links point to example.com (reserved), never to a real product. Logos are bundled
+-- static files in public/demo-logos/ (Lucide icons on coloured tiles; see logoUrl()).
 --
 -- Run with Supabase MCP execute_sql (service role). Owner = the owner of the `mrrmafia` project.
 -- Remove with: delete from public.startups where is_demo;  (snapshots cascade)
@@ -84,7 +85,7 @@ demo (slug, name, website_url, tagline, description, category, ai_tools, looking
 ),
 ins as (
   insert into public.startups (
-    owner_id, is_demo, slug, name, website_url, tagline, description, category, ai_tools,
+    owner_id, is_demo, slug, logo_path, name, website_url, tagline, description, category, ai_tools,
     looking_for, audience, team_size, funding, pricing, value_proposition, problem_solved,
     tech_stack, marketing_channels, province, founded_on, created_at,
     verification_status, verified_provider, mrr_cents, revenue_30d_cents,
@@ -92,7 +93,7 @@ ins as (
     last_synced_at, traffic_provider, visitors_30d, visitors_prev_30d, traffic_synced_at,
     build_commits, build_ai_commits, build_stars, build_first_commit_at, build_synced_at,
     github_repo, build_story)
-  select o.owner_id, true, d.slug, d.name, d.website_url, d.tagline, d.description, d.category,
+  select o.owner_id, true, d.slug, 'demo-logos/' || substring(d.slug from 6) || '.png', d.name, d.website_url, d.tagline, d.description, d.category,
     d.ai_tools, d.looking_for, d.audience, d.team_size, d.funding, d.pricing,
     d.value_proposition, d.problem_solved, d.tech_stack, d.marketing_channels, d.province,
     d.founded_on, now() - make_interval(days => d.days_ago),

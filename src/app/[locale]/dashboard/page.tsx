@@ -8,12 +8,13 @@ import { DashboardActions } from "@/components/DashboardActions";
 import {
   FoundingBadge,
   MetricLabel,
+  Money,
   StartupLogo,
 } from "@/components/StartupBits";
 import { Link } from "@/i18n/navigation";
 import { requireUserId } from "@/lib/auth";
 import { isSource, type SourceId } from "@/lib/sources/catalog";
-import { moneyCompact } from "@/lib/format";
+import { getThbPerUsd } from "@/lib/data/fx";
 import type { Tables } from "@/lib/supabase/database.types";
 import { logoUrl } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
@@ -83,11 +84,12 @@ export default async function DashboardPage({
     .eq("owner_id", userId)
     .order("created_at", { ascending: false });
 
-  const [t, nav, p, format] = await Promise.all([
+  const [t, nav, p, format, thbPerUsd] = await Promise.all([
     getTranslations("Dashboard"),
     getTranslations("Nav"),
     getTranslations("Profile"),
     getFormatter(),
+    getThbPerUsd(),
   ]);
 
   return (
@@ -170,7 +172,7 @@ export default async function DashboardPage({
                     <MetricLabel>{t("mrr")}</MetricLabel>
                     <p className="text-sm font-bold tabular-nums">
                       {s.verification_status === "verified"
-                        ? moneyCompact(s.mrr_cents)
+                        ? <Money cents={s.mrr_cents} thbPerUsd={thbPerUsd} />
                         : "—"}
                     </p>
                   </div>

@@ -28,9 +28,10 @@ import {
 } from "@/components/ProfileBlocks";
 import { RevenueChart } from "@/components/RevenueChart";
 import { ShareStudio } from "@/components/share/ShareStudio";
-import { FoundingBadge, StartupLogo } from "@/components/StartupBits";
+import { FoundingBadge, Money, StartupLogo } from "@/components/StartupBits";
 import { StartupCard } from "@/components/StartupCard";
 import { Link } from "@/i18n/navigation";
+import { getThbPerUsd } from "@/lib/data/fx";
 import {
   getMoreStartups,
   getRank,
@@ -82,7 +83,8 @@ export default async function StartupPage({ params }: Props) {
   if (!startup) notFound();
 
   const verified = startup.verification_status === "verified";
-  const [t, common, nav, sh, format, rank, series, more] = await Promise.all([
+  const [t, common, nav, sh, format, rank, series, more, thbPerUsd] =
+    await Promise.all([
     getTranslations("Profile"),
     getTranslations("Common"),
     getTranslations("Nav"),
@@ -93,6 +95,7 @@ export default async function StartupPage({ params }: Props) {
       ? getRevenueSeries(startup.id, 120)
       : Promise.resolve([]),
     getMoreStartups(startup, 6),
+    getThbPerUsd(),
   ]);
 
   // Share kit (Design.md §9): absolute URLs, verified numbers only.
@@ -207,14 +210,30 @@ export default async function StartupPage({ params }: Props) {
         <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <StatTile
             label={t("allTime")}
-            value={verified ? moneyFull(startup.revenue_all_time_cents) : "–"}
+            value={
+              verified ? (
+                <Money
+                  cents={startup.revenue_all_time_cents}
+                  thbPerUsd={thbPerUsd}
+                  full
+                />
+              ) : (
+                "–"
+              )
+            }
             caption={
               verified ? (rank ? t("rank", { rank }) : undefined) : notVerified
             }
           />
           <StatTile
             label={t("mrr")}
-            value={verified ? moneyFull(startup.mrr_cents) : "–"}
+            value={
+              verified ? (
+                <Money cents={startup.mrr_cents} thbPerUsd={thbPerUsd} full />
+              ) : (
+                "–"
+              )
+            }
             caption={
               verified
                 ? t("subscriptions", {
@@ -273,7 +292,7 @@ export default async function StartupPage({ params }: Props) {
 
         {series.length > 0 && (
           <section className="rounded-xl border bg-card p-4 sm:p-6">
-            <RevenueChart series={series} />
+            <RevenueChart series={series} thbPerUsd={thbPerUsd} />
           </section>
         )}
         {startup.verification_status !== "unverified" && (
@@ -299,7 +318,7 @@ export default async function StartupPage({ params }: Props) {
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {more.map((s) => (
-                <StartupCard key={s.id} startup={s} large />
+                <StartupCard key={s.id} startup={s} large thbPerUsd={thbPerUsd} />
               ))}
             </div>
           </section>

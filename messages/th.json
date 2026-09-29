@@ -29,7 +29,9 @@
     "themeDark": "เปลี่ยนเป็นธีมมืด",
     "search": "ค้นหา",
     "leaderboard": "กระดานผู้นำ",
-    "languageShort": "EN"
+    "languageShort": "EN",
+    "currencyThb": "แสดงเป็นเงินบาท (฿)",
+    "currencyUsd": "แสดงเป็นดอลลาร์ ($)"
   },
   "Footer": {
     "tagline": "บ้านถาวรของผลงานที่สร้างด้วย AI ในไทยและเอเชีย ผลงานจริง ตัวเลขจริง",

@@ -178,6 +178,11 @@
     background-color: var(--popover);
     color: var(--popover-foreground);
   }
+  /* Design.md §3 Currency: <Money> renders both; the <head> script picks one before paint. */
+  html[data-currency="thb"] .cur-usd,
+  html:not([data-currency="thb"]) .cur-thb {
+    display: none;
+  }
   /* Thai script needs more vertical room than Latin mono. */
   :lang(th) {
     line-height: 1.6;

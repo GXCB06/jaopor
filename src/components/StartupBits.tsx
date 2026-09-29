@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { money } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 // Small shared pieces used by cards, leaderboard and profile (Design.md §3 / §5).
@@ -169,5 +170,33 @@ export function CornerTag({
     >
       {children}
     </span>
+  );
+}
+
+/**
+ * Design.md §3 Currency: renders the amount in USD and THB; html[data-currency] (set before paint)
+ * decides which one shows, so server-rendered and ISR pages never flash. USD only without a rate.
+ */
+export function Money({
+  cents,
+  thbPerUsd,
+  full = false,
+}: {
+  cents: number | null | undefined;
+  thbPerUsd: number | null | undefined;
+  full?: boolean;
+}) {
+  const usd = money(cents, { full });
+  if (!thbPerUsd || cents === null || cents === undefined) return <>{usd}</>;
+  return (
+    <>
+      <span className="cur-usd">{usd}</span>
+      <span
+        className="cur-thb"
+        title={`≈ 1 USD = ${thbPerUsd.toFixed(2)} THB`}
+      >
+        {money(cents, { currency: "thb", thbPerUsd, full })}
+      </span>
+    </>
   );
 }

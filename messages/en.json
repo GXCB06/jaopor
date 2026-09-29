@@ -29,7 +29,9 @@
     "themeDark": "Switch to dark theme",
     "search": "Search",
     "leaderboard": "Leaderboard",
-    "languageShort": "TH"
+    "languageShort": "TH",
+    "currencyThb": "Show amounts in Thai baht (฿)",
+    "currencyUsd": "Show amounts in US dollars ($)"
   },
   "Footer": {
     "tagline": "The permanent home for AI-built projects from Thailand and Asia. Real work, real numbers.",

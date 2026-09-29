@@ -13,9 +13,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { growthPct, moneyCompact, moneyFull } from "@/lib/format";
+import { useCurrency } from "@/lib/currency";
+import { growthPct, money } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { GrowthPill } from "./StartupBits";
+import { GrowthPill, Money } from "./StartupBits";
 
 type Point = { day: string; revenueCents: number };
 
@@ -70,7 +71,16 @@ function Switch({
  * (--chart-1), optional dashed previous period (--chart-2) and 7-day trend. `series` is the
  * zero-filled daily revenue for the last 2 × 60 days, oldest first.
  */
-export function RevenueChart({ series }: { series: Point[] }) {
+export function RevenueChart({
+  series,
+  thbPerUsd,
+}: {
+  series: Point[];
+  thbPerUsd: number | null;
+}) {
+  const currency = useCurrency();
+  const fmt = (cents: number, full = false) =>
+    money(cents, { currency, thbPerUsd, full });
   const t = useTranslations("Profile");
   const format = useFormatter();
   const [range, setRange] = useState<Range>(30);
@@ -103,7 +113,7 @@ export function RevenueChart({ series }: { series: Point[] }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2.5">
           <p className="text-3xl font-bold tracking-tight tabular-nums">
-            {moneyFull(total)}
+            <Money cents={total} thbPerUsd={thbPerUsd} full />
           </p>
           <GrowthPill pct={growth} suffix={t("vsPrevShort")} />
         </div>
@@ -170,8 +180,8 @@ export function RevenueChart({ series }: { series: Point[] }) {
               tick={{ fill: "var(--faint)", fontSize: 10 }}
             />
             <YAxis
-              width={44}
-              tickFormatter={(v: number) => moneyCompact(v)}
+              width={52}
+              tickFormatter={(v: number) => fmt(v)}
               tickLine={false}
               axisLine={false}
               tick={{ fill: "var(--faint)", fontSize: 10 }}
@@ -185,11 +195,11 @@ export function RevenueChart({ series }: { series: Point[] }) {
                   <div className="rounded-md border bg-popover px-2.5 py-1.5 text-caption">
                     <p className="text-muted-foreground">{label(row.day)}</p>
                     <p className="font-bold tabular-nums">
-                      {moneyFull(row.revenue)}
+                      {fmt(row.revenue, true)}
                     </p>
                     {compare && (
                       <p className="text-muted-foreground tabular-nums">
-                        {t("prevPeriod")}: {moneyFull(row.previous)}
+                        {t("prevPeriod")}: {fmt(row.previous, true)}
                       </p>
                     )}
                   </div>

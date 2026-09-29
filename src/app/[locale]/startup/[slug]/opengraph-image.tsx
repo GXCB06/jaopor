@@ -51,7 +51,9 @@ export default async function Image({
 
   const metrics = startup ? shareMetrics(startup) : [];
   const sources = startup ? verifiedSources(startup) : [];
-  const logo = startup ? logoUrl(startup.logo_path) : null;
+  const logo = startup
+    ? logoUrl(startup.logo_path, { absolute: true })
+    : null;
   // The renderer can't decode WebP; those logos fall back to the initial.
   const logoOk = logo && !/\.webp$/i.test(logo);
   const host = new URL(publicEnv.siteUrl).host;

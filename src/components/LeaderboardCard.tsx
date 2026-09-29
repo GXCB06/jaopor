@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Link } from "@/i18n/navigation";
 import type { BoardMetric } from "@/lib/data/startups";
-import { CornerTag, GrowthValue, StartupLogo } from "./StartupBits";
+import { CornerTag, GrowthValue, Money, StartupLogo } from "./StartupBits";
 
 /** One leaderboard row, formatted on the server (slim: only what the table shows). */
 export type BoardRow = {
@@ -17,6 +17,8 @@ export type BoardRow = {
   logo: string | null;
   founder: { name: string; avatar: string | null } | null;
   value: string;
+  /** Money metrics: USD cents, shown in the visitor's currency. */
+  cents?: number | null;
   growth: number | null;
   /** Sample project (Design.md §5 Demo projects). */
   demo: boolean;
@@ -31,8 +33,10 @@ const COLLAPSED = 10;
  */
 export function LeaderboardCard({
   boards,
+  thbPerUsd,
 }: {
   boards: Record<BoardMetric, BoardRow[]>;
+  thbPerUsd: number | null;
 }) {
   const t = useTranslations("Leaderboard");
   const [metric, setMetric] = useState<BoardMetric>(
@@ -154,7 +158,11 @@ export function LeaderboardCard({
                   )}
                 </td>
                 <td className="px-3 py-3 text-right text-xs font-bold tabular-nums">
-                  {r.value}
+                  {r.cents !== undefined ? (
+                    <Money cents={r.cents} thbPerUsd={thbPerUsd} full />
+                  ) : (
+                    r.value
+                  )}
                 </td>
                 <td className="hidden py-3 pr-4 pl-3 text-right text-xs sm:table-cell">
                   <GrowthValue pct={r.growth} />

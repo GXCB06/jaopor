@@ -14,7 +14,8 @@ import {
   type BoardMetric,
   type StartupRow,
 } from "@/lib/data/startups";
-import { growthPct, moneyFull } from "@/lib/format";
+import { getThbPerUsd } from "@/lib/data/fx";
+import { growthPct } from "@/lib/format";
 import { logoUrl } from "@/lib/supabase/public";
 
 export const revalidate = 60;
@@ -22,12 +23,19 @@ export const revalidate = 60;
 const int = (n: number | null) => (n === null ? "–" : n.toLocaleString("en"));
 
 function boardRow(s: StartupRow, metric: BoardMetric): BoardRow {
-  const value = {
-    mrr: () => moneyFull(s.mrr_cents),
-    revenue30d: () => moneyFull(s.revenue_30d_cents),
-    visitors: () => int(s.visitors_30d),
-    commits: () => int(s.build_commits),
-  }[metric]();
+  // Money metrics keep raw cents so the client can show them in the visitor's currency.
+  const cents =
+    metric === "mrr"
+      ? s.mrr_cents
+      : metric === "revenue30d"
+        ? s.revenue_30d_cents
+        : undefined;
+  const value =
+    metric === "visitors"
+      ? int(s.visitors_30d)
+      : metric === "commits"
+        ? int(s.build_commits)
+        : "";
   const growth =
     metric === "visitors"
       ? growthPct(s.visitors_30d, s.visitors_prev_30d)
@@ -47,6 +55,7 @@ function boardRow(s: StartupRow, metric: BoardMetric): BoardRow {
       ? { name: founderName, avatar: s.owner?.avatar_url ?? null }
       : null,
     value,
+    cents,
     growth,
     demo: s.is_demo,
   };
@@ -62,7 +71,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     getTranslations("Nav"),
   ]);
 
-  const [recent, traction, counts, ...lists] = await Promise.all([
+  const [thbPerUsd, recent, traction, counts, ...lists] = await Promise.all([
+    getThbPerUsd(),
     getRecent(10),
     getTopTraction(10),
     countStartups(),
@@ -121,6 +131,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         viewAll={common("viewAll")}
         sort="newest"
         rows={recent}
+        thbPerUsd={thbPerUsd}
         empty={<EmptyState text={t("emptyRecent")} />}
       />
       {traction.length > 0 && (
@@ -129,11 +140,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           viewAll={common("viewAll")}
           sort="visitors"
           rows={traction}
+          thbPerUsd={thbPerUsd}
         />
       )}
 
       <div className="mt-9">
-        <LeaderboardCard boards={boards} />
+        <LeaderboardCard boards={boards} thbPerUsd={thbPerUsd} />
       </div>
     </main>
   );
@@ -144,12 +156,14 @@ function CardRow({
   viewAll,
   sort,
   rows,
+  thbPerUsd,
   empty,
 }: {
   title: string;
   viewAll: string;
   sort: string;
   rows: StartupRow[];
+  thbPerUsd: number | null;
   empty?: React.ReactNode;
 }) {
   return (
@@ -166,17 +180,14 @@ function CardRow({
       {rows.length === 0 ? (
         empty
       ) : (
-        // Mobile: horizontal snap row; lg: 5-up grid (Design.md §5 compact card).
-        <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 lg:mx-0 lg:grid lg:grid-cols-5 lg:overflow-visible lg:px-0">
-          {rows.slice(0, 10).map((s, i) => (
+        // Plain grid, no horizontal scrolling (Design.md §5): 6 cards below lg, 5 at lg.
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+          {rows.slice(0, 6).map((s, i) => (
             <StartupCard
               key={s.id}
               startup={s}
-              className={
-                i >= 5
-                  ? "w-56 shrink-0 snap-start lg:hidden"
-                  : "w-56 shrink-0 snap-start lg:w-auto"
-              }
+              thbPerUsd={thbPerUsd}
+              className={i === 5 ? "lg:hidden" : undefined}
             />
           ))}
         </div>

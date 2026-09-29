@@ -15,6 +15,7 @@ import {
   type DirectorySort,
   type ProjectType,
 } from "@/lib/data/startups";
+import { getThbPerUsd } from "@/lib/data/fx";
 import { LOOKING_FOR, type LookingFor } from "@/lib/links";
 
 export async function generateMetadata({
@@ -55,12 +56,13 @@ export default async function StartupsPage({
   const sort = pick<DirectorySort>(DIRECTORY_SORTS, one(sp.sort)) ?? "mrr";
   const page = Math.max(1, Number(one(sp.page)) || 1);
 
-  const [t, cat, toolT, lf, { rows, total }] = await Promise.all([
+  const [t, cat, toolT, lf, { rows, total }, thbPerUsd] = await Promise.all([
     getTranslations("Directory"),
     getTranslations("Catalog.category"),
     getTranslations("Catalog.tool"),
     getTranslations("LookingFor"),
     listStartups({ q, category, tool, verified, type, lookingFor, sort, page }),
+    getThbPerUsd(),
   ]);
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -243,7 +245,7 @@ export default async function StartupsPage({
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {rows.map((s) => (
-                <StartupCard key={s.id} startup={s} large />
+                <StartupCard key={s.id} startup={s} large thbPerUsd={thbPerUsd} />
               ))}
             </div>
           )}

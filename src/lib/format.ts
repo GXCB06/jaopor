@@ -20,6 +20,31 @@ export function moneyFull(cents: number | null | undefined): string {
   return `$${Math.round(cents / 100).toLocaleString("en-US")}`;
 }
 
+/**
+ * USD cents shown in the visitor's currency (Design.md §3 Currency). THB converts at `thbPerUsd`;
+ * without a rate it falls back to USD. 430_000 → "$4.3K" / "฿142K" (compact), "$4,300" (full).
+ */
+export function money(
+  cents: number | null | undefined,
+  {
+    currency = "usd",
+    thbPerUsd,
+    full = false,
+  }: {
+    currency?: "usd" | "thb";
+    thbPerUsd?: number | null;
+    full?: boolean;
+  } = {},
+): string {
+  if (cents === null || cents === undefined) return "—";
+  if (currency === "usd" || !thbPerUsd)
+    return full ? moneyFull(cents) : moneyCompact(cents);
+  const baht = (cents / 100) * thbPerUsd;
+  if (full || Math.abs(baht) < 1000)
+    return `฿${Math.round(baht).toLocaleString("en-US")}`;
+  return `฿${compact.format(baht)}`;
+}
+
 /** USD cents → "≈ ฿154K" using units-of-THB-per-USD. */
 export function thbApprox(
   cents: number | null | undefined,

@@ -73,6 +73,14 @@ Semantic tokens (never raw `emerald-*`/`red-*`/`amber-*`):
 
 Numbers are always `tabular-nums`. Money is compact on cards (`$4.3k`) and full on the profile (`$14,903`).
 
+### Currency (USD / THB)
+
+- Verified revenue is stored in USD cents. Visitors choose **฿ THB** or **$ USD** with the header **CurrencyToggle** (`h-8 rounded-md border bg-card px-2 text-xs font-semibold`, shows the active symbol; `aria-label` from messages). The choice lives in `localStorage.currency`. With nothing stored, `th` pages default to THB and `en` to USD.
+- No flash, ISR-safe: the server renders **both** values (`<Money>` → `.cur-usd` + `.cur-thb` spans), an inline `<head>` script sets `html[data-currency]`, and CSS hides the other one. Client charts read the same attribute (`useCurrency()`).
+- THB = USD × the day's ECB rate (Frankfurter, cached 6 h). The THB span has a `title` "≈ at 1 USD = {rate} THB". If the rate can't be fetched, only USD is rendered.
+- Formats: `฿62K` compact, `฿62,350` full (Latin digits, no decimals).
+- Share images, the OG card and the badge stay in USD (one canonical number when posted outside).
+
 ## 4. Layout
 
 - **Container:** `max-w-5xl` (Figma 1040/1000) for home, profile, dashboard; `max-w-6xl` for the directory (sidebar + grid). Gutter `px-4`; no horizontal scroll at 375px.
@@ -89,7 +97,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 - `sticky top-0 z-40 border-b bg-background`, `h-14`, inner `max-w-6xl`.
 - Left: `BrandLogo` = the **blue app tile** (`public/brand/jaopor-tile.png`, `size-7 rounded-md`) + "JaoPor" wordmark (`text-sm font-bold`); links home. Nav links `text-xs text-muted-foreground hover:text-foreground` (active `text-foreground`): **Startups · Leaderboard (`/#leaderboard`) · Dashboard**. Hidden below `md`.
-- Right: **search trigger** (`h-8 rounded-md border bg-card px-2.5 text-xs text-faint` with a search icon, "ค้นหา", and a `kbd` "/"; pressing `/` anywhere focuses the page search or opens `/startups`), primary **"+ เพิ่ม Startup"** (`h-8`, icon-only below `sm`), HeaderAuth (`whitespace-nowrap`), TH/EN (short code `EN`/`TH` below `sm`), ThemeToggle.
+- Right: **CurrencyToggle** (฿/$, §3 Currency), **search trigger** (`h-8 rounded-md border bg-card px-2.5 text-xs text-faint` with a search icon, "ค้นหา", and a `kbd` "/"; pressing `/` anywhere focuses the page search or opens `/startups`), primary **"+ เพิ่ม Startup"** (`h-8`, icon-only below `sm`), HeaderAuth (`whitespace-nowrap`), TH/EN (short code `EN`/`TH` below `sm`), ThemeToggle.
 
 ### Hero (home and directory)
 
@@ -129,7 +137,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 - Metric row `mt-3 border-t pt-2 grid grid-cols-3 gap-1`: label 9 / value 10 bold.
 - **Corner tag** `absolute top-2 right-2 rounded-sm border px-1.5 py-0.5 text-3xs font-bold uppercase tracking-wider`: `✓ Verified` (positive tone; **check only** on compact cards so the name stays readable, label kept for screen readers) when revenue or traffic is verified, else the first **looking-for** ask in amber (Figma's FOR SALE slot until the marketplace ships), else none.
 - Metrics by state (compact cards use the short labels "Revenue" / "Visitors"): verified revenue → Revenue (30d) · MRR · Growth; else traction → Visitors · Growth · Commits; else one muted "Not verified yet" line.
-- Home rows: `grid-cols-2 sm:grid-cols-3 lg:grid-cols-5` on desktop; horizontal `snap-x` scroll row on mobile (cards `w-56`).
+- Home rows are a **plain grid, no horizontal scrolling** (user feedback 2026-09-30): `grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3`. Show 6 cards below `lg` (2×3 / 3×2) and 5 at `lg`.
 
 ### StartupCard — large (directory grid, "More startups")
 
@@ -241,7 +249,7 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 
 - Test at **375**, 768, 1024, 1440, in dark and light.
 - Header nav links hide below `md`; "+ Add" becomes icon-only below `sm`.
-- Home card rows scroll horizontally below `lg`; leaderboard hides founder + growth below `sm`.
+- Home card rows wrap as a 2- or 3-column grid below `lg`; the leaderboard hides founder + growth below `sm`.
 - Directory sidebar collapses into a disclosure below `lg`.
 
 ## 9. Share assets

@@ -2,13 +2,14 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { StartupRow } from "@/lib/data/startups";
 import type { LookingFor } from "@/lib/links";
-import { growthPct, moneyCompact } from "@/lib/format";
+import { growthPct } from "@/lib/format";
 import { logoUrl } from "@/lib/supabase/public";
 import { cn } from "@/lib/utils";
 import { CopyLinkButton } from "./CopyLinkButton";
 import {
   CornerTag,
   GrowthValue,
+  Money,
   MetricLabel,
   StartupLogo,
 } from "./StartupBits";
@@ -24,15 +25,22 @@ const compact = (n: number) =>
 
 type Metric = { label: string; value: React.ReactNode };
 
-function useMetrics(s: StartupRow, large: boolean): Metric[] | null {
+function useMetrics(
+  s: StartupRow,
+  large: boolean,
+  thbPerUsd: number | null,
+): Metric[] | null {
   const t = useTranslations("Card");
   if (s.verification_status === "verified") {
     return [
       {
         label: large ? t("revenue30d") : t("revenueShort"),
-        value: moneyCompact(s.revenue_30d_cents),
+        value: <Money cents={s.revenue_30d_cents} thbPerUsd={thbPerUsd} />,
       },
-      { label: t("mrr"), value: moneyCompact(s.mrr_cents) },
+      {
+        label: t("mrr"),
+        value: <Money cents={s.mrr_cents} thbPerUsd={thbPerUsd} />,
+      },
       {
         label: t("growth"),
         value: (
@@ -97,15 +105,18 @@ function DemoTag() {
 export function StartupCard({
   startup,
   large = false,
+  thbPerUsd = null,
   className,
 }: {
   startup: StartupRow;
   large?: boolean;
+  /** THB per USD for the currency switch (Design.md §3 Currency); null = USD only. */
+  thbPerUsd?: number | null;
   className?: string;
 }) {
   const cat = useTranslations("Catalog.category");
   const common = useTranslations("Common");
-  const metrics = useMetrics(startup, large);
+  const metrics = useMetrics(startup, large, thbPerUsd);
   const href = `/startup/${startup.slug}`;
 
   const metricRow = (
