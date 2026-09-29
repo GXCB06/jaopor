@@ -27,7 +27,7 @@ export function HeaderAuth() {
     return (
       <Link
         href="/login"
-        className="text-xs font-medium text-muted-foreground hover:text-foreground"
+        className="text-xs font-medium whitespace-nowrap text-muted-foreground hover:text-foreground"
       >
         {t("signIn")}
       </Link>
@@ -38,7 +38,7 @@ export function HeaderAuth() {
     <div className="flex items-center gap-3">
       <Link
         href="/dashboard"
-        className="text-xs font-medium text-muted-foreground hover:text-foreground"
+        className="text-xs font-medium text-muted-foreground hover:text-foreground md:hidden"
       >
         {t("dashboard")}
       </Link>

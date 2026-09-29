@@ -12,7 +12,7 @@ export function CopyLinkButton({ path }: { path: string }) {
       type="button"
       aria-label={t("copyLink")}
       title={t("copyLink")}
-      className="relative z-10 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+      className="relative z-10 rounded-md p-1 text-faint group-hover:opacity-100 hover:bg-accent hover:text-foreground focus-visible:opacity-100 md:opacity-0"
       onClick={async (e) => {
         e.preventDefault();
         await navigator.clipboard.writeText(

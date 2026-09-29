@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { getStartupBySlug } from "@/lib/data/startups";
 import { publicEnv } from "@/lib/public-env";
 import { shareMetrics, verifiedSources } from "@/lib/share";
+import { BRAND_HEX, CARD_THEME, MARK_PATH } from "@/lib/share-palette";
 import { logoUrl } from "@/lib/supabase/public";
 
 // Design.md §9 OG image: the card people see when a profile link is pasted into Facebook/LINE/X.
@@ -16,16 +17,8 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const revalidate = 300;
 
-// The OG renderer has no CSS variables: these mirror the `.dark` tokens in globals.css.
-const C = {
-  bg: "#0a0a0a",
-  card: "#171717",
-  border: "#2e2e2e",
-  fg: "#fafafa",
-  muted: "#a1a1a1",
-  brand: "#e7000b",
-  positive: "#00bc7d",
-};
+// The OG renderer has no CSS variables: the shared renderer palette mirrors the `.dark` tokens.
+const C = { ...CARD_THEME.dark, brand: BRAND_HEX };
 
 const font = (file: string) =>
   readFile(join(process.cwd(), "src/assets/fonts", file));
@@ -81,9 +74,9 @@ export default async function Image({
         <svg width="44" height="44" viewBox="0 0 24 24">
           <rect width="24" height="24" rx="6" fill={C.brand} />
           <path
-            d="M5 15.5c2.2.9 4.5 1.3 7 1.3s4.8-.4 7-1.3M7.5 14.6l1.1-5.2c.2-.9 1-1.4 1.9-1.2l1.5.4 1.5-.4c.9-.2 1.7.3 1.9 1.2l1.1 5.2"
+            d={MARK_PATH}
             fill="none"
-            stroke={C.fg}
+            stroke="#ffffff"
             strokeWidth="1.6"
             strokeLinecap="round"
             strokeLinejoin="round"

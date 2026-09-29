@@ -26,7 +26,10 @@
     "signOut": "Sign out",
     "language": "ภาษาไทย",
     "themeLight": "Switch to light theme",
-    "themeDark": "Switch to dark theme"
+    "themeDark": "Switch to dark theme",
+    "search": "Search",
+    "leaderboard": "Leaderboard",
+    "languageShort": "TH"
   },
   "Footer": {
     "tagline": "The permanent home for AI-built projects from Thailand and Asia. Real work, real numbers.",
@@ -36,22 +39,19 @@
     "privacy": "Privacy",
     "terms": "Terms",
     "keySafety": "How we handle your key",
-    "builtWith": "Built with Claude Code in Thailand"
+    "builtWith": "Built with JaoPor.dev in Thailand"
   },
   "Home": {
     "subline": "Show what you built with AI in one place people can search and share, with revenue and users verified straight from the source, not screenshots.",
     "searchPlaceholder": "\"AI tool built with Claude Code\"",
     "recent": "Recently added",
-    "leaderboard": "Leaderboard",
-    "leaderboardHint": "Verified MRR only",
-    "emptyLeaderboard": "No verified startups yet — be the first on the board.",
     "emptyRecent": "Nothing here yet. Add yours and become Founding JaoPor #1.",
-    "builtWith": "Built with",
-    "stats": "{total} startups · {verified} verified",
     "headline1": "How far can 1 person + AI go?",
     "headline2": "Real work. Real numbers.",
     "verifiedBy": "Numbers verified by:",
-    "comingSoon": "coming soon"
+    "comingSoon": "coming soon",
+    "explore": "Explore all {total} projects",
+    "topTraction": "Top traction"
   },
   "Catalog": {
     "category": {
@@ -108,14 +108,30 @@
     "linkCopied": "Link copied",
     "foundingBadge": "Founding JaoPor #{n}",
     "visitors": "Visitors (30d)",
-    "commits": "Commits"
+    "commits": "Commits",
+    "verified": "Verified",
+    "revenueShort": "Revenue",
+    "visitorsShort": "Visitors"
   },
   "Leaderboard": {
     "rank": "#",
     "startup": "Startup",
     "founder": "Founder",
     "mrr": "MRR",
-    "growth": "30d"
+    "growth": "Growth",
+    "title": "Leaderboard",
+    "live": "Live",
+    "metric": "Rank by",
+    "metrics": {
+      "mrr": "MRR",
+      "revenue30d": "Revenue (30d)",
+      "visitors": "Visitors (30d)",
+      "commits": "Commits"
+    },
+    "empty": "No verified numbers here yet — be the first on the board.",
+    "showAll": "Show all ({count}) ↓",
+    "showLess": "Show less ↑",
+    "footer": "Verified numbers only · synced from Stripe, RevenueCat, Plausible, Umami, GitHub"
   },
   "Directory": {
     "title": "All startups",
@@ -127,7 +143,31 @@
     "empty": "No startups match these filters yet.",
     "prev": "Previous",
     "next": "Next",
-    "page": "Page {page} of {pages}"
+    "page": "Page {page} of {pages}",
+    "pill": "Everything on JaoPor",
+    "subline": "Web apps, mobile apps, LINE OA bots and GitHub projects built with AI, with numbers verified at the source.",
+    "filters": "Filters",
+    "category": "Category",
+    "tool": "Built with",
+    "type": "Project type",
+    "anyType": "Any type",
+    "types": {
+      "website": "Website",
+      "app": "Mobile app",
+      "line": "LINE OA",
+      "github": "GitHub"
+    },
+    "any": "Any",
+    "reset": "Reset filters",
+    "apply": "Apply",
+    "found": "{count, plural, =0 {No startups found} one {# startup found} other {# startups found}}",
+    "sort": "Sort by",
+    "sorts": {
+      "mrr": "Top MRR",
+      "visitors": "Most visitors",
+      "commits": "Most commits",
+      "newest": "Newest"
+    }
   },
   "Profile": {
     "visit": "Visit",
@@ -177,7 +217,13 @@
     "via": "Verified via {source}",
     "connect": "+ Connect",
     "buildStory": "Build story",
-    "stars": "{count} stars"
+    "stars": "{count} stars",
+    "vsPrevShort": "vs. prev period",
+    "range": "Range",
+    "lastDays": "Last {days} days",
+    "prevPeriod": "Previous period",
+    "trend": "Trend view",
+    "moreStartups": "More startups"
   },
   "Verified": {
     "stamp": "Revenue is verified with <b>{provider}</b> API key.",
@@ -374,7 +420,6 @@
   },
   "Share": {
     "share": "Share",
-    "nativeShare": "Share via…",
     "copyLink": "Copy link",
     "linkCopied": "Link copied",
     "facebook": "Facebook",
@@ -390,7 +435,6 @@
     "post": "{name}{tagline}\n{metrics}Real work, real numbers on JaoPor 👉 {url}",
     "badgeTitle": "Badge for your site",
     "badgeBody": "Put this badge on your site or README — visitors can click through to your verified numbers.",
-    "close": "Close",
     "ogVerifiedVia": "Verified via {sources}",
     "ogUnverified": "Numbers not verified yet",
     "metric": {
@@ -399,6 +443,56 @@
       "visitors30d": "Visitors 30d",
       "activeUsers": "Active users",
       "commits": "Commits"
-    }
+    },
+    "studioTitle": "Share verified numbers",
+    "studioBody": "Pick a card style, then download it and post it anywhere.",
+    "link": "Startup link",
+    "copy": "Copy",
+    "tab": {
+      "badge": "Badge",
+      "chart": "Chart",
+      "calendar": "Calendar",
+      "post": "Post"
+    },
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "period": "Period",
+    "days": "{n} days",
+    "months": "{n} months",
+    "color": "Colour",
+    "swatch": {
+      "indigo": "JaoPor indigo",
+      "violet": "Violet",
+      "blue": "Blue",
+      "sky": "Sky",
+      "cyan": "Cyan",
+      "teal": "Teal",
+      "emerald": "Emerald",
+      "lime": "Lime",
+      "amber": "Amber",
+      "orange": "Orange",
+      "red": "Red",
+      "pink": "Pink"
+    },
+    "previewAlt": "Share card preview",
+    "download": "Download image"
+  },
+  "ShareCard": {
+    "verifiedBy": "Verified on JaoPor",
+    "notVerified": "Numbers not verified yet",
+    "metric": {
+      "mrr": "MRR",
+      "revenue30d": "Revenue 30d",
+      "visitors30d": "Visitors 30d",
+      "activeUsers": "Active users",
+      "commits": "Commits"
+    },
+    "lastDays": "last {n} days",
+    "lastMonths": "last {n} months",
+    "revenueIn": "revenue · {period}",
+    "visitorsIn": "visitors · {period}",
+    "less": "Less",
+    "more": "More"
   }
 }

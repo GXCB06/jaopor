@@ -48,14 +48,14 @@ export function EmptyValue({
     return (
       <Link
         href={`/dashboard/${startupId}/edit#${anchor}`}
-        className="inline-flex rounded-md border border-dashed border-brand/50 px-2 py-0.5 text-xs text-brand hover:bg-brand/10"
+        className="inline-flex rounded-md border border-dashed border-brand/50 px-2 py-0.5 text-caption text-brand hover:bg-brand/10"
       >
         {verify ? t("connect") : t("add")}
       </Link>
     );
   }
   return (
-    <p className="text-sm text-muted-foreground">
+    <p className="text-caption text-faint">
       {visitorText ?? t("notAdded")}
     </p>
   );
@@ -67,8 +67,8 @@ export function OwnerBar() {
   const t = useTranslations("Profile");
   if (!isOwner) return null;
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-brand/40 px-4 py-3">
-      <p className="text-sm">{t("ownerBar")}</p>
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand/40 bg-brand/5 px-4 py-3">
+      <p className="text-xs">{t("ownerBar")}</p>
       <Button asChild size="sm">
         <Link href={`/dashboard/${startupId}/edit`}>
           <PencilIcon />

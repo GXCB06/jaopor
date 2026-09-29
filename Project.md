@@ -37,44 +37,44 @@ Loop: paste one link (web, App Store/Play, LINE OA, GitHub) → public profile �
 
 Status: ☐ not started · ◐ in progress · ☑ done
 
-| Area           | Feature                                                                                                | Phase | Status |
-| -------------- | ------------------------------------------------------------------------------------------------------ | ----- | ------ |
-| Foundation     | Next.js + shadcn + Supabase + i18n scaffold                                                            | 0     | ☑      |
-| Foundation     | Harness (memory, MCP, permissions, hooks, observability)                                               | 0     | ☑      |
-| Auth           | Sign in (Google, GitHub) — code done, OAuth apps pending                                               | 1     | ◐      |
-| Verification   | `RevenueProvider` abstraction                                                                          | 1     | ☑      |
-| Verification   | Stripe restricted-key connector                                                                        | 1     | ◐      |
-| Verification   | Metrics engine (MRR, 30d, all-time, subscriptions, customers, growth)                                  | 1     | ☑      |
-| Verification   | Scheduled sync + "Verified with X · last updated" stamp                                                | 1     | ◐      |
-| Verification   | RevenueCat (apps: MRR, revenue, active users; charts-only key) — pending a real-key check              | 1     | ◐      |
-| Verification   | LemonSqueezy / Polar / Paddle / Creem / Dodo / Superwall / Whop / App Store Connect                    | 1–2   | ☐      |
-| Profile        | Add wizard: one auto-detected link (web / App Store / Play / LINE OA / GitHub) → VerifyPanel           | 1     | ◐      |
-| Profile        | "Looking for" asks (users, feedback, testers, co-founder, buyer, investor) + build story               | 1     | ☑      |
-| Profile        | `/startup/[slug]` stat tiles, revenue chart, insights grid, screenshot, founder message                | 1     | ◐      |
-| Discovery      | Homepage: hero, search, recently listed, best deals, leaderboard                                       | 1     | ◐      |
-| Discovery      | `/startups` directory + category / country / tech-stack / channel pages                                | 1     | ◐      |
-| Distribution   | OG share cards (Facebook/LINE, Thai font), embeddable SVG badge, share menu, post-listing share dialog | 1     | ☑      |
-| Distribution   | `llms.txt` + AI-readable Markdown per startup                                                          | 1     | ☐      |
-| Monetization   | Sponsor rails (left/right) + Advertise page                                                            | 1     | ☐      |
-| Admin          | Moderation, reports, badge revoke                                                                      | 1     | ☐      |
-| Marketplace    | Listing (asking price, margin, reason), auto multiple                                                  | 2     | ☐      |
-| Marketplace    | `/acquire` filters + "best deals" ranking                                                              | 2     | ☐      |
-| Marketplace    | Save, view counter, price-drop alerts                                                                  | 2     | ☐      |
-| Marketplace    | Contact seller → offer → realtime chat; buyer & seller dashboards                                      | 2     | ☐      |
-| Monetization   | Listing tiers Starter / Growth / Scale (visibility, card color, pin, newsletter)                       | 2     | ☐      |
-| Deal flow      | NDA → LOI → APA (TH/EN, THB), escrow (Thai option; Escrow.com has no THB)                              | 3     | ☐      |
-| Monetization   | 3% closing fee, affiliate program, add-ons, buyer alerts (filters + AI)                                | 3     | ☐      |
-| Distribution   | Newsletter, LINE / Telegram alerts                                                                     | 3     | ☐      |
-| Data           | Stats page, Revenue/LOC, Domain Rating, Olympics, Top 100, compare startups                            | 4     | ☐      |
-| Community      | Feed + posting streaks, founder chats, co-founder finder                                               | 4     | ☐      |
-| Community      | Tier-locked founder chat rooms, list mode (mobile) — see docs/research §1                              | 2     | ☐      |
-| Community      | "Founder Town" pixel-town chat (desktop), in-world sponsor billboards                                  | 4     | ☐      |
-| Engagement     | "$1 vs $1M" guessing game, startup-vs-startup compare pages                                            | 4     | ☐      |
-| Marketplace    | Card social proof (views, saves), struck-through price drop, copy link, stealth mode                   | 2     | ☐      |
-| AI layer       | Public API, JaoPor MCP server                                                                          | 4     | ☐      |
-| Differentiator | Build proof (GitHub public repos) + traffic proof (Plausible, Umami) — pending real-key checks         | 1     | ◐      |
-| Differentiator | Traffic proof without an analytics tool (our own snippet), PostHog, GA4                                | 2     | ☐      |
-| Foundation     | Light / dark theme (dark default, header toggle)                                                       | 1     | ☑      |
+| Area           | Feature                                                                                                                       | Phase | Status |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----- | ------ |
+| Foundation     | Next.js + shadcn + Supabase + i18n scaffold                                                                                   | 0     | ☑      |
+| Foundation     | Harness (memory, MCP, permissions, hooks, observability)                                                                      | 0     | ☑      |
+| Auth           | Sign in (Google, GitHub) — code done, OAuth apps pending                                                                      | 1     | ◐      |
+| Verification   | `RevenueProvider` abstraction                                                                                                 | 1     | ☑      |
+| Verification   | Stripe restricted-key connector                                                                                               | 1     | ◐      |
+| Verification   | Metrics engine (MRR, 30d, all-time, subscriptions, customers, growth)                                                         | 1     | ☑      |
+| Verification   | Scheduled sync + "Verified with X · last updated" stamp                                                                       | 1     | ◐      |
+| Verification   | RevenueCat (apps: MRR, revenue, active users; charts-only key) — pending a real-key check                                     | 1     | ◐      |
+| Verification   | LemonSqueezy / Polar / Paddle / Creem / Dodo / Superwall / Whop / App Store Connect                                           | 1–2   | ☐      |
+| Profile        | Add wizard: one auto-detected link (web / App Store / Play / LINE OA / GitHub) → VerifyPanel                                  | 1     | ◐      |
+| Profile        | "Looking for" asks (users, feedback, testers, co-founder, buyer, investor) + build story                                      | 1     | ☑      |
+| Profile        | `/startup/[slug]` (Figma v2): stat tiles, chart card (range/compare/trend), insights bento, more startups; screenshot pending | 1     | ◐      |
+| Discovery      | Homepage (Figma v2): hero, `/` search, recently listed, top traction, leaderboard with metric switch                          | 1     | ☑      |
+| Discovery      | `/startups` directory with filter sidebar + sort ☑; category / country / tech-stack / channel pages ☐                         | 1     | ◐      |
+| Distribution   | OG share cards, embeddable SVG badge, **ShareStudio** (badge / chart / calendar PNGs + thread post)                           | 1     | ☑      |
+| Distribution   | `llms.txt` + AI-readable Markdown per startup                                                                                 | 1     | ☐      |
+| Monetization   | Sponsor rails (left/right) + Advertise page                                                                                   | 1     | ☐      |
+| Admin          | Moderation, reports, badge revoke                                                                                             | 1     | ☐      |
+| Marketplace    | Listing (asking price, margin, reason), auto multiple                                                                         | 2     | ☐      |
+| Marketplace    | `/acquire` filters + "best deals" ranking                                                                                     | 2     | ☐      |
+| Marketplace    | Save, view counter, price-drop alerts                                                                                         | 2     | ☐      |
+| Marketplace    | Contact seller → offer → realtime chat; buyer & seller dashboards                                                             | 2     | ☐      |
+| Monetization   | Listing tiers Starter / Growth / Scale (visibility, card color, pin, newsletter)                                              | 2     | ☐      |
+| Deal flow      | NDA → LOI → APA (TH/EN, THB), escrow (Thai option; Escrow.com has no THB)                                                     | 3     | ☐      |
+| Monetization   | 3% closing fee, affiliate program, add-ons, buyer alerts (filters + AI)                                                       | 3     | ☐      |
+| Distribution   | Newsletter, LINE / Telegram alerts                                                                                            | 3     | ☐      |
+| Data           | Stats page, Revenue/LOC, Domain Rating, Olympics, Top 100, compare startups                                                   | 4     | ☐      |
+| Community      | Feed + posting streaks, founder chats, co-founder finder                                                                      | 4     | ☐      |
+| Community      | Tier-locked founder chat rooms, list mode (mobile) — see docs/research §1                                                     | 2     | ☐      |
+| Community      | "Founder Town" pixel-town chat (desktop), in-world sponsor billboards                                                         | 4     | ☐      |
+| Engagement     | "$1 vs $1M" guessing game, startup-vs-startup compare pages                                                                   | 4     | ☐      |
+| Marketplace    | Card social proof (views, saves), struck-through price drop, copy link, stealth mode                                          | 2     | ☐      |
+| AI layer       | Public API, JaoPor MCP server                                                                                                 | 4     | ☐      |
+| Differentiator | Build proof (GitHub public repos) + traffic proof (Plausible, Umami) — pending real-key checks                                | 1     | ◐      |
+| Differentiator | Traffic proof without an analytics tool (our own snippet), PostHog, GA4                                                       | 2     | ☐      |
+| Foundation     | Light / dark theme (dark default, header toggle)                                                                              | 1     | ☑      |
 
 ## 4. Roadmap
 
@@ -94,6 +94,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [ ] C · `RevenueProvider` + Stripe restricted-key connector + metrics engine + encrypted keys + daily cron + refresh — ◐ code + 20 unit tests done; **live Stripe test-key run pending** (done during D)
 - [ ] D · UI: header/footer, homepage (hero, search, recently added, leaderboard, AI-tool chips), profile, `/startups`, add-startup wizard, dashboard — ◐ all built + visually checked (375 / 500 / 1280, TH + EN) with temporary demo data; **sign-in → wizard → Stripe → dashboard end-to-end pending OAuth apps + test key**
 - [x] E · Share kit: share menu (native/copy/FB/LINE/X/badge HTML), OG image (Thai font, verified numbers), embeddable SVG badge, post-listing share dialog with a ready-to-paste post, founding badge "เจ้าพ่อรุ่นบุกเบิก #n" (first 100) — Facebook Sharing Debugger + LINE preview check pending deploy
+- [x] E3 · **UI v2 from the user's Figma file + ledgerly functional patterns** (2026-09-29): zinc / JetBrains Mono / indigo design system, sticky header with `/` search, home rows + leaderboard metric switch, profile rebuild, directory filter sidebar + sort, ShareStudio + `/api/share-card`. Owner views not yet re-checked while signed in
 - [x] E2 · **Repositioning to JaoPor** (2026-09-29): rename, headline "1 คน + AI พีคได้แค่ไหน / ดูผลงานจริง ตัวเลขจริง", light/dark theme, any project type (one auto-detected link), looking-for asks + build story, verified traction sources (RevenueCat, Plausible, Umami, GitHub) — ◐ live real-key checks pending (see §7)
 - [ ] F · Trust pages (privacy/PDPA, terms, "How we handle your key") + `/security-review` + rate limits
 - [ ] G · Production deploy + seed 5–10 real startups
@@ -104,7 +105,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [ ] Metrics engine unit tests (Vitest) + Playwright happy path
 - [ ] More providers: Polar, LemonSqueezy (after read-only scope check); App Store Connect downloads; PostHog
 - [ ] Traction proof without an analytics tool: JaoPor visitor snippet
-- [ ] Traffic leaderboard ("most visited", "most commits with Claude") next to the MRR leaderboard; directory filter "looking for users/feedback"
+- [x] Traffic leaderboard (visitors, commits) as a metric switch on the leaderboard card; directory filter "looking for" (UI v2, 2026-09-29)
 - [ ] Visitors chart on the profile (data already stored in `traffic_snapshots`); RevenueCat chart once 14+ daily snapshots exist
 - [ ] Category/country/stack pages, `llms.txt` + Markdown pages (if not shipped in 1a)
 - [ ] Sponsor rails (house ads → first paid sponsor)
@@ -178,7 +179,7 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 | 2026-09-27 | Stack: Next.js + Supabase + Vercel                                                                                                                                                  | Same class of stack as TrustMRR (Next + shadcn); Supabase/Vercel MCP connected                                                                                                          |
 | 2026-09-27 | **npm** instead of pnpm                                                                                                                                                             | pnpm not installed; npm ships with Node 26 — no global installs needed                                                                                                                  |
 | 2026-09-27 | shadcn preset `radix-vega`, neutral base                                                                                                                                            | Its dark tokens equal TrustMRR's measured tokens                                                                                                                                        |
-| 2026-09-27 | Fonts: Inconsolata + IBM Plex Sans Thai                                                                                                                                             | Match TrustMRR's mono look; Inconsolata has no Thai glyphs                                                                                                                              |
+| 2026-09-27 | Fonts: Inconsolata + IBM Plex Sans Thai (→ JetBrains Mono in UI v2, 2026-09-29)                                                                                                     | Match TrustMRR's mono look; Inconsolata has no Thai glyphs                                                                                                                              |
 | 2026-09-27 | Default locale `th`                                                                                                                                                                 | Launch audience is Thai                                                                                                                                                                 |
 | 2026-09-27 | Brand accent: crimson (`--brand`)                                                                                                                                                   | "Mafia" identity; single swap point in globals.css — revisit with user                                                                                                                  |
 | 2026-09-27 | Hooks written as Node `.mjs`                                                                                                                                                        | Windows + bash + PowerShell all run Node identically                                                                                                                                    |
@@ -217,6 +218,11 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 | 2026-09-29 | Light/dark theme without next-themes: inline head script + `localStorage`, dark default                                                                                             | No provider, no hydration warnings, ISR pages stay static; semantic tokens positive/negative/warning replace raw palette colours                                                        |
 | 2026-09-29 | Share assets use **verified numbers only**; OG fonts vendored as woff (satori can't read woff2); OG/badge keep a mirrored hex palette                                               | Share cards are the growth loop and must be trustworthy; the OG renderer has no CSS variables                                                                                           |
 | 2026-09-29 | Seed from the FB thread **by invitation only** (no scraping/importing comments)                                                                                                     | Consent + PDPA; profiles must be owner-managed to stay current                                                                                                                          |
+| 2026-09-29 | **UI v2 follows the user's Figma file** (zinc palette, JetBrains Mono, indigo accent) plus ledgerly's functional patterns; root scale 112.5% kept                                   | The user was disappointed with the v1 UI and supplied the Figma file and a working reference. Figma px are written as rem, so the earlier "too small" fix still applies                 |
+| 2026-09-29 | Chart: revenue `#6366f1` (light `#4f46e5`) + dashed previous period `#0d9488`                                                                                                       | Figma uses an indigo line. A grey comparison line failed the validator's chroma floor; teal passes every check on both surfaces                                                         |
+| 2026-09-29 | Share images rendered server-side (`/api/share-card`, next/og), not as client DOM screenshots                                                                                       | No html-to-image dependency, same fonts as the OG card, cacheable. Parameters are limited to fixed lists, so the route can't render arbitrary content                                   |
+| 2026-09-29 | Leaderboard metric switch is client-side over 4 server-fetched lists                                                                                                                | Home stays ISR (no searchParams); each list is small (≤ 50 slim rows)                                                                                                                   |
+| 2026-09-29 | Compact-card corner tag = ✓ Verified or the first "looking for" ask (amber) until the marketplace ships FOR SALE                                                                    | Keeps Figma's corner-tag slot meaningful for a showcase-first site                                                                                                                      |
 
 ## 7. Open items
 
@@ -228,15 +234,17 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 - [ ] Browser-pane visual check of `/th` and `/en` (first real UI in block D)
 - [x] ~~Docker not installed~~ → resolved 2026-09-29: using remote Supabase project `mrrmafia` (`letfxefyqxxrfujpwtri`, ap-southeast-1); migrations applied via Supabase MCP. Local Docker optional later.
 - [ ] `ar-vocab-kids` Supabase project was paused to free a free-tier slot — restore it from the dashboard when needed (or upgrade the org).
-- [ ] Confirm brand accent colour (crimson kept for JaoPor) and logo.
+- [ ] Confirm the brand accent: **indigo, from the Figma file, since 2026-09-29** (was crimson; one swap in `globals.css`) and the fedora logo.
 - [ ] Domain name for **JaoPor** (jaopor.com / .co / .app?) and rename the Vercel project URL (`mrr-mafia.vercel.app` today); then update `NEXT_PUBLIC_SITE_URL`, Supabase Site URL/redirects, OAuth app homepages.
 - [ ] Rename the **GitHub OAuth app** ("MRRMafia") and the **Google consent screen** app name to JaoPor (user; both shown on sign-in).
 - [x] ~~URL of the Thai "Product Hunt for Claude projects" competitor~~ → studied 2026-09-29: a community-made static index of the showoff thread (open.thaith.ai/1claude, harvested from comments, unverified links) and saasthai.com (~190 Thai SaaS, votes/reviews, no verified numbers). See docs/research §2b.
 - [ ] Verify with real credentials (user pastes them in the UI): **RevenueCat** (value units: dollars vs cents; `customers`/`apps` probe paths return 403 for a charts-only key), **Plausible** (Sites API answer for a Stats key; error body for a foreign site), **Umami Cloud** share-link API base path.
 - [ ] Optional `GITHUB_TOKEN` in Vercel (fine-grained, no permissions) so build proof isn't limited to 60 GitHub requests/hour.
 - [ ] After deploy: Facebook Sharing Debugger + LINE preview of a profile URL (OG card).
-- [ ] Traffic leaderboard + "looking for" directory filter (Phase 1b).
+- [x] ~~Traffic leaderboard + "looking for" directory filter~~ → shipped in UI v2 (2026-09-29).
 - [ ] Omise/Opn: do read-only keys exist? If not, don't support it.
+- [ ] The Figma MCP (Starter plan) hit its call limit on 2026-09-29. The remaining frames (Marketplace filters, share-dialog details) were built from screenshots; re-check the fine details once the limit resets.
+- [ ] The OG card and share images still use Inconsolata. Vendor JetBrains Mono woff (OFL) if they should match the site font.
 
 ## 8. Success metrics (first 30 days after launch)
 

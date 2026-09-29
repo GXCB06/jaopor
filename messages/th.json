@@ -26,7 +26,10 @@
     "signOut": "ออกจากระบบ",
     "language": "English",
     "themeLight": "เปลี่ยนเป็นธีมสว่าง",
-    "themeDark": "เปลี่ยนเป็นธีมมืด"
+    "themeDark": "เปลี่ยนเป็นธีมมืด",
+    "search": "ค้นหา",
+    "leaderboard": "กระดานผู้นำ",
+    "languageShort": "EN"
   },
   "Footer": {
     "tagline": "บ้านถาวรของผลงานที่สร้างด้วย AI ในไทยและเอเชีย ผลงานจริง ตัวเลขจริง",
@@ -36,22 +39,19 @@
     "privacy": "นโยบายความเป็นส่วนตัว",
     "terms": "ข้อกำหนดการใช้งาน",
     "keySafety": "เราดูแลคีย์ของคุณอย่างไร",
-    "builtWith": "สร้างด้วย Claude Code ในประเทศไทย"
+    "builtWith": "สร้างด้วย JaoPor.dev ในประเทศไทย"
   },
   "Home": {
     "subline": "โชว์สิ่งที่คุณสร้างด้วย AI ไว้ในที่เดียว ค้นเจอได้ แชร์ได้ พร้อมรายได้และผู้ใช้ที่ยืนยันตรงจากระบบ ไม่ใช่ภาพหน้าจอ",
     "searchPlaceholder": "\"เครื่องมือ AI ที่สร้างด้วย Claude Code\"",
     "recent": "เพิ่มล่าสุด",
-    "leaderboard": "อันดับ",
-    "leaderboardHint": "นับเฉพาะ MRR ที่ยืนยันแล้ว",
-    "emptyLeaderboard": "ยังไม่มีสตาร์ทอัพที่ยืนยันรายได้ — มาเป็นคนแรกบนกระดานกัน",
     "emptyRecent": "ยังไม่มีผลงาน เพิ่ม Startup ของคุณแล้วรับป้ายเจ้าพ่อรุ่นบุกเบิก #1",
-    "builtWith": "สร้างด้วย",
-    "stats": "{total} สตาร์ทอัพ · ยืนยันแล้ว {verified}",
     "headline1": "1 คน + AI พีคได้แค่ไหน",
     "headline2": "ดูผลงานจริง ตัวเลขจริง",
     "verifiedBy": "ยืนยันตัวเลขผ่าน:",
-    "comingSoon": "เร็ว ๆ นี้"
+    "comingSoon": "เร็ว ๆ นี้",
+    "explore": "ดูผลงานทั้งหมด {total} ชิ้น",
+    "topTraction": "ตัวเลขแรงสุด"
   },
   "Catalog": {
     "category": {
@@ -108,14 +108,30 @@
     "linkCopied": "คัดลอกลิงก์แล้ว",
     "foundingBadge": "เจ้าพ่อรุ่นบุกเบิก #{n}",
     "visitors": "ผู้เข้าชม 30 วัน",
-    "commits": "Commits"
+    "commits": "Commits",
+    "verified": "ยืนยันแล้ว",
+    "revenueShort": "รายได้",
+    "visitorsShort": "ผู้เข้าชม"
   },
   "Leaderboard": {
     "rank": "#",
     "startup": "สตาร์ทอัพ",
     "founder": "ผู้ก่อตั้ง",
     "mrr": "MRR",
-    "growth": "30 วัน"
+    "growth": "เติบโต",
+    "title": "กระดานผู้นำ",
+    "live": "Live",
+    "metric": "จัดอันดับตาม",
+    "metrics": {
+      "mrr": "MRR",
+      "revenue30d": "รายได้ 30 วัน",
+      "visitors": "ผู้เข้าชม 30 วัน",
+      "commits": "Commits"
+    },
+    "empty": "ยังไม่มีตัวเลขที่ยืนยันในหมวดนี้ — มาเป็นคนแรกบนกระดานกัน",
+    "showAll": "ดูทั้งหมด ({count}) ↓",
+    "showLess": "ย่อ ↑",
+    "footer": "นับเฉพาะตัวเลขที่ยืนยันแล้ว · ซิงก์จาก Stripe, RevenueCat, Plausible, Umami, GitHub"
   },
   "Directory": {
     "title": "สตาร์ทอัพทั้งหมด",
@@ -127,7 +143,31 @@
     "empty": "ยังไม่มีสตาร์ทอัพที่ตรงกับตัวกรองนี้",
     "prev": "ก่อนหน้า",
     "next": "ถัดไป",
-    "page": "หน้า {page} จาก {pages}"
+    "page": "หน้า {page} จาก {pages}",
+    "pill": "ผลงานทั้งหมดบน JaoPor",
+    "subline": "เว็บแอป แอปมือถือ LINE OA และโปรเจกต์บน GitHub ที่คนไทยสร้างด้วย AI พร้อมตัวเลขที่ยืนยันจากระบบจริง",
+    "filters": "ตัวกรอง",
+    "category": "หมวดหมู่",
+    "tool": "สร้างด้วย",
+    "type": "ประเภทโปรเจกต์",
+    "anyType": "ทุกประเภท",
+    "types": {
+      "website": "เว็บไซต์",
+      "app": "แอปมือถือ",
+      "line": "LINE OA",
+      "github": "GitHub"
+    },
+    "any": "ไม่ระบุ",
+    "reset": "ล้างตัวกรอง",
+    "apply": "ใช้ตัวกรอง",
+    "found": "{count, plural, =0 {ไม่พบสตาร์ทอัพ} other {พบ # สตาร์ทอัพ}}",
+    "sort": "เรียงตาม",
+    "sorts": {
+      "mrr": "MRR สูงสุด",
+      "visitors": "ผู้เข้าชมมากสุด",
+      "commits": "Commits มากสุด",
+      "newest": "ใหม่ล่าสุด"
+    }
   },
   "Profile": {
     "visit": "เข้าเว็บไซต์",
@@ -177,7 +217,13 @@
     "via": "ยืนยันผ่าน {source}",
     "connect": "+ เชื่อม",
     "buildStory": "เรื่องการสร้าง",
-    "stars": "{count} ดาว"
+    "stars": "{count} ดาว",
+    "vsPrevShort": "เทียบช่วงก่อน",
+    "range": "ช่วงเวลา",
+    "lastDays": "{days} วันล่าสุด",
+    "prevPeriod": "ช่วงก่อนหน้า",
+    "trend": "มุมมองแนวโน้ม",
+    "moreStartups": "สตาร์ทอัพอื่น ๆ"
   },
   "Verified": {
     "stamp": "รายได้ยืนยันผ่าน API key ของ <b>{provider}</b>",
@@ -374,7 +420,6 @@
   },
   "Share": {
     "share": "แชร์",
-    "nativeShare": "แชร์ผ่าน…",
     "copyLink": "คัดลอกลิงก์",
     "linkCopied": "คัดลอกลิงก์แล้ว",
     "facebook": "Facebook",
@@ -390,7 +435,6 @@
     "post": "{name}{tagline}\n{metrics}ดูผลงานจริง ตัวเลขจริงบน JaoPor 👉 {url}",
     "badgeTitle": "ป้ายสำหรับเว็บของคุณ",
     "badgeBody": "ติดป้ายนี้ในเว็บหรือ README คนที่เห็นจะกดมาดูตัวเลขที่ยืนยันแล้วได้",
-    "close": "ปิด",
     "ogVerifiedVia": "ยืนยันผ่าน {sources}",
     "ogUnverified": "ยังไม่ยืนยันตัวเลข",
     "metric": {
@@ -399,6 +443,56 @@
       "visitors30d": "ผู้เข้าชม 30 วัน",
       "activeUsers": "ผู้ใช้แอคทีฟ",
       "commits": "Commits"
-    }
+    },
+    "studioTitle": "แชร์ตัวเลขที่ยืนยันแล้ว",
+    "studioBody": "เลือกแบบการ์ด แล้วดาวน์โหลดไปโพสต์ได้เลย",
+    "link": "ลิงก์โปรไฟล์",
+    "copy": "คัดลอก",
+    "tab": {
+      "badge": "ป้าย",
+      "chart": "กราฟ",
+      "calendar": "ปฏิทิน",
+      "post": "โพสต์"
+    },
+    "theme": "ธีม",
+    "light": "สว่าง",
+    "dark": "มืด",
+    "period": "ช่วงเวลา",
+    "days": "{n} วัน",
+    "months": "{n} เดือน",
+    "color": "สี",
+    "swatch": {
+      "indigo": "คราม JaoPor",
+      "violet": "ม่วง",
+      "blue": "น้ำเงิน",
+      "sky": "ฟ้า",
+      "cyan": "ฟ้าอมเขียว",
+      "teal": "เขียวหัวเป็ด",
+      "emerald": "เขียวมรกต",
+      "lime": "เขียวมะนาว",
+      "amber": "เหลืองอำพัน",
+      "orange": "ส้ม",
+      "red": "แดง",
+      "pink": "ชมพู"
+    },
+    "previewAlt": "ตัวอย่างการ์ดสำหรับแชร์",
+    "download": "ดาวน์โหลดรูป"
+  },
+  "ShareCard": {
+    "verifiedBy": "ยืนยันบน JaoPor",
+    "notVerified": "ยังไม่ยืนยันตัวเลข",
+    "metric": {
+      "mrr": "MRR",
+      "revenue30d": "รายได้ 30 วัน",
+      "visitors30d": "ผู้เข้าชม 30 วัน",
+      "activeUsers": "ผู้ใช้แอคทีฟ",
+      "commits": "Commits"
+    },
+    "lastDays": "{n} วันล่าสุด",
+    "lastMonths": "{n} เดือนล่าสุด",
+    "revenueIn": "รายได้ · {period}",
+    "visitorsIn": "ผู้เข้าชม · {period}",
+    "less": "น้อย",
+    "more": "มาก"
   }
 }

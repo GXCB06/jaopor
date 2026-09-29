@@ -8,9 +8,19 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans:
-    var(--font-inconsolata), var(--font-plex-thai), ui-monospace, monospace;
+    var(--font-jetbrains), var(--font-plex-thai), ui-monospace, monospace;
   --font-mono:
-    var(--font-inconsolata), var(--font-plex-thai), ui-monospace, monospace;
+    var(--font-jetbrains), var(--font-plex-thai), ui-monospace, monospace;
+  /* Design.md §3: Figma px steps as rem (px / 16), so they follow the 112.5% root scale. */
+  --text-3xs: 0.5625rem;
+  --text-3xs--line-height: 0.84375rem;
+  --text-2xs: 0.625rem;
+  --text-2xs--line-height: 0.9375rem;
+  --text-caption: 0.6875rem;
+  --text-caption--line-height: 1.03125rem;
+  --text-body: 0.8125rem;
+  --text-body--line-height: 1.3125rem;
+  --color-faint: var(--faint);
   --font-heading: var(--font-sans);
   --color-brand: var(--brand);
   --color-positive: var(--positive);
@@ -56,87 +66,89 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  /* Same validated pair as dark (dataviz validator, light surface: contrast ≥ 3:1, CVD ΔE 26). */
-  --chart-1: #2b7fff;
-  --chart-2: #00a86b;
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  /* JaoPor brand accent (Design.md → Color). Crimson; swap here only. */
-  --brand: oklch(0.577 0.215 27.3);
-  /* Semantic colours (Design.md §2): darker steps so text passes contrast on white. */
-  --positive: oklch(0.508 0.118 165.6);
-  --negative: oklch(0.505 0.213 27.518);
-  --warning: oklch(0.555 0.163 48.998);
-  --brand-foreground: oklch(0.985 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Light theme: zinc scale (Design.md §2). */
+  --background: #ffffff;
+  --foreground: #09090b;
+  --card: #fafafa;
+  --card-foreground: #09090b;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  --primary: #18181b;
+  --primary-foreground: #fafafa;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #52525b;
+  --faint: #71717a;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  --destructive: #b91c1c;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #a1a1aa;
+  /* Chart pair validated with the dataviz validator on #ffffff (all checks pass). */
+  --chart-1: #4f46e5;
+  --chart-2: #0d9488;
+  --chart-3: #a1a1aa;
+  --chart-4: #71717a;
+  --chart-5: #52525b;
+  --radius: 0.5rem;
+  /* JaoPor brand accent (Design.md §2 ★): indigo, from the Figma file. Swap here only. */
+  --brand: #4f46e5;
+  --brand-foreground: #ffffff;
+  --positive: #047857;
+  --negative: #b91c1c;
+  --warning: #b45309;
+  --sidebar: #fafafa;
+  --sidebar-foreground: #09090b;
+  --sidebar-primary: #18181b;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #f4f4f5;
+  --sidebar-accent-foreground: #18181b;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #a1a1aa;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  /* Validated with the dataviz palette validator (dark, surface #0a0a0a): lightness band,
-     chroma, CVD ΔE 26, contrast ≥ 3:1. chart-2 = revenue (green), chart-1 = previous period (blue). */
-  --chart-1: #2b7fff;
-  --chart-2: #00a86b;
-  --brand: oklch(0.637 0.237 25.3);
-  --brand-foreground: oklch(0.985 0 0);
-  --positive: oklch(0.765 0.177 163.2);
-  --negative: oklch(0.704 0.191 22.216);
-  --warning: oklch(0.828 0.189 84.429);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Dark theme (default): zinc values measured from the Figma file. */
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #141416;
+  --card-foreground: #fafafa;
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
+  --primary: #f4f4f5;
+  --primary-foreground: #09090b;
+  --secondary: #18181b;
+  --secondary-foreground: #fafafa;
+  --muted: #18181b;
+  --muted-foreground: #a1a1aa;
+  --faint: #7c7c87;
+  --accent: #1f1f23;
+  --accent-foreground: #fafafa;
+  --destructive: #f87171;
+  --border: #26262a;
+  --input: #27272a;
+  --ring: #52525b;
+  /* Validated with the dataviz validator on #141416: chart-1 = revenue, chart-2 = previous period. */
+  --chart-1: #6366f1;
+  --chart-2: #0d9488;
+  --chart-3: #52525b;
+  --chart-4: #3f3f46;
+  --chart-5: #27272a;
+  --brand: #818cf8;
+  --brand-foreground: #09090b;
+  --positive: #34d399;
+  --negative: #f87171;
+  --warning: #fbbf24;
+  --sidebar: #141416;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #6366f1;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #18181b;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #26262a;
+  --sidebar-ring: #52525b;
 }
 
 @layer base {

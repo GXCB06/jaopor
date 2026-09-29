@@ -1,5 +1,6 @@
 import "server-only";
 import type { AiTool, Category } from "@/lib/catalog";
+import type { LookingFor } from "@/lib/links";
 import type { Tables } from "@/lib/supabase/database.types";
 import { createPublicClient } from "@/lib/supabase/public";
 
@@ -17,17 +18,78 @@ function db() {
   return createPublicClient();
 }
 
-/** Verified startups ranked by MRR (the leaderboard). */
-export async function getLeaderboard(limit = 50): Promise<StartupRow[]> {
-  const { data, error } = await db()
-    .from("startups")
-    .select(SELECT)
-    .eq("verification_status", "verified")
-    .order("mrr_cents", { ascending: false, nullsFirst: false })
-    .order("revenue_30d_cents", { ascending: false, nullsFirst: false })
+/** Design.md §5 LeaderboardCard metrics: each ranks only verified numbers. */
+export const BOARD_METRICS = [
+  "mrr",
+  "revenue30d",
+  "visitors",
+  "commits",
+] as const;
+export type BoardMetric = (typeof BOARD_METRICS)[number];
+
+const BOARD_COLUMN = {
+  mrr: "mrr_cents",
+  revenue30d: "revenue_30d_cents",
+  visitors: "visitors_30d",
+  commits: "build_commits",
+} as const;
+
+export async function getBoard(
+  metric: BoardMetric,
+  limit = 50,
+): Promise<StartupRow[]> {
+  const column = BOARD_COLUMN[metric];
+  let query = db().from("startups").select(SELECT).not(column, "is", null);
+  // Revenue columns only count once the provider connection is verified.
+  if (metric === "mrr" || metric === "revenue30d")
+    query = query.eq("verification_status", "verified");
+  const { data, error } = await query
+    .order(column, { ascending: false })
+    .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw error;
   return data as StartupRow[];
+}
+
+/** Projects with verified traffic or build proof, strongest first (home "Top traction" row). */
+export async function getTopTraction(limit = 10): Promise<StartupRow[]> {
+  const { data, error } = await db()
+    .from("startups")
+    .select(SELECT)
+    .or("visitors_30d.not.is.null,build_commits.not.is.null")
+    .order("visitors_30d", { ascending: false, nullsFirst: false })
+    .order("build_commits", { ascending: false, nullsFirst: false })
+    .limit(limit);
+  if (error) throw error;
+  return data as StartupRow[];
+}
+
+/** Profile "More startups": same category first, then the newest others. */
+export async function getMoreStartups(
+  startup: StartupRow,
+  limit = 6,
+): Promise<StartupRow[]> {
+  const [same, recent] = await Promise.all([
+    db()
+      .from("startups")
+      .select(SELECT)
+      .eq("category", startup.category)
+      .neq("id", startup.id)
+      .order("created_at", { ascending: false })
+      .limit(limit),
+    db()
+      .from("startups")
+      .select(SELECT)
+      .neq("id", startup.id)
+      .order("created_at", { ascending: false })
+      .limit(limit),
+  ]);
+  if (same.error) throw same.error;
+  if (recent.error) throw recent.error;
+  const seen = new Set<number>();
+  return [...(same.data as StartupRow[]), ...(recent.data as StartupRow[])]
+    .filter((s) => !seen.has(s.id) && seen.add(s.id))
+    .slice(0, limit);
 }
 
 export async function getRecent(limit = 12): Promise<StartupRow[]> {
@@ -40,13 +102,29 @@ export async function getRecent(limit = 12): Promise<StartupRow[]> {
   return data as StartupRow[];
 }
 
+export const DIRECTORY_SORTS = ["mrr", "visitors", "commits", "newest"] as const;
+export type DirectorySort = (typeof DIRECTORY_SORTS)[number];
+/** Project type filter: "app" matches App Store or Google Play. */
+export const PROJECT_TYPES = ["website", "app", "line", "github"] as const;
+export type ProjectType = (typeof PROJECT_TYPES)[number];
+
 export type DirectoryFilters = {
   q?: string;
   category?: Category;
   tool?: AiTool;
   verified?: boolean;
+  type?: ProjectType;
+  lookingFor?: LookingFor;
+  sort?: DirectorySort;
   page?: number;
 };
+
+const SORT_COLUMN = {
+  mrr: "mrr_cents",
+  visitors: "visitors_30d",
+  commits: "build_commits",
+  newest: "created_at",
+} as const;
 
 export const PAGE_SIZE = 24;
 
@@ -57,6 +135,12 @@ export async function listStartups(
   if (filters.category) query = query.eq("category", filters.category);
   if (filters.tool) query = query.contains("ai_tools", [filters.tool]);
   if (filters.verified) query = query.eq("verification_status", "verified");
+  if (filters.lookingFor)
+    query = query.contains("looking_for", [filters.lookingFor]);
+  if (filters.type === "app")
+    query = query.or("app_store_url.not.is.null,play_store_url.not.is.null");
+  else if (filters.type)
+    query = query.not(`${filters.type}_url`, "is", null);
   if (filters.q) {
     // Strip PostgREST filter syntax characters before building the OR expression.
     const term = filters.q
@@ -67,7 +151,10 @@ export async function listStartups(
   }
   const page = Math.max(1, filters.page ?? 1);
   const { data, error, count } = await query
-    .order("mrr_cents", { ascending: false, nullsFirst: false })
+    .order(SORT_COLUMN[filters.sort ?? "mrr"], {
+      ascending: false,
+      nullsFirst: false,
+    })
     .order("created_at", { ascending: false })
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
   if (error) throw error;
@@ -107,6 +194,30 @@ export async function getRevenueSeries(
   return Array.from({ length: days }, (_, i) => ({
     day: dayAt(i),
     revenueCents: byDay.get(dayAt(i)) ?? 0,
+  }));
+}
+
+export type DailyPoint = { day: string; value: number };
+
+/** Zero-filled daily visitors (traffic_snapshots) for the last `days` UTC days, oldest first. */
+export async function getVisitorSeries(
+  startupId: number,
+  days = 60,
+): Promise<DailyPoint[]> {
+  const now = Date.now();
+  const dayAt = (i: number) =>
+    new Date(now - (days - 1 - i) * 86_400_000).toISOString().slice(0, 10);
+  const { data, error } = await db()
+    .from("traffic_snapshots")
+    .select("day, visitors")
+    .eq("startup_id", startupId)
+    .gte("day", dayAt(0))
+    .order("day");
+  if (error) throw error;
+  const byDay = new Map(data.map((s) => [s.day, s.visitors]));
+  return Array.from({ length: days }, (_, i) => ({
+    day: dayAt(i),
+    value: byDay.get(dayAt(i)) ?? 0,
   }));
 }
 

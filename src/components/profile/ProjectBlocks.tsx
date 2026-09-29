@@ -8,7 +8,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { getFormatter, getTranslations } from "next-intl/server";
-import { Button } from "@/components/ui/button";
 import type { StartupRow } from "@/lib/data/startups";
 import { growthPct } from "@/lib/format";
 import { projectLinks, type LinkKind } from "@/lib/links";
@@ -27,26 +26,33 @@ const LINK_ICON: Record<LinkKind, LucideIcon> = {
   github: CodeIcon,
 };
 
-export async function ProjectLinks({ startup }: { startup: StartupRow }) {
+/** Secondary project links (the first one is the header's primary "Visit"). */
+export async function ProjectLinks({
+  startup,
+  skipFirst = false,
+}: {
+  startup: StartupRow;
+  skipFirst?: boolean;
+}) {
   const t = await getTranslations("Links");
-  const links = projectLinks(startup);
+  const links = projectLinks(startup).slice(skipFirst ? 1 : 0);
+  if (!links.length) return null;
   return (
     <div className="flex flex-wrap gap-2">
-      {links.map(({ kind, url }, i) => {
+      {links.map(({ kind, url }) => {
         const Icon = LINK_ICON[kind];
         return (
-          <Button
+          <a
             key={kind}
-            asChild
-            size="sm"
-            variant={i === 0 ? "default" : "outline"}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="inline-flex h-7 items-center gap-1.5 rounded-md border bg-card px-2.5 text-caption font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            <a href={url} target="_blank" rel="noopener noreferrer nofollow">
-              <Icon />
-              {t(kind)}
-              {i === 0 && <ExternalLinkIcon />}
-            </a>
-          </Button>
+            <Icon className="size-3.5" aria-hidden="true" />
+            {t(kind)}
+            <ExternalLinkIcon className="size-3" aria-hidden="true" />
+          </a>
         );
       })}
     </div>
@@ -58,9 +64,9 @@ export async function LookingForBanner({ startup }: { startup: StartupRow }) {
   const t = await getTranslations("LookingFor");
   const primary = projectLinks(startup)[0];
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-brand/30 bg-brand/5 p-3 text-sm">
-      <HandHelpingIcon className="size-4 text-brand" aria-hidden="true" />
-      <span className="font-medium">{t("title")}:</span>
+    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-warning/30 bg-warning/5 p-3 text-xs">
+      <HandHelpingIcon className="size-4 text-warning" aria-hidden="true" />
+      <span className="font-semibold">{t("title")}:</span>
       {startup.looking_for.map((x) => (
         <Chip key={x}>{t(x as "users")}</Chip>
       ))}
@@ -70,7 +76,7 @@ export async function LookingForBanner({ startup }: { startup: StartupRow }) {
             href={primary.url}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="ml-auto text-xs font-medium text-brand hover:underline"
+            className="ml-auto inline-flex h-7 items-center rounded-md bg-primary px-3 text-caption font-semibold text-primary-foreground hover:opacity-90"
           >
             {t("tryIt")} ›
           </a>
@@ -103,11 +109,11 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-semibold">{t("traction")}</h2>
+      <h2 className="text-sm font-bold">{t("traction")}</h2>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <StatTile
           label={t("visitors30d")}
-          value={startup.visitors_30d !== null ? n(startup.visitors_30d) : "—"}
+          value={startup.visitors_30d !== null ? n(startup.visitors_30d) : "–"}
           caption={
             startup.visitors_30d !== null ? (
               <span className="whitespace-normal">
@@ -126,7 +132,7 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
         />
         <StatTile
           label={t("activeUsers")}
-          value={startup.active_users !== null ? n(startup.active_users) : "—"}
+          value={startup.active_users !== null ? n(startup.active_users) : "–"}
           caption={
             startup.active_users !== null
               ? via("revenuecat")
@@ -138,7 +144,7 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
         <div className="col-span-2 md:col-span-1">
           <StatTile
             label={t("buildProof")}
-            value={commits !== null ? t("commits", { count: commits }) : "—"}
+            value={commits !== null ? t("commits", { count: commits }) : "–"}
             caption={
               commits !== null ? (
                 <span className="whitespace-normal">
@@ -169,12 +175,14 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
           />
         </div>
       </div>
-      <div className="rounded-lg border p-3">
-        <p className="mb-1 text-[9px] font-semibold tracking-wider text-muted-foreground uppercase">
+      <div className="space-y-2 rounded-xl border bg-card p-4">
+        <p className="text-2xs font-bold tracking-wider text-faint uppercase">
           {t("buildStory")}
         </p>
         {startup.build_story ? (
-          <p className="text-sm whitespace-pre-line">“{startup.build_story}”</p>
+          <p className="text-xs leading-relaxed whitespace-pre-line">
+            “{startup.build_story}”
+          </p>
         ) : (
           <EmptyValue field="build_story" />
         )}

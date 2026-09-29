@@ -12,6 +12,52 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-29 — UI v2: Figma redesign + ledgerly functional patterns
+
+**Done:**
+
+- **Design system v2 from the user's Figma file** (Homescreen, Marketplace, Startup profile, Share button). Changes:
+  - zinc palette measured from Figma (`#09090b` page, `#141416` cards, `#26262a` borders) plus a new `--faint` token
+  - **JetBrains Mono** and the Figma type steps (`text-3xs/2xs/caption/body`)
+  - indigo accent (was crimson)
+  - chart colours re-validated with the dataviz validator: all checks pass on dark (`#141416`) and on light (`#ffffff`)
+  - Design.md rewritten first
+- **Functional patterns from ledgerly-4156.ai.studio:**
+  - sticky header: Startups · Leaderboard · Dashboard, a search trigger with a global `/` shortcut, primary "+ Add"
+  - leaderboard card with a metric switch (MRR · Revenue 30d · Visitors · Commits): 10 rows, then "Show all"
+  - directory filter sidebar (category, AI tool, project type, looking for, verified) and sort (Top MRR, Most visitors, Most commits, Newest)
+- **Pages rebuilt:**
+  - Home: brand-pill hero, provider tiles, search, "Recently added" and "Top traction" rows (5 across), leaderboard.
+  - Profile: breadcrumb; header with 72px logo, Share and Visit; 4 stat tiles incl. founder and founded; revenue chart card (7/30/60-day range, compare and trend switches); centred verified line; insights bento with icons; "More startups" grid.
+  - `/startups`
+- **ShareStudio** (the Figma share dialog) replaces the old share dialog and dropdown:
+  - link + Copy; tabs Badge / Chart / Calendar / Post; theme, period, 12 colour swatches; server-rendered preview + Download
+  - new image route `/api/share-card/[slug]` (next/og): verified numbers only; every query parameter is checked against a fixed list, and colours are swatch ids, never caller-supplied values
+  - OG card and SVG badge moved to the shared indigo/zinc palette (`src/lib/share-palette.ts`)
+- Footer credit is now "สร้างด้วย JaoPor.dev ในประเทศไทย" / "Built with JaoPor.dev in Thailand".
+- Fixed `cn()`: the custom font-size steps were being dropped when merged with colour classes.
+
+**Files:** `Design.md`, `src/app/globals.css`, `src/app/[locale]/{layout,page}.tsx`, `src/app/[locale]/startup/[slug]/page.tsx`, `src/app/[locale]/startups/page.tsx`, `src/app/api/share-card/[slug]/route.tsx`, `src/components/{SiteHeader,SearchShortcut,SearchBar,ProviderStrip,StartupCard,StartupBits,LeaderboardCard,ProfileBlocks,RevenueChart,SiteFooter}.tsx`, `src/components/share/ShareStudio.tsx`, `src/lib/{share-card,share-palette,utils}.ts`, `src/lib/data/startups.ts`, `messages/*.json`
+**Verified:**
+
+- Automated checks, all passing:
+  - `npm run typecheck`, `npm run lint`
+  - `npm test` 103/103; the new `share-card.test.ts` covers query validation (incl. rejected raw colours), monthly buckets, chart paths, heat levels and week columns
+  - `npm run build`; the fonts are traced into the share-card route
+  - TH/EN keys identical
+- Desktop 1280px, dark (headless Chrome screenshots): home, profile and directory, compared against the Figma frames.
+- Pane at 375px, light theme: home, profile and directory, with no horizontal scroll.
+- ShareStudio: opens, switches tabs, the chart preview loads (1200px PNG), the Download link is set. All three card kinds render (badge light; chart dark/teal/90d; calendar light/12 months).
+- Checked with a temporary QA project inserted into the remote DB (verified Stripe revenue, Plausible and GitHub numbers, 365 days of snapshots) and **deleted afterwards**.
+- **Not verified:** owner-only views (edit page, VerifyPanel, dashboard) in the new style while signed in. The wizard and editor were only restyled through tokens.
+
+**Next:**
+
+- User reviews the redesign.
+- The Figma MCP hit its Starter-plan call limit, so the Marketplace frame's details came from its screenshot.
+- Decide whether to vendor JetBrains Mono for the OG and share images (they still use Inconsolata).
+- Then block F (trust pages) + `/security-review`.
+
 ## 2026-09-29 — JaoPor: repositioning, light/dark, any project type, verified traction, share kit
 
 **Done:**

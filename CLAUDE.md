@@ -52,7 +52,7 @@ Unit tests use **Vitest** (`vitest.config.mts`; `server-only` is stubbed in test
   - traffic: `src/lib/traffic/{plausible,umami}.ts`; build proof: `src/lib/build/github.ts`
 - Founder-supplied URLs go through `src/lib/net/public-url.ts` (SSRF guard). Credentials are encrypted in `src/lib/crypto/keys.ts`.
 - Routes: `POST/PATCH/DELETE /api/startups/[id]/sources/[source]` and `GET /api/cron/sync` (Vercel Cron, bearer `CRON_SECRET`, syncs every source).
-- Share kit: `src/lib/share.ts` (verified numbers only), OG image `[locale]/startup/[slug]/opengraph-image.tsx` (fonts in `src/assets/fonts`), badge `/api/badge/[slug]`.
+- Share kit: `src/lib/share.ts` (verified numbers only), OG image `[locale]/startup/[slug]/opengraph-image.tsx` (fonts in `src/assets/fonts`), badge `/api/badge/[slug]`, ShareStudio images `/api/share-card/[slug]` (`src/lib/share-card.ts`; renderer palette in `src/lib/share-palette.ts`).
 
 ## Architecture
 
@@ -66,7 +66,7 @@ Unit tests use **Vitest** (`vitest.config.mts`; `server-only` is stubbed in test
 - **Styling.**
   - Tailwind v4 is configured in CSS: `src/app/globals.css` holds the shadcn variables plus `--brand`, and the `@theme inline` block maps them to utilities (`bg-brand`, `text-muted-foreground`, …).
   - Dark by default with a light theme: the server renders `class="dark"`, an inline `<head>` script (`src/lib/theme-script.ts`) switches to light from `localStorage.theme`, and `ThemeToggle` / `useThemeMode()` (`src/lib/theme.ts`) change it. No next-themes provider. Use semantic tokens (`text-positive/negative/warning`), never raw palette colours.
-  - Fonts: Inconsolata + IBM Plex Sans Thai via `next/font` variables.
+  - Fonts: JetBrains Mono + IBM Plex Sans Thai via `next/font` variables. Custom type steps (`text-3xs/2xs/caption/body`) and `text-faint` are registered in `cn()` (`src/lib/utils.ts`).
   - shadcn config is in `components.json` (style `radix-vega`, lucide icons, `@/components/ui`). `cn()` lives in `src/lib/utils.ts`.
 - **Data:** Supabase Postgres + row-level security, Auth (Google, GitHub), Storage (logos). Verified numbers are cached on `startups` (no client write grant) plus `revenue_snapshots` / `traffic_snapshots`; see Project.md §5.
 

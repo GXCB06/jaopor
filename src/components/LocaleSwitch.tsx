@@ -14,7 +14,8 @@ export function LocaleSwitch() {
   return (
     <button
       type="button"
-      className="text-xs font-medium text-muted-foreground hover:text-foreground"
+      aria-label={t("language")}
+      className="text-xs font-medium whitespace-nowrap text-muted-foreground hover:text-foreground"
       onClick={() =>
         router.replace(
           // @ts-expect-error — pathname and params always match for the current route
@@ -23,7 +24,8 @@ export function LocaleSwitch() {
         )
       }
     >
-      {t("language")}
+      <span className="sm:hidden">{t("languageShort")}</span>
+      <span className="hidden sm:inline">{t("language")}</span>
     </button>
   );
 }

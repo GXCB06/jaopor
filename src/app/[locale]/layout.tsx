@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Inconsolata, IBM_Plex_Sans_Thai } from "next/font/google";
+import { IBM_Plex_Sans_Thai, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -12,10 +12,10 @@ import { themeInitScript } from "@/lib/theme-script";
 import { cn } from "@/lib/utils";
 import "../globals.css";
 
-// Design.md → Typography: monospace UI font, Thai glyphs fall back to Plex Sans Thai.
-const inconsolata = Inconsolata({
+// Design.md §3 Typography: JetBrains Mono (Figma), Thai glyphs fall back to Plex Sans Thai.
+const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-inconsolata",
+  variable: "--font-jetbrains",
 });
 
 const plexThai = IBM_Plex_Sans_Thai({
@@ -56,7 +56,7 @@ export default async function LocaleLayout({
       suppressHydrationWarning
       className={cn(
         "dark h-full antialiased",
-        inconsolata.variable,
+        jetbrains.variable,
         plexThai.variable,
       )}
     >

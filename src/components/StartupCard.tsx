@@ -7,18 +7,80 @@ import { logoUrl } from "@/lib/supabase/public";
 import { cn } from "@/lib/utils";
 import { CopyLinkButton } from "./CopyLinkButton";
 import {
-  FoundingBadge,
+  CornerTag,
   GrowthValue,
   MetricLabel,
   StartupLogo,
 } from "./StartupBits";
 
 /**
- * Design.md §5 StartupCard. Not-for-sale variant: Revenue (30d) · MRR · Growth; without verified
- * revenue it shows verified traction instead (Visitors · Growth · Commits).
+ * Design.md §5 StartupCard. `compact` (home rows): 24px logo, 3 tiny metrics under a divider.
+ * `large` (directory, "More startups"): 36px logo, category chip, 2-line tagline.
+ * Metrics: verified revenue → Revenue (30d) · MRR · Growth; else verified traction →
+ * Visitors · Growth · Commits; else "Not verified yet".
  */
 const compact = (n: number) =>
   new Intl.NumberFormat("en", { notation: "compact" }).format(n);
+
+type Metric = { label: string; value: React.ReactNode };
+
+function useMetrics(s: StartupRow, large: boolean): Metric[] | null {
+  const t = useTranslations("Card");
+  if (s.verification_status === "verified") {
+    return [
+      {
+        label: large ? t("revenue30d") : t("revenueShort"),
+        value: moneyCompact(s.revenue_30d_cents),
+      },
+      { label: t("mrr"), value: moneyCompact(s.mrr_cents) },
+      {
+        label: t("growth"),
+        value: (
+          <GrowthValue
+            pct={growthPct(s.revenue_30d_cents, s.revenue_prev_30d_cents)}
+          />
+        ),
+      },
+    ];
+  }
+  if (s.visitors_30d !== null || s.build_commits !== null) {
+    return [
+      {
+        label: large ? t("visitors") : t("visitorsShort"),
+        value: s.visitors_30d !== null ? compact(s.visitors_30d) : "–",
+      },
+      {
+        label: t("growth"),
+        value: (
+          <GrowthValue pct={growthPct(s.visitors_30d, s.visitors_prev_30d)} />
+        ),
+      },
+      {
+        label: t("commits"),
+        value: s.build_commits !== null ? compact(s.build_commits) : "–",
+      },
+    ];
+  }
+  return null;
+}
+
+function Tag({ startup, large }: { startup: StartupRow; large: boolean }) {
+  const t = useTranslations("Card");
+  const lf = useTranslations("LookingFor");
+  const verified =
+    startup.verification_status === "verified" || startup.visitors_30d !== null;
+  // Compact cards are narrow: the verified tag shrinks to its check so the name stays readable.
+  if (verified)
+    return (
+      <CornerTag tone="positive">
+        <span aria-hidden={!large}>✓</span>
+        <span className={large ? "ml-1" : "sr-only"}>{t("verified")}</span>
+      </CornerTag>
+    );
+  const ask = startup.looking_for[0] as LookingFor | undefined;
+  if (ask) return <CornerTag tone="warning">{lf(ask)}</CornerTag>;
+  return null;
+}
 
 export function StartupCard({
   startup,
@@ -29,20 +91,42 @@ export function StartupCard({
   large?: boolean;
   className?: string;
 }) {
-  const t = useTranslations("Card");
   const cat = useTranslations("Catalog.category");
   const common = useTranslations("Common");
-  const lf = useTranslations("LookingFor");
-  const verified = startup.verification_status === "verified";
-  const traction =
-    startup.visitors_30d !== null || startup.build_commits !== null;
-  const ask = startup.looking_for[0] as LookingFor | undefined;
+  const metrics = useMetrics(startup, large);
   const href = `/startup/${startup.slug}`;
 
-  return (
+  const metricRow = (
     <div
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-lg border bg-background/60 p-3 transition-all hover:border-primary/30 hover:bg-background",
+        "grid grid-cols-3 gap-2 border-t",
+        large ? "mt-4 pt-4" : "mt-3 pt-2",
+      )}
+    >
+      {metrics ? (
+        metrics.map((m) => (
+          <div key={m.label} className="min-w-0 space-y-0.5">
+            <MetricLabel className={cn("truncate", large && "text-2xs")}>
+              {m.label}
+            </MetricLabel>
+            <p className="truncate text-2xs font-bold tabular-nums">
+              {m.value}
+            </p>
+          </div>
+        ))
+      ) : (
+        <p className="col-span-3 text-2xs text-faint">
+          {common("notVerified")}
+        </p>
+      )}
+    </div>
+  );
+
+  return (
+    <article
+      className={cn(
+        "group relative flex flex-col border bg-card transition-colors hover:border-foreground/20",
+        large ? "justify-between rounded-xl p-4" : "rounded-lg p-3",
         className,
       )}
     >
@@ -51,92 +135,45 @@ export function StartupCard({
         className="absolute inset-0"
         aria-label={startup.name}
       />
-      <div className="flex items-start gap-2.5">
-        <StartupLogo name={startup.name} src={logoUrl(startup.logo_path)} />
-        <div className="min-w-0 flex-1">
-          <h3 className="truncate text-sm font-semibold">{startup.name}</h3>
-          <p className="truncate text-xs text-muted-foreground">
-            {cat(startup.category)}
-          </p>
+      <div>
+        <div className="flex items-start gap-2.5">
+          <StartupLogo
+            name={startup.name}
+            src={logoUrl(startup.logo_path)}
+            size={large ? 36 : 24}
+            className={large ? "rounded-lg" : undefined}
+          />
+          <div className="min-w-0 flex-1">
+            <h3
+              className={cn(
+                "truncate font-semibold",
+                large ? "text-body font-bold" : "text-xs",
+              )}
+            >
+              {startup.name}
+            </h3>
+            {large ? (
+              <span className="mt-1 inline-flex rounded-sm border bg-secondary px-1.5 text-3xs text-muted-foreground">
+                {cat(startup.category)}
+              </span>
+            ) : (
+              <p className="truncate text-2xs text-faint">
+                {cat(startup.category)}
+              </p>
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            {large && <CopyLinkButton path={href} />}
+            <Tag startup={startup} large={large} />
+          </div>
         </div>
-        <CopyLinkButton path={href} />
-      </div>
-
-      {large && startup.tagline && (
-        <p className="mt-2 line-clamp-3 text-xs text-muted-foreground">
-          {startup.tagline}
-        </p>
-      )}
-
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        {verified ? (
-          <>
-            <div>
-              <MetricLabel>{t("revenue30d")}</MetricLabel>
-              <p className="text-sm font-bold tabular-nums">
-                {moneyCompact(startup.revenue_30d_cents)}
-              </p>
-            </div>
-            <div>
-              <MetricLabel>{t("mrr")}</MetricLabel>
-              <p className="text-sm font-bold tabular-nums">
-                {moneyCompact(startup.mrr_cents)}
-              </p>
-            </div>
-            <div>
-              <MetricLabel>{t("growth")}</MetricLabel>
-              <GrowthValue
-                className="text-sm font-bold"
-                pct={growthPct(
-                  startup.revenue_30d_cents,
-                  startup.revenue_prev_30d_cents,
-                )}
-              />
-            </div>
-          </>
-        ) : traction ? (
-          <>
-            <div>
-              <MetricLabel>{t("visitors")}</MetricLabel>
-              <p className="text-sm font-bold tabular-nums">
-                {startup.visitors_30d !== null
-                  ? compact(startup.visitors_30d)
-                  : "—"}
-              </p>
-            </div>
-            <div>
-              <MetricLabel>{t("growth")}</MetricLabel>
-              <GrowthValue
-                className="text-sm font-bold"
-                pct={growthPct(startup.visitors_30d, startup.visitors_prev_30d)}
-              />
-            </div>
-            <div>
-              <MetricLabel>{t("commits")}</MetricLabel>
-              <p className="text-sm font-bold tabular-nums">
-                {startup.build_commits !== null
-                  ? compact(startup.build_commits)
-                  : "—"}
-              </p>
-            </div>
-          </>
-        ) : (
-          <p className="col-span-3 text-xs text-muted-foreground">
-            {common("notVerified")}
+        {large && (
+          <p className="mt-3 line-clamp-2 min-h-[2.5em] text-caption text-muted-foreground">
+            {startup.tagline}
           </p>
         )}
       </div>
-
-      {(startup.founding_number !== null || ask) && (
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <FoundingBadge n={startup.founding_number} />
-          {ask && (
-            <span className="text-[9px] font-bold text-brand uppercase">
-              {lf("tag", { what: lf(ask) })}
-            </span>
-          )}
-        </div>
-      )}
-    </div>
+      {metricRow}
+    </article>
   );
 }
