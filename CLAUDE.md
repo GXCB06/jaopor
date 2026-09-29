@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 @AGENTS.md
 
-**MRRMafia** is a database of verified startup revenue, and a marketplace, for AI-built startups (Thailand/Asia first). Its UX and features follow TrustMRR. Product scope and status: @Project.md. UI spec: @Design.md. Completion log: [PROGRESS.md](PROGRESS.md).
+**JaoPor** (เจ้าพ่อ; repo/infra still named `mrrmafia`) is the permanent, searchable home for things people build with AI (web apps, mobile apps, LINE OA bots, repos), Thailand/Asia first, where every project can show **verified numbers**: revenue, visitors, active users, build proof. Later it becomes a marketplace. UX and features follow TrustMRR. Tagline: "1 คน + AI พีคได้แค่ไหน / ดูผลงานจริง ตัวเลขจริง". Product scope and status: @Project.md. UI spec: @Design.md. Completion log: [PROGRESS.md](PROGRESS.md).
 
 ## Working rules (non-negotiable)
 
@@ -44,11 +44,15 @@ npx shadcn@latest add <component>   # add a shadcn/ui primitive into src/compone
 
 Unit tests use **Vitest** (`vitest.config.mts`; `server-only` is stubbed in tests). Playwright end-to-end tests arrive in Phase 1b.
 
-**Revenue verification** (`src/lib/revenue/`):
+**Verified numbers** (skill `/add-payment-provider` for any new source):
 
-- `providers/*.ts` fetch and normalize, `metrics.ts` computes everything (pure, tested), `fx.ts` converts to USD, `sync.ts` writes to the DB with the admin client.
-- Routes: `POST/PATCH /api/startups/[id]/stripe` (connect / refresh) and `GET /api/cron/sync` (Vercel Cron, bearer `CRON_SECRET`).
-- Keys are encrypted in `src/lib/crypto/keys.ts`.
+- `src/lib/sources/`: `catalog.ts` (ids, kinds revenue/traffic/build, names) and `sync.ts` (server-only `connectSource` / `syncSource` / `disconnectSource`, one writer per kind, one source per kind per startup).
+- Connectors fetch + normalize only:
+  - revenue: `src/lib/revenue/providers/stripe.ts` (raw transactions → pure `metrics.ts`, `fx.ts` to USD) and `revenuecat.ts` (pre-aggregated)
+  - traffic: `src/lib/traffic/{plausible,umami}.ts`; build proof: `src/lib/build/github.ts`
+- Founder-supplied URLs go through `src/lib/net/public-url.ts` (SSRF guard). Credentials are encrypted in `src/lib/crypto/keys.ts`.
+- Routes: `POST/PATCH/DELETE /api/startups/[id]/sources/[source]` and `GET /api/cron/sync` (Vercel Cron, bearer `CRON_SECRET`, syncs every source).
+- Share kit: `src/lib/share.ts` (verified numbers only), OG image `[locale]/startup/[slug]/opengraph-image.tsx` (fonts in `src/assets/fonts`), badge `/api/badge/[slug]`.
 
 ## Architecture
 
@@ -61,12 +65,10 @@ Unit tests use **Vitest** (`vitest.config.mts`; `server-only` is stubbed in test
   - Static pages call `setRequestLocale(locale)` and export `generateStaticParams`.
 - **Styling.**
   - Tailwind v4 is configured in CSS: `src/app/globals.css` holds the shadcn variables plus `--brand`, and the `@theme inline` block maps them to utilities (`bg-brand`, `text-muted-foreground`, …).
-  - The `dark` class is always set on `<html>`.
+  - Dark by default with a light theme: the server renders `class="dark"`, an inline `<head>` script (`src/lib/theme-script.ts`) switches to light from `localStorage.theme`, and `ThemeToggle` / `useThemeMode()` (`src/lib/theme.ts`) change it. No next-themes provider. Use semantic tokens (`text-positive/negative/warning`), never raw palette colours.
   - Fonts: Inconsolata + IBM Plex Sans Thai via `next/font` variables.
   - shadcn config is in `components.json` (style `radix-vega`, lucide icons, `@/components/ui`). `cn()` lives in `src/lib/utils.ts`.
-- **Planned (Phase 1, see Project.md §5):**
-  - Supabase: Postgres + row-level security, Auth, Storage.
-  - A `RevenueProvider` interface per payment provider feeds a provider-agnostic metrics engine, which writes `revenue_snapshots`, synced by Vercel Cron.
+- **Data:** Supabase Postgres + row-level security, Auth (Google, GitHub), Storage (logos). Verified numbers are cached on `startups` (no client write grant) plus `revenue_snapshots` / `traffic_snapshots`; see Project.md §5.
 
 ## Harness (how Claude Code is set up here)
 

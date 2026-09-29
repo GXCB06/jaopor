@@ -31,7 +31,7 @@ const open =
     .slice(0, 12) ?? [];
 
 const context = [
-  "## MRRMafia session context (from SessionStart hook)",
+  "## JaoPor session context (from SessionStart hook)",
   phaseTitle
     ? `Current phase: **${phaseTitle}** — open tasks:\n${open.join("\n")}`
     : "All roadmap phases complete.",

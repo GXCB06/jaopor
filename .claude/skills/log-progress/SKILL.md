@@ -1,11 +1,11 @@
 ---
 name: log-progress
-description: Record completed work in MRRMafia's project log — adds a dated entry to PROGRESS.md and ticks the matching roadmap checkbox / parity-matrix status in Project.md (plus decisions and open items). Use this whenever a task, feature, fix, migration, or harness change is finished, when the progress-gate Stop hook asks for a log entry, or when the user says "log this", "update progress", "mark it done", or "what did we finish".
+description: Record completed work in JaoPor's project log — adds a dated entry to PROGRESS.md and ticks the matching roadmap checkbox / parity-matrix status in Project.md (plus decisions and open items). Use this whenever a task, feature, fix, migration, or harness change is finished, when the progress-gate Stop hook asks for a log entry, or when the user says "log this", "update progress", "mark it done", or "what did we finish".
 ---
 
 # log-progress
 
-MRRMafia's rule: every completed piece of work is written down in two places, so the next session (and the user) can see exactly where the project stands. PROGRESS.md is the chronological "what happened" log; Project.md is the "what's the state" map. The SessionStart hook reads both, so keeping them accurate is what gives future sessions memory.
+JaoPor's rule: every completed piece of work is written down in two places, so the next session (and the user) can see exactly where the project stands. PROGRESS.md is the chronological "what happened" log; Project.md is the "what's the state" map. The SessionStart hook reads both, so keeping them accurate is what gives future sessions memory.
 
 ## Steps
 

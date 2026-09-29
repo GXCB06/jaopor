@@ -43,6 +43,8 @@ Also seen: Thai civic/vertical tools (disaster GIS, flood alerts, labor-rights A
 
 ## 3. What this means for JaoPor
 
+> **Adopted 2026-09-29** (Project.md §1/§6): built the same day: any-link listing, looking-for asks, RevenueCat + Plausible + Umami + GitHub sources, share card/badge/dialog. Not built yet: upvotes ("ปัง"), traffic leaderboard, request-demo button, stealth listing.
+
 **Positioning shift:**
 
 - From "verified revenue database (for sale)"

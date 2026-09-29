@@ -1,4 +1,6 @@
-# MRRMafia v1: launch plan (Claude Thailand, Facebook)
+# JaoPor v1: launch plan (Claude Thailand, Facebook)
+
+> **2026-09-29 repositioning** (see [research/fb-showoff-thread-and-metrics.md](research/fb-showoff-thread-and-metrics.md)): renamed MRRMafia → **JaoPor**. The entry point is now "show what you built with AI" (any project: web, app, LINE OA, repo), and verified numbers include **visitors, active users and build proof**, not only MRR. Must-haves 2, 3, 8 and 9 below are updated accordingly; the post in §4 is rewritten.
 
 > Goal: a **working, trustworthy v1** live on Vercel and posted in the Claude Thailand Facebook group. **Timing is flexible, and effect comes first:** post in the first evening slot (19:30–21:00 ICT, peak Facebook hours) after all must-haves pass QA and 5–10 real startups are seeded. A first impression in a small community only happens once, so never post a broken flow.
 >
@@ -8,23 +10,25 @@
 
 ### Must-have (the launch loop)
 
-| #   | Feature                           | Details (TrustMRR pattern → our version)                                                                                                                                                                                                                                        |
-| --- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Sign in                           | Google and GitHub through Supabase Auth. **No email magic link**: Supabase's default email sender only allows a few emails per hour, which would break on launch day.                                                                                                           |
-| 2   | Add-startup wizard (3 steps)      | **Basics** (name, URL, logo, tagline, description, category, country/province, founded, **AI build tools**, stack) → **Revenue** (Stripe restricted key, or "skip — list as unverified") → **Insights** (optional: audience, pricing, team, funding, channels, founder message) |
-| 3   | Stripe verification               | Accept only restricted read-only keys and reject anything that can write. Compute MRR, 30-day revenue, all-time revenue, active subscriptions and customers. Keys encrypted (AES-GCM, server-only). Daily re-sync (Vercel Cron) plus a manual "Refresh" button.                 |
-| 4   | Homepage                          | Hero with search, "+ Add startup", **Recently added** row, **Leaderboard** (verified MRR only, 🥇🥈🥉, month-over-month %), filter chips **Built with Claude Code / OpenCode / Cursor…**                                                                                        |
-| 5   | Startup profile `/startup/[slug]` | Stat tiles (30-day revenue, MRR + subscriptions, founder, founded + country), 30-day revenue chart with previous period, "Verified with Stripe · updated …", insights grid, AI build tools, founder message, **Share**                                                          |
-| 6   | Directory `/startups`             | Card grid with filters: category, AI tool, verified only                                                                                                                                                                                                                        |
-| 7   | Dashboard                         | My startups: edit, reconnect or refresh Stripe, hide/delete                                                                                                                                                                                                                     |
-| 8   | **Share kit**                     | Share menu (Copy link · Facebook · LINE · X), a per-startup **OG image** (1200×630, Thai font, big numbers), an **embeddable badge** ("Verified on MRRMafia · $X MRR"), and "Share your profile" shown right after verifying                                                    |
-| 9   | Founding member badge             | The first 100 startups get a "Founding Mafia #n" badge. It rewards joining on launch day.                                                                                                                                                                                       |
-| 10  | Trust pages                       | Privacy (PDPA), Terms, and **"How we handle your key"** (restricted read-only, encrypted, aggregate data only, revoke any time in Stripe). This page drives conversion.                                                                                                         |
-| 11  | Launch hygiene                    | TH/EN switch, mobile (375px) checked, 404/error pages, basic abuse controls (admin can hide a listing, rate limit on add-startup)                                                                                                                                               |
+| #   | Feature                           | Details (TrustMRR pattern → our version)                                                                                                                                                                                                                                                 |
+| --- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Sign in                           | Google and GitHub through Supabase Auth. **No email magic link**: Supabase's default email sender only allows a few emails per hour, which would break on launch day.                                                                                                                    |
+| 2   | Add-startup wizard (3 steps)      | **Basics** (name, URL, logo, tagline, description, category, country/province, founded, **AI build tools**, stack) → **Revenue** (Stripe restricted key, or "skip — list as unverified") → **Insights** (optional: audience, pricing, team, funding, channels, founder message)          |
+| 3   | Stripe verification               | Accept only restricted read-only keys and reject anything that can write. Compute MRR, 30-day revenue, all-time revenue, active subscriptions and customers. Keys encrypted (AES-GCM, server-only). Daily re-sync (Vercel Cron) plus a manual "Refresh" button.                          |
+| 4   | Homepage                          | Hero with search, "+ Add startup", **Recently added** row, **Leaderboard** (verified MRR only, 🥇🥈🥉, month-over-month %), filter chips **Built with Claude Code / OpenCode / Cursor…**                                                                                                 |
+| 5   | Startup profile `/startup/[slug]` | Stat tiles (30-day revenue, MRR + subscriptions, founder, founded + country), 30-day revenue chart with previous period, "Verified with Stripe · updated …", insights grid, AI build tools, founder message, **Share**                                                                   |
+| 6   | Directory `/startups`             | Card grid with filters: category, AI tool, verified only                                                                                                                                                                                                                                 |
+| 7   | Dashboard                         | My startups: edit, reconnect or refresh Stripe, hide/delete                                                                                                                                                                                                                              |
+| 8   | **Share kit** ✅                  | Share menu (native · Copy link · Facebook · LINE · X · badge HTML), a per-project **OG image** (1200×630, Thai font, verified numbers), an **embeddable badge** ("Verified on JaoPor · 12.8K visitors/30d"), and a share dialog with a ready-to-paste post right after listing/verifying |
+| 9   | Founding member badge ✅          | The first 100 projects get a "เจ้าพ่อรุ่นบุกเบิก #n" (Founding JaoPor) badge. It rewards joining on launch day.                                                                                                                                                                          |
+| 2b  | Any project type ✅               | One link is enough: website, App Store, Google Play, LINE OA (`@id`) or GitHub. "Looking for users / feedback / testers…" chips.                                                                                                                                                         |
+| 3b  | More verified numbers ✅          | RevenueCat (apps: MRR, revenue, active users), Plausible / Umami (visitors), GitHub (commits, first commit, % co-authored by Claude). All read-only.                                                                                                                                     |
+| 10  | Trust pages                       | Privacy (PDPA), Terms, and **"How we handle your key"** (restricted read-only, encrypted, aggregate data only, revoke any time in Stripe). This page drives conversion.                                                                                                                  |
+| 11  | Launch hygiene                    | TH/EN switch, mobile (375px) checked, 404/error pages, basic abuse controls (admin can hide a listing, rate limit on add-startup)                                                                                                                                                        |
 
 ### Should-have (only after every must-have passes QA)
 
-- Sponsor rails with house ads: "Advertise on MRRMafia"
+- Sponsor rails with house ads: "Advertise on JaoPor"
 - `llms.txt` and a Markdown page per profile
 - An "Open to offers" toggle on the profile (email contact only, no marketplace)
 
@@ -66,22 +70,23 @@ Blocks run in order. Times are estimates for Claude Code working with the user.
 
 ### The post (Thai; attach 3–4 screenshots or a 20-second screen recording)
 
-> 🕶️ **เปิดตัว MRRMafia — ฐานข้อมูลรายได้ของสตาร์ทอัพที่สร้างด้วย AI (ยืนยันจริง ไม่ใช่ screenshot)**
+> 🕶️ **1 คน + AI พีคได้แค่ไหน? ดูผลงานจริง ตัวเลขจริง → JaoPor**
 >
-> ช่วงนี้ในกลุ่มเห็นหลายคนสร้างโปรดักต์ด้วย Claude Code / OpenCode กันเยอะมาก 🔥 แต่รายได้ที่โชว์กันมักเป็นแค่ภาพหน้าจอ
+> โพสต์ "อวดโปรเจค" ในกลุ่มเรามีคนมาโชว์ผลงานเป็นพัน ๆ คอมเมนต์ 🔥 แต่ผ่านไปไม่กี่วันก็จมหาย และตัวเลขที่เล่ากัน ("ผู้ใช้หมื่นคน", "700 commits ใน 2 อาทิตย์") ก็ยังพิสูจน์ไม่ได้
 >
-> เลยสร้าง **MRRMafia** ขึ้นมา (สร้างด้วย Claude Code ทั้งเว็บ):
-> ✅ เชื่อม Stripe ด้วย **Restricted key แบบอ่านอย่างเดียว** → ระบบคำนวณ MRR / รายได้ 30 วันให้อัตโนมัติ
-> 🏆 ติดอันดับ Leaderboard สตาร์ทอัพไทย + ติดป้าย "Built with Claude Code"
-> 🔗 ได้หน้าโปรไฟล์ + การ์ดแชร์สวย ๆ ไว้โพสต์ FB / LINE
-> 🆓 ฟรี · ยังไม่มีรายได้ก็ลงได้ (แสดงเป็น "ยังไม่ยืนยัน")
+> เลยสร้าง **JaoPor** (เจ้าพ่อ) ขึ้นมา ด้วย Claude Code ทั้งเว็บ:
+> 🔗 ลิงก์เดียวก็ลงได้ ทั้งเว็บ แอป LINE OA หรือ GitHub repo
+> ✅ ยืนยันตัวเลขแบบอ่านอย่างเดียว: รายได้ (Stripe / RevenueCat) · ผู้เข้าชม (Plausible / Umami) · commit และ % ที่เขียนร่วมกับ Claude (GitHub)
+> 🙋 ติดป้าย "กำลังหาผู้ใช้ / ขอ feedback / หา tester" ให้คนในกลุ่มช่วยลองได้
+> 🖼️ ได้การ์ดตัวเลขสวย ๆ ไว้แปะคอมเมนต์ในกลุ่ม / FB / LINE + ป้ายติดเว็บ
+> 🆓 ฟรี · ยังไม่มีตัวเลขก็ลงได้
 >
-> 🔒 เรื่องความปลอดภัย: ใช้คีย์แบบอ่านอย่างเดียว เข้ารหัสทุกคีย์ ไม่เก็บข้อมูลลูกค้า และยกเลิกสิทธิ์ใน Stripe ได้ทุกเมื่อ
+> 🔒 ความปลอดภัย: รับเฉพาะคีย์ / ลิงก์แบบอ่านอย่างเดียว เข้ารหัสทุกคีย์ ไม่เก็บข้อมูลลูกค้า ยกเลิกได้ทุกเมื่อ
 >
-> 🎖️ **100 สตาร์ทอัพแรกได้ป้าย "Founding Mafia"** ถาวร
+> 🎖️ **100 โปรเจคแรกได้ป้าย "เจ้าพ่อรุ่นบุกเบิก"** ถาวร
 >
-> 👉 ลงสตาร์ทอัพของคุณ: [link]
-> คอมเมนต์ลิงก์โปรไฟล์ของคุณไว้ด้านล่างได้เลย เดี๋ยวเข้าไปดูทุกอัน 🙏
+> 👉 ลงผลงานของคุณ: [link]
+> แล้วแปะการ์ด JaoPor ของคุณไว้ในคอมเมนต์เลย เดี๋ยวเข้าไปดูทุกอัน 🙏
 
 (Final wording is up to you. Keep the safety paragraph: key safety is the #1 objection.)
 
@@ -90,6 +95,8 @@ Blocks run in order. Times are estimates for Claude Code working with the user.
 - Post between **19:30 and 21:00 ICT**. Pin a first comment with a 3-step "how to create a Stripe restricted key" guide and a link to the "How we handle your key" page.
 - Reply to **every comment within an hour**. Visit and share the profiles people post; it gets them sharing too.
 - Seeded founders share their own profile cards on their own walls or stories the same evening.
+- **The growth loop:** in the next "อวดโปรเจค" thread, people comment their **JaoPor card** (the share dialog gives them the text) instead of a bare link.
+- **Seeding from the thread, with consent only:** never scrape or import comments. DM or reply to builders who posted there with a personal invite ("ลงไว้ถาวรที่ JaoPor ไหม?"). Offer the admins and the community member who built the thread index a "Featured in the Claude Thailand showoff" collection instead of competing with them.
 
 ### Follow-ups
 

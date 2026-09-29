@@ -1,4 +1,4 @@
-# MRRMafia
+# JaoPor (repo: mrrmafia)
 
 Verified startup revenue database and marketplace for AI-built startups, Thailand/Asia first.
 

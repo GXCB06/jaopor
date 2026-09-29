@@ -1,11 +1,11 @@
 ---
 name: ui-component
-description: Build or restyle an MRRMafia UI component or page section strictly from Design.md (TrustMRR-style dark, monospace, data-dense design system), wire its strings through next-intl, and visually verify it in the browser pane at desktop and 375px. Use this for any UI work in MRRMafia — StartupCard, LeaderboardTable, StatTile, RevenueChart, SponsorCard, ForSaleBanner, hero, filters, dashboards, new pages — even when the user just says "make the homepage", "add a card", "fix the layout", or "make it look like TrustMRR".
+description: Build or restyle a JaoPor UI component or page section strictly from Design.md (TrustMRR-style dark, monospace, data-dense design system), wire its strings through next-intl, and visually verify it in the browser pane at desktop and 375px. Use this for any UI work in JaoPor — StartupCard, LeaderboardTable, StatTile, RevenueChart, SponsorCard, ForSaleBanner, hero, filters, dashboards, new pages — even when the user just says "make the homepage", "add a card", "fix the layout", or "make it look like TrustMRR".
 ---
 
 # ui-component
 
-MRRMafia matches TrustMRR's look: dark neutral background, Inconsolata monospace, small uppercase labels over big `tabular-nums` numbers, thin borders, no shadows. It uses its own brand (crimson `--brand`) and never TrustMRR's logo or copy. Consistency comes from building everything out of the same tokens and component specs, so Design.md is the contract. If the design needs to change, change Design.md first, then the code.
+JaoPor matches TrustMRR's look: dark neutral background, Inconsolata monospace, small uppercase labels over big `tabular-nums` numbers, thin borders, no shadows. It uses its own brand (crimson `--brand`) and never TrustMRR's logo or copy. Consistency comes from building everything out of the same tokens and component specs, so Design.md is the contract. If the design needs to change, change Design.md first, then the code.
 
 ## Steps
 

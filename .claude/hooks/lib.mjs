@@ -1,4 +1,4 @@
-// Shared helpers for MRRMafia Claude Code hooks (Node, cross-platform).
+// Shared helpers for JaoPor (repo mrrmafia) Claude Code hooks (Node, cross-platform).
 import fs from "node:fs";
 import path from "node:path";
 
