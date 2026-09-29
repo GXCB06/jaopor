@@ -12,6 +12,19 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-29 — Block A (part 1): Supabase project + env template
+
+**Done:**
+
+- Paused `ar-vocab-kids` (user's choice) to free a free-tier slot; created Supabase project **`mrrmafia`** (`letfxefyqxxrfujpwtri`, ap-southeast-1, $0/mo)
+- `.env.example` with public URL + publishable key and placeholders for server secrets; `.gitignore` now allows `.env.example`
+- Narrowed `.claude/settings.json` `.env` deny rules to real secret files (`.env`, `.env.local`, `.env.*.local`, `.env.production`, `.env.development`) — the old `.env.*` rule also blocked `.env.example`
+- Launch plan: hard 18:00 cut-off replaced by a quality launch gate (user: timing flexible, make it effective)
+
+**Files:** `.env.example`, `.gitignore`, `.claude/settings.json`, `docs/launch-plan.md`, `Project.md`
+**Verified:** `create_project` → ACTIVE_HEALTHY; `get_project_url` / `get_publishable_keys` OK
+**Next:** user: `.env.local` secrets + Google/GitHub OAuth apps + Vercel project; Claude: block B schema + RLS
+
 ## 2026-09-29 — v1 launch plan (Claude Thailand FB, today)
 
 **Done:**

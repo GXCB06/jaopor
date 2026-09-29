@@ -148,24 +148,28 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 
 ## 6. Decisions log
 
-| Date       | Decision                                           | Why                                                                                             |
-| ---------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| 2026-09-27 | Name: **MRRMafia**                                 | User choice                                                                                     |
-| 2026-09-27 | Match TrustMRR UX/features; own brand, copy, data  | User wants TrustMRR's style; copying brand/data is a legal + ToS risk                           |
-| 2026-09-27 | Stack: Next.js + Supabase + Vercel                 | Same class of stack as TrustMRR (Next + shadcn); Supabase/Vercel MCP connected                  |
-| 2026-09-27 | **npm** instead of pnpm                            | pnpm not installed; npm ships with Node 26 — no global installs needed                          |
-| 2026-09-27 | shadcn preset `radix-vega`, neutral base           | Its dark tokens equal TrustMRR's measured tokens                                                |
-| 2026-09-27 | Fonts: Inconsolata + IBM Plex Sans Thai            | Match TrustMRR's mono look; Inconsolata has no Thai glyphs                                      |
-| 2026-09-27 | Default locale `th`                                | Launch audience is Thai                                                                         |
-| 2026-09-27 | Brand accent: crimson (`--brand`)                  | "Mafia" identity; single swap point in globals.css — revisit with user                          |
-| 2026-09-27 | Hooks written as Node `.mjs`                       | Windows + bash + PowerShell all run Node identically                                            |
-| 2026-09-27 | Quality hook runs whole-project `tsc` per TS edit  | ~8s per edit (eslint startup dominates); catches cross-file breakage. Revisit if it grows slow  |
-| 2026-09-27 | Supabase agent skills vendored in `.claude/skills` | Official Postgres/RLS guidance for schema work; markdown only, reviewed; excluded from prettier |
+| Date       | Decision                                           | Why                                                                                                   |
+| ---------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 2026-09-27 | Name: **MRRMafia**                                 | User choice                                                                                           |
+| 2026-09-27 | Match TrustMRR UX/features; own brand, copy, data  | User wants TrustMRR's style; copying brand/data is a legal + ToS risk                                 |
+| 2026-09-27 | Stack: Next.js + Supabase + Vercel                 | Same class of stack as TrustMRR (Next + shadcn); Supabase/Vercel MCP connected                        |
+| 2026-09-27 | **npm** instead of pnpm                            | pnpm not installed; npm ships with Node 26 — no global installs needed                                |
+| 2026-09-27 | shadcn preset `radix-vega`, neutral base           | Its dark tokens equal TrustMRR's measured tokens                                                      |
+| 2026-09-27 | Fonts: Inconsolata + IBM Plex Sans Thai            | Match TrustMRR's mono look; Inconsolata has no Thai glyphs                                            |
+| 2026-09-27 | Default locale `th`                                | Launch audience is Thai                                                                               |
+| 2026-09-27 | Brand accent: crimson (`--brand`)                  | "Mafia" identity; single swap point in globals.css — revisit with user                                |
+| 2026-09-27 | Hooks written as Node `.mjs`                       | Windows + bash + PowerShell all run Node identically                                                  |
+| 2026-09-27 | Quality hook runs whole-project `tsc` per TS edit  | ~8s per edit (eslint startup dominates); catches cross-file breakage. Revisit if it grows slow        |
+| 2026-09-27 | Supabase agent skills vendored in `.claude/skills` | Official Postgres/RLS guidance for schema work; markdown only, reviewed; excluded from prettier       |
+| 2026-09-29 | Remote Supabase project (no local Docker)          | Fastest path to launch; free tier; Singapore region is closest to Thai users                          |
+| 2026-09-29 | Auth: Google + GitHub OAuth only at launch         | Supabase's default email sender is heavily rate-limited → magic links would fail under launch traffic |
+| 2026-09-29 | Launch timing: quality gate, not a date            | User: "make it effective" → post at the first evening slot after QA + seeding                         |
 
 ## 7. Open items
 
 - [ ] Restart the Claude Code session in `C:\Users\ACER\MRRMafia` so hooks, permissions and the browser-pane preview (`web`) go live; then run a visual check of `/th` and `/en`.
-- [ ] **Docker not installed** → `supabase start` (local DB) unavailable. Options: install Docker Desktop, or use a remote Supabase dev project/branch via Supabase MCP. Decide before Phase 1 schema work.
+- [x] ~~Docker not installed~~ → resolved 2026-09-29: using remote Supabase project `mrrmafia` (`letfxefyqxxrfujpwtri`, ap-southeast-1); migrations applied via Supabase MCP. Local Docker optional later.
+- [ ] `ar-vocab-kids` Supabase project was paused to free a free-tier slot — restore it from the dashboard when needed (or upgrade the org).
 - [ ] Confirm brand accent colour (crimson proposed) and logo.
 - [ ] Domain name (mrrmafia.com / .co / .asia?).
 - [ ] URL of the Thai "Product Hunt for Claude projects" competitor, to study.
