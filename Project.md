@@ -77,7 +77,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [x] Harness: permissions, hooks, observability logs, project skills
 - [ ] User review of Project.md + Design.md ← **next**
 
-### Phase 1a — v1 launch (2026-09-29 → Claude Thailand FB post) — plan: [docs/launch-plan.md](docs/launch-plan.md)
+### Phase 1a — v1 launch (Claude Thailand FB post, flexible date) — plan: [docs/launch-plan.md](docs/launch-plan.md)
 
 - [ ] A · Supabase project (remote, `ap-southeast-1`) + Vercel project + Google/GitHub OAuth + env vars
 - [ ] B · Schema v1 + RLS (`profiles`, `startups`, `startup_tools`, `provider_connections`, `revenue_snapshots`, `logos` bucket)
@@ -86,7 +86,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [ ] E · Share kit: share menu (copy/FB/LINE/X), OG image, embeddable badge, Founding Mafia badge (first 100)
 - [ ] F · Trust pages (privacy/PDPA, terms, "How we handle your key") + `/security-review` + rate limits
 - [ ] G · Production deploy + seed 5–10 real startups
-- [ ] H · Launch post in Claude Thailand (19:30–21:00 ICT); cut-off 18:00 → otherwise next evening
+- [ ] H · Launch post in Claude Thailand at the first 19:30–21:00 ICT slot after the launch gate passes
 
 ### Phase 1b — v1.x hardening (weeks 1–4 after launch)
 

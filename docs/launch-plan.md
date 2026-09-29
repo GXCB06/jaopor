@@ -1,6 +1,6 @@
 # MRRMafia v1: launch plan (Claude Thailand, Facebook)
 
-> Goal: a **working, trustworthy v1** live on Vercel and posted in the Claude Thailand Facebook group **today (2026-09-29), target 19:30–21:00 ICT** (peak Facebook hours). If a must-have slips, we **soft-launch tomorrow evening** rather than post something broken: a first impression in a small community only happens once.
+> Goal: a **working, trustworthy v1** live on Vercel and posted in the Claude Thailand Facebook group. **Timing is flexible, and effect comes first:** post in the first evening slot (19:30–21:00 ICT, peak Facebook hours) after all must-haves pass QA and 5–10 real startups are seeded. A first impression in a small community only happens once, so never post a broken flow.
 >
 > Principle: v1 = **TrustMRR's core loop** (add startup → verify → public profile → share → leaderboard), with TrustMRR's look and feel. Everything else waits (Founder Town, marketplace, feed and stats are later phases in Project.md).
 
@@ -22,7 +22,7 @@
 | 10  | Trust pages                       | Privacy (PDPA), Terms, and **"How we handle your key"** (restricted read-only, encrypted, aggregate data only, revoke any time in Stripe). This page drives conversion.                                                                                                         |
 | 11  | Launch hygiene                    | TH/EN switch, mobile (375px) checked, 404/error pages, basic abuse controls (admin can hide a listing, rate limit on add-startup)                                                                                                                                               |
 
-### Should-have (only if the must-haves are done by the time cut-off)
+### Should-have (only after every must-have passes QA)
 
 - Sponsor rails with house ads: "Advertise on MRRMafia"
 - `llms.txt` and a Markdown page per profile
@@ -47,7 +47,7 @@ Blocks run in order. Times are estimates for Claude Code working with the user.
 | G     | 30 min   | **Deploy + seed:** production deploy (user approves), user and friends add 5–10 real startups                                                                    | Leaderboard shows real verified numbers                                         |
 | H     | —        | **Post** (§4) and watch the site: logs, errors, sign-ups                                                                                                         | Post live, first replies answered                                               |
 
-**Cut-off rule:** if block C or D isn't done by 18:00 ICT, move the post to tomorrow 19:30. Spend the evening seeding.
+**Launch gate:** all must-haves done and QA passed (desktop + 375px, TH/EN, Stripe test key, share previews), plus ≥ 5 real startups seeded (≥ 3 verified). Then post at the next 19:30–21:00 ICT slot.
 
 ## 3. User tasks (only you can do these)
 
@@ -115,4 +115,4 @@ Blocks run in order. Times are estimates for Claude Code working with the user.
 | Founders afraid to paste an API key                                      | Restricted-key-only check, "How we handle your key" page, revoke instructions, open about encryption |
 | Spam or fake listings                                                    | Sign-in required, rate limit, admin hide, leaderboard counts only verified revenue                   |
 | Supabase free-project limit                                              | Pause an inactive project, or upgrade later                                                          |
-| Build slips                                                              | 18:00 cut-off → post tomorrow; never post a broken flow                                              |
+| Build slips                                                              | Launch gate (§2): post only when QA passes and seeds are in                                          |
