@@ -25,7 +25,14 @@
 
 **Files:** `src/lib/public-env.ts`, `src/lib/public-env.test.ts`, `vercel.json`
 **Verified:** `npm test` 23/23 ✓; `NEXT_PUBLIC_SITE_URL="" npm run build` ✓ (reproduces the Vercel failure and shows it's fixed); lint ✓; pushed `a231b45`, Vercel build started
-**Next:** confirm the production URL responds; check Vercel Authentication doesn't gate the public `.vercel.app` domain; OAuth setup
+**Live:** production is **https://mrr-mafia.vercel.app**. Public (the team `…-gxcb06s-projects.vercel.app` URLs are behind Vercel SSO, expected). `/th`, `/en`, `/th/startups`, `/th/login` return 200 in 0.26–1.05 s from `sin1`.
+**Follow-up (commit f2b6165):**
+
+- The cron route fails closed with 503 `not_configured` instead of a 500 when `CRON_SECRET` is unset
+- New `/api/health` reports only whether each secret is set
+- Health result: `SUPABASE_SECRET_KEY` ✓, `KEY_ENCRYPTION_SECRET` ✗, `CRON_SECRET` ✗, `NEXT_PUBLIC_SITE_URL` ✗ (empty on Vercel)
+
+**Next:** user fills the 3 empty env values in Vercel and redeploys, then re-checks `/api/health` (expect `ok: true`); OAuth setup
 
 ## 2026-09-29 — GitHub repo (private) for Vercel deploy
 
