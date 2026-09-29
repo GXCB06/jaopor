@@ -80,7 +80,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 ### Phase 1a — v1 launch (Claude Thailand FB post, flexible date) — plan: [docs/launch-plan.md](docs/launch-plan.md)
 
 - [ ] A · Supabase project (remote, `ap-southeast-1`) + Vercel project + Google/GitHub OAuth + env vars
-- [ ] B · Schema v1 + RLS (`profiles`, `startups`, `startup_tools`, `provider_connections`, `revenue_snapshots`, `logos` bucket)
+- [x] B · Schema v1 + RLS (`profiles`, `startups` incl. `ai_tools[]`, `provider_connections`, `revenue_snapshots`, `logos` bucket) — 10/10 RLS checks pass
 - [ ] C · `RevenueProvider` + Stripe restricted-key connector + metrics engine + encrypted keys + daily cron + refresh
 - [ ] D · UI: header/footer, homepage (hero, search, recently added, leaderboard, AI-tool chips), profile, `/startups`, add-startup wizard, dashboard
 - [ ] E · Share kit: share menu (copy/FB/LINE/X), OG image, embeddable badge, Founding Mafia badge (first 100)
@@ -141,29 +141,41 @@ interface RevenueProvider {
 
 Rules: reject keys that are not read-only/restricted; aggregate data only (no customer PII); normalize to USD, display THB.
 
-### Data model v1 (draft)
+### Data model v1 (live, migrations `schema_v1` + `merge_select_policies`)
 
-`profiles` · `startups` · `startup_insights` · `categories` · `tools` (AI build tools) · `tech_stack` · `marketing_channels` · `provider_connections` (encrypted key, status, last_synced_at) · `revenue_snapshots` (startup_id, date, mrr, revenue_30d, revenue_all_time, active_subs, customers) · `sponsors` · `reports`
+| Table                  | Holds                                                                                                                                                                                                                 | Who can do what                                                                                         |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `profiles`             | One per auth user (auto-created by trigger): handle, display name, avatar, X handle                                                                                                                                   | Everyone reads; owner updates 4 columns                                                                 |
+| `startups`             | Listing + insights + `ai_tools[]` / `tech_stack[]` / `marketing_channels[]`, `founding_number` (first 100), **cached verified metrics** (MRR, 30-day, previous 30-day, all-time, subscriptions, customers, last sync) | Everyone reads published; owner inserts/updates **only non-metric columns**, deletes; max 5 per founder |
+| `provider_connections` | Encrypted read-only key, key hint, account name, sync status                                                                                                                                                          | **No client access** (RLS with no policies); server secret key only                                     |
+| `revenue_snapshots`    | Daily revenue + MRR per startup (the 30-day chart)                                                                                                                                                                    | Everyone reads published; server writes                                                                 |
+| Storage `logos`        | Public bucket, PNG/JPEG/WebP ≤ 1 MB, path `<user id>/…`                                                                                                                                                               | Founders manage only their own folder; no public listing                                                |
+
+Later: `sponsors`, `reports`, and a stealth-mode public view.
 Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messages` · `offers` · `deal_documents` · `affiliates` · `feed_posts`
 
 ## 6. Decisions log
 
-| Date       | Decision                                           | Why                                                                                                   |
-| ---------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 2026-09-27 | Name: **MRRMafia**                                 | User choice                                                                                           |
-| 2026-09-27 | Match TrustMRR UX/features; own brand, copy, data  | User wants TrustMRR's style; copying brand/data is a legal + ToS risk                                 |
-| 2026-09-27 | Stack: Next.js + Supabase + Vercel                 | Same class of stack as TrustMRR (Next + shadcn); Supabase/Vercel MCP connected                        |
-| 2026-09-27 | **npm** instead of pnpm                            | pnpm not installed; npm ships with Node 26 — no global installs needed                                |
-| 2026-09-27 | shadcn preset `radix-vega`, neutral base           | Its dark tokens equal TrustMRR's measured tokens                                                      |
-| 2026-09-27 | Fonts: Inconsolata + IBM Plex Sans Thai            | Match TrustMRR's mono look; Inconsolata has no Thai glyphs                                            |
-| 2026-09-27 | Default locale `th`                                | Launch audience is Thai                                                                               |
-| 2026-09-27 | Brand accent: crimson (`--brand`)                  | "Mafia" identity; single swap point in globals.css — revisit with user                                |
-| 2026-09-27 | Hooks written as Node `.mjs`                       | Windows + bash + PowerShell all run Node identically                                                  |
-| 2026-09-27 | Quality hook runs whole-project `tsc` per TS edit  | ~8s per edit (eslint startup dominates); catches cross-file breakage. Revisit if it grows slow        |
-| 2026-09-27 | Supabase agent skills vendored in `.claude/skills` | Official Postgres/RLS guidance for schema work; markdown only, reviewed; excluded from prettier       |
-| 2026-09-29 | Remote Supabase project (no local Docker)          | Fastest path to launch; free tier; Singapore region is closest to Thai users                          |
-| 2026-09-29 | Auth: Google + GitHub OAuth only at launch         | Supabase's default email sender is heavily rate-limited → magic links would fail under launch traffic |
-| 2026-09-29 | Launch timing: quality gate, not a date            | User: "make it effective" → post at the first evening slot after QA + seeding                         |
+| Date       | Decision                                                                                | Why                                                                                                   |
+| ---------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 2026-09-27 | Name: **MRRMafia**                                                                      | User choice                                                                                           |
+| 2026-09-27 | Match TrustMRR UX/features; own brand, copy, data                                       | User wants TrustMRR's style; copying brand/data is a legal + ToS risk                                 |
+| 2026-09-27 | Stack: Next.js + Supabase + Vercel                                                      | Same class of stack as TrustMRR (Next + shadcn); Supabase/Vercel MCP connected                        |
+| 2026-09-27 | **npm** instead of pnpm                                                                 | pnpm not installed; npm ships with Node 26 — no global installs needed                                |
+| 2026-09-27 | shadcn preset `radix-vega`, neutral base                                                | Its dark tokens equal TrustMRR's measured tokens                                                      |
+| 2026-09-27 | Fonts: Inconsolata + IBM Plex Sans Thai                                                 | Match TrustMRR's mono look; Inconsolata has no Thai glyphs                                            |
+| 2026-09-27 | Default locale `th`                                                                     | Launch audience is Thai                                                                               |
+| 2026-09-27 | Brand accent: crimson (`--brand`)                                                       | "Mafia" identity; single swap point in globals.css — revisit with user                                |
+| 2026-09-27 | Hooks written as Node `.mjs`                                                            | Windows + bash + PowerShell all run Node identically                                                  |
+| 2026-09-27 | Quality hook runs whole-project `tsc` per TS edit                                       | ~8s per edit (eslint startup dominates); catches cross-file breakage. Revisit if it grows slow        |
+| 2026-09-27 | Supabase agent skills vendored in `.claude/skills`                                      | Official Postgres/RLS guidance for schema work; markdown only, reviewed; excluded from prettier       |
+| 2026-09-29 | Remote Supabase project (no local Docker)                                               | Fastest path to launch; free tier; Singapore region is closest to Thai users                          |
+| 2026-09-29 | Auth: Google + GitHub OAuth only at launch                                              | Supabase's default email sender is heavily rate-limited → magic links would fail under launch traffic |
+| 2026-09-29 | Launch timing: quality gate, not a date                                                 | User: "make it effective" → post at the first evening slot after QA + seeding                         |
+| 2026-09-29 | Verified metrics cached on `startups`, protected by column grants                       | Leaderboard is one indexed query; founders can't write metric columns (only server sync can)          |
+| 2026-09-29 | `ai_tools` as a checked `text[]` + GIN index (no join table)                            | Fixed small vocabulary; "Built with Claude Code" filter is one `@>` query                             |
+| 2026-09-29 | No stealth mode and no SVG logos in v1                                                  | `owner_id` is publicly readable (stealth needs a view first); SVG can carry scripts                   |
+| 2026-09-29 | Remote DB workflow: migration file → MCP `apply_migration` → advisors → `rls_smoke.sql` | No Docker; keeps a migration history plus a repeatable security test                                  |
 
 ## 7. Open items
 

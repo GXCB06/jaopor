@@ -12,6 +12,27 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-29 — Block B: schema v1 + RLS (live on `mrrmafia`)
+
+**Done:**
+
+- Migration `schema_v1`:
+  - `profiles` (auto-created on sign-up), `startups` (listing, insights, `ai_tools[]`, Founding Mafia number for the first 100, 5-per-founder cap, cached verified metrics), `provider_connections` (encrypted key; no client access), `revenue_snapshots` (daily)
+  - private schema for triggers/helpers; `logos` storage bucket (PNG/JPEG/WebP ≤ 1 MB, own-folder only)
+- Explicit grants, since new projects don't expose tables to the API. Founders can't write metric columns (column-level privileges).
+- Migration `merge_select_policies`: one read policy per role (fixes the performance advisor warning)
+- Reusable `supabase/tests/rls_smoke.sql`; generated `src/lib/supabase/database.types.ts`
+- CLAUDE.md: remote database workflow. Project.md: live data model table, 4 decisions, block B ticked.
+
+**Files:** `supabase/migrations/20260929050526_schema_v1.sql`, `supabase/migrations/20260929055857_merge_select_policies.sql`, `supabase/tests/rls_smoke.sql`, `src/lib/supabase/database.types.ts`, `CLAUDE.md`, `Project.md`
+**Verified:**
+
+- RLS smoke test 10/10, including: founder can't write `mrr_cents` (denied), can't insert as another user (42501), `provider_connections` unreadable, other users edit/delete 0 rows, anon can read but not insert
+- Test rolled back (0 leftover users/startups); founding sequence reset to 1
+- Security advisors: only INFO for `provider_connections` having no policies (intended). Performance advisors: only INFO for unused indexes (empty DB).
+
+**Next:** block C — `RevenueProvider` + Stripe connector + metrics engine + encryption (needs `KEY_ENCRYPTION_SECRET` in `.env.local` to run locally)
+
 ## 2026-09-29 — Block A (part 1): Supabase project + env template
 
 **Done:**

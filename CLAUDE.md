@@ -29,11 +29,18 @@ npm run lint           # eslint
 npm run format         # prettier --write . (sorts Tailwind classes)
 npm run harness:report # summarize tool-call logs in .claude/logs (observability)
 npx supabase migration new <name>   # new SQL migration in supabase/migrations
-npx supabase db diff                # needs a local DB (Docker) — see Project.md §7
 npx shadcn@latest add <component>   # add a shadcn/ui primitive into src/components/ui
 ```
 
-There is no test runner yet. Vitest (metrics engine) and Playwright (end-to-end) arrive in Phase 1; update this section when they're added.
+**Database workflow** (remote project `mrrmafia`, ref `letfxefyqxxrfujpwtri`, no local Docker):
+
+1. `npx supabase migration new <name>`, then write the SQL in that file.
+2. Apply it with Supabase MCP `apply_migration`, passing the same SQL (you'll be asked to approve).
+3. Run `get_advisors` for security and performance, and fix any WARN.
+4. Run [supabase/tests/rls_smoke.sql](supabase/tests/rls_smoke.sql) via `execute_sql`. Every line must read good/expected. Afterwards reset `private.founding_number_seq`.
+5. Regenerate `src/lib/supabase/database.types.ts` (MCP `generate_typescript_types`).
+
+There is no JS test runner yet. Vitest (metrics engine) and Playwright (end-to-end) arrive in Phase 1b; update this section when they're added.
 
 ## Architecture
 
