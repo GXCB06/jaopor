@@ -52,7 +52,15 @@ export async function POST(
     });
     return result.ok
       ? json({ ok: true, metrics: result.metrics })
-      : json({ ok: false, error: result.code, message: result.message }, 422);
+      : json(
+          {
+            ok: false,
+            error: result.code,
+            message: result.message,
+            detail: result.detail,
+          },
+          422,
+        );
   } catch (err) {
     if (err instanceof ForbiddenError) return json({ error: "not_found" }, 404);
     console.error("[stripe connect] failed:", (err as Error).name);

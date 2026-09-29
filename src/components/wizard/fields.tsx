@@ -9,6 +9,7 @@ export const inputClass =
   "h-9 w-full rounded-md border border-input bg-input/30 px-3 text-sm placeholder:text-muted-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none disabled:opacity-50";
 
 export function Field({
+  id,
   label,
   hint,
   optional,
@@ -16,6 +17,8 @@ export function Field({
   children,
   className,
 }: {
+  /** Anchor id for deep links like /dashboard/[id]/edit#pricing */
+  id?: string;
   label: string;
   hint?: string;
   optional?: string;
@@ -24,7 +27,10 @@ export function Field({
   className?: string;
 }) {
   return (
-    <div className={cn("space-y-1.5", className)}>
+    <div
+      id={id}
+      className={cn("scroll-mt-24 space-y-1.5 transition-shadow", className)}
+    >
       <label
         htmlFor={htmlFor}
         className="flex items-baseline gap-2 text-xs font-medium"

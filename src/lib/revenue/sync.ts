@@ -16,7 +16,12 @@ type Admin = SupabaseClient<Database>;
 
 export type SyncResult =
   | { ok: true; metrics: RevenueMetrics }
-  | { ok: false; code: ProviderErrorCode | "not_connected"; message: string };
+  | {
+      ok: false;
+      code: ProviderErrorCode | "not_connected";
+      message: string;
+      detail?: string;
+    };
 
 /** Errors that mean the stored key itself is unusable (vs. a temporary outage). */
 const KEY_ERRORS: ProviderErrorCode[] = [
@@ -171,7 +176,12 @@ export async function connectProvider(
     await getProvider(providerId).validateKey(key);
   } catch (err) {
     if (err instanceof ProviderError)
-      return { ok: false, code: err.code, message: err.message };
+      return {
+        ok: false,
+        code: err.code,
+        message: err.message,
+        detail: err.detail,
+      };
     throw err;
   }
 

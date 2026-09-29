@@ -20,7 +20,7 @@
   },
   "Nav": {
     "startups": "สตาร์ทอัพ",
-    "addStartup": "ลงสตาร์ทอัพ",
+    "addStartup": "เพิ่ม Startup",
     "dashboard": "แดชบอร์ด",
     "signIn": "เข้าสู่ระบบ",
     "signOut": "ออกจากระบบ",
@@ -37,16 +37,19 @@
     "builtWith": "สร้างด้วย Claude Code ในประเทศไทย"
   },
   "Home": {
-    "headline": "รายได้จริงของสตาร์ทอัพที่สร้างด้วย AI",
-    "subline": "สตาร์ทอัพไทยและเอเชียที่สร้างด้วย AI — รายได้ยืนยันตรงจาก Stripe ไม่ใช่ภาพหน้าจอ",
+    "subline": "สตาร์ทอัพไทยและเอเชียที่สร้างด้วย AI พร้อมรายได้ที่ยืนยันตรงจากระบบชำระเงิน ไม่ใช่ภาพหน้าจอ",
     "searchPlaceholder": "\"เครื่องมือ AI ที่สร้างด้วย Claude Code\"",
-    "recent": "เพิ่งลงล่าสุด",
+    "recent": "เพิ่มล่าสุด",
     "leaderboard": "อันดับ",
     "leaderboardHint": "นับเฉพาะ MRR ที่ยืนยันแล้ว",
     "emptyLeaderboard": "ยังไม่มีสตาร์ทอัพที่ยืนยันรายได้ — มาเป็นคนแรกบนกระดานกัน",
-    "emptyRecent": "ยังไม่มีสตาร์ทอัพ ลงของคุณแล้วรับป้าย Founding Mafia #1",
+    "emptyRecent": "ยังไม่มีสตาร์ทอัพ เพิ่ม Startup ของคุณแล้วรับป้าย Founding Mafia #1",
     "builtWith": "สร้างด้วย",
-    "stats": "{total} สตาร์ทอัพ · ยืนยันแล้ว {verified}"
+    "stats": "{total} สตาร์ทอัพ · ยืนยันแล้ว {verified}",
+    "headline1": "รายได้จริงของสตาร์ทอัพ",
+    "headline2": "ที่สร้างด้วย AI",
+    "verifiedBy": "ยืนยันรายได้ผ่าน:",
+    "comingSoon": "เร็ว ๆ นี้"
   },
   "Catalog": {
     "category": {
@@ -151,7 +154,14 @@
     "unverifiedTitle": "ยังไม่ได้ยืนยันรายได้",
     "unverifiedBody": "ผู้ก่อตั้งยังไม่ได้เชื่อมระบบชำระเงิน จึงยังไม่แสดงรายได้",
     "aiReadable": "เวอร์ชัน Markdown สำหรับ AI",
-    "notFound": "ไม่พบสตาร์ทอัพนี้"
+    "notFound": "ไม่พบสตาร์ทอัพนี้",
+    "add": "+ เพิ่ม",
+    "notAdded": "ยังไม่ได้เพิ่ม",
+    "connectStripe": "เชื่อม Stripe",
+    "description": "รายละเอียด",
+    "location": "ที่ตั้ง",
+    "ownerBar": "นี่คือโปรไฟล์ของคุณ — กรอกข้อมูลให้ครบเพื่อให้โดดเด่นขึ้น",
+    "editProfile": "แก้ไขโปรไฟล์"
   },
   "Verified": {
     "stamp": "รายได้ยืนยันผ่าน API key ของ <b>{provider}</b>",
@@ -161,14 +171,14 @@
   },
   "Login": {
     "title": "เข้าสู่ระบบ MRRMafia",
-    "subtitle": "ลงสตาร์ทอัพของคุณ ยืนยันรายได้ และรับป้าย Founding Mafia",
+    "subtitle": "เพิ่ม Startup ของคุณ ยืนยันรายได้ และรับป้าย Founding Mafia",
     "google": "ดำเนินการต่อด้วย Google",
     "github": "ดำเนินการต่อด้วย GitHub",
     "error": "เข้าสู่ระบบไม่สำเร็จ กรุณาลองอีกครั้ง",
     "legal": "เมื่อดำเนินการต่อ ถือว่าคุณยอมรับข้อกำหนดการใช้งานและนโยบายความเป็นส่วนตัว"
   },
   "Wizard": {
-    "title": "ลงสตาร์ทอัพของคุณ",
+    "title": "เพิ่ม Startup ของคุณ",
     "step": "ขั้นตอน {current} จาก {total}",
     "stepBasics": "ข้อมูลพื้นฐาน",
     "stepRevenue": "ยืนยันรายได้",
@@ -191,16 +201,16 @@
     "logoTooBig": "โลโก้ต้องมีขนาดไม่เกิน 1 MB",
     "createAndContinue": "สร้างและไปต่อ",
     "revenueTitle": "เชื่อม Stripe (อ่านอย่างเดียว)",
-    "revenueIntro": "เรารับเฉพาะ Restricted key ของ Stripe ที่อ่านได้อย่างเดียว คีย์ถูกเข้ารหัส ไม่แสดงซ้ำอีก และยกเลิกได้ใน Stripe ทุกเมื่อ",
+    "revenueIntro": "เรารับเฉพาะ Restricted key ที่อ่านได้อย่างเดียว คีย์ถูกเข้ารหัส ไม่แสดงซ้ำ และยกเลิกได้ใน Stripe ทุกเมื่อ",
     "howTo": "วิธีสร้างคีย์",
-    "howTo1": "Stripe Dashboard → Developers → API keys → Create restricted key",
-    "howTo2": "ตั้ง Charges → Read และ Subscriptions → Read ส่วนอื่นปล่อยเป็น None",
-    "howTo3": "กดสร้างคีย์ คัดลอก (ขึ้นต้นด้วย rk_live_) แล้ววางด้านล่าง",
+    "howTo1": "กดปุ่มด้านล่าง → ตั้งชื่อคีย์ เช่น MRRMafia",
+    "howTo2": "ตั้ง Charges → Read และ Subscriptions → Read (ที่เหลือปล่อยเป็น None)",
+    "howTo3": "กด Create key → คัดลอกคีย์ที่ขึ้นต้นด้วย rk_ → วางด้านล่าง",
     "keyLabel": "Restricted key",
     "verify": "ยืนยันรายได้",
     "verifying": "กำลังตรวจสอบกับ Stripe…",
     "verified": "ยืนยันแล้ว! MRR {mrr} · รายได้ 30 วัน {revenue}",
-    "noStripe": "ไม่ได้ใช้ Stripe? ลงแบบยังไม่ยืนยันไปก่อนได้ แล้วค่อยเชื่อมทีหลัง",
+    "noStripe": "ไม่ได้ใช้ Stripe? เพิ่มแบบยังไม่ยืนยันไปก่อนได้ แล้วค่อยเชื่อมทีหลัง",
     "insightsTitle": "เล่าให้ผู้ซื้อและเพื่อนผู้สร้างฟังเพิ่มอีกนิด",
     "valueProposition": "คุณค่าที่มอบให้",
     "problemSolved": "ปัญหาที่แก้",
@@ -212,8 +222,14 @@
     "techStack": "เทคโนโลยีที่ใช้ (คั่นด้วยจุลภาค)",
     "marketingChannels": "ช่องทางการตลาด (คั่นด้วยจุลภาค)",
     "finish": "เผยแพร่โปรไฟล์",
-    "limitReached": "ลงได้สูงสุด 5 สตาร์ทอัพต่อคน",
-    "choose": "เลือก…"
+    "limitReached": "เพิ่มได้สูงสุด 5 สตาร์ทอัพต่อคน",
+    "choose": "เลือก…",
+    "basicsIntro": "ใช้เวลาไม่ถึง 1 นาที — ข้อมูลอื่น ๆ เพิ่มทีหลังได้จากหน้าโปรไฟล์",
+    "openStripe": "เปิดหน้าสร้างคีย์ใน Stripe",
+    "openStripeTest": "โหมดทดสอบ",
+    "writeAccessOn": "คีย์นี้ยังมีสิทธิ์เขียนที่: {resources} — เปลี่ยนเป็น Read หรือ None แล้ววางใหม่",
+    "goToProfile": "ไปที่โปรไฟล์",
+    "skipToProfile": "ข้ามไปก่อน"
   },
   "Errors": {
     "invalid_key": "คีย์นี้ไม่ใช่ Restricted key ของ Stripe ที่ถูกต้อง",
@@ -227,7 +243,7 @@
   },
   "Dashboard": {
     "title": "สตาร์ทอัพของคุณ",
-    "empty": "คุณยังไม่ได้ลงสตาร์ทอัพ",
+    "empty": "คุณยังไม่ได้เพิ่ม Startup",
     "view": "ดู",
     "edit": "แก้ไข",
     "connect": "เชื่อม Stripe",
@@ -238,6 +254,19 @@
     "deleted": "ลบสตาร์ทอัพแล้ว",
     "hidden": "ถูกซ่อนโดยผู้ดูแล",
     "lastSync": "ซิงก์ล่าสุด {time}",
-    "signInRequired": "เข้าสู่ระบบเพื่อจัดการสตาร์ทอัพของคุณ"
+    "signInRequired": "เข้าสู่ระบบเพื่อจัดการสตาร์ทอัพของคุณ",
+    "viewProfile": "ดูโปรไฟล์",
+    "more": "เพิ่มเติม",
+    "copyLink": "คัดลอกลิงก์",
+    "linkCopied": "คัดลอกลิงก์แล้ว",
+    "neverSynced": "ยังไม่เคยซิงก์",
+    "statusVerified": "ยืนยันแล้ว",
+    "statusUnverified": "ยังไม่ยืนยัน",
+    "statusError": "ซิงก์มีปัญหา",
+    "completeness": "โปรไฟล์ครบ {pct}%",
+    "addMore": "{count, plural, =0 {ครบแล้ว เยี่ยม!} other {เพิ่มอีก # ข้อมูลเพื่อให้โดดเด่น}}",
+    "mrr": "MRR",
+    "revenue30d": "รายได้ (30 วัน)",
+    "lastSyncLabel": "ซิงก์ล่าสุด"
   }
 }

@@ -1,8 +1,8 @@
 -- RLS smoke test — run after every migration (Supabase MCP `execute_sql` on project mrrmafia).
 -- Everything runs in one DO block that ends with RAISE EXCEPTION, so ALL changes roll back and the
 -- results come back as the error message. Expect every line to read "(good)" / match "expect".
--- NOTE: sequences don't roll back → afterwards run:
---   alter sequence private.founding_number_seq restart with <next free number>;
+-- Founding numbers are max+1 (no sequence since migration founding_number_no_gaps), so the
+-- rollback leaves nothing to reset.
 do $$
 declare
   a uuid := '00000000-0000-4000-8000-00000000000a';
@@ -24,6 +24,15 @@ begin
   values (a, 'rls-test-a', 'Test A', 'https://a.test', array['claude-code'])
   returning id, founding_number into sid, fnum;
   out := out || format('T2 A inserts own startup: ok, founding_number=%s | ', fnum);
+
+  -- T11: a FAILED insert (duplicate slug) must not burn a founding number.
+  begin
+    insert into public.startups (owner_id, slug, name, website_url) values (a, 'rls-test-a', 'Dup', 'https://d.test');
+  exception when unique_violation then null;
+  end;
+  insert into public.startups (owner_id, slug, name, website_url) values (a, 'rls-test-a2', 'Test A2', 'https://a2.test')
+  returning founding_number into n;
+  out := out || format('T11 number after failed insert: %s (expect %s) | ', n, fnum + 1);
 
   begin
     update public.startups set mrr_cents = 999999 where id = sid;

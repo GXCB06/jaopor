@@ -39,7 +39,7 @@ npx shadcn@latest add <component>   # add a shadcn/ui primitive into src/compone
 1. `npx supabase migration new <name>`, then write the SQL in that file.
 2. Apply it with Supabase MCP `apply_migration`, passing the same SQL (you'll be asked to approve).
 3. Run `get_advisors` for security and performance, and fix any WARN.
-4. Run [supabase/tests/rls_smoke.sql](supabase/tests/rls_smoke.sql) via `execute_sql`. Every line must read good/expected. Afterwards reset `private.founding_number_seq`.
+4. Run [supabase/tests/rls_smoke.sql](supabase/tests/rls_smoke.sql) via `execute_sql`. Every line must read good/expected. It rolls itself back, so nothing needs resetting.
 5. Regenerate `src/lib/supabase/database.types.ts` (MCP `generate_typescript_types`).
 
 Unit tests use **Vitest** (`vitest.config.mts`; `server-only` is stubbed in tests). Playwright end-to-end tests arrive in Phase 1b.

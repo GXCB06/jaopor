@@ -2,6 +2,8 @@ import { CheckCircle2Icon } from "lucide-react";
 import Image from "next/image";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { isSyncStale, type Owner, type StartupRow } from "@/lib/data/startups";
+import { cn } from "@/lib/utils";
+import { EmptyValue } from "./profile/Owner";
 import { Chip, MetricLabel } from "./StartupBits";
 
 // Server components for the startup profile (Design.md §5 StatTile / VerifiedStamp / InsightsGrid / FounderMessage).
@@ -64,61 +66,87 @@ export async function VerifiedStamp({ startup }: { startup: StartupRow }) {
   );
 }
 
+/**
+ * Design.md §5 InfoCard. Every field is always rendered (TrustMRR pattern); an empty one shows
+ * "+ Add" to the owner (deep link to the editor) or "Not added" to visitors.
+ */
+function InfoCard({
+  label,
+  field,
+  children,
+  wide = false,
+}: {
+  label: string;
+  field: string;
+  children: React.ReactNode | null;
+  wide?: boolean;
+}) {
+  return (
+    <div className={cn("rounded-lg border p-3", wide && "sm:col-span-2")}>
+      <MetricLabel>{label}</MetricLabel>
+      <div className="mt-1">{children ?? <EmptyValue field={field} />}</div>
+    </div>
+  );
+}
+
+const chipList = (items: string[]) =>
+  items.length ? (
+    <div className="flex flex-wrap gap-1.5">
+      {items.map((i) => (
+        <Chip key={i}>{i}</Chip>
+      ))}
+    </div>
+  ) : null;
+
+const para = (v: string | null) =>
+  v ? <p className="text-sm whitespace-pre-line">{v}</p> : null;
+
 export async function InsightsGrid({ startup }: { startup: StartupRow }) {
   const t = await getTranslations("Profile");
   const cat = await getTranslations("Catalog");
 
-  const blocks: Array<[string, React.ReactNode]> = [];
-  const text = (label: string, v: string | null) =>
-    v &&
-    blocks.push([
-      label,
-      <p key={label} className="text-sm">
-        {v}
-      </p>,
-    ]);
-  const chips = (label: string, items: string[]) =>
-    items.length > 0 &&
-    blocks.push([
-      label,
-      <div key={label} className="flex flex-wrap gap-1.5">
-        {items.map((i) => (
-          <Chip key={i}>{i}</Chip>
-        ))}
-      </div>,
-    ]);
-
-  text(t("valueProposition"), startup.value_proposition);
-  text(t("problemSolved"), startup.problem_solved);
-  if (startup.audience)
-    text(t("audience"), cat(`audience.${startup.audience}` as "audience.b2b"));
-  text(t("pricing"), startup.pricing);
-  if (startup.team_size)
-    text(t("teamSize"), cat(`team.${startup.team_size}` as "team.solo"));
-  if (startup.funding)
-    text(
-      t("funding"),
-      cat(`funding.${startup.funding}` as "funding.bootstrapped"),
-    );
-  chips(t("category"), [cat(`category.${startup.category}` as "category.ai")]);
-  chips(
-    t("aiTools"),
-    startup.ai_tools.map((x) => cat(`tool.${x}` as "tool.claude-code")),
-  );
-  chips(t("techStack"), startup.tech_stack);
-  chips(t("marketingChannels"), startup.marketing_channels);
-
-  if (blocks.length === 0) return null;
   return (
     <section>
       <h2 className="mb-3 text-sm font-semibold">{t("insights")}</h2>
-      <div className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
-        {blocks.map(([label, content]) => (
-          <div key={label}>
-            <MetricLabel>{label}</MetricLabel>
-            {content}
-          </div>
-        ))}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <InfoCard label={t("valueProposition")} field="value_proposition" wide>
+          {para(startup.value_proposition)}
+        </InfoCard>
+        <InfoCard label={t("problemSolved")} field="problem_solved" wide>
+          {para(startup.problem_solved)}
+        </InfoCard>
+        <InfoCard label={t("audience")} field="audience">
+          {startup.audience
+            ? para(cat(`audience.${startup.audience}` as "audience.b2b"))
+            : null}
+        </InfoCard>
+        <InfoCard label={t("pricing")} field="pricing">
+          {para(startup.pricing)}
+        </InfoCard>
+        <InfoCard label={t("teamSize")} field="team_size">
+          {startup.team_size
+            ? para(cat(`team.${startup.team_size}` as "team.solo"))
+            : null}
+        </InfoCard>
+        <InfoCard label={t("funding")} field="funding">
+          {startup.funding
+            ? para(cat(`funding.${startup.funding}` as "funding.bootstrapped"))
+            : null}
+        </InfoCard>
+        <InfoCard label={t("category")} field="category">
+          {chipList([cat(`category.${startup.category}` as "category.ai")])}
+        </InfoCard>
+        <InfoCard label={t("aiTools")} field="ai_tools">
+          {chipList(
+            startup.ai_tools.map((x) => cat(`tool.${x}` as "tool.claude-code")),
+          )}
+        </InfoCard>
+        <InfoCard label={t("techStack")} field="tech_stack">
+          {chipList(startup.tech_stack)}
+        </InfoCard>
+        <InfoCard label={t("marketingChannels")} field="marketing_channels">
+          {chipList(startup.marketing_channels)}
+        </InfoCard>
       </div>
     </section>
   );
@@ -129,11 +157,21 @@ export async function FounderMessage({
   owner,
   name,
 }: {
-  message: string;
+  message: string | null;
   owner: Owner | null;
   name: string;
 }) {
   const t = await getTranslations("Profile");
+  if (!message) {
+    return (
+      <section>
+        <h2 className="mb-3 text-sm font-semibold">{t("founderMessage")}</h2>
+        <div className="rounded-lg border p-4">
+          <EmptyValue field="founder_message" />
+        </div>
+      </section>
+    );
+  }
   return (
     <section>
       <h2 className="mb-3 text-sm font-semibold">{t("founderMessage")}</h2>

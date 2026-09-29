@@ -1,22 +1,39 @@
 "use client";
 
+import {
+  LinkIcon,
+  MoreHorizontalIcon,
+  PencilIcon,
+  RefreshCwIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Link, useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+/** Design.md §5 Dashboard startup card: ONE primary action + an overflow "⋯" menu. */
 export function DashboardActions({
   id,
   slug,
   name,
   connected,
+  verified,
 }: {
   id: number;
   slug: string;
   name: string;
   connected: boolean;
+  verified: boolean;
 }) {
   const t = useTranslations("Dashboard");
   const errors = useTranslations("Errors");
@@ -43,6 +60,13 @@ export function DashboardActions({
     }
   }
 
+  async function copyLink() {
+    await navigator.clipboard.writeText(
+      new URL(`/startup/${slug}`, window.location.origin).toString(),
+    );
+    toast.success(t("linkCopied"));
+  }
+
   async function remove() {
     if (!window.confirm(t("deleteConfirm", { name }))) return;
     setBusy(true);
@@ -57,32 +81,56 @@ export function DashboardActions({
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <Button asChild size="sm" variant="outline">
-        <Link href={`/startup/${slug}`}>{t("view")}</Link>
-      </Button>
-      <Button asChild size="sm" variant="outline">
-        <Link href={`/dashboard/${id}/edit`}>{t("edit")}</Link>
-      </Button>
-      {connected ? (
-        <Button size="sm" variant="outline" onClick={refresh} disabled={busy}>
-          {t("refresh")}
+    <div className="flex items-center gap-2">
+      {verified ? (
+        <Button asChild size="sm" className="px-4">
+          <Link href={`/startup/${slug}`}>{t("viewProfile")}</Link>
         </Button>
       ) : (
-        <Button asChild size="sm">
-          <Link
-            href={{
-              pathname: `/dashboard/${id}/edit`,
-              query: { step: "revenue" },
-            }}
-          >
-            {t("connect")}
-          </Link>
+        <Button asChild size="sm" className="px-4">
+          <Link href={`/dashboard/${id}/edit#revenue`}>{t("connect")}</Link>
         </Button>
       )}
-      <Button size="sm" variant="destructive" onClick={remove} disabled={busy}>
-        {t("delete")}
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            size="icon-sm"
+            variant="outline"
+            aria-label={t("more")}
+            disabled={busy}
+          >
+            <MoreHorizontalIcon />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-44">
+          {!verified && (
+            <DropdownMenuItem asChild>
+              <Link href={`/startup/${slug}`}>{t("viewProfile")}</Link>
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem asChild>
+            <Link href={`/dashboard/${id}/edit`}>
+              <PencilIcon />
+              {t("edit")}
+            </Link>
+          </DropdownMenuItem>
+          {connected && (
+            <DropdownMenuItem onSelect={refresh}>
+              <RefreshCwIcon />
+              {t("refresh")}
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem onSelect={copyLink}>
+            <LinkIcon />
+            {t("copyLink")}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive" onSelect={remove}>
+            <Trash2Icon />
+            {t("delete")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

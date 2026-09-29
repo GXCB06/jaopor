@@ -141,6 +141,16 @@
   }
   html {
     @apply font-sans;
+    /* Design.md §4 global scale: 1rem = 18px (users found 16px too small at 100% zoom). */
+    font-size: 112.5%;
+  }
+  /* Native controls (select popups, month picker, scrollbars) render dark, not white-on-white. */
+  .dark {
+    color-scheme: dark;
+  }
+  .dark option {
+    background-color: var(--popover);
+    color: var(--popover-foreground);
   }
   /* Thai script needs more vertical room than Latin mono. */
   :lang(th) {

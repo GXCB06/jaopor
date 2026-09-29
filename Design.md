@@ -64,6 +64,8 @@ Numbers are always `tabular-nums`. Money is formatted compactly on cards (`$4.3k
 
 ## 4. Layout
 
+- **Global scale (user feedback 2026-09-29, "too small at 100%"):** `html { font-size: 112.5% }`, so 1rem = 18px. Every rem-based size (text, spacing, controls) scales up proportionally; the class names in this doc stay the same.
+- **Native controls:** `color-scheme: dark` on `<html>`, so `<select>` popups, date/month pickers and scrollbars render dark (feedback: select options were white on white).
 - **Container:** hero and leaderboard use `max-w-2xl` (~672px) centered. Directory and marketplace grids use `max-w-6xl`.
 - **Sponsor rails:** at `xl` (≥1280px), a fixed-width column (~180px) of stacked `SponsorCard`s on each side of the main column. The last item is an "Advertise" link. Hidden below `xl`; on mobile, sponsors appear inline every N rows.
 - **Gutter:** `px-4` (16px) on mobile; no horizontal scroll at 375px.
@@ -164,17 +166,42 @@ Each component lives in `src/components/` (shadcn primitives in `src/components/
 
 - A multi-column link list: Navigation · Browse startups (categories) · API · About/legal. Tagline, then "Add startup" and "Browse N verified startups".
 
+### Hero headline (home)
+
+- Two lines on purpose: line 1 **"รายได้จริงของสตาร์ทอัพ"**, line 2 **"ที่สร้างด้วย AI"** (EN: "Real startup revenue" / "built with AI"). Each is a `block` span in the H1, so the break never falls mid-phrase.
+
+### ProviderStrip ("Revenue verified by")
+
+- Follows TrustMRR's "Revenue metrics are verified by: [logos]" line, under the hero subline.
+- Label (`text-xs text-muted-foreground`), then chips: live providers as bordered chips with a brand check (`Stripe ✓`); upcoming providers as muted, dashed chips with a "coming soon" suffix.
+- Adding a provider (skill `/add-payment-provider`) moves it from upcoming to live.
+
+### InfoCard (profile field that may be empty)
+
+- TrustMRR shows every insight section even when empty. Every profile field renders as a card: _metric label_, then value.
+- **Empty + viewer is the owner:** a dashed-border inline link `+ Add` (`text-xs text-brand`) that opens the edit page at that field (`/dashboard/[id]/edit#<field>`).
+- **Empty + viewer is a visitor:** muted "Not added" (`ยังไม่ได้เพิ่ม`).
+- Owner detection is client-side (session user id vs `owner_id`), so the profile stays ISR-cached.
+- Applies to stat tiles too: an unverified startup shows the revenue tiles with "—". The owner sees "Connect Stripe"; visitors see "Not verified yet".
+
+### Dashboard startup card (replaces the plain list)
+
+- `rounded-lg border p-4`. Header: logo 40, name, status chip (✓ Verified / Not verified / Sync error), Founding badge.
+- A 3-tile row: MRR · Revenue (30d) · Last sync (muted when unverified).
+- **Profile completeness bar:** filled fields out of total, `h-1.5 rounded bg-muted` with a `bg-brand` fill, plus "Add N more to stand out".
+- **One primary action**, by state: `Connect Stripe` (unverified) → `View profile` (verified). Everything else (Edit, Refresh revenue, Copy link, Delete) goes in an overflow `DropdownMenu` (`⋯`).
+
 ## 6. Page templates
 
-| Route              | Structure (top → bottom)                                                                                                                                                                                                                |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/` Home           | Sponsor rails · logo · H1 · subline (visitor count + marketplace link) · SearchBar + Add startup · nav links · **Recently listed** row · **Best deals this week** row · **Leaderboard** (top 50) · Footer                               |
-| `/startups`        | H1 + count · filter chips (category, country, provider, AI tool) · grid of StartupCards · pagination                                                                                                                                    |
-| `/acquire`         | H1 + count · filter bar (revenue, MRR, growth, price, max multiple, margin, audience, mobile app, listing age, founded, country) · sort (Best deals default) · large StartupCard grid                                                   |
-| `/startup/[slug]`  | ForSaleBanner (if listed) · header (logo, name, Share, Visit) · description · StatTiles · RevenueChart · InsightsGrid · ScreenshotViewer · FounderMessage · affiliate CTA · "More startups for sale" grid · "AI-readable Markdown" link |
-| `/stats`           | Headline totals · chart sections (see Project.md Phase 4)                                                                                                                                                                               |
-| `/dashboard`       | Tabs: My startups · Saved · Conversations · Settings                                                                                                                                                                                    |
-| Add-startup wizard | 3 steps with progress: Basics → Connect revenue (provider picker + read-only-key instructions) → Insights                                                                                                                               |
+| Route              | Structure (top → bottom)                                                                                                                                                                                                                                             |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/` Home           | Sponsor rails · logo · H1 · subline (visitor count + marketplace link) · SearchBar + Add startup · nav links · **Recently listed** row · **Best deals this week** row · **Leaderboard** (top 50) · Footer                                                            |
+| `/startups`        | H1 + count · filter chips (category, country, provider, AI tool) · grid of StartupCards · pagination                                                                                                                                                                 |
+| `/acquire`         | H1 + count · filter bar (revenue, MRR, growth, price, max multiple, margin, audience, mobile app, listing age, founded, country) · sort (Best deals default) · large StartupCard grid                                                                                |
+| `/startup/[slug]`  | ForSaleBanner (if listed) · header (logo, name, Share, Visit) · description · StatTiles · RevenueChart · InsightsGrid · ScreenshotViewer · FounderMessage · affiliate CTA · "More startups for sale" grid · "AI-readable Markdown" link                              |
+| `/stats`           | Headline totals · chart sections (see Project.md Phase 4)                                                                                                                                                                                                            |
+| `/dashboard`       | Title + "+ Add Startup" · one **Dashboard startup card** per startup (v1). Later tabs: Saved · Conversations · Settings                                                                                                                                              |
+| Add-startup wizard | **2 short steps** (feedback: "too much to fill in"): 1) Name · Website · Category · Built with (logo optional) → 2) Connect Stripe (one-click "Create read-only key in Stripe" link, then paste) or skip. Insights are added later from the profile's `+ Add` cards. |
 
 ## 7. States
 

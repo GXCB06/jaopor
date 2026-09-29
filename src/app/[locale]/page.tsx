@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AiToolChips } from "@/components/AiToolChips";
 import { BrandMark } from "@/components/BrandLogo";
 import { LeaderboardTable } from "@/components/LeaderboardTable";
+import { ProviderStrip } from "@/components/ProviderStrip";
 import { SearchBar } from "@/components/SearchBar";
 import { StartupCard } from "@/components/StartupCard";
 import { Link } from "@/i18n/navigation";
@@ -26,12 +27,17 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     <main className="w-full">
       <section className="mx-auto flex w-full max-w-2xl flex-col items-center px-4 pt-12 pb-8 text-center md:pt-16">
         <BrandMark className="mb-4 size-9" />
-        <h1 className="mb-3 text-3xl font-bold tracking-tight md:text-5xl">
-          {t("headline")}
+        {/* Design.md §5 Hero headline: two deliberate lines. */}
+        <h1 className="mb-4 text-3xl font-bold tracking-tight md:text-5xl">
+          <span className="block">{t("headline1")}</span>
+          <span className="block">{t("headline2")}</span>
         </h1>
-        <p className="mx-auto mb-2 max-w-2xl text-sm text-muted-foreground md:text-base">
+        <p className="mx-auto mb-3 max-w-2xl text-sm text-muted-foreground md:text-base">
           {t("subline")}
         </p>
+        <div className="mb-3">
+          <ProviderStrip />
+        </div>
         <p className="mb-6 text-xs text-muted-foreground tabular-nums md:mb-8">
           {t("stats", { total: counts.total, verified: counts.verified })}
         </p>

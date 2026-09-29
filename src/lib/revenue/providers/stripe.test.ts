@@ -45,8 +45,32 @@ describe("stripe.validateKey", () => {
       accountName: null,
       mode: "test",
     });
-    // write probes only ever POST an unknown parameter
-    expect(calls.filter((c) => c.startsWith("POST"))).toHaveLength(5);
+    // write probes are empty-body updates of object ids that cannot exist
+    const posts = calls.filter((c) => c.startsWith("POST"));
+    expect(posts).toHaveLength(5);
+    expect(
+      posts.every((c) => /mrrmafiaprobe/.test(c) && !c.includes("?")),
+    ).toBe(true);
+  });
+
+  it("does NOT reject a read-only key when Stripe validates parameters before permissions", async () => {
+    // Regression (user report 2026-09-29): real read-only keys got 400 "unknown parameter"
+    // from the old create-endpoint probes. Empty-body update probes must still see 403.
+    const sentBodies: Array<BodyInit | null | undefined> = [];
+    const impl = (async (_input: RequestInfo | URL, init?: RequestInit) => {
+      if ((init?.method ?? "GET") === "GET") {
+        return new Response(JSON.stringify({ data: [], has_more: false }), {
+          status: 200,
+        });
+      }
+      sentBodies.push(init?.body);
+      // Emulate Stripe: any parameter → 400 first; otherwise permission check → 403.
+      return new Response("{}", { status: init?.body ? 400 : 403 });
+    }) as typeof fetch;
+    await expect(
+      createStripeProvider(impl).validateKey(RK),
+    ).resolves.toMatchObject({ mode: "test" });
+    expect(sentBodies.every((b) => b === undefined)).toBe(true);
   });
 
   it("rejects full-access secret keys without calling Stripe", async () => {
@@ -71,16 +95,38 @@ describe("stripe.validateKey", () => {
     );
   });
 
-  it("rejects a restricted key that has write access", async () => {
+  it("rejects a restricted key that has write access and names the resources", async () => {
     const { impl } = mockFetch((method, path) =>
       method === "GET"
         ? { status: 200, body: { data: [], has_more: false } }
-        : path.startsWith("/v1/refunds")
-          ? { status: 400, body: { error: { type: "invalid_request_error" } } }
+        : path.startsWith("/v1/refunds") || path.startsWith("/v1/customers")
+          ? {
+              status: 404,
+              body: {
+                error: {
+                  type: "invalid_request_error",
+                  code: "resource_missing",
+                },
+              },
+            }
           : { status: 403 },
     );
+    const err = await createStripeProvider(impl)
+      .validateKey(RK)
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ProviderError);
+    expect((err as ProviderError).code).toBe("not_read_only");
+    expect((err as ProviderError).detail).toBe("Customers, Refunds");
+  });
+
+  it("treats an unexpected probe status as an upstream error, not a pass", async () => {
+    const { impl } = mockFetch((method) =>
+      method === "GET"
+        ? { status: 200, body: { data: [], has_more: false } }
+        : { status: 400 },
+    );
     expect(await codeOf(createStripeProvider(impl).validateKey(RK))).toBe(
-      "not_read_only",
+      "upstream",
     );
   });
 

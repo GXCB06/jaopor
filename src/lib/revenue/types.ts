@@ -42,6 +42,8 @@ export class ProviderError extends Error {
   constructor(
     readonly code: ProviderErrorCode,
     message: string,
+    /** Safe, user-facing specifics (e.g. which Stripe resources have write access). Never secrets. */
+    readonly detail?: string,
   ) {
     super(message);
     this.name = "ProviderError";

@@ -49,14 +49,22 @@ type StripeSubscription = {
 
 const KEY_FORMAT = /^rk_(live|test)_[A-Za-z0-9]{10,}$/;
 
-/** Endpoints we POST an unknown parameter to. A read-only key gets 403 (no permission);
- *  a write-capable key gets 400 (param rejected) — nothing is ever created either way. */
-const WRITE_PROBES = [
-  "/customers",
-  "/refunds",
-  "/payment_intents",
-  "/subscriptions",
-  "/payouts",
+/**
+ * Write-access probes: an EMPTY update (POST, no parameters) to an object id that cannot exist.
+ * - 403 → the key has no write permission for that resource (what we want)
+ * - 404 → Stripe got past the permission check and looked the object up → the key CAN write
+ * Nothing is created or changed either way.
+ *
+ * History: v1 POSTed an unknown parameter to the create endpoints and expected 403, but Stripe
+ * validates parameters BEFORE permissions, so genuine read-only keys got 400 and were rejected
+ * (user report, 2026-09-29). Empty bodies leave nothing to validate.
+ */
+const WRITE_PROBES: Array<{ path: string; resource: string }> = [
+  { path: "/customers/cus_mrrmafiaprobe0000", resource: "Customers" },
+  { path: "/subscriptions/sub_mrrmafiaprobe0000", resource: "Subscriptions" },
+  { path: "/payment_intents/pi_mrrmafiaprobe0000", resource: "PaymentIntents" },
+  { path: "/refunds/re_mrrmafiaprobe0000", resource: "Refunds" },
+  { path: "/payouts/po_mrrmafiaprobe0000", resource: "Payouts" },
 ];
 
 function customerId(c: StripeCharge["customer"]): string | null {
@@ -175,21 +183,22 @@ export function createStripeProvider(
       }
 
       // 2) Prove it cannot write (see WRITE_PROBES).
-      for (const path of WRITE_PROBES) {
-        const { status, json } = await request(
-          key,
-          "POST",
-          path,
-          "mrrmafia_read_only_probe=1",
-        );
+      const writable: string[] = [];
+      for (const { path, resource } of WRITE_PROBES) {
+        const { status, json } = await request(key, "POST", path);
         if (status === 403) continue;
-        if (status === 400) {
-          throw new ProviderError(
-            "not_read_only",
-            "This key can write to Stripe. Set every permission to Read (or None) and try again.",
-          );
+        if (status === 404) {
+          writable.push(resource);
+          continue;
         }
         fail(status, json, "the read-only check");
+      }
+      if (writable.length) {
+        throw new ProviderError(
+          "not_read_only",
+          `This key can write to Stripe (${writable.join(", ")}). Set those permissions to Read or None.`,
+          writable.join(", "),
+        );
       }
 
       return {

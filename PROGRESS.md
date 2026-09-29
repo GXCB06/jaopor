@@ -12,6 +12,36 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-29 — User feedback round 1: Stripe key bug + UX rework
+
+**Done:**
+
+- **Bug: genuine read-only Stripe keys were rejected** ("คีย์นี้เขียนข้อมูลใน Stripe ได้"):
+  - Cause: the write probes POSTed an unknown parameter and expected 403, but Stripe validates parameters _before_ permissions, so read-only keys got 400.
+  - Fix: empty-body updates of object ids that cannot exist. 403 = no write, 404 = can write; anything else is an upstream error, never a pass.
+  - Rejections now name the resources (`ProviderError.detail` → API `detail` → UI "สิทธิ์เขียนที่ …").
+  - Regression test emulates Stripe's param-first validation.
+- **Add flow cut to 2 short steps** (name · website · category · built with + optional logo → Stripe or skip). No slug field (auto, retries on clash); website without `https://` is accepted.
+  - `StripeConnect` component: shorter 3-line instructions + "Open Stripe key page" (live/test). Stripe removed permission-prefill links (Marc Lou, Dec 2025).
+- **Edit page** `/dashboard/[id]/edit`: every field on one page with `id` anchors; `#field` deep links scroll, focus and highlight
+- **Profile = TrustMRR pattern**: every section always shown as a card. Empty → owner sees `+ เพิ่ม` (deep link) / "เชื่อม Stripe"; visitors see "ยังไม่ได้เพิ่ม" / "ยังไม่ยืนยัน". Owner bar at the top. Owner detection is client-side (`profile/Owner.tsx`), so the page stays ISR.
+- **Dashboard redesign**: per-startup card with status chip, MRR / 30-day / last-sync tiles, a profile-completeness bar ("เพิ่มอีก N ข้อมูล"), one primary action (Connect Stripe → View profile), everything else in a `⋯` menu
+- **Home**: two-line H1 (รายได้จริงของสตาร์ทอัพ / ที่สร้างด้วย AI); TrustMRR-style `ProviderStrip` ("ยืนยันรายได้ผ่าน: Stripe ✓ · Polar · Lemon Squeezy · Paddle · RevenueCat · เร็ว ๆ นี้")
+- Copy: "ลงสตาร์ทอัพ" → **"เพิ่ม Startup"** everywhere (plus related phrases)
+- **Readability**: `html { font-size: 112.5% }` (18px root); `color-scheme: dark` + dark `<option>` fixes white-on-white select menus
+- **Founding numbers without gaps**: migration `founding_number_no_gaps` = max+1 under an advisory lock (the sequence burned #2–#4 on failed inserts); sequence dropped; RLS smoke test gained T11
+- Design.md: §4 scale/controls, §5 Hero headline, ProviderStrip, InfoCard, Dashboard startup card; §6 wizard/dashboard rows
+
+**Files:** `src/lib/revenue/{types.ts,providers/stripe.ts,providers/stripe.test.ts,sync.ts}`, `src/app/api/startups/[id]/stripe/route.ts`, `src/components/wizard/{StartupWizard,StartupEditForm,StripeConnect,fields}.tsx`, `src/components/profile/Owner.tsx`, `src/components/{ProfileBlocks,ProviderStrip,DashboardActions}.tsx`, `src/app/[locale]/{page,dashboard/page,dashboard/[id]/edit/page,startup/[slug]/page}.tsx`, `src/app/globals.css`, `messages/*.json`, `supabase/migrations/20260929114738_founding_number_no_gaps.sql`, `supabase/tests/rls_smoke.sql`, `Design.md`, `CLAUDE.md`
+**Verified:**
+
+- `npm test` 29/29 ✓; typecheck ✓; lint ✓; TH/EN message keys identical
+- RLS smoke 11/11 ✓; security advisor: only the known INFO plus a WARN for leaked-password protection (email auth only → covered by the "disable Email provider" open item)
+- Browser (local, TH): home hero + provider strip + "เพิ่ม Startup" + larger text ✓; sparse profile as visitor (all cards, "ยังไม่ได้เพิ่ม", tiles "— / ยังไม่ยืนยัน") ✓; 375px no horizontal scroll, root 18px, color-scheme dark ✓. Temporary QA startup inserted and deleted.
+- **Not verified (needs a signed-in user):** owner `+ เพิ่ม` links, the new dashboard, the wizard/edit form, the live Stripe connect with the fixed probe
+
+**Next:** user retests the Stripe key on the live site + reviews the dashboard/wizard; block E share kit
+
 ## 2026-09-29 — Auth providers + env configured; encryption-key parser hardened
 
 **Done:**
