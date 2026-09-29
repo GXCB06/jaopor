@@ -12,6 +12,29 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-29 — JaoPor: repositioning, light/dark, any project type, verified traction, share kit
+
+**Done:**
+
+- **Research:** re-studied the Claude Thailand "อวดโปรเจค 1 คน + claude" thread logged in (102 threads, names never recorded). Findings: traction told in users/visitors/commits more than MRR; many LINE OA bots and mobile apps; many "ขอ feedback / อยากได้ผู้ใช้" asks. The community already hand-builds indexes of the thread; saasthai.com has no verified numbers. → `docs/research/fb-showoff-thread-and-metrics.md` §2b; direction adopted (Project.md §1, §6).
+- **Rename to JaoPor (เจ้าพ่อ)** + headline "1 คน + AI พีคได้แค่ไหน / ดูผลงานจริง ตัวเลขจริง", showcase-first copy, founding badge "เจ้าพ่อรุ่นบุกเบิก #n". Infra keeps the `mrrmafia` names.
+- **Light/dark theme:** dark default, header ThemeToggle, no-flash head script + localStorage (no next-themes); semantic `positive/negative/warning` tokens replace raw emerald/red/amber; chart colours validated on light (dataviz validator: all pass).
+- **Any project type** (migration `projects_links_traction`): website OR App Store / Play / LINE OA (`@id` works) / GitHub, auto-detected from one pasted link; `looking_for` asks; `build_story`; "Claude (chat)" tool.
+- **Verified traction sources** (`src/lib/sources`): RevenueCat (charts-only v2 key; customers/apps probes must be 403), Plausible (Stats key; Sites API refused; domain must match the website), Umami (view-only share link via an SSRF-guarded fetch), GitHub build proof (public repo owned by the signed-in GitHub login; commits, first commit, % co-authored by Claude, stars). One source per kind; new generic API `/api/startups/:id/sources/:source`; cron syncs every source. VerifyPanel replaces the Stripe-only form.
+- **Profile/cards:** ProjectLinks, LookingForBanner, "ตัวเลขที่ยืนยันแล้ว" tiles (lead the page when revenue is unverified), build story; cards show visitors/commits and the first ask.
+- **Share kit (block E):** per-project OG image (Thai font vendored, verified numbers only), SVG badge `/api/badge/:slug` (dark/light), ShareMenu, post-listing/verify ShareDialog with a ready-to-paste post for the thread.
+- Docs: Design.md (theme, tokens, ProjectLinks, LookingForBanner, VerifyPanel, TractionTiles, §9 share kit), CLAUDE.md, launch plan (new post + consent-only seeding), `/add-payment-provider` skill rewritten for the sources engine, `.env.example` (optional `GITHUB_TOKEN`).
+
+**Files:** `supabase/migrations/20260929125125_projects_links_traction.sql`, `supabase/tests/rls_smoke.sql`, `src/lib/{links,share,theme,theme-script}.ts`, `src/lib/{sources,traffic,build,net}/*`, `src/lib/revenue/providers/revenuecat.ts`, `src/app/api/startups/[id]/sources/[source]/route.ts`, `src/app/api/badge/[slug]/route.ts`, `src/app/[locale]/startup/[slug]/{page,opengraph-image}.tsx`, `src/components/{wizard/VerifyPanel,profile/ProjectBlocks,share/*,ThemeToggle}.tsx`, `src/assets/fonts/*`, `messages/*.json`, docs
+**Verified:**
+
+- `npm test` 95/95 (connectors with mocked fetch, links, SSRF guard, share); typecheck ✓; lint ✓; `npm run build` ✓ and the OG route's trace includes the fonts; TH/EN keys identical (315+)
+- RLS smoke **15/15** (new: LINE-only project, no-link denied, visitors_30d write denied, traffic snapshot insert denied); advisors: only the known INFO/WARN
+- Browser (local, temporary QA LINE-bot project, deleted afterwards): dark + light theme persist; profile at 375px and 1280px; card on home; OG image renders Thai; badge dark/light; share dialog opens with `?new=1` and strips it on close; share menu; no console errors
+- **Not verified:** live connects with real RevenueCat / Plausible / Umami credentials and GitHub (needs a signed-in user); owner views of VerifyPanel/edit page; Facebook/LINE preview of the deployed OG card
+
+**Next:** user signs in on the deployed site, tries "เพิ่ม Startup" with one link + GitHub build proof and a Plausible/Umami/RevenueCat source; rename the GitHub OAuth app and Google consent screen to JaoPor; pick a domain; then block F (trust pages) + `/security-review`
+
 ## 2026-09-29 — User feedback round 1: Stripe key bug + UX rework
 
 **Done:**
