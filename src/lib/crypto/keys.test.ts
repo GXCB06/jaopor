@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { decryptSecret, encryptSecret, keyHint } from "./keys";
+import { decryptSecret, encryptSecret, keyHint, parseKeySecret } from "./keys";
 
 const secret = randomBytes(32).toString("base64");
 
@@ -38,5 +38,37 @@ describe("key encryption", () => {
 
   it("shows only the last 4 characters as a hint", () => {
     expect(keyHint("anything-WXYZ")).toBe("…WXYZ");
+  });
+});
+
+describe("parseKeySecret (KEY_ENCRYPTION_SECRET formats)", () => {
+  const raw = randomBytes(32);
+
+  it("accepts base64, base64url and 64 hex chars, all to the same 32 bytes", () => {
+    expect(parseKeySecret(raw.toString("base64"))?.equals(raw)).toBe(true);
+    expect(parseKeySecret(raw.toString("base64url"))?.equals(raw)).toBe(true);
+    expect(parseKeySecret(raw.toString("hex"))?.equals(raw)).toBe(true);
+    expect(parseKeySecret(raw.toString("hex").toUpperCase())?.equals(raw)).toBe(
+      true,
+    );
+  });
+
+  it("ignores surrounding whitespace and quotes pasted from a terminal", () => {
+    expect(parseKeySecret(`  "${raw.toString("base64")}"\n`)?.equals(raw)).toBe(
+      true,
+    );
+  });
+
+  it("rejects wrong lengths and non-key text", () => {
+    expect(parseKeySecret(undefined)).toBeNull();
+    expect(parseKeySecret("")).toBeNull();
+    expect(parseKeySecret(randomBytes(16).toString("base64"))).toBeNull();
+    expect(parseKeySecret(randomBytes(48).toString("base64"))).toBeNull();
+    expect(parseKeySecret("my super secret password")).toBeNull();
+  });
+
+  it("encrypts with a hex secret too", () => {
+    const hex = raw.toString("hex");
+    expect(decryptSecret(encryptSecret("hello", hex), hex)).toBe("hello");
   });
 });

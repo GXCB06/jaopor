@@ -1,3 +1,4 @@
+import { parseKeySecret } from "@/lib/crypto/keys";
 import { json } from "@/lib/http";
 
 // Deployment health check. Reports only WHETHER each server secret is set (never values),
@@ -14,9 +15,9 @@ export function GET() {
   const secrets = Object.fromEntries(
     REQUIRED.map((name) => [name, Boolean(process.env[name]?.trim())]),
   );
+  // Same parser the encryption code uses (base64 or 64 hex chars → exactly 32 bytes).
   const encryptionKeyValid =
-    Buffer.from(process.env.KEY_ENCRYPTION_SECRET?.trim() ?? "", "base64")
-      .length === 32;
+    parseKeySecret(process.env.KEY_ENCRYPTION_SECRET) !== null;
   const ok = Object.values(secrets).every(Boolean) && encryptionKeyValid;
   return json(
     {

@@ -12,6 +12,31 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-29 — Auth providers + env configured; encryption-key parser hardened
+
+**Done:**
+
+- Vercel (via MCP):
+  - `NEXT_PUBLIC_SITE_URL` = `https://mrr-mafia.vercel.app`
+  - Created a correctly named `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Sensitive vars can't be renamed, so the typo `…_KE` stays and is harmless.
+- GitHub OAuth app: checked, homepage + Supabase callback already correct
+- Supabase (dashboard, browser pane): Site URL `https://mrr-mafia.vercel.app`; redirect URLs `https://mrr-mafia.vercel.app/api/auth/callback` + `http://localhost:3000/api/auth/callback`; GitHub provider enabled with Client ID
+- User entered all secrets themselves (GitHub client secret, Google client ID/secret, `KEY_ENCRYPTION_SECRET`, `CRON_SECRET`) and redeployed. Claude never typed a secret.
+- `/api/health` showed `encryptionKeyValid: false`, meaning the key isn't 32-byte base64. Added `parseKeySecret()` in `src/lib/crypto/keys.ts`:
+  - accepts base64, base64url or 64 hex chars
+  - ignores surrounding quotes/whitespace
+  - requires exactly 32 bytes
+  - used by both the encryption code and the health check
+
+**Files:** `src/lib/crypto/keys.ts`, `src/lib/crypto/keys.test.ts`, `src/app/api/health/route.ts`
+**Verified:**
+
+- Live: Supabase `/auth/v1/settings` → github ✓ google ✓; `/api/health` → all 3 secrets set, region `sin1`, site URL set; `/api/cron/sync` without bearer → 401 ✓
+- `npm test` 27/27 ✓ (4 new parser tests); typecheck ✓ lint ✓
+- **Pending:** redeploy, then health `ok: true`; the user's own sign-in test
+
+**Next:** confirm `encryptionKeyValid: true` after deploy (else regenerate the key); user signs in once; Stripe test-key connect on the live site
+
 ## 2026-09-29 — First Vercel deploy: build fix + Singapore region
 
 **Done:**
