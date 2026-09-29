@@ -59,6 +59,10 @@ Status: ☐ not started · ◐ in progress · ☑ done
 | Distribution   | Newsletter, LINE / Telegram alerts                                                      | 3     | ☐      |
 | Data           | Stats page, Revenue/LOC, Domain Rating, Olympics, Top 100, compare startups             | 4     | ☐      |
 | Community      | Feed + posting streaks, founder chats, co-founder finder                                | 4     | ☐      |
+| Community      | Tier-locked founder chat rooms, list mode (mobile) — see docs/research §1               | 2     | ☐      |
+| Community      | "Founder Town" pixel-town chat (desktop), in-world sponsor billboards                   | 4     | ☐      |
+| Engagement     | "$1 vs $1M" guessing game, startup-vs-startup compare pages                             | 4     | ☐      |
+| Marketplace    | Card social proof (views, saves), struck-through price drop, copy link, stealth mode    | 2     | ☐      |
 | AI layer       | Public API, MRRMafia MCP server                                                         | 4     | ☐      |
 | Differentiator | Build proof (GitHub) + traffic proof (snippet)                                          | 4     | ☐      |
 

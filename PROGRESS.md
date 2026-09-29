@@ -12,6 +12,18 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-29 — TrustMRR UX/UI study (incl. Founder Town chat)
+
+**Done:**
+
+- Studied trustmrr.com live: homepage, `/acquire` (13 sort options, full filter sidebar, card anatomy), profile, `/feed`, `/chat` (Founder Town), `/game`, `/championship`, `/compete`, `/compare`, `/cofounders`, `/search`
+- Wrote `docs/research/trustmrr-ux-study.md`: the 3 patterns behind every feature, Founder Town mechanics (MRR-tier houses, open town square, MRR badge on every message, in-world ads), feed/streak mechanics, engagement features, MRRMafia proposals
+- Project.md parity matrix: added tier-locked chat (list mode, Phase 2), Founder Town (Phase 4), mini-game + compare pages, card social-proof items
+
+**Files:** `docs/research/trustmrr-ux-study.md`, `Project.md`
+**Verified:** observations from browser-pane screenshots, DOM reads and page text. Founder Town crashed at ~800×600 and loaded at 1440×900. Top-tier house not confirmed.
+**Next:** user decides on chat tiers for pre-revenue founders and list-mode-first; then fold the chosen patterns into Design.md
+
 ## 2026-09-27 — VS Code workspace settings
 
 **Done:**
