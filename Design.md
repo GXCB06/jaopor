@@ -192,6 +192,10 @@ Each component lives in `src/components/` (shadcn primitives in `src/components/
 
 - **OG image** (`/startup/[slug]/opengraph-image`): 1200×630, dark background, logo + name, big MRR / 30-day revenue, "Verified with Stripe", MRRMafia mark. Uses the Thai font for Thai names. Checked in the Facebook Sharing Debugger and the LINE preview.
 - **Embeddable badge** (SVG): `Verified on MRRMafia · $2.9k MRR`, dark and light variants, linking to the profile.
+- **Share menu** (profile header "Share" button → shadcn `DropdownMenu`): Copy link (toast "Link copied"), Facebook, LINE, X, "Copy badge HTML". Mobile uses `navigator.share` when available, then falls back to the menu.
+- **Post-verify moment:** right after a successful Stripe verification, show a dialog with the OG card preview, the new rank ("#12 in Thailand"), and big Facebook / LINE / Copy-link buttons. This is the main share trigger.
+- **Card "Copy link"**: a small icon button on every StartupCard (TrustMRR has it on every marketplace card).
+- **Founding Mafia badge**: a chip `Founding Mafia #n` (`border-brand/40 text-brand text-[10px] font-bold`) on the profile header and card, for the first 100 startups.
 
 ## 10. Do / Don't
 

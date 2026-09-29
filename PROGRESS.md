@@ -12,6 +12,19 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-29 — v1 launch plan (Claude Thailand FB, today)
+
+**Done:**
+
+- `docs/launch-plan.md`: v1 scope (11 must-haves around the add → verify → profile → share → leaderboard loop), blocks A–H schedule with 18:00 ICT cut-off, user-only tasks, Thai launch post draft, launch-day playbook, follow-ups, metrics, risks
+- Project.md roadmap: Phase 1 split into **1a v1 launch (today)** and **1b hardening (weeks 1–4)**; Founder Town stays Phase 4
+- Design.md §9: share menu, post-verify share dialog, card copy-link, Founding Mafia badge
+- Checked infra: Supabase org has 2 active free projects (new project $0/mo but may need one paused); Vercel account ready
+
+**Files:** `docs/launch-plan.md`, `Project.md`, `Design.md`
+**Verified:** Supabase `get_cost` → $0/month; `list_projects` shows 2 ACTIVE_HEALTHY projects; Vercel `list_projects` OK
+**Next:** user approves scope and Supabase project creation → start block A
+
 ## 2026-09-29 — TrustMRR UX/UI study (incl. Founder Town chat)
 
 **Done:**

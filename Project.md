@@ -77,24 +77,26 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [x] Harness: permissions, hooks, observability logs, project skills
 - [ ] User review of Project.md + Design.md ← **next**
 
-### Phase 1 — Verified revenue database (weeks 1–4, launch version)
+### Phase 1a — v1 launch (2026-09-29 → Claude Thailand FB post) — plan: [docs/launch-plan.md](docs/launch-plan.md)
 
-- [ ] Supabase project (remote dev) + schema v1 + RLS
-- [ ] Auth
-- [ ] `RevenueProvider` + Stripe connector + encrypted key storage
-- [ ] Metrics engine + unit tests (Stripe test mode)
-- [ ] Sync job (Vercel Cron) + verified stamp
-- [ ] Add-startup wizard
-- [ ] Design-system components (StartupCard, LeaderboardRow, StatTile, RevenueChart, InsightsGrid, SponsorCard, SearchBar, VerifiedStamp)
-- [ ] Homepage
-- [ ] Startup profile page
-- [ ] Directory + category/country/stack pages
-- [ ] OG share cards + embeddable badge
-- [ ] Sponsor rails
-- [ ] `llms.txt` + Markdown pages
-- [ ] Admin moderation
-- [ ] Security review
-- [ ] Seed 20–30 Thai startups → launch post
+- [ ] A · Supabase project (remote, `ap-southeast-1`) + Vercel project + Google/GitHub OAuth + env vars
+- [ ] B · Schema v1 + RLS (`profiles`, `startups`, `startup_tools`, `provider_connections`, `revenue_snapshots`, `logos` bucket)
+- [ ] C · `RevenueProvider` + Stripe restricted-key connector + metrics engine + encrypted keys + daily cron + refresh
+- [ ] D · UI: header/footer, homepage (hero, search, recently added, leaderboard, AI-tool chips), profile, `/startups`, add-startup wizard, dashboard
+- [ ] E · Share kit: share menu (copy/FB/LINE/X), OG image, embeddable badge, Founding Mafia badge (first 100)
+- [ ] F · Trust pages (privacy/PDPA, terms, "How we handle your key") + `/security-review` + rate limits
+- [ ] G · Production deploy + seed 5–10 real startups
+- [ ] H · Launch post in Claude Thailand (19:30–21:00 ICT); cut-off 18:00 → otherwise next evening
+
+### Phase 1b — v1.x hardening (weeks 1–4 after launch)
+
+- [ ] Metrics engine unit tests (Vitest) + Playwright happy path
+- [ ] More providers: Polar, LemonSqueezy, RevenueCat (after read-only scope check)
+- [ ] Traction proof: MRRMafia visitor snippet + GitHub build proof (see §7)
+- [ ] Category/country/stack pages, `llms.txt` + Markdown pages (if not shipped in 1a)
+- [ ] Sponsor rails (house ads → first paid sponsor)
+- [ ] Admin moderation UI
+- [ ] Day+1 / Day+7 leaderboard posts (see launch plan §4)
 
 ### Phase 2 — Marketplace (weeks 5–8)
 
