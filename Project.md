@@ -79,7 +79,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 
 ### Phase 1a — v1 launch (Claude Thailand FB post, flexible date) — plan: [docs/launch-plan.md](docs/launch-plan.md)
 
-- [ ] A · Supabase project (remote, `ap-southeast-1`) + Vercel project + Google/GitHub OAuth + env vars — ◐ Supabase ✓, private GitHub repo `GXCB06/mrrmafia` ✓; Vercel + OAuth + env pending
+- [x] A · Supabase project (remote, `ap-southeast-1`) + Vercel project + Google/GitHub OAuth + env vars — live at https://mrr-mafia.vercel.app (`sin1`), private repo `GXCB06/mrrmafia` auto-deploys, `/api/health` ok, GitHub + Google providers on
 - [x] B · Schema v1 + RLS (`profiles`, `startups` incl. `ai_tools[]`, `provider_connections`, `revenue_snapshots`, `logos` bucket) — 10/10 RLS checks pass
 - [ ] C · `RevenueProvider` + Stripe restricted-key connector + metrics engine + encrypted keys + daily cron + refresh — ◐ code + 20 unit tests done; **live Stripe test-key run pending** (done during D)
 - [ ] D · UI: header/footer, homepage (hero, search, recently added, leaderboard, AI-tool chips), profile, `/startups`, add-startup wizard, dashboard — ◐ all built + visually checked (375 / 500 / 1280, TH + EN) with temporary demo data; **sign-in → wizard → Stripe → dashboard end-to-end pending OAuth apps + test key**
@@ -192,6 +192,9 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 
 - [x] ~~Restart the Claude Code session so hooks go live~~ → hooks confirmed live 2026-09-29 (quality + progress-gate fired)
 - [ ] Confirm with a real Stripe **test-mode** restricted key that the write probes return 403 (the read-only proof depends on it)
+- [ ] **Publish the Google OAuth consent screen** (Google Auth Platform → Audience → Publish app); until then only listed test users can use Google sign-in
+- [ ] User should **reset the Google client secret** (it was pasted into chat on 2026-09-29) and update it in Supabase → Providers → Google
+- [ ] Consider disabling the Supabase **Email** provider for v1 (UI only offers Google/GitHub; email sign-up via the API is still open)
 - [ ] Browser-pane visual check of `/th` and `/en` (first real UI in block D)
 - [x] ~~Docker not installed~~ → resolved 2026-09-29: using remote Supabase project `mrrmafia` (`letfxefyqxxrfujpwtri`, ap-southeast-1); migrations applied via Supabase MCP. Local Docker optional later.
 - [ ] `ar-vocab-kids` Supabase project was paused to free a free-tier slot — restore it from the dashboard when needed (or upgrade the org).

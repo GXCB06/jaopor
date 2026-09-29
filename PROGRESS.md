@@ -33,9 +33,11 @@
 
 - Live: Supabase `/auth/v1/settings` → github ✓ google ✓; `/api/health` → all 3 secrets set, region `sin1`, site URL set; `/api/cron/sync` without bearer → 401 ✓
 - `npm test` 27/27 ✓ (4 new parser tests); typecheck ✓ lint ✓
-- **Pending:** redeploy, then health `ok: true`; the user's own sign-in test
+- After redeploy (`b6bff69`): `/api/health` → **`ok: true`**, `encryptionKeyValid: true`
+- Live `/th/login` → "Continue with GitHub" → GitHub shows "Sign in to GitHub to continue to **MRRMafia**" with the app logo (Supabase provider, client ID and callback all wired). Stopped there: signing in and authorizing the app is the user's step.
+- **Pending:** the user's first real sign-in, then the wizard and a Stripe test-key connect
 
-**Next:** confirm `encryptionKeyValid: true` after deploy (else regenerate the key); user signs in once; Stripe test-key connect on the live site
+**Next:** user signs in on https://mrr-mafia.vercel.app/th/login and adds a startup; publish the Google consent screen; block E (share kit)
 
 ## 2026-09-29 — First Vercel deploy: build fix + Singapore region
 
