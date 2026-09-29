@@ -79,7 +79,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 
 ### Phase 1a — v1 launch (Claude Thailand FB post, flexible date) — plan: [docs/launch-plan.md](docs/launch-plan.md)
 
-- [ ] A · Supabase project (remote, `ap-southeast-1`) + Vercel project + Google/GitHub OAuth + env vars
+- [ ] A · Supabase project (remote, `ap-southeast-1`) + Vercel project + Google/GitHub OAuth + env vars — ◐ Supabase ✓, private GitHub repo `GXCB06/mrrmafia` ✓; Vercel + OAuth + env pending
 - [x] B · Schema v1 + RLS (`profiles`, `startups` incl. `ai_tools[]`, `provider_connections`, `revenue_snapshots`, `logos` bucket) — 10/10 RLS checks pass
 - [ ] C · `RevenueProvider` + Stripe restricted-key connector + metrics engine + encrypted keys + daily cron + refresh — ◐ code + 20 unit tests done; **live Stripe test-key run pending** (done during D)
 - [ ] D · UI: header/footer, homepage (hero, search, recently added, leaderboard, AI-tool chips), profile, `/startups`, add-startup wizard, dashboard — ◐ all built + visually checked (375 / 500 / 1280, TH + EN) with temporary demo data; **sign-in → wizard → Stripe → dashboard end-to-end pending OAuth apps + test key**

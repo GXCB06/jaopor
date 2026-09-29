@@ -12,6 +12,18 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-29 — GitHub repo (private) for Vercel deploy
+
+**Done:**
+
+- Installed GitHub CLI 2.101 (winget); user signed in as `GXCB06` (device flow, scopes `repo`, `workflow`)
+- Created private repo **https://github.com/GXCB06/mrrmafia** and pushed `master` (tracking `origin/master`)
+- Before pushing: scanned tracked files for secrets (only `.env.example` with public values); test fixtures now build fake Stripe keys at runtime so no key-shaped literals live in the code
+
+**Files:** `src/lib/crypto/keys.test.ts`, `src/lib/revenue/providers/stripe.test.ts`
+**Verified:** `gh repo view` → PRIVATE, default branch `master`; `git status` → in sync with `origin/master`; `npm test` 20/20
+**Next:** user imports the repo in Vercel + adds env vars; GitHub OAuth app → Supabase provider; Supabase Auth URL config
+
 ## 2026-09-29 — Block D: UI (built + visually checked; sign-in end-to-end pending OAuth)
 
 **Done:**
