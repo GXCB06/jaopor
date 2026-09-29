@@ -234,6 +234,8 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 - [ ] Browser-pane visual check of `/th` and `/en` (first real UI in block D)
 - [x] ~~Docker not installed~~ → resolved 2026-09-29: using remote Supabase project `mrrmafia` (`letfxefyqxxrfujpwtri`, ap-southeast-1); migrations applied via Supabase MCP. Local Docker optional later.
 - [ ] `ar-vocab-kids` Supabase project was paused to free a free-tier slot — restore it from the dashboard when needed (or upgrade the org).
+- [ ] Production domain: the user removed `mrr-mafia.vercel.app` on 2026-09-29 while renaming. Add the new one in Vercel → Domains, then update `NEXT_PUBLIC_SITE_URL`, the Supabase Site URL + redirect URL and the GitHub OAuth homepage.
+- [ ] Header/footer/OG still use the fedora `BrandMark`; the new mascot (hero) and blue tile (tab icon) arrived 2026-09-30. Switch everywhere? Light theme needs an outlined mascot.
 - [ ] Confirm the brand accent: **indigo, from the Figma file, since 2026-09-29** (was crimson; one swap in `globals.css`) and the fedora logo.
 - [ ] Domain name for **JaoPor** (jaopor.com / .co / .app?) and rename the Vercel project URL (`mrr-mafia.vercel.app` today); then update `NEXT_PUBLIC_SITE_URL`, Supabase Site URL/redirects, OAuth app homepages.
 - [ ] Rename the **GitHub OAuth app** ("MRRMafia") and the **Google consent screen** app name to JaoPor (user; both shown on sign-in).

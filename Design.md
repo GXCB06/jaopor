@@ -93,7 +93,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 ### Hero (home and directory)
 
-- Centered, `pt-10`: **brand pill** (mark + "JaoPor") → H1 → subline → ProviderStrip → **SearchBar row** (`max-w-xl`) → secondary links row (`text-caption text-faint`, dot separated: เพิ่ม Startup · กระดานผู้นำ · Dashboard).
+- Centered, `pt-10`: **mascot** on home (`public/brand/jaopor-mascot.webp`, the winking fedora with a rising chart line; `size-28 md:size-32`, `alt` = brand name) / **brand pill** (mark + "JaoPor") on the directory → H1 → subline → ProviderStrip → **SearchBar row** (`max-w-xl`) → secondary links row (`text-caption text-faint`, dot separated: เพิ่ม Startup · กระดานผู้นำ · Dashboard).
 - Home H1 is two deliberate lines: **"1 คน + AI พีคได้แค่ไหน"** / **"ดูผลงานจริง ตัวเลขจริง"** (EN "How far can 1 person + AI go?" / "Real work. Real numbers."), each a `block` span.
 
 ### ProviderStrip ("Numbers verified by")
@@ -238,6 +238,8 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 - Directory sidebar collapses into a disclosure below `lg`.
 
 ## 9. Share assets
+
+- **Brand assets (2026-09-29, from the user):** mascot without background → home hero (`public/brand/jaopor-mascot.webp`, 512px, trimmed). Blue app tile → browser tab / home-screen icons (`src/app/icon.png` 512, `apple-icon.png` 180, `favicon.ico` 16–64; the source's painted checkerboard was cropped away and the corners made transparent). The header/footer/OG still use the small fedora `BrandMark` until the user decides.
 
 - **Which numbers:** `lib/share.ts → shareMetrics()` picks up to 3 **verified** numbers, strongest first: MRR → revenue 30d → visitors 30d → active users → commits.
 - **OG image** (`/[locale]/startup/[slug]/opengraph-image`): 1200×630 dark card (mark, name, tagline, up to 3 metric boxes, "✓ verified via …", URL). Fonts vendored in `src/assets/fonts` (OFL). The OG renderer has no CSS variables, so it keeps one `C` palette mirroring the `.dark` tokens (exception to "no raw hex"); the share-card route shares that palette.

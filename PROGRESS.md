@@ -12,6 +12,23 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — New JaoPor mascot logo (hero) + blue app tile (tab icon)
+
+**Done:**
+
+- The user's mascot (a winking fedora with a rising chart line, a star and a thumbs-up; the image has no name text) replaces the small brand pill above the home headline. It's trimmed and saved at 512px: `public/brand/jaopor-mascot.webp`.
+- The blue app tile is now the browser tab and home-screen icon (`src/app/icon.png` 512, `apple-icon.png` 180, `favicon.ico` 16–64). The source had a painted-in checkerboard, so it was cropped to the tile and its corners made transparent.
+
+**Files:** `src/app/[locale]/page.tsx`, `src/app/{icon.png,apple-icon.png,favicon.ico}`, `public/brand/*`, `Design.md`
+**Verified:**
+
+- `npm run typecheck` ✓, eslint ✓
+- The page `<head>` links the icon, favicon and apple-touch-icon.
+- Hero screenshots: 1280px dark (headless Chrome) and 375px light (pane).
+- In light theme the white hat is low-contrast on the white page.
+
+**Next:** decide whether the header/footer/OG should switch from the fedora `BrandMark` to the new tile; maybe an outlined mascot for the light theme; re-add a production domain in Vercel (the user removed `mrr-mafia.vercel.app`)
+
 ## 2026-09-29 — UI v2: Figma redesign + ledgerly functional patterns
 
 **Done:**
