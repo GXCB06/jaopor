@@ -24,7 +24,10 @@ const READ_ONLY: Handler = (method) =>
     ? { status: 200, body: { data: [], has_more: false } }
     : { status: 403 };
 
-const RK = "rk_test_51AbCdEfGhIjKlMnOp";
+// Fake keys are assembled at runtime so no key-shaped literal lands in git (secret scanners).
+const fakeKey = (prefix: "rk" | "sk" | "pk", mode: "live" | "test") =>
+  [prefix, mode, "FAKE0000000000000000"].join("_");
+const RK = fakeKey("rk", "test");
 
 async function codeOf(p: Promise<unknown>) {
   try {
@@ -50,7 +53,7 @@ describe("stripe.validateKey", () => {
     const { impl, calls } = mockFetch(READ_ONLY);
     expect(
       await codeOf(
-        createStripeProvider(impl).validateKey("sk_live_abcdefghijklmnop"),
+        createStripeProvider(impl).validateKey(fakeKey("sk", "live")),
       ),
     ).toBe("not_read_only");
     expect(calls).toHaveLength(0);
@@ -60,7 +63,7 @@ describe("stripe.validateKey", () => {
     const { impl } = mockFetch(READ_ONLY);
     expect(
       await codeOf(
-        createStripeProvider(impl).validateKey("pk_test_abcdefghijklmnop"),
+        createStripeProvider(impl).validateKey(fakeKey("pk", "test")),
       ),
     ).toBe("invalid_key");
     expect(await codeOf(createStripeProvider(impl).validateKey("hello"))).toBe(
