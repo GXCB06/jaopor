@@ -12,6 +12,21 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-29 — First Vercel deploy: build fix + Singapore region
+
+**Done:**
+
+- Found the Vercel project `mrr-mafia` (it had 0 deployments) and triggered the first production build via Vercel MCP. The repo is Git-linked, so pushes to `master` now auto-deploy.
+- **Fixed the build failure the user reported:**
+  - `TypeError: Invalid URL` at `new URL(publicEnv.siteUrl)` in `[locale]/layout.tsx` metadata. `NEXT_PUBLIC_SITE_URL` on Vercel is empty or malformed, and `??` only covered _undefined_.
+  - `src/lib/public-env.ts` → `toOrigin()`: trims, adds `https://`, returns undefined when unparseable. `siteUrl` then falls back to `NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL`, then localhost. Unit tests added.
+- `vercel.json` `regions: ["sin1"]`: functions were building in `iad1` (US) while Supabase is in Singapore
+- Found the env var typo `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KE` (missing Y); harmless thanks to the default, user asked to rename
+
+**Files:** `src/lib/public-env.ts`, `src/lib/public-env.test.ts`, `vercel.json`
+**Verified:** `npm test` 23/23 ✓; `NEXT_PUBLIC_SITE_URL="" npm run build` ✓ (reproduces the Vercel failure and shows it's fixed); lint ✓; pushed `a231b45`, Vercel build started
+**Next:** confirm the production URL responds; check Vercel Authentication doesn't gate the public `.vercel.app` domain; OAuth setup
+
 ## 2026-09-29 — GitHub repo (private) for Vercel deploy
 
 **Done:**
