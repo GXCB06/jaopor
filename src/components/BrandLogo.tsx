@@ -1,6 +1,7 @@
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
-/** MRRMafia mark: crimson tile with a fedora silhouette + wordmark. Our own identity (Design.md §2 ★). */
+/** JaoPor (เจ้าพ่อ, "the godfather") mark: crimson tile with a fedora silhouette + wordmark. Our own identity (Design.md §2 ★). */
 export function BrandMark({ className }: { className?: string }) {
   return (
     <svg
@@ -21,6 +22,7 @@ export function BrandMark({ className }: { className?: string }) {
 }
 
 export function BrandLogo({ className }: { className?: string }) {
+  const t = useTranslations("Common");
   return (
     <span
       className={cn(
@@ -29,7 +31,7 @@ export function BrandLogo({ className }: { className?: string }) {
       )}
     >
       <BrandMark />
-      <span>MRRMafia</span>
+      <span>{t("brand")}</span>
     </span>
   );
 }

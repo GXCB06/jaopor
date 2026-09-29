@@ -1,4 +1,4 @@
-# MRRMafia — Design System
+# JaoPor — Design System
 
 > Based on TrustMRR's UI (measured live on 2026-09-27): dark, monospaced, data-dense, calm. **We copy the style and patterns, not the brand**: no TrustMRR logo, star mark, copy or screenshots.
 > Rule: build every screen from the tokens and components below. If a screen needs a new pattern, **add it here first**, then build it.
@@ -8,13 +8,13 @@
 1. **Numbers are the hero.** Revenue, MRR, price and multiple are the most prominent things on every card and page. Decoration stays minimal.
 2. **Dense but quiet.** Small uppercase labels, big numbers, thin borders, no shadows, no gradients.
 3. **Monospace everywhere.** Gives a "terminal/ledger" feel that signals data and honesty.
-4. **Dark by default.** Neutral greys. Colour appears only for meaning: green = growth/revenue, red = decline, amber = for sale, brand crimson = MRRMafia identity/verified.
+4. **Dark by default, light on request.** Neutral greys in both themes. Colour appears only for meaning: green = growth/revenue, red = decline, amber = for sale/warning, brand crimson = JaoPor identity/verified.
 5. **Trust is visible.** Every verified number sits near a "Verified with {provider} · updated {time}" stamp.
 6. **Bilingual-first.** Every string comes from `messages/{th,en}.json`. Layouts must survive Thai text, which is ~20–30% longer and taller.
 
 ## 2. Color tokens
 
-Defined in `src/app/globals.css` (shadcn variables). The `.dark` values are the ones in use; they equal TrustMRR's measured values.
+Defined in `src/app/globals.css` (shadcn variables). `.dark` (default) equals TrustMRR's measured values; `:root` is the light theme (shadcn neutral light). See **Theme** below.
 
 | Token                                  | Dark value                  | Use                                                                   |
 | -------------------------------------- | --------------------------- | --------------------------------------------------------------------- |
@@ -31,15 +31,27 @@ Defined in `src/app/globals.css` (shadcn variables). The `.dark` values are the 
 | `--destructive`                        | `oklch(0.704 0.191 22.216)` | Errors, negative growth                                               |
 | `--chart-1`                            | `#2b7fff`                   | Secondary series (previous period, **dashed**), links in charts       |
 | `--chart-2`                            | `#00a86b`                   | **Revenue line** (green)                                              |
-| `--brand` ★                            | `oklch(0.637 0.237 25.3)`   | MRRMafia accent: logo, verified stamp, active nav. **Use sparingly.** |
+| `--brand` ★                            | `oklch(0.637 0.237 25.3)`   | JaoPor accent: logo, verified stamp, active nav. **Use sparingly.** |
 
-Semantic Tailwind usage:
+Semantic tokens (added with the light theme; never use raw `emerald-*`/`red-*`/`amber-*` again, they fail contrast on white):
 
-- Growth up: `text-emerald-400`; growth down: `text-red-400`
-- FOR SALE tag: `bg-amber-900/30 text-amber-400`
+| Token        | Dark                        | Light                        | Utility / use                                                    |
+| ------------ | --------------------------- | ---------------------------- | ---------------------------------------------------------------- |
+| `--positive` | `oklch(0.765 0.177 163.2)`  | `oklch(0.508 0.118 165.6)`   | `text-positive`: growth up, "verified" ticks                     |
+| `--negative` | `oklch(0.704 0.191 22.216)` | `oklch(0.505 0.213 27.518)`  | `text-negative`: growth down                                     |
+| `--warning`  | `oklch(0.828 0.189 84.429)` | `oklch(0.555 0.163 48.998)`  | `text-warning`, `border-warning/40`: sync pending, FOR SALE tag |
+
+- FOR SALE tag: `bg-warning/15 text-warning`
 - Medals: 🥇🥈🥉 emoji (ranks 1–3), plain `#n` after that
 
-★ The brand accent is the one place we intentionally differ from TrustMRR. Crimson is the working choice; change it only in `globals.css`.
+★ The brand accent is the one place we intentionally differ from TrustMRR. Crimson is the working choice; change it only in `globals.css`. Light value: `oklch(0.577 0.215 27.3)`.
+
+### Theme (light / dark)
+
+- **Default dark** (the TrustMRR look); the visitor can switch to light with the header **ThemeToggle** (sun/moon icon button, `size-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent`, `aria-label` from messages). The choice is stored in `localStorage.theme`.
+- No flash: an inline script in `<head>` sets `class="dark"`/removes it and `color-scheme` before paint; the server renders `dark`.
+- Both themes use the **same chart colours** (`#00a86b` / `#2b7fff`): dataviz validator passes on light (`#fcfcfb`, contrast ≥ 3:1, CVD ΔE 26) and dark.
+- Every component must be built from tokens so it works in both; check each UI change in both themes.
 
 ## 3. Typography
 
@@ -79,8 +91,8 @@ Each component lives in `src/components/` (shadcn primitives in `src/components/
 
 ### Header / Nav
 
-- A minimal top bar: logo (brand mark + "MRRMafia" wordmark) on the left.
-- Links: Buy/Sell · Stats · Dashboard (plus TH/EN switch).
+- A minimal top bar: logo (brand mark + "JaoPor" wordmark) on the left.
+- Links: Buy/Sell · Stats · Dashboard, then TH/EN switch and ThemeToggle.
 - The homepage hero repeats the logo centred above the H1.
 
 ### SearchBar
@@ -142,7 +154,7 @@ Each component lives in `src/components/` (shadcn primitives in `src/components/
 ### InsightsGrid (profile "Startup insights")
 
 - Label/value blocks in 2 columns (1 on mobile). Each: _metric label_ → content.
-- Order: Value proposition · Problem solved · Audience (B2B/B2C chip + user count) · Pricing · Team size · Funding · Domain Rating (`48 /100` + domain + helper text) · Marketing channels (chips) · Market (chips) · Tech stack (grouped Frontend/Backend chips) · **AI build tools** (chips with tool icons; MRRMafia-specific) · Additional info
+- Order: Value proposition · Problem solved · Audience (B2B/B2C chip + user count) · Pricing · Team size · Funding · Domain Rating (`48 /100` + domain + helper text) · Marketing channels (chips) · Market (chips) · Tech stack (grouped Frontend/Backend chips) · **AI build tools** (chips with tool icons; JaoPor-specific) · Additional info
 - Chips: `rounded-md border px-2 py-0.5 text-xs`
 
 ### ForSaleBanner (profile top)
@@ -168,9 +180,9 @@ Each component lives in `src/components/` (shadcn primitives in `src/components/
 
 ### Hero headline (home)
 
-- Two lines on purpose: line 1 **"รายได้จริงของสตาร์ทอัพ"**, line 2 **"ที่สร้างด้วย AI"** (EN: "Real startup revenue" / "built with AI"). Each is a `block` span in the H1, so the break never falls mid-phrase.
+- Two lines on purpose: line 1 **"1 คน + AI พีคได้แค่ไหน"**, line 2 **"ดูผลงานจริง ตัวเลขจริง"** (EN: "How far can 1 person + AI go?" / "Real work. Real numbers."). Line 1 echoes the Claude Thailand "อวดโปรเจค" thread the community already knows. Each is a `block` span in the H1, so the break never falls mid-phrase.
 
-### ProviderStrip ("Revenue verified by")
+### ProviderStrip ("Numbers verified by")
 
 - Follows TrustMRR's "Revenue metrics are verified by: [logos]" line, under the hero subline.
 - Label (`text-xs text-muted-foreground`), then chips: live providers as bordered chips with a brand check (`Stripe ✓`); upcoming providers as muted, dashed chips with a "coming soon" suffix.
@@ -233,4 +245,4 @@ Each component lives in `src/components/` (shadcn primitives in `src/components/
 - ✅ Every string goes through next-intl
 - ❌ No shadows, gradients or glassmorphism, and no more than one accent colour per view
 - ❌ No TrustMRR logo, star mark, wording or screenshots
-- ❌ No light theme until it's explicitly designed (the `:root` light tokens exist but are unused)
+- ✅ Check every UI change in dark **and** light

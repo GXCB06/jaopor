@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { routing } from "@/i18n/routing";
 import { publicEnv } from "@/lib/public-env";
+import { themeInitScript } from "@/lib/theme-script";
 import { cn } from "@/lib/utils";
 import "../globals.css";
 
@@ -32,9 +33,10 @@ export async function generateMetadata({
 }: LayoutProps<"/[locale]">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Metadata" });
+  const common = await getTranslations({ locale, namespace: "Common" });
   return {
     metadataBase: new URL(publicEnv.siteUrl),
-    title: { default: t("title"), template: "%s · MRRMafia" },
+    title: { default: t("title"), template: `%s · ${common("brand")}` },
     description: t("description"),
   };
 }
@@ -48,20 +50,25 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
+    // The inline script may drop `dark` before hydration (light theme), hence suppressHydrationWarning.
     <html
       lang={locale}
+      suppressHydrationWarning
       className={cn(
         "dark h-full antialiased",
         inconsolata.variable,
         plexThai.variable,
       )}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
           <SiteHeader />
           <div className="flex flex-1 flex-col">{children}</div>
           <SiteFooter />
-          <Toaster theme="dark" position="bottom-center" />
+          <Toaster position="bottom-center" />
         </NextIntlClientProvider>
       </body>
     </html>

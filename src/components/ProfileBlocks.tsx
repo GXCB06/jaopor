@@ -37,7 +37,7 @@ export async function VerifiedStamp({ startup }: { startup: StartupRow }) {
   const format = await getFormatter();
 
   if (startup.verification_status === "error") {
-    return <p className="text-xs text-amber-400">{t("error")}</p>;
+    return <p className="text-xs text-warning">{t("error")}</p>;
   }
   const synced = startup.last_synced_at
     ? new Date(startup.last_synced_at)
@@ -61,7 +61,7 @@ export async function VerifiedStamp({ startup }: { startup: StartupRow }) {
           })}
         </span>
       )}
-      {stale && <span className="text-amber-400">· {t("pending")}</span>}
+      {stale && <span className="text-warning">· {t("pending")}</span>}
     </p>
   );
 }

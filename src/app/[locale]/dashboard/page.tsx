@@ -121,7 +121,7 @@ export default async function DashboardPage({
                           "rounded-md border px-1.5 py-0.5 text-[10px] font-bold",
                           verified && "border-brand/40 text-brand",
                           status === "statusError" &&
-                            "border-amber-400/40 text-amber-400",
+                            "border-warning/40 text-warning",
                           status === "statusUnverified" &&
                             "text-muted-foreground",
                         )}
@@ -131,7 +131,7 @@ export default async function DashboardPage({
                       </span>
                       <FoundingBadge n={s.founding_number} />
                       {s.status === "hidden" && (
-                        <span className="text-[10px] text-amber-400">
+                        <span className="text-[10px] text-warning">
                           {t("hidden")}
                         </span>
                       )}

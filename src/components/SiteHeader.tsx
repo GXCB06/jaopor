@@ -3,6 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { BrandLogo } from "./BrandLogo";
 import { HeaderAuth } from "./HeaderAuth";
 import { LocaleSwitch } from "./LocaleSwitch";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function SiteHeader() {
   const t = useTranslations("Nav");
@@ -12,7 +13,7 @@ export function SiteHeader() {
         <Link href="/" className="text-sm">
           <BrandLogo />
         </Link>
-        <nav className="flex items-center gap-4">
+        <nav className="flex items-center gap-3 sm:gap-4">
           <Link
             href="/startups"
             className="text-xs font-medium text-muted-foreground hover:text-foreground"
@@ -27,6 +28,7 @@ export function SiteHeader() {
           </Link>
           <HeaderAuth />
           <LocaleSwitch />
+          <ThemeToggle />
         </nav>
       </div>
     </header>

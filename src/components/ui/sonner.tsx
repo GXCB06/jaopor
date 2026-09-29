@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "next-themes";
+import { useThemeMode } from "@/lib/theme";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 import {
   CircleCheckIcon,
@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme();
+  // JaoPor: follow our own <html class="dark"> theme (Design.md §2 Theme), not next-themes.
+  const theme = useThemeMode();
 
   return (
     <Sonner

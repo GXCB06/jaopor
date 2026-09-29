@@ -73,7 +73,7 @@ export function GrowthValue({
     <span
       className={cn(
         "tabular-nums",
-        up ? "text-emerald-400" : "text-red-400",
+        up ? "text-positive" : "text-negative",
         className,
       )}
     >

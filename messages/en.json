@@ -1,10 +1,10 @@
 {
   "Metadata": {
-    "title": "MRRMafia — Verified startup revenue database",
-    "description": "Real, payment-provider-verified revenue for AI-built startups from Thailand and Asia."
+    "title": "JaoPor — How far can 1 person + AI go? Real work, real numbers",
+    "description": "The home for things people in Thailand and Asia build with AI (web apps, mobile apps, LINE bots), with revenue and users verified straight from the source. Not screenshots, and never buried in a comment thread."
   },
   "Common": {
-    "brand": "MRRMafia",
+    "brand": "JaoPor",
     "viewAll": "View all",
     "showMore": "Show more",
     "loading": "Loading…",
@@ -24,10 +24,12 @@
     "dashboard": "Dashboard",
     "signIn": "Sign in",
     "signOut": "Sign out",
-    "language": "ภาษาไทย"
+    "language": "ภาษาไทย",
+    "themeLight": "Switch to light theme",
+    "themeDark": "Switch to dark theme"
   },
   "Footer": {
-    "tagline": "The database of verified startup revenue for AI builders in Thailand and Asia.",
+    "tagline": "The permanent home for AI-built projects from Thailand and Asia. Real work, real numbers.",
     "navigation": "Navigation",
     "browse": "Browse startups",
     "about": "About",
@@ -37,18 +39,18 @@
     "builtWith": "Built with Claude Code in Thailand"
   },
   "Home": {
-    "subline": "Thai and Asian startups built with AI, with revenue verified straight from the payment provider, not screenshots.",
+    "subline": "Show what you built with AI in one place people can search and share, with revenue and users verified straight from the source, not screenshots.",
     "searchPlaceholder": "\"AI tool built with Claude Code\"",
     "recent": "Recently added",
     "leaderboard": "Leaderboard",
     "leaderboardHint": "Verified MRR only",
     "emptyLeaderboard": "No verified startups yet — be the first on the board.",
-    "emptyRecent": "No startups yet. Add yours and become Founding Mafia #1.",
+    "emptyRecent": "Nothing here yet. Add yours and become Founding JaoPor #1.",
     "builtWith": "Built with",
     "stats": "{total} startups · {verified} verified",
-    "headline1": "Real startup revenue",
-    "headline2": "built with AI",
-    "verifiedBy": "Revenue verified by:",
+    "headline1": "How far can 1 person + AI go?",
+    "headline2": "Real work. Real numbers.",
+    "verifiedBy": "Numbers verified by:",
     "comingSoon": "coming soon"
   },
   "Catalog": {
@@ -103,7 +105,7 @@
     "growth": "Growth",
     "copyLink": "Copy link",
     "linkCopied": "Link copied",
-    "foundingBadge": "Founding Mafia #{n}"
+    "foundingBadge": "Founding JaoPor #{n}"
   },
   "Leaderboard": {
     "rank": "#",
@@ -170,8 +172,8 @@
     "error": "Verification error — the founder needs to reconnect."
   },
   "Login": {
-    "title": "Sign in to MRRMafia",
-    "subtitle": "Add your startup, verify revenue and get your Founding Mafia badge.",
+    "title": "Sign in to JaoPor",
+    "subtitle": "Add your project, verify your numbers and get your Founding JaoPor badge.",
     "google": "Continue with Google",
     "github": "Continue with GitHub",
     "error": "Sign-in failed. Please try again.",
@@ -203,7 +205,7 @@
     "revenueTitle": "Connect Stripe (read-only)",
     "revenueIntro": "We only accept a read-only Stripe restricted key. It is encrypted, never shown again, and you can revoke it in Stripe any time.",
     "howTo": "How to create the key",
-    "howTo1": "Click the button below → name the key, e.g. MRRMafia",
+    "howTo1": "Click the button below → name the key, e.g. JaoPor",
     "howTo2": "Set Charges → Read and Subscriptions → Read (leave the rest as None)",
     "howTo3": "Click Create key → copy the key starting with rk_ → paste it below",
     "keyLabel": "Restricted key",
