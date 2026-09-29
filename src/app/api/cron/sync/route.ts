@@ -1,4 +1,3 @@
-import { serverEnv } from "@/lib/env";
 import { json, safeEqual } from "@/lib/http";
 import { syncStartup } from "@/lib/revenue/sync";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -8,8 +7,12 @@ export const maxDuration = 300;
 const CONCURRENCY = 3;
 
 export async function GET(req: Request) {
+  const secret = process.env.CRON_SECRET?.trim();
+  // Fail closed and explain, instead of throwing a 500, when the secret isn't configured.
+  if (!secret)
+    return json({ error: "not_configured", missing: "CRON_SECRET" }, 503);
   const auth = req.headers.get("authorization") ?? "";
-  if (!safeEqual(auth, `Bearer ${serverEnv.cronSecret()}`)) {
+  if (!safeEqual(auth, `Bearer ${secret}`)) {
     return json({ error: "unauthorized" }, 401);
   }
 
