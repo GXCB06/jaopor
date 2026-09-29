@@ -34,6 +34,10 @@ import {
   getStartupBySlug,
 } from "@/lib/data/startups";
 import { growthPct, moneyFull } from "@/lib/format";
+import { ShareDialog } from "@/components/share/ShareDialog";
+import { ShareMenu } from "@/components/share/ShareMenu";
+import { publicEnv } from "@/lib/public-env";
+import { badgeHtml, shareMetrics } from "@/lib/share";
 import { logoUrl } from "@/lib/supabase/public";
 
 export const revalidate = 60;
@@ -65,13 +69,33 @@ export default async function StartupPage({ params }: Props) {
   if (!startup) notFound();
 
   const verified = startup.verification_status === "verified";
-  const [t, common, format, rank, series] = await Promise.all([
+  const [t, common, sh, format, rank, series] = await Promise.all([
     getTranslations("Profile"),
     getTranslations("Common"),
+    getTranslations("Share"),
     getFormatter(),
     getRank(startup),
     verified ? getRevenueSeries(startup.id, 60) : Promise.resolve([]),
   ]);
+
+  // Share kit (Design.md §9): absolute URLs, verified numbers only.
+  const url = `${publicEnv.siteUrl}/${locale}/startup/${startup.slug}`;
+  const badgeSrc = `${publicEnv.siteUrl}/api/badge/${startup.slug}`;
+  const tagline = startup.tagline ? ` — ${startup.tagline}` : "";
+  const metricsLine = shareMetrics(startup)
+    .map((m) => `${sh(`metric.${m.id}`)} ${m.value}`)
+    .join(" · ");
+  const share = {
+    url,
+    text: `${startup.name}${tagline}`,
+    badgeHtml: badgeHtml(url, badgeSrc, startup.name),
+  };
+  const post = sh("post", {
+    name: startup.name,
+    tagline,
+    metrics: metricsLine ? `${metricsLine}\n` : "",
+    url,
+  });
   const growth = growthPct(
     startup.revenue_30d_cents,
     startup.revenue_prev_30d_cents,
@@ -90,6 +114,12 @@ export default async function StartupPage({ params }: Props) {
     <OwnerProvider ownerId={startup.owner_id} startupId={startup.id}>
       <main className="mx-auto w-full max-w-3xl space-y-8 px-4 py-8">
         <OwnerBar />
+        <ShareDialog
+          data={share}
+          post={post}
+          ogImage={`/${locale}/startup/${startup.slug}/opengraph-image`}
+          badgeSrc={`/api/badge/${startup.slug}`}
+        />
 
         <header className="space-y-3">
           <div className="flex items-start gap-3">
@@ -116,7 +146,10 @@ export default async function StartupPage({ params }: Props) {
               </div>
             </div>
           </div>
-          <ProjectLinks startup={startup} />
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <ProjectLinks startup={startup} />
+            <ShareMenu data={share} />
+          </div>
           <LookingForBanner startup={startup} />
           <div className="rounded-lg border p-3">
             <MetricLabel>{t("description")}</MetricLabel>

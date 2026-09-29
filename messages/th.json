@@ -371,5 +371,34 @@
       "repo": "ลิงก์ GitHub repo",
       "needGithub": "ต้องเข้าสู่ระบบด้วย GitHub ก่อน เพื่อยืนยันว่า repo เป็นของคุณ"
     }
+  },
+  "Share": {
+    "share": "แชร์",
+    "nativeShare": "แชร์ผ่าน…",
+    "copyLink": "คัดลอกลิงก์",
+    "linkCopied": "คัดลอกลิงก์แล้ว",
+    "facebook": "Facebook",
+    "line": "LINE",
+    "x": "X",
+    "copyBadge": "คัดลอกโค้ดป้าย (HTML)",
+    "badgeCopied": "คัดลอกโค้ดป้ายแล้ว วางในเว็บหรือ README ของคุณได้เลย",
+    "titleNew": "เพิ่มผลงานแล้ว! โพสต์ลงกลุ่มกันเลย",
+    "titleVerified": "ยืนยันแล้ว! โชว์ตัวเลขจริงให้กลุ่มเห็น",
+    "body": "คัดลอกข้อความนี้ไปคอมเมนต์ในโพสต์ “อวดโปรเจค” ของกลุ่ม Claude Thailand การ์ดพร้อมตัวเลขจะขึ้นให้อัตโนมัติ",
+    "copyPost": "คัดลอกข้อความ",
+    "postCopied": "คัดลอกข้อความแล้ว",
+    "post": "{name}{tagline}\n{metrics}ดูผลงานจริง ตัวเลขจริงบน JaoPor 👉 {url}",
+    "badgeTitle": "ป้ายสำหรับเว็บของคุณ",
+    "badgeBody": "ติดป้ายนี้ในเว็บหรือ README คนที่เห็นจะกดมาดูตัวเลขที่ยืนยันแล้วได้",
+    "close": "ปิด",
+    "ogVerifiedVia": "ยืนยันผ่าน {sources}",
+    "ogUnverified": "ยังไม่ยืนยันตัวเลข",
+    "metric": {
+      "mrr": "MRR",
+      "revenue30d": "รายได้ 30 วัน",
+      "visitors30d": "ผู้เข้าชม 30 วัน",
+      "activeUsers": "ผู้ใช้แอคทีฟ",
+      "commits": "Commits"
+    }
   }
 }

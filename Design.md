@@ -206,7 +206,7 @@ Each component lives in `src/components/` (shadcn primitives in `src/components/
 ### ProjectLinks (profile header)
 
 - One pasted link is enough to list a project (website, App Store, Google Play, LINE OA or GitHub). The add form has a single **"Project link"** field that detects the kind and shows a muted chip under it (`ตรวจพบ: LINE OA`). A LINE ID like `@myshop` becomes an add-friend link.
-- On the profile, links render as a row of outline buttons (`size="sm"`) with a lucide icon each: `Globe` (Website), `Smartphone` (App Store / Google Play, the label says which), `MessageCircle` (LINE OA), `Github` (GitHub). The first link is the primary "Visit".
+- On the profile, links render as a row of outline buttons (`size="sm"`) with a lucide icon each: `Globe` (Website), `Smartphone` (App Store / Google Play, the label says which), `MessageCircle` (LINE OA), `Code` (GitHub; lucide ships no brand icons). The first link is the primary "Visit".
 
 ### LookingForBanner ("กำลังหา…")
 
@@ -257,12 +257,13 @@ Each component lives in `src/components/` (shadcn primitives in `src/components/
 
 ## 9. Share assets
 
-- **OG image** (`/startup/[slug]/opengraph-image`): 1200×630, dark background, logo + name, big MRR / 30-day revenue, "Verified with Stripe", MRRMafia mark. Uses the Thai font for Thai names. Checked in the Facebook Sharing Debugger and the LINE preview.
-- **Embeddable badge** (SVG): `Verified on MRRMafia · $2.9k MRR`, dark and light variants, linking to the profile.
-- **Share menu** (profile header "Share" button → shadcn `DropdownMenu`): Copy link (toast "Link copied"), Facebook, LINE, X, "Copy badge HTML". Mobile uses `navigator.share` when available, then falls back to the menu.
-- **Post-verify moment:** right after a successful Stripe verification, show a dialog with the OG card preview, the new rank ("#12 in Thailand"), and big Facebook / LINE / Copy-link buttons. This is the main share trigger.
+- **Which numbers:** `lib/share.ts → shareMetrics()` picks up to 3 **verified** numbers, strongest first: MRR → revenue 30d → visitors 30d → active users → commits. Self-typed numbers never appear on a share asset.
+- **OG image** (`/[locale]/startup/[slug]/opengraph-image`): 1200×630, dark (`#0a0a0a`), JaoPor mark + founding badge top row; logo (initial when missing/WebP) + name 68px + tagline; up to 3 metric boxes (label 22px muted, value 56px Inconsolata bold); footer "✓ ยืนยันผ่าน Stripe · Plausible · GitHub" in positive green + profile URL. Fonts: IBM Plex Sans Thai (Thai + Latin) and Inconsolata, vendored as woff in `src/assets/fonts` (OFL). **Exception to "no raw hex":** the OG renderer has no CSS variables, so the file keeps one `C` palette that mirrors the `.dark` tokens. Check it in the Facebook Sharing Debugger and the LINE preview after deploy.
+- **Embeddable badge** (`/api/badge/[slug]`, SVG, 28px high, `?theme=light`): `[mark] Verified on JaoPor | 12.8K visitors/30d` (value in positive green) or `On JaoPor | listed`. ASCII + monospace so the width is computed; served with `nosniff` + a no-script CSP. Snippet: `<a href="…/startup/slug"><img src="…/api/badge/slug" height="28"></a>`.
+- **Share menu** (profile header "แชร์" outline button → `DropdownMenu`): native share (phones, after hydration), Copy link, Facebook, LINE, X, Copy badge HTML. No brand icons (lucide has none); text labels.
+- **Share dialog (the main share trigger):** the wizard lands on the profile with `?new=1` (listed) or `?verified=1` (numbers verified). The dialog shows the OG card preview, a **ready-to-paste post** for the Claude Thailand "อวดโปรเจค" thread (name — tagline / verified numbers / "ดูผลงานจริง ตัวเลขจริงบน JaoPor 👉 url"), Copy text (primary), Facebook, LINE, Copy link, then the badge preview + Copy badge HTML. Closing strips the query param. The query is read client-side, so the profile stays ISR.
 - **Card "Copy link"**: a small icon button on every StartupCard (TrustMRR has it on every marketplace card).
-- **Founding Mafia badge**: a chip `Founding Mafia #n` (`border-brand/40 text-brand text-[10px] font-bold`) on the profile header and card, for the first 100 startups.
+- **Founding badge**: a chip `เจ้าพ่อรุ่นบุกเบิก #n` / `Founding JaoPor #n` (`border-brand/40 text-brand text-[10px] font-bold`) on the profile header, card and OG image, for the first 100 projects.
 
 ## 10. Do / Don't
 

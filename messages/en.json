@@ -371,5 +371,34 @@
       "repo": "GitHub repo link",
       "needGithub": "Sign in with GitHub first so we can confirm the repo is yours."
     }
+  },
+  "Share": {
+    "share": "Share",
+    "nativeShare": "Share via…",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "facebook": "Facebook",
+    "line": "LINE",
+    "x": "X",
+    "copyBadge": "Copy badge HTML",
+    "badgeCopied": "Badge code copied — paste it into your site or README.",
+    "titleNew": "You're listed! Post it to the group",
+    "titleVerified": "Verified! Show the group your real numbers",
+    "body": "Copy this and comment it on the Claude Thailand “show your project” post. The card with your numbers appears automatically.",
+    "copyPost": "Copy text",
+    "postCopied": "Text copied",
+    "post": "{name}{tagline}\n{metrics}Real work, real numbers on JaoPor 👉 {url}",
+    "badgeTitle": "Badge for your site",
+    "badgeBody": "Put this badge on your site or README — visitors can click through to your verified numbers.",
+    "close": "Close",
+    "ogVerifiedVia": "Verified via {sources}",
+    "ogUnverified": "Numbers not verified yet",
+    "metric": {
+      "mrr": "MRR",
+      "revenue30d": "Revenue 30d",
+      "visitors30d": "Visitors 30d",
+      "activeUsers": "Active users",
+      "commits": "Commits"
+    }
   }
 }
