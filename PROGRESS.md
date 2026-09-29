@@ -12,6 +12,39 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-29 — Block D: UI (built + visually checked; sign-in end-to-end pending OAuth)
+
+**Done:**
+
+- Auth:
+  - Google/GitHub buttons (`/login`), `/api/auth/callback` with open-redirect guard, `/api/auth/signout`
+  - `src/proxy.ts` now does next-intl + Supabase session refresh
+  - `requireUserId()` for protected pages
+- Layout: `SiteHeader` (client auth widget + TH/EN switch), `SiteFooter`, `BrandLogo` (crimson fedora mark), toasts
+- Pages:
+  - **Home**: hero, stats line, search, "Built with" AI-tool chips, recently added row, top-50 leaderboard, empty states
+  - **`/startups`**: search, category / AI-tool / verified filters, grid, pagination
+  - **`/startup/[slug]`**: header, Founding Mafia badge, 4 stat tiles, 30-day chart with previous-period compare, verified stamp, insights, founder message, unverified state
+  - **`/new`**: 3-step wizard (basics + logo upload → Stripe key → insights)
+  - **`/dashboard`**: list, edit, connect, refresh, delete; `/dashboard/[id]/edit`
+- Components: `StartupCard`, `LeaderboardTable`, `SearchBar`, `AiToolChips`, `CopyLinkButton`, `StartupBits`, `ProfileBlocks`, `RevenueChart`, `wizard/*`; shadcn primitives added
+- Data layer `src/lib/data/startups.ts` (cookie-free anon reads, ISR 60 s); `src/lib/format.ts`; `src/lib/catalog.ts`; full TH/EN messages
+- Chart palette validated with the dataviz validator; `--chart-1/2` updated (Design.md too)
+- Sync stores 60 days of daily rows (for the compare line)
+- `localeDetection: false`
+- Harness: the quality hook runs `next typegen` for route files
+
+**Files:** `src/app/[locale]/**`, `src/app/api/auth/**`, `src/components/**`, `src/lib/{data,auth,catalog,format,public-env}.ts`, `src/proxy.ts`, `messages/*.json`, `src/app/globals.css`, `Design.md`, `.claude/hooks/quality.mjs`
+**Verified:**
+
+- `npm run typecheck` ✓, `npm run lint` ✓, `npm test` 20/20 ✓
+- Browser pane, TH + EN: home (empty and with data), directory, login, `/new` → login redirect, profile with **temporary QA data** (inserted, checked, then deleted; founding counter reset to 1; DB back to 0 users/startups)
+- Widths: 375 (no horizontal scroll: scrollWidth = 375), 500, 1280
+- No server errors. Console 404s are the not-yet-built `/security`, `/privacy`, `/terms` footer links (block F).
+- **Not verified:** real OAuth sign-in → wizard insert → Stripe connect → dashboard (needs the user's Google/GitHub OAuth apps and a Stripe test key)
+
+**Next:** block E (share kit + OG image), block F (trust pages); user sets up OAuth + `.env.local` for the end-to-end test
+
 ## 2026-09-29 — Block C: Stripe verification (code + unit tests; live key test pending)
 
 **Done:**

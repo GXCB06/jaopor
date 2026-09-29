@@ -1,0 +1,80 @@
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import { CATEGORIES } from "@/lib/catalog";
+import { BrandLogo } from "./BrandLogo";
+
+export function SiteFooter() {
+  const t = useTranslations("Footer");
+  const nav = useTranslations("Nav");
+  const cat = useTranslations("Catalog.category");
+  const link = "text-xs text-muted-foreground hover:text-foreground";
+
+  return (
+    <footer className="mt-16 border-t">
+      <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 md:grid-cols-4">
+        <div className="space-y-3">
+          <BrandLogo className="text-sm" />
+          <p className="text-xs text-muted-foreground">{t("tagline")}</p>
+        </div>
+        <div>
+          <h3 className="mb-3 text-xs font-semibold">{t("navigation")}</h3>
+          <ul className="space-y-2">
+            <li>
+              <Link href="/startups" className={link}>
+                {nav("startups")}
+              </Link>
+            </li>
+            <li>
+              <Link href="/new" className={link}>
+                {nav("addStartup")}
+              </Link>
+            </li>
+            <li>
+              <Link href="/dashboard" className={link}>
+                {nav("dashboard")}
+              </Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3 className="mb-3 text-xs font-semibold">{t("browse")}</h3>
+          <ul className="grid grid-cols-2 gap-2">
+            {CATEGORIES.slice(0, 8).map((c) => (
+              <li key={c}>
+                <Link
+                  href={{ pathname: "/startups", query: { category: c } }}
+                  className={link}
+                >
+                  {cat(c)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h3 className="mb-3 text-xs font-semibold">{t("about")}</h3>
+          <ul className="space-y-2">
+            <li>
+              <Link href="/security" className={link}>
+                {t("keySafety")}
+              </Link>
+            </li>
+            <li>
+              <Link href="/privacy" className={link}>
+                {t("privacy")}
+              </Link>
+            </li>
+            <li>
+              <Link href="/terms" className={link}>
+                {t("terms")}
+              </Link>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <p className="pb-8 text-center text-[10px] text-muted-foreground">
+        {t("builtWith")}
+      </p>
+    </footer>
+  );
+}

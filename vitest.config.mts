@@ -6,7 +6,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
       // `server-only` throws outside React Server Components; unit tests run in plain Node.
-      "server-only": path.resolve(import.meta.dirname, "src/test/server-only-stub.ts"),
+      "server-only": path.resolve(
+        import.meta.dirname,
+        "src/test/server-only-stub.ts",
+      ),
     },
   },
   test: {

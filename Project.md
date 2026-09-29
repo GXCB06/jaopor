@@ -35,16 +35,16 @@ Status: ☐ not started · ◐ in progress · ☑ done
 | -------------- | --------------------------------------------------------------------------------------- | ----- | ------ |
 | Foundation     | Next.js + shadcn + Supabase + i18n scaffold                                             | 0     | ☑      |
 | Foundation     | Harness (memory, MCP, permissions, hooks, observability)                                | 0     | ☑      |
-| Auth           | Sign in (magic link, Google, GitHub/X)                                                  | 1     | ☐      |
+| Auth           | Sign in (Google, GitHub) — code done, OAuth apps pending                                | 1     | ◐      |
 | Verification   | `RevenueProvider` abstraction                                                           | 1     | ☑      |
 | Verification   | Stripe restricted-key connector                                                         | 1     | ◐      |
 | Verification   | Metrics engine (MRR, 30d, all-time, subscriptions, customers, growth)                   | 1     | ☑      |
 | Verification   | Scheduled sync + "Verified with X · last updated" stamp                                 | 1     | ◐      |
 | Verification   | LemonSqueezy / Polar / Paddle / Creem / Dodo / RevenueCat / Superwall / Whop            | 1–2   | ☐      |
-| Profile        | Add-startup wizard (basics → connect provider → insights)                               | 1     | ☐      |
-| Profile        | `/startup/[slug]` stat tiles, revenue chart, insights grid, screenshot, founder message | 1     | ☐      |
-| Discovery      | Homepage: hero, search, recently listed, best deals, leaderboard                        | 1     | ☐      |
-| Discovery      | `/startups` directory + category / country / tech-stack / channel pages                 | 1     | ☐      |
+| Profile        | Add-startup wizard (basics → connect provider → insights)                               | 1     | ◐      |
+| Profile        | `/startup/[slug]` stat tiles, revenue chart, insights grid, screenshot, founder message | 1     | ◐      |
+| Discovery      | Homepage: hero, search, recently listed, best deals, leaderboard                        | 1     | ◐      |
+| Discovery      | `/startups` directory + category / country / tech-stack / channel pages                 | 1     | ◐      |
 | Distribution   | OG share cards (Facebook/LINE), embeddable verified badge                               | 1     | ☐      |
 | Distribution   | `llms.txt` + AI-readable Markdown per startup                                           | 1     | ☐      |
 | Monetization   | Sponsor rails (left/right) + Advertise page                                             | 1     | ☐      |
@@ -82,7 +82,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [ ] A · Supabase project (remote, `ap-southeast-1`) + Vercel project + Google/GitHub OAuth + env vars
 - [x] B · Schema v1 + RLS (`profiles`, `startups` incl. `ai_tools[]`, `provider_connections`, `revenue_snapshots`, `logos` bucket) — 10/10 RLS checks pass
 - [ ] C · `RevenueProvider` + Stripe restricted-key connector + metrics engine + encrypted keys + daily cron + refresh — ◐ code + 20 unit tests done; **live Stripe test-key run pending** (done during D)
-- [ ] D · UI: header/footer, homepage (hero, search, recently added, leaderboard, AI-tool chips), profile, `/startups`, add-startup wizard, dashboard
+- [ ] D · UI: header/footer, homepage (hero, search, recently added, leaderboard, AI-tool chips), profile, `/startups`, add-startup wizard, dashboard — ◐ all built + visually checked (375 / 500 / 1280, TH + EN) with temporary demo data; **sign-in → wizard → Stripe → dashboard end-to-end pending OAuth apps + test key**
 - [ ] E · Share kit: share menu (copy/FB/LINE/X), OG image, embeddable badge, Founding Mafia badge (first 100)
 - [ ] F · Trust pages (privacy/PDPA, terms, "How we handle your key") + `/security-review` + rate limits
 - [ ] G · Production deploy + seed 5–10 real startups
@@ -181,6 +181,12 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 | 2026-09-29 | Revenue = successful charges minus refunds (gross of Stripe fees); MRR = active + past_due subscriptions, interval-normalized; trials, discounts and tiered/metered prices excluded | Simple, explainable numbers; like TrustMRR, may differ from Stripe's own MRR — document on the "how we calculate" page      |
 | 2026-09-29 | FX: ECB rates (Frankfurter) at sync-day rate; missing currencies excluded and flagged                                                                                               | Free, no key; never show a guessed number                                                                                   |
 | 2026-09-29 | Vitest 5 (+ `@types/node` 24)                                                                                                                                                       | Unit tests for metrics, crypto and provider logic; Node 26 runtime                                                          |
+| 2026-09-29 | `localeDetection: false` — `/` always goes to `/th`                                                                                                                                 | Thai-first audience; many Thai users run English browsers                                                                   |
+| 2026-09-29 | Header auth is a client widget; public pages read with a cookie-free anon client + `revalidate = 60`                                                                                | Keeps home, directory and profiles static/ISR-cached (fast, cheap) while signed-in UI still works                           |
+| 2026-09-29 | Chart colours `--chart-2 #00a86b` / `--chart-1 #2b7fff` (not TrustMRR's measured values)                                                                                            | TrustMRR's values failed the dataviz validator (lightness band, contrast < 3:1) on our dark surface                         |
+| 2026-09-29 | `src/lib/public-env.ts` defaults for the public Supabase URL + publishable key                                                                                                      | Site runs before `.env.local` exists; both values are public by design. Secrets stay in `env.ts`                            |
+| 2026-09-29 | Wizard writes directly with the user session (browser Supabase client)                                                                                                              | RLS + column grants already enforce ownership and protect metric columns; no extra API needed                               |
+| 2026-09-29 | Quality hook runs `next typegen` when a page/layout/route file changes                                                                                                              | New routes otherwise always fail tsc (missing `PageProps`/`RouteContext` types)                                             |
 
 ## 7. Open items
 

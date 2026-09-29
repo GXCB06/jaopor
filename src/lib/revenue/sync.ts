@@ -63,7 +63,14 @@ export async function syncStartup(
       collect(provider.fetchSubscriptions(key)),
       fetchUsdRates(),
     ]);
-    const metrics = computeMetrics({ charges, subscriptions, rates, now });
+    // 60 days of daily rows: the profile chart shows 30 and compares against the 30 before.
+    const metrics = computeMetrics({
+      charges,
+      subscriptions,
+      rates,
+      now,
+      chartDays: 60,
+    });
 
     const { error: startupError } = await admin
       .from("startups")

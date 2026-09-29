@@ -3,7 +3,11 @@ import { notFound } from "next/navigation";
 import { Inconsolata, IBM_Plex_Sans_Thai } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { SiteFooter } from "@/components/SiteFooter";
+import { SiteHeader } from "@/components/SiteHeader";
+import { Toaster } from "@/components/ui/sonner";
 import { routing } from "@/i18n/routing";
+import { publicEnv } from "@/lib/public-env";
 import { cn } from "@/lib/utils";
 import "../globals.css";
 
@@ -28,7 +32,11 @@ export async function generateMetadata({
 }: LayoutProps<"/[locale]">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Metadata" });
-  return { title: t("title"), description: t("description") };
+  return {
+    metadataBase: new URL(publicEnv.siteUrl),
+    title: { default: t("title"), template: "%s · MRRMafia" },
+    description: t("description"),
+  };
 }
 
 export default async function LocaleLayout({
@@ -49,7 +57,12 @@ export default async function LocaleLayout({
       )}
     >
       <body className="flex min-h-full flex-col">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <SiteHeader />
+          <div className="flex flex-1 flex-col">{children}</div>
+          <SiteFooter />
+          <Toaster theme="dark" position="bottom-center" />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

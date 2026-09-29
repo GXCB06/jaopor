@@ -16,22 +16,22 @@
 
 Defined in `src/app/globals.css` (shadcn variables). The `.dark` values are the ones in use; they equal TrustMRR's measured values.
 
-| Token                                  | Dark value                   | Use                                                                   |
-| -------------------------------------- | ---------------------------- | --------------------------------------------------------------------- |
-| `--background`                         | `oklch(0.145 0 0)`           | Page background                                                       |
-| `--foreground`                         | `oklch(0.985 0 0)`           | Primary text, numbers                                                 |
-| `--card` / `--popover`                 | `oklch(0.205 0 0)`           | Raised surfaces, dialogs                                              |
-| `--secondary` / `--accent` / `--muted` | `oklch(0.269 0 0)`           | Hover fills, secondary buttons, chips                                 |
-| `--muted-foreground`                   | `oklch(0.708 0 0)`           | Labels, captions, secondary text                                      |
-| `--primary`                            | `oklch(0.922 0 0)`           | Primary button background (light on dark)                             |
-| `--primary-foreground`                 | `oklch(0.205 0 0)`           | Primary button text                                                   |
-| `--border`                             | `oklch(1 0 0 / 10%)`         | All borders and dividers                                              |
-| `--input`                              | `oklch(1 0 0 / 15%)`         | Input borders; input fill is `bg-input/30`                            |
-| `--ring`                               | `oklch(0.556 0 0)`           | Focus ring                                                            |
-| `--destructive`                        | `oklch(0.704 0.191 22.216)`  | Errors, negative growth                                               |
-| `--chart-1`                            | `oklch(0.488 0.243 264.376)` | Secondary series (previous period), links in charts                   |
-| `--chart-2`                            | `oklch(0.696 0.17 162.48)`   | **Revenue line / positive growth** (green)                            |
-| `--brand` ★                            | `oklch(0.637 0.237 25.3)`    | MRRMafia accent: logo, verified stamp, active nav. **Use sparingly.** |
+| Token                                  | Dark value                  | Use                                                                   |
+| -------------------------------------- | --------------------------- | --------------------------------------------------------------------- |
+| `--background`                         | `oklch(0.145 0 0)`          | Page background                                                       |
+| `--foreground`                         | `oklch(0.985 0 0)`          | Primary text, numbers                                                 |
+| `--card` / `--popover`                 | `oklch(0.205 0 0)`          | Raised surfaces, dialogs                                              |
+| `--secondary` / `--accent` / `--muted` | `oklch(0.269 0 0)`          | Hover fills, secondary buttons, chips                                 |
+| `--muted-foreground`                   | `oklch(0.708 0 0)`          | Labels, captions, secondary text                                      |
+| `--primary`                            | `oklch(0.922 0 0)`          | Primary button background (light on dark)                             |
+| `--primary-foreground`                 | `oklch(0.205 0 0)`          | Primary button text                                                   |
+| `--border`                             | `oklch(1 0 0 / 10%)`        | All borders and dividers                                              |
+| `--input`                              | `oklch(1 0 0 / 15%)`        | Input borders; input fill is `bg-input/30`                            |
+| `--ring`                               | `oklch(0.556 0 0)`          | Focus ring                                                            |
+| `--destructive`                        | `oklch(0.704 0.191 22.216)` | Errors, negative growth                                               |
+| `--chart-1`                            | `#2b7fff`                   | Secondary series (previous period, **dashed**), links in charts       |
+| `--chart-2`                            | `#00a86b`                   | **Revenue line** (green)                                              |
+| `--brand` ★                            | `oklch(0.637 0.237 25.3)`   | MRRMafia accent: logo, verified stamp, active nav. **Use sparingly.** |
 
 Semantic Tailwind usage:
 
@@ -124,7 +124,9 @@ Each component lives in `src/components/` (shadcn primitives in `src/components/
 
 ### RevenueChart
 
-- Recharts area/line, last 30 days, `--chart-2` line with a subtle area fill. The previous period is a dashed `--chart-1` line when "Compare" is on.
+- Chart colours were changed from TrustMRR's measured values (which failed the lightness and contrast checks on our dark surface) to validated ones; re-run the dataviz validator if they change.
+- Recharts area/line, last 30 days, `--chart-2` 2px line with a subtle area fill. The previous period is a dashed `--chart-1` line when "Compare" is on; then a small legend appears (a single series needs none).
+- Hover: crosshair + tooltip (date, revenue in text colours, not series colours). Grid and axes recessive (`--border`, `text-muted-foreground`, 10px).
 - Header: 30d total (big) + `▲ 9% vs. prev period` + profit margin
 - Toggles (shadcn `ToggleGroup`, `text-xs`): Compare previous period · Trend / Classic
 - Footer: `VerifiedStamp`

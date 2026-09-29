@@ -109,8 +109,10 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
+  /* Validated with the dataviz palette validator (dark, surface #0a0a0a): lightness band,
+     chroma, CVD ΔE 26, contrast ≥ 3:1. chart-2 = revenue (green), chart-1 = previous period (blue). */
+  --chart-1: #2b7fff;
+  --chart-2: #00a86b;
   --brand: oklch(0.637 0.237 25.3);
   --brand-foreground: oklch(0.985 0 0);
   --chart-3: oklch(0.439 0 0);

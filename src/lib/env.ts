@@ -1,4 +1,5 @@
 import "server-only";
+import { publicEnv } from "./public-env";
 
 // Server-only secrets. Read lazily so `next build` works without them; fail loudly when used.
 function required(name: string): string {
@@ -9,7 +10,7 @@ function required(name: string): string {
 }
 
 export const serverEnv = {
-  supabaseUrl: () => required("NEXT_PUBLIC_SUPABASE_URL"),
+  supabaseUrl: () => publicEnv.supabaseUrl,
   supabaseSecretKey: () => required("SUPABASE_SECRET_KEY"),
   keyEncryptionSecret: () => required("KEY_ENCRYPTION_SECRET"),
   cronSecret: () => required("CRON_SECRET"),

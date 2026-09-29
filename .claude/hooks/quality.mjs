@@ -57,6 +57,10 @@ if (isCode) {
 }
 
 if ([".ts", ".tsx"].includes(ext)) {
+  // New/changed routes change the generated PageProps/RouteContext types → regenerate first.
+  if (/^src\/app\/.*\/(page|layout|route|default|not-found)\.tsx?$/.test(rel)) {
+    run("next/dist/bin/next", ["typegen"]);
+  }
   const r = run("typescript/bin/tsc", ["--noEmit", "--pretty", "false"]);
   if (r.status !== 0) {
     const lines = (r.stdout || r.stderr).trim().split("\n");
