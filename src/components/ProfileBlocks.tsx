@@ -60,6 +60,13 @@ export async function VerifiedStamp({ startup }: { startup: StartupRow }) {
   const t = await getTranslations("Verified");
   const format = await getFormatter();
 
+  if (startup.is_demo) {
+    return (
+      <p className="text-center text-caption text-muted-foreground">
+        {t("sample")}
+      </p>
+    );
+  }
   if (startup.verification_status === "error") {
     return (
       <p className="text-center text-caption text-warning">{t("error")}</p>

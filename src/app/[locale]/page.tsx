@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { BrandPill } from "@/components/BrandLogo";
 import { LeaderboardCard, type BoardRow } from "@/components/LeaderboardCard";
 import { ProviderStrip } from "@/components/ProviderStrip";
 import { SearchBar } from "@/components/SearchBar";
@@ -48,6 +48,7 @@ function boardRow(s: StartupRow, metric: BoardMetric): BoardRow {
       : null,
     value,
     growth,
+    demo: s.is_demo,
   };
 }
 
@@ -77,16 +78,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   return (
     <main className="mx-auto w-full max-w-5xl px-4">
       <section className="flex flex-col items-center pt-10 pb-10 text-center md:pt-12">
-        {/* Design.md §5 Hero: the JaoPor mascot (user-supplied brand asset). */}
-        <Image
-          src="/brand/jaopor-mascot.webp"
-          alt={common("brand")}
-          width={512}
-          height={512}
-          loading="eager"
-          fetchPriority="high"
-          className="mb-2 size-28 md:size-32"
-        />
+        <BrandPill />
         <h1 className="mb-3 text-2xl leading-tight font-bold tracking-tight md:text-[2.125rem]">
           <span className="block">{t("headline1")}</span>
           <span className="block">{t("headline2")}</span>

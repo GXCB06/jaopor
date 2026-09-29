@@ -8,6 +8,8 @@ export type ShareMetricId =
 export type ShareMetric = { id: ShareMetricId; value: string };
 
 type Numbers = {
+  /** Demo projects (sample data) never show numbers on share assets. */
+  is_demo?: boolean;
   verification_status: string;
   verified_provider: string | null;
   mrr_cents: number | null;
@@ -27,6 +29,7 @@ const compact = (n: number) =>
 
 /** Verified numbers only, strongest first: revenue → visitors/users → build proof. */
 export function shareMetrics(s: Numbers, max = 3): ShareMetric[] {
+  if (s.is_demo) return [];
   const out: ShareMetric[] = [];
   const revenue = s.verification_status === "verified";
   if (revenue && s.mrr_cents)
@@ -44,6 +47,7 @@ export function shareMetrics(s: Numbers, max = 3): ShareMetric[] {
 
 /** Names of the sources behind the verified numbers, e.g. ["Stripe", "Plausible", "GitHub"]. */
 export function verifiedSources(s: Numbers): string[] {
+  if (s.is_demo) return [];
   const ids: SourceId[] = [];
   if (s.verification_status === "verified" && isSource(s.verified_provider))
     ids.push(s.verified_provider);

@@ -1,4 +1,8 @@
-import { ArrowUpRightIcon, ChevronRightIcon } from "lucide-react";
+import {
+  ArrowUpRightIcon,
+  ChevronRightIcon,
+  FlaskConicalIcon,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -187,6 +191,15 @@ export default async function StartupPage({ params }: Props) {
 
         <ProjectLinks startup={startup} skipFirst />
         <LookingForBanner startup={startup} />
+        {startup.is_demo && (
+          <p className="flex items-start gap-2 rounded-xl border border-dashed bg-card p-3 text-xs text-muted-foreground">
+            <FlaskConicalIcon
+              className="mt-0.5 size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+            {t("demoNotice")}
+          </p>
+        )}
 
         {/* A project without verified revenue leads with the numbers it does have (visitors, build). */}
         {tractionFirst && <TractionTiles startup={startup} />}

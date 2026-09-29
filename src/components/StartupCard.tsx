@@ -67,6 +67,9 @@ function useMetrics(s: StartupRow, large: boolean): Metric[] | null {
 function Tag({ startup, large }: { startup: StartupRow; large: boolean }) {
   const t = useTranslations("Card");
   const lf = useTranslations("LookingFor");
+  // Compact cards show the demo label under the name (DemoTag) so the name keeps its width.
+  if (startup.is_demo)
+    return large ? <CornerTag tone="neutral">{t("demo")}</CornerTag> : null;
   const verified =
     startup.verification_status === "verified" || startup.visitors_30d !== null;
   // Compact cards are narrow: the verified tag shrinks to its check so the name stays readable.
@@ -80,6 +83,15 @@ function Tag({ startup, large }: { startup: StartupRow; large: boolean }) {
   const ask = startup.looking_for[0] as LookingFor | undefined;
   if (ask) return <CornerTag tone="warning">{lf(ask)}</CornerTag>;
   return null;
+}
+
+function DemoTag() {
+  const t = useTranslations("Card");
+  return (
+    <CornerTag tone="neutral" className="px-1 py-0">
+      {t("demo")}
+    </CornerTag>
+  );
 }
 
 export function StartupCard({
@@ -157,8 +169,9 @@ export function StartupCard({
                 {cat(startup.category)}
               </span>
             ) : (
-              <p className="truncate text-2xs text-faint">
-                {cat(startup.category)}
+              <p className="flex min-w-0 items-center gap-1.5 text-2xs text-faint">
+                <span className="truncate">{cat(startup.category)}</span>
+                {startup.is_demo && <DemoTag />}
               </p>
             )}
           </div>

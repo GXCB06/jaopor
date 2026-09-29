@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Link } from "@/i18n/navigation";
 import type { BoardMetric } from "@/lib/data/startups";
-import { GrowthValue, StartupLogo } from "./StartupBits";
+import { CornerTag, GrowthValue, StartupLogo } from "./StartupBits";
 
 /** One leaderboard row, formatted on the server (slim: only what the table shows). */
 export type BoardRow = {
@@ -18,6 +18,8 @@ export type BoardRow = {
   founder: { name: string; avatar: string | null } | null;
   value: string;
   growth: number | null;
+  /** Sample project (Design.md §5 Demo projects). */
+  demo: boolean;
 };
 
 const MEDALS = ["🥇", "🥈", "🥉"];
@@ -113,8 +115,13 @@ export function LeaderboardCard({
                   >
                     <StartupLogo name={r.name} src={r.logo} size={24} />
                     <span className="min-w-0">
-                      <span className="block truncate text-xs font-semibold group-hover:underline">
-                        {r.name}
+                      <span className="flex min-w-0 items-center gap-1.5">
+                        <span className="truncate text-xs font-semibold group-hover:underline">
+                          {r.name}
+                        </span>
+                        {r.demo && (
+                          <CornerTag tone="neutral">{t("demo")}</CornerTag>
+                        )}
                       </span>
                       {r.tagline && (
                         <span className="block truncate text-2xs text-faint">

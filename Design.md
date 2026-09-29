@@ -88,17 +88,18 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 ### SiteHeader (sticky, ledgerly pattern)
 
 - `sticky top-0 z-40 border-b bg-background`, `h-14`, inner `max-w-6xl`.
-- Left: `BrandLogo` (fedora tile + "JaoPor"). Nav links `text-xs text-muted-foreground hover:text-foreground` (active `text-foreground`): **Startups · Leaderboard (`/#leaderboard`) · Dashboard**. Hidden below `md`.
+- Left: `BrandLogo` = the **blue app tile** (`public/brand/jaopor-tile.png`, `size-7 rounded-md`) + "JaoPor" wordmark (`text-sm font-bold`); links home. Nav links `text-xs text-muted-foreground hover:text-foreground` (active `text-foreground`): **Startups · Leaderboard (`/#leaderboard`) · Dashboard**. Hidden below `md`.
 - Right: **search trigger** (`h-8 rounded-md border bg-card px-2.5 text-xs text-faint` with a search icon, "ค้นหา", and a `kbd` "/"; pressing `/` anywhere focuses the page search or opens `/startups`), primary **"+ เพิ่ม Startup"** (`h-8`, icon-only below `sm`), HeaderAuth (`whitespace-nowrap`), TH/EN (short code `EN`/`TH` below `sm`), ThemeToggle.
 
 ### Hero (home and directory)
 
-- Centered, `pt-10`: **mascot** on home (`public/brand/jaopor-mascot.webp`, the winking fedora with a rising chart line; `size-28 md:size-32`, `alt` = brand name) / **brand pill** (mark + "JaoPor") on the directory → H1 → subline → ProviderStrip → **SearchBar row** (`max-w-xl`) → secondary links row (`text-caption text-faint`, dot separated: เพิ่ม Startup · กระดานผู้นำ · Dashboard).
+- Centered, `pt-10`: **brand pill** = a link home: the mascot (`public/brand/jaopor-mascot.webp`, the winking fedora with a rising chart line, `size-9`) + "JaoPor" (`text-sm font-bold`), same on home and directory → H1 → subline → ProviderStrip → **SearchBar row** (`max-w-xl`) → secondary links row (`text-caption text-faint`, dot separated: เพิ่ม Startup · กระดานผู้นำ · Dashboard).
 - Home H1 is two deliberate lines: **"1 คน + AI พีคได้แค่ไหน"** / **"ดูผลงานจริง ตัวเลขจริง"** (EN "How far can 1 person + AI go?" / "Real work. Real numbers."), each a `block` span.
 
 ### ProviderStrip ("Numbers verified by")
 
-- Label `text-caption text-muted-foreground`, then small square source tiles (`size-6 rounded-sm border bg-card text-2xs font-bold`, initial letter; `title` = source name) for live sources, then a muted "+ soon" note listing upcoming ones. No third-party logos.
+- Label `text-caption text-muted-foreground`, then one row of **real provider logos** (user request 2026-09-30): `size-8 rounded-lg` tiles in the brand's own colour with the glyph in white (dark glyph on yellow brands), `ring-1 ring-border` so black tiles show on the dark page. Hover/focus shows a tooltip with the name (`bg-popover border rounded-md text-xs`). Upcoming sources are the same tiles at `opacity-40` with "coming soon" in the tooltip.
+- Logos: Simple Icons SVG paths (CC0) in `src/lib/brand-icons.ts`, used only to say which service verifies a number (no endorsement implied). Polar has no Simple Icons entry, so it's a letter tile. Brand colours are the second hex exception after the image renderers.
 
 ### SearchBar
 
@@ -196,6 +197,12 @@ Dialog `sm:max-w-xl rounded-xl bg-popover`, title "Share verified numbers":
 - **FilterSidebar** (`rounded-xl border bg-card p-4 space-y-4`, title "FILTERS" `text-3xs text-faint` above it): Category (select) · AI tool (select) · Verified only (checkbox) · Project type (Website / App / LINE OA / GitHub select) · Looking for (select) · Reset link. GET form, works without JS; on mobile it collapses into a `<details>` "Filters" disclosure.
 - Results header: "{n} startups found" (`text-caption text-muted-foreground`) + sort select (Top MRR · Most visitors · Newest · Most commits).
 - Grid `sm:grid-cols-2 gap-3` of large StartupCards; pagination below.
+
+### Demo projects (`startups.is_demo`)
+
+- Sample projects that fill the site before launch. Card: corner tag `Demo` (neutral: `border bg-secondary text-muted-foreground`), which replaces the verified/ask tag. Profile: a strip above the stat tiles (`rounded-xl border border-dashed bg-card p-3 text-xs text-muted-foreground`, `FlaskConical` icon): "Demo project: sample numbers for illustration, not a real business." The verified stamp says "Sample data" instead of naming a provider.
+- Demo rows are excluded from share images and the badge (they render "not verified").
+- Remove them all with `delete from startups where is_demo`.
 
 ### ProjectLinks, LookingForBanner, TractionTiles, VerifyPanel, Dashboard card, InfoCard
 

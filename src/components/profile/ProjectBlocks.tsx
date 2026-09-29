@@ -91,10 +91,13 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
     getTranslations("Common"),
     getFormatter(),
   ]);
+  // Demo projects (sample data) never claim a verification source.
   const via = (source: string | null) =>
-    source && isSource(source)
-      ? t("via", { source: SOURCE_NAME[source] })
-      : null;
+    startup.is_demo
+      ? t("sampleShort")
+      : source && isSource(source)
+        ? t("via", { source: SOURCE_NAME[source] })
+        : null;
   const notVerified = (anchor: string) => (
     <EmptyValue field={anchor} visitorText={common("notVerified")} />
   );

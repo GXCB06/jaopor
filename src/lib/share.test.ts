@@ -25,6 +25,21 @@ describe("shareMetrics", () => {
     expect(badgeValue(base)).toBe(null);
   });
 
+  it("never shows numbers for a demo project (sample data)", () => {
+    const demo = {
+      ...base,
+      is_demo: true,
+      verification_status: "verified",
+      verified_provider: "stripe",
+      mrr_cents: 185_000,
+      visitors_30d: 9_420,
+      traffic_provider: "plausible",
+    };
+    expect(shareMetrics(demo)).toEqual([]);
+    expect(verifiedSources(demo)).toEqual([]);
+    expect(badgeValue(demo)).toBe(null);
+  });
+
   it("puts revenue first, then traffic, then build proof", () => {
     const s = {
       ...base,

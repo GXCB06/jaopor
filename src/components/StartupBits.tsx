@@ -151,7 +151,7 @@ export function CornerTag({
   children,
   className,
 }: {
-  tone: "positive" | "warning";
+  tone: "positive" | "warning" | "neutral";
   children: React.ReactNode;
   className?: string;
 }) {
@@ -161,7 +161,9 @@ export function CornerTag({
         "inline-flex shrink-0 items-center rounded-sm border px-1.5 py-0.5 text-3xs font-bold tracking-wider whitespace-nowrap uppercase",
         tone === "positive"
           ? "border-positive/30 bg-positive/10 text-positive"
-          : "border-warning/30 bg-warning/10 text-warning",
+          : tone === "warning"
+            ? "border-warning/30 bg-warning/10 text-warning"
+            : "bg-secondary text-muted-foreground",
         className,
       )}
     >

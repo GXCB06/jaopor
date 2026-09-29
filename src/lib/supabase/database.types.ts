@@ -153,6 +153,7 @@ export type Database = {
           github_repo: string | null;
           github_url: string | null;
           id: number;
+          is_demo: boolean;
           last_synced_at: string | null;
           line_url: string | null;
           logo_path: string | null;
@@ -207,6 +208,7 @@ export type Database = {
           github_repo?: string | null;
           github_url?: string | null;
           id?: never;
+          is_demo?: boolean;
           last_synced_at?: string | null;
           line_url?: string | null;
           logo_path?: string | null;
@@ -261,6 +263,7 @@ export type Database = {
           github_repo?: string | null;
           github_url?: string | null;
           id?: never;
+          is_demo?: boolean;
           last_synced_at?: string | null;
           line_url?: string | null;
           logo_path?: string | null;

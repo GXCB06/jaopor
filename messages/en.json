@@ -111,7 +111,8 @@
     "commits": "Commits",
     "verified": "Verified",
     "revenueShort": "Revenue",
-    "visitorsShort": "Visitors"
+    "visitorsShort": "Visitors",
+    "demo": "Demo"
   },
   "Leaderboard": {
     "rank": "#",
@@ -131,7 +132,8 @@
     "empty": "No verified numbers here yet — be the first on the board.",
     "showAll": "Show all ({count}) ↓",
     "showLess": "Show less ↑",
-    "footer": "Verified numbers only · synced from Stripe, RevenueCat, Plausible, Umami, GitHub"
+    "footer": "Verified numbers only · synced from Stripe, RevenueCat, Plausible, Umami, GitHub",
+    "demo": "Demo"
   },
   "Directory": {
     "title": "All startups",
@@ -144,7 +146,6 @@
     "prev": "Previous",
     "next": "Next",
     "page": "Page {page} of {pages}",
-    "pill": "Everything on JaoPor",
     "subline": "Web apps, mobile apps, LINE OA bots and GitHub projects built with AI, with numbers verified at the source.",
     "filters": "Filters",
     "category": "Category",
@@ -223,13 +224,16 @@
     "lastDays": "Last {days} days",
     "prevPeriod": "Previous period",
     "trend": "Trend view",
-    "moreStartups": "More startups"
+    "moreStartups": "More startups",
+    "demoNotice": "Demo project: all numbers are sample data to show how the site works, not a real business.",
+    "sampleShort": "Sample data"
   },
   "Verified": {
     "stamp": "Revenue is verified with <b>{provider}</b> API key.",
     "updated": "Last updated: {time}",
     "pending": "Sync pending",
-    "error": "Verification error — the founder needs to reconnect."
+    "error": "Verification error — the founder needs to reconnect.",
+    "sample": "Sample data: not verified from a real account."
   },
   "Login": {
     "title": "Sign in to JaoPor",

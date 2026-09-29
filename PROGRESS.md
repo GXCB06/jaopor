@@ -12,6 +12,36 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Real provider logos, new header/hero logos, 5 demo projects
+
+**Done:**
+
+- **"Numbers verified by" strip:** real logo tiles in each brand's colour, with the name on hover/focus. Stripe, RevenueCat, Plausible, Umami and GitHub are live. Lemon Squeezy, Paddle and App Store are dimmed as "coming soon", and Polar is a letter tile because it has no Simple Icons entry. Paths come from Simple Icons (CC0) in `src/lib/brand-icons.ts`.
+- **Logos:**
+  - Header and footer use the blue app tile + "JaoPor".
+  - The hero now has a small mascot + "JaoPor" pill that links home (home and directory).
+- **5 demo projects** (fictional, modelled on the project types in the Claude Thailand thread): a shop POS, a LINE calorie bot, a guesthouse system, a construction takeoff tool and a price-history app.
+  - Numbers and snapshots are sample data.
+  - Links go to example.com.
+  - Owner is the user.
+- **Demo flag (migration `demo_projects`):**
+  - Adds a server-only `startups.is_demo`. Demo rows take no founding number and don't count toward the 5-per-founder limit.
+  - The UI labels them "Demo" on cards and the leaderboard. Profiles show a sample-data notice and "Sample data" in place of "verified via…".
+  - Share images, the badge and the OG metrics show no numbers for demo rows.
+  - Seed file: `supabase/demo_projects.sql`. Removal: `delete from startups where is_demo`.
+
+**Files:** `supabase/migrations/20260929171152_demo_projects.sql`, `supabase/demo_projects.sql`, `supabase/tests/rls_smoke.sql`, `src/lib/brand-icons.ts`, `src/components/{ProviderStrip,BrandLogo,StartupCard,StartupBits,LeaderboardCard,ProfileBlocks}.tsx`, `src/components/profile/ProjectBlocks.tsx`, `src/lib/share.ts`, `src/app/api/share-card/[slug]/route.tsx`, `public/brand/*`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- Migration applied via MCP. RLS smoke **16/16**; new T16 checks that a founder can't set `is_demo`. Advisors show only the 2 known items. Types updated.
+- `npm run typecheck` ✓ · `npm run lint` ✓ · `npm test` 104/104 ✓ (new: a demo project shows no share numbers)
+- Seed inserted 5 projects, 240 revenue days and 480 traffic days.
+- Headless Chrome, 1280px dark, TH + EN: home (logos, demo tags, leaderboard) and a demo profile (notice, chart, sample captions).
+- `/api/badge/demo-raandee-pos` shows "On JaoPor: listed".
+- **Not verified:** a true 375px check. The browser pane was closed and headless Chrome's minimum width is ~500px.
+
+**Next:** user reviews; delete the demo rows before or soon after launch (`delete from public.startups where is_demo;`); production domain still to be re-added in Vercel
+
 ## 2026-09-30 — New JaoPor mascot logo (hero) + blue app tile (tab icon)
 
 **Done:**

@@ -81,6 +81,12 @@ begin
   exception when insufficient_privilege then out := out || 'T15 A inserts traffic snapshot: denied (good) | ';
   end;
 
+  begin
+    update public.startups set is_demo = true where id = sid;
+    out := out || 'T16 A marks own project as demo: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T16 A marks own project as demo: denied (good) | ';
+  end;
+
   execute 'reset role';
   perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
   execute 'set local role authenticated';

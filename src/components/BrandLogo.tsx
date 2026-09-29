@@ -1,26 +1,25 @@
+import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-/** JaoPor (เจ้าพ่อ, "the godfather") mark: crimson tile with a fedora silhouette + wordmark. Our own identity (Design.md §2 ★). */
+// Design.md §5: JaoPor brand assets supplied by the user (2026-09-30). The blue app tile is the
+// small mark (header, footer, login); the mascot without background leads the hero pill.
+
+/** Blue app tile (also the browser-tab icon). */
 export function BrandMark({ className }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={cn("size-6", className)}
-    >
-      <rect width="24" height="24" rx="6" className="fill-brand" />
-      <path
-        d="M5 15.5c2.2.9 4.5 1.3 7 1.3s4.8-.4 7-1.3M7.5 14.6l1.1-5.2c.2-.9 1-1.4 1.9-1.2l1.5.4 1.5-.4c.9-.2 1.7.3 1.9 1.2l1.1 5.2"
-        className="fill-none stroke-brand-foreground"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <Image
+      src="/brand/jaopor-tile.png"
+      alt=""
+      width={128}
+      height={128}
+      className={cn("size-7 shrink-0 rounded-md", className)}
+    />
   );
 }
 
+/** Tile + wordmark (header, footer). */
 export function BrandLogo({ className }: { className?: string }) {
   const t = useTranslations("Common");
   return (
@@ -33,5 +32,26 @@ export function BrandLogo({ className }: { className?: string }) {
       <BrandMark />
       <span>{t("brand")}</span>
     </span>
+  );
+}
+
+/** Hero brand pill: small mascot + "JaoPor", a link back home (Design.md §5 Hero). */
+export function BrandPill() {
+  const t = useTranslations("Common");
+  return (
+    <Link
+      href="/"
+      className="mb-4 inline-flex items-center gap-2 rounded-full px-2 py-1 text-sm font-bold tracking-tight transition-colors hover:bg-accent"
+    >
+      <Image
+        src="/brand/jaopor-mascot-128.webp"
+        alt=""
+        width={128}
+        height={128}
+        loading="eager"
+        className="size-9"
+      />
+      {t("brand")}
+    </Link>
   );
 }

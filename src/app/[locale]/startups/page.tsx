@@ -1,7 +1,7 @@
 import { SlidersHorizontalIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { BrandMark } from "@/components/BrandLogo";
+import { BrandPill } from "@/components/BrandLogo";
 import { ProviderStrip } from "@/components/ProviderStrip";
 import { SearchBar } from "@/components/SearchBar";
 import { StartupCard } from "@/components/StartupCard";
@@ -176,10 +176,7 @@ export default async function StartupsPage({
   return (
     <main className="mx-auto w-full max-w-6xl px-4">
       <section className="mx-auto flex max-w-2xl flex-col items-center pt-10 pb-8 text-center">
-        <p className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide">
-          <BrandMark className="size-4" />
-          {t("pill")}
-        </p>
+        <BrandPill />
         <h1 className="mb-3 text-2xl leading-tight font-bold tracking-tight md:text-[2.125rem]">
           {t("title")}
         </h1>
