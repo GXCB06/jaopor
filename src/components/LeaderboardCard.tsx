@@ -1,5 +1,6 @@
 "use client";
 
+import { Medal } from "./core/Medal";
 import { ChevronDownIcon } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
@@ -24,7 +25,6 @@ export type BoardRow = {
   demo: boolean;
 };
 
-const MEDALS = ["🥇", "🥈", "🥉"];
 const COLLAPSED = 10;
 
 /**
@@ -110,7 +110,7 @@ export function LeaderboardCard({
                 className="group border-b transition-colors last:border-b-0 hover:bg-accent/50"
               >
                 <td className="py-3 pl-4 text-xs text-faint tabular-nums">
-                  {MEDALS[i] ?? i + 1}
+                  {i < 3 ? <Medal rank={i + 1} /> : i + 1}
                 </td>
                 <td className="px-3 py-3">
                   <Link

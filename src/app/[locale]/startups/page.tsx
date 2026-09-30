@@ -96,7 +96,7 @@ export default async function StartupsPage({
     <form
       action={`/${locale}/startups`}
       method="get"
-      className="space-y-4 rounded-xl border bg-card p-4"
+      className="hidden space-y-4 rounded-xl border bg-card p-4 peer-checked:block lg:block"
     >
       {q && <input type="hidden" name="q" value={q} />}
       {sort !== "mrr" && <input type="hidden" name="sort" value={sort} />}
@@ -200,19 +200,26 @@ export default async function StartupsPage({
           <p className="mb-2 hidden text-3xs font-semibold tracking-wider text-faint uppercase lg:block">
             {t("filters")}
           </p>
-          <details className="group lg:hidden" open={activeFilters > 0}>
-            <summary className="mb-2 flex cursor-pointer list-none items-center gap-2 text-xs font-medium text-muted-foreground">
-              <SlidersHorizontalIcon className="size-3.5" aria-hidden="true" />
-              {t("filters")}
-              {activeFilters > 0 && (
-                <span className="rounded-full bg-secondary px-1.5 text-2xs tabular-nums">
-                  {activeFilters}
-                </span>
-              )}
-            </summary>
-            {filters}
-          </details>
-          <div className="hidden lg:block">{filters}</div>
+          {/* One form for every breakpoint: a CSS-only checkbox opens it below lg (no JS, no duplicate DOM). */}
+          <input
+            type="checkbox"
+            id="filters-toggle"
+            defaultChecked={activeFilters > 0}
+            className="peer sr-only"
+          />
+          <label
+            htmlFor="filters-toggle"
+            className="mb-2 flex cursor-pointer items-center gap-2 text-xs font-medium text-muted-foreground peer-focus-visible:text-foreground lg:hidden"
+          >
+            <SlidersHorizontalIcon className="size-3.5" aria-hidden="true" />
+            {t("filters")}
+            {activeFilters > 0 && (
+              <span className="rounded-full bg-secondary px-1.5 text-2xs tabular-nums">
+                {activeFilters}
+              </span>
+            )}
+          </label>
+          {filters}
         </aside>
 
         <section>
@@ -245,7 +252,12 @@ export default async function StartupsPage({
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {rows.map((s) => (
-                <StartupCard key={s.id} startup={s} large thbPerUsd={thbPerUsd} />
+                <StartupCard
+                  key={s.id}
+                  startup={s}
+                  large
+                  thbPerUsd={thbPerUsd}
+                />
               ))}
             </div>
           )}

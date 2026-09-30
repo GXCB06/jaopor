@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { IBM_Plex_Sans_Thai, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { PrefsSync } from "@/components/PrefsSync";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
@@ -51,12 +52,13 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
-    // The inline script may drop `dark` before hydration (light theme), hence suppressHydrationWarning.
+    // The inline script sets data-theme/data-currency before hydration; React owns neither, so a language
+    // switch (layout remount) keeps them. suppressHydrationWarning covers the attributes it adds.
     <html
       lang={locale}
       suppressHydrationWarning
       className={cn(
-        "dark h-full antialiased",
+        "h-full antialiased",
         jetbrains.variable,
         plexThai.variable,
       )}
@@ -70,6 +72,7 @@ export default async function LocaleLayout({
       </head>
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
+          <PrefsSync />
           <SiteHeader />
           <div className="flex flex-1 flex-col">{children}</div>
           <SiteFooter />

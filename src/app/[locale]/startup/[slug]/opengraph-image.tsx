@@ -5,7 +5,8 @@ import { getTranslations } from "next-intl/server";
 import { getStartupBySlug } from "@/lib/data/startups";
 import { publicEnv } from "@/lib/public-env";
 import { shareMetrics, verifiedSources } from "@/lib/share";
-import { BRAND_HEX, CARD_THEME, MARK_PATH } from "@/lib/share-palette";
+import { LOGO_BRIM, LOGO_HAT, LOGO_LINE, LOGO_TILE } from "@/lib/logo";
+import { BRAND_HEX, CARD_THEME } from "@/lib/share-palette";
 import { logoUrl } from "@/lib/supabase/public";
 
 // Design.md §9 OG image: the card people see when a profile link is pasted into Facebook/LINE/X.
@@ -17,7 +18,7 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const revalidate = 300;
 
-// The OG renderer has no CSS variables: the shared renderer palette mirrors the `.dark` tokens.
+// The OG renderer has no CSS variables: the shared renderer palette mirrors the dark tokens.
 const C = { ...CARD_THEME.dark, brand: BRAND_HEX };
 
 const font = (file: string) =>
@@ -51,9 +52,7 @@ export default async function Image({
 
   const metrics = startup ? shareMetrics(startup) : [];
   const sources = startup ? verifiedSources(startup) : [];
-  const logo = startup
-    ? logoUrl(startup.logo_path, { absolute: true })
-    : null;
+  const logo = startup ? logoUrl(startup.logo_path, { absolute: true }) : null;
   // The renderer can't decode WebP; those logos fall back to the initial.
   const logoOk = logo && !/\.webp$/i.test(logo);
   const host = new URL(publicEnv.siteUrl).host;
@@ -73,16 +72,18 @@ export default async function Image({
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <svg width="44" height="44" viewBox="0 0 24 24">
-          <rect width="24" height="24" rx="6" fill={C.brand} />
-          <path
-            d={MARK_PATH}
+        <svg width="44" height="44" viewBox="0 0 64 64">
+          <rect width="64" height="64" rx="15" fill={LOGO_TILE} />
+          <path d={LOGO_HAT} fill="#ffffff" />
+          <polyline
+            points={LOGO_LINE}
             fill="none"
-            stroke="#ffffff"
-            strokeWidth="1.6"
+            stroke={LOGO_TILE}
+            strokeWidth="3.2"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
+          <path d={LOGO_BRIM} fill="#ffffff" />
         </svg>
         <span style={{ fontSize: 30, fontWeight: 700 }}>JaoPor</span>
         {startup?.founding_number ? (

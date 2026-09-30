@@ -18,12 +18,14 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { isSyncStale, type Owner, type StartupRow } from "@/lib/data/startups";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { cn } from "@/lib/utils";
-import { EmptyValue } from "./profile/Owner";
+import { Card } from "./core/Card";
+import { InsightCard } from "./core/InsightCard";
+import { EmptyOwnerCard, OwnerOnly } from "./profile/Owner";
 import { Chip } from "./StartupBits";
 
 // Server components for the startup profile (Design.md §5 StatTile / VerifiedStamp / InsightsGrid).
 
-export function StatTile({
+export function StatCard({
   label,
   value,
   caption,
@@ -35,12 +37,7 @@ export function StatTile({
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        "min-w-0 space-y-2 rounded-xl border bg-card p-4",
-        className,
-      )}
-    >
+    <Card className={cn("min-w-0 space-y-2 p-4", className)}>
       <p className="truncate text-caption font-semibold tracking-wider text-faint uppercase">
         {label}
       </p>
@@ -52,7 +49,7 @@ export function StatTile({
           {caption}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -79,7 +76,7 @@ export async function VerifiedStamp({ startup }: { startup: StartupRow }) {
 
   return (
     <p className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-center text-caption text-muted-foreground">
-      <BadgeCheckIcon className="size-4 text-brand" aria-hidden="true" />
+      <BadgeCheckIcon className="size-4 text-brand-text" aria-hidden="true" />
       {t.rich("stamp", {
         provider: isSource(startup.verified_provider)
           ? SOURCE_NAME[startup.verified_provider]
@@ -103,39 +100,6 @@ export async function VerifiedStamp({ startup }: { startup: StartupRow }) {
   );
 }
 
-/**
- * Design.md §5 InsightsGrid card. Every field is always rendered (TrustMRR pattern); an empty
- * one shows "+ Add" to the owner (deep link to the editor) or "Not added" to visitors.
- */
-function InsightCard({
-  icon: Icon,
-  label,
-  field,
-  children,
-  wide = false,
-}: {
-  icon: LucideIcon;
-  label: string;
-  field: string;
-  children: React.ReactNode | null;
-  wide?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "space-y-3 rounded-xl border bg-card p-4",
-        wide && "sm:col-span-2",
-      )}
-    >
-      <p className="flex items-center gap-2 text-2xs font-bold tracking-wider text-faint uppercase">
-        <Icon className="size-3.5" aria-hidden="true" />
-        {label}
-      </p>
-      <div>{children ?? <EmptyValue field={field} />}</div>
-    </div>
-  );
-}
-
 const chipList = (items: string[]) =>
   items.length ? (
     <div className="flex flex-wrap gap-1.5">
@@ -152,122 +116,169 @@ const para = (v: string | null) =>
     </p>
   ) : null;
 
+type Insight = {
+  icon: LucideIcon;
+  label: string;
+  field: string;
+  content: React.ReactNode | null;
+  wide?: boolean;
+};
+
 export async function InsightsGrid({ startup }: { startup: StartupRow }) {
   const t = await getTranslations("Profile");
   const cat = await getTranslations("Catalog");
 
-  return (
-    <section>
-      <h2 className="mb-4 text-sm font-bold">{t("insights")}</h2>
-      <div className="grid gap-3.5 sm:grid-cols-2">
-        <InsightCard
-          icon={LightbulbIcon}
-          label={t("valueProposition")}
-          field="value_proposition"
-        >
-          {para(startup.value_proposition)}
-        </InsightCard>
-        <InsightCard
-          icon={ShieldCheckIcon}
-          label={t("problemSolved")}
-          field="problem_solved"
-        >
-          {para(startup.problem_solved)}
-        </InsightCard>
-        <InsightCard icon={UsersIcon} label={t("audience")} field="audience">
-          {startup.audience
-            ? chipList([cat(`audience.${startup.audience}` as "audience.b2b")])
-            : null}
-        </InsightCard>
-        <InsightCard icon={TagIcon} label={t("category")} field="category">
-          {chipList([cat(`category.${startup.category}` as "category.ai")])}
-        </InsightCard>
-        <InsightCard icon={DollarSignIcon} label={t("pricing")} field="pricing">
-          {para(startup.pricing)}
-        </InsightCard>
-        <InsightCard icon={Code2Icon} label={t("techStack")} field="tech_stack">
-          {startup.tech_stack.length ? (
-            chipList(startup.tech_stack)
-          ) : startup.build_stack.length ? (
-            // Design.md §5: detected from the connected GitHub repo, never saved over the owner's list.
-            <div className="space-y-2">
-              {chipList(startup.build_stack)}
-              <p className="text-2xs text-faint">{t("detectedStack")}</p>
-            </div>
-          ) : null}
-        </InsightCard>
-        <InsightCard icon={UserIcon} label={t("teamSize")} field="team_size">
-          {startup.team_size
-            ? para(cat(`team.${startup.team_size}` as "team.solo"))
-            : null}
-        </InsightCard>
-        <InsightCard icon={SparklesIcon} label={t("aiTools")} field="ai_tools">
-          {chipList(
-            startup.ai_tools.map((x) => cat(`tool.${x}` as "tool.claude-code")),
-          )}
-        </InsightCard>
-        <InsightCard icon={LandmarkIcon} label={t("funding")} field="funding">
-          {startup.funding
-            ? para(cat(`funding.${startup.funding}` as "funding.bootstrapped"))
-            : null}
-        </InsightCard>
-        <InsightCard
-          icon={MegaphoneIcon}
-          label={t("marketingChannels")}
-          field="marketing_channels"
-        >
-          {chipList(startup.marketing_channels)}
-        </InsightCard>
+  const items: Insight[] = [
+    {
+      icon: LightbulbIcon,
+      label: t("valueProposition"),
+      field: "value_proposition",
+      content: para(startup.value_proposition),
+    },
+    {
+      icon: ShieldCheckIcon,
+      label: t("problemSolved"),
+      field: "problem_solved",
+      content: para(startup.problem_solved),
+    },
+    {
+      icon: UsersIcon,
+      label: t("audience"),
+      field: "audience",
+      content: startup.audience
+        ? chipList([cat(`audience.${startup.audience}` as "audience.b2b")])
+        : null,
+    },
+    {
+      icon: TagIcon,
+      label: t("category"),
+      field: "category",
+      content: chipList([cat(`category.${startup.category}` as "category.ai")]),
+    },
+    {
+      icon: DollarSignIcon,
+      label: t("pricing"),
+      field: "pricing",
+      content: para(startup.pricing),
+    },
+    {
+      icon: Code2Icon,
+      label: t("techStack"),
+      field: "tech_stack",
+      content: startup.tech_stack.length ? (
+        chipList(startup.tech_stack)
+      ) : startup.build_stack.length ? (
+        // Design.md §5: detected from the connected GitHub repo, never saved over the owner's list.
+        <div className="space-y-2">
+          {chipList(startup.build_stack)}
+          <p className="text-2xs text-faint">{t("detectedStack")}</p>
+        </div>
+      ) : null,
+    },
+    {
+      icon: UserIcon,
+      label: t("teamSize"),
+      field: "team_size",
+      content: startup.team_size
+        ? para(cat(`team.${startup.team_size}` as "team.solo"))
+        : null,
+    },
+    {
+      icon: SparklesIcon,
+      label: t("aiTools"),
+      field: "ai_tools",
+      content: chipList(
+        startup.ai_tools.map((x) => cat(`tool.${x}` as "tool.claude-code")),
+      ),
+    },
+    {
+      icon: LandmarkIcon,
+      label: t("funding"),
+      field: "funding",
+      content: startup.funding
+        ? para(cat(`funding.${startup.funding}` as "funding.bootstrapped"))
+        : null,
+    },
+    {
+      icon: MegaphoneIcon,
+      label: t("marketingChannels"),
+      field: "marketing_channels",
+      content: chipList(startup.marketing_channels),
+    },
+    {
+      icon: QuoteIcon,
+      label: t("founderMessage"),
+      field: "founder_message",
+      wide: true,
+      content: startup.founder_message ? (
         <FounderMessage
           message={startup.founder_message}
           owner={startup.owner}
-          name={startup.name}
-          label={t("founderMessage")}
           founderOf={t("founderOf", { name: startup.name })}
         />
+      ) : null,
+    },
+  ];
+
+  // Spec 2.4: visitors only see fields that have data; the owner sees dashed prompts for the rest.
+  const grid = (
+    <section>
+      <h2 className="mb-4 text-sm font-bold">{t("insights")}</h2>
+      <div className="grid gap-3.5 sm:grid-cols-2">
+        {items.map((i) =>
+          i.content ? (
+            <InsightCard
+              key={i.field}
+              icon={i.icon}
+              label={i.label}
+              wide={i.wide}
+            >
+              {i.content}
+            </InsightCard>
+          ) : (
+            <EmptyOwnerCard
+              key={i.field}
+              field={i.field}
+              label={i.label}
+              className={i.wide ? "sm:col-span-2" : undefined}
+            />
+          ),
+        )}
       </div>
     </section>
   );
+  return items.some((i) => i.content) ? grid : <OwnerOnly>{grid}</OwnerOnly>;
 }
 
 function FounderMessage({
   message,
   owner,
-  label,
   founderOf,
 }: {
-  message: string | null;
+  message: string;
   owner: Owner | null;
-  name: string;
-  label: string;
   founderOf: string;
 }) {
   return (
-    <InsightCard icon={QuoteIcon} label={label} field="founder_message" wide>
-      {message ? (
-        <figure>
-          <blockquote className="text-xs leading-relaxed">
-            “{message}”
-          </blockquote>
-          <figcaption className="mt-3 flex items-center gap-2 text-caption text-muted-foreground">
-            {owner?.avatar_url && (
-              <Image
-                src={owner.avatar_url}
-                alt=""
-                width={20}
-                height={20}
-                className="size-5 rounded-full"
-              />
-            )}
-            <span>
-              <span className="font-medium text-foreground">
-                {owner?.display_name ?? ""}
-              </span>{" "}
-              · {founderOf}
-            </span>
-          </figcaption>
-        </figure>
-      ) : null}
-    </InsightCard>
+    <figure>
+      <blockquote className="text-xs leading-relaxed">“{message}”</blockquote>
+      <figcaption className="mt-3 flex items-center gap-2 text-caption text-muted-foreground">
+        {owner?.avatar_url && (
+          <Image
+            src={owner.avatar_url}
+            alt=""
+            width={20}
+            height={20}
+            className="size-5 rounded-full"
+          />
+        )}
+        <span>
+          <span className="font-medium text-foreground">
+            {owner?.display_name ?? ""}
+          </span>{" "}
+          · {founderOf}
+        </span>
+      </figcaption>
+    </figure>
   );
 }

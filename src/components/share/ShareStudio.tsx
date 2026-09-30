@@ -1,5 +1,6 @@
 "use client";
 
+import { SegmentedControl } from "@/components/core/SegmentedControl";
 import {
   CalendarIcon,
   CheckIcon,
@@ -59,29 +60,12 @@ function Segmented<T extends string | number>({
   return (
     <div className="space-y-1.5">
       <p className="text-2xs text-faint">{label}</p>
-      <div
-        role="radiogroup"
-        aria-label={label}
-        className="flex rounded-lg border bg-card p-0.5"
-      >
-        {options.map((o) => (
-          <button
-            key={o.value}
-            type="button"
-            role="radio"
-            aria-checked={value === o.value}
-            onClick={() => onChange(o.value)}
-            className={cn(
-              "flex-1 rounded-md px-2 py-1 text-caption transition-colors",
-              value === o.value
-                ? "bg-secondary font-semibold text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        label={label}
+        value={value}
+        options={options}
+        onChange={onChange}
+      />
     </div>
   );
 }

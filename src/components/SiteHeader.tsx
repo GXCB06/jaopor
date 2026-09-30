@@ -16,7 +16,7 @@ export function SiteHeader() {
   const t = useTranslations("Nav");
   return (
     <header className="sticky top-0 z-40 border-b bg-background">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-6 px-4">
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-3 px-4 md:gap-6">
         <Link href="/" className="shrink-0 text-sm">
           <BrandLogo />
         </Link>
@@ -34,7 +34,7 @@ export function SiteHeader() {
             {t("dashboard")}
           </Link>
         </nav>
-        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+        <div className="ml-auto flex items-center gap-1 sm:gap-3">
           <CurrencyToggle />
           <SearchShortcut />
           <Link

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { money } from "@/lib/format";
+import { formatPct, money } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 // Small shared pieces used by cards, leaderboard and profile (Design.md §3 / §5).
@@ -67,7 +67,7 @@ export function FoundingBadge({ n }: { n: number | null }) {
   const t = useTranslations("Card");
   if (!n) return null;
   return (
-    <span className="inline-flex rounded-sm border border-brand/40 px-1.5 py-0.5 text-2xs font-bold text-brand tabular-nums">
+    <span className="inline-flex rounded-sm border border-brand/40 px-1.5 py-0.5 text-2xs font-bold text-brand-text tabular-nums">
       {t("foundingBadge", { n })}
     </span>
   );
@@ -83,7 +83,6 @@ export function GrowthValue({
   if (pct === null)
     return <span className={cn("text-faint", className)}>–</span>;
   const up = pct >= 0;
-  const abs = Math.abs(pct);
   return (
     <span
       className={cn(
@@ -92,11 +91,7 @@ export function GrowthValue({
         className,
       )}
     >
-      {up ? "↑" : "↓"}{" "}
-      {abs >= 100
-        ? Math.round(abs).toLocaleString("en")
-        : abs.toFixed(abs >= 10 ? 0 : 1)}
-      %
+      {formatPct(pct, { arrow: true })}
     </span>
   );
 }

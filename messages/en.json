@@ -16,7 +16,8 @@
     "skip": "Skip for now",
     "optional": "optional",
     "notVerified": "Not verified yet",
-    "genericError": "Something went wrong. Please try again."
+    "genericError": "Something went wrong. Please try again.",
+    "verifiedVia": "Verified · {source}"
   },
   "Nav": {
     "startups": "Startups",
@@ -231,7 +232,11 @@
     "sampleShort": "Sample data",
     "viaJaopor": "Counted by JaoPor (our snippet)",
     "viaCloudflare": "Verified via Cloudflare · counted as visits",
-    "detectedStack": "Detected from GitHub"
+    "detectedStack": "Detected from GitHub",
+    "addNamed": "+ Add {label}",
+    "connectNamed": "+ Connect {label}",
+    "unverifiedLine": "Not verified: {items}",
+    "tagline": "Tagline"
   },
   "Verified": {
     "stamp": "Revenue is verified with <b>{provider}</b> API key.",

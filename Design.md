@@ -17,38 +17,44 @@
 
 Defined in `src/app/globals.css` (shadcn variables). Values measured from the Figma file (zinc scale). `.dark` is the default; `:root` is light.
 
-| Token                                  | Dark (Figma)          | Light                 | Use                                                         |
-| -------------------------------------- | --------------------- | --------------------- | ----------------------------------------------------------- |
-| `--background`                         | `#09090b`             | `#ffffff`             | Page                                                        |
-| `--card`                               | `#141416`             | `#fafafa`             | Cards, tiles, leaderboard, chart, filter sidebar            |
-| `--popover`                            | `#18181b`             | `#ffffff`             | Dialogs, menus                                              |
-| `--secondary` / `--muted` / `--accent` | `#18181b`             | `#f4f4f5`             | Chips, dropdown buttons, hover fills, segmented controls    |
-| `--foreground`                         | `#fafafa`             | `#09090b`             | Headings, numbers                                           |
-| `--muted-foreground`                   | `#a1a1aa`             | `#52525b`             | Descriptions, captions, body secondary                      |
-| `--faint` (new)                        | `#7c7c87`             | `#71717a`             | Metric labels, table headers, placeholders, dot separators  |
-| `--primary` / `--primary-foreground`   | `#f4f4f5` / `#09090b` | `#18181b` / `#fafafa` | Primary button (light on dark)                              |
-| `--border`                             | `#26262a`             | `#e4e4e7`             | All borders and dividers                                    |
-| `--input`                              | `#27272a`             | `#e4e4e7`             | Input borders; input fill `bg-card`                         |
-| `--ring`                               | `#52525b`             | `#a1a1aa`             | Focus ring                                                  |
-| `--brand` ★                            | `#818cf8`             | `#4f46e5`             | JaoPor accent: logo tile, verified check, active nav, links |
-| `--chart-1`                            | `#6366f1`             | `#4f46e5`             | **Revenue line** + faint area fill                          |
-| `--chart-2`                            | `#0d9488`             | `#0d9488`             | Previous period (**dashed**) when "Compare" is on           |
+| Token                                  | Dark (spec 2.1)       | Light                 | Use                                                                  |
+| -------------------------------------- | --------------------- | --------------------- | -------------------------------------------------------------------- |
+| `--background`                         | `#0a0a0b`             | `#ffffff`             | Page                                                                 |
+| `--card`                               | `#141416`             | `#fafafa`             | Cards, tiles, leaderboard, chart, filter sidebar                     |
+| `--popover` (spec `surface-2`)         | `#1e1e20`             | `#ffffff`             | Dialogs, menus                                                       |
+| `--secondary` / `--muted` / `--accent` | `#18181b`             | `#f4f4f5`             | Chips, dropdown buttons, hover fills, segmented controls             |
+| `--foreground`                         | `#ededed`             | `#09090b`             | Headings, numbers                                                    |
+| `--muted-foreground`                   | `#a1a1a6`             | `#52525b`             | Descriptions, captions, body secondary                               |
+| `--faint` (spec `text-subtle`)         | `#8a8a8f`             | `#71717a`             | Metric labels, table headers, placeholders, dot separators           |
+| `--primary` / `--primary-foreground`   | `#f4f4f5` / `#09090b` | `#18181b` / `#fafafa` | Primary button (light on dark)                                       |
+| `--border`                             | `#26262a`             | `#e4e4e7`             | All borders and dividers                                             |
+| `--input`                              | `#3a3a40`             | `#e4e4e7`             | Input borders; input fill `bg-card`                                  |
+| `--ring`                               | `#52525b`             | `#a1a1aa`             | Focus ring                                                           |
+| `--brand` ★ (spec `accent`)            | `#6e6cf3`             | `#4f46e5`             | Fills: logo tile, selected, bars, borders (`border-brand/40`)        |
+| `--brand-text`                         | `#8280f6`             | `#4f46e5`             | Indigo **text/icons/links** (`#6e6cf3` is 4.47:1 on cards, under AA) |
+| `--surface-2`                          | `#1e1e20`             | `#ffffff`             | Modals, dropdowns (= popover)                                        |
+| `--border-strong`                      | `#3a3a40`             | `#d4d4d8`             | Hover border on interactive cards, inputs                            |
+| `--chart-1`                            | `#6e6cf3`             | `#4f46e5`             | **Revenue line** + faint area fill                                   |
+| `--chart-2`                            | `#0d9488`             | `#0d9488`             | Previous period (**dashed**) when "Compare" is on                    |
 
-Chart pair validated with the dataviz validator (2026-09-29): dark on `#141416` and light on `#ffffff`, all six checks pass. Re-run it if they change.
+Chart pair validated with the dataviz validator (2026-09-29; dark re-run 2026-09-30 with `#6e6cf3`): all checks pass. Re-run it if they change.
+
+Spec 2.1 name map (2026-09-30): `bg`→`--background`, `surface`→`--card`, `surface-2`→`--surface-2`/`--popover`, `border`→`--border`, `border-strong`→`--border-strong`, `text`→`--foreground`, `text-muted`→`--muted-foreground`, `text-subtle`→`--faint`, `accent`→`--brand` (shadcn's `--accent` stays the hover fill), `paper`→`--primary`.
 
 Semantic tokens (never raw `emerald-*`/`red-*`/`amber-*`):
 
 | Token        | Dark      | Light     | Use                                                                                    |
 | ------------ | --------- | --------- | -------------------------------------------------------------------------------------- |
-| `--positive` | `#34d399` | `#047857` | Growth up. Growth pill: `border-positive/30 bg-positive/10 text-positive rounded-full` |
-| `--negative` | `#f87171` | `#b91c1c` | Growth down                                                                            |
-| `--warning`  | `#fbbf24` | `#b45309` | Corner tag (`border-warning/30 bg-warning/10 text-warning`), sync pending              |
+| `--positive` | `#22c55e` | `#047857` | Growth up. Growth pill: `border-positive/30 bg-positive/10 text-positive rounded-full` |
+| `--negative` | `#ef4444` | `#b91c1c` | Growth down                                                                            |
+| `--warning`  | `#f59e0b` | `#b45309` | Corner tag (`border-warning/30 bg-warning/10 text-warning`), sync pending              |
 
 ★ The Figma accent is indigo; JaoPor adopted it on 2026-09-29 (was crimson). Change it only in `globals.css`.
 
 ### Theme (light / dark)
 
-- Default dark; header **ThemeToggle** (sun/moon, `size-8 rounded-md`) switches, stored in `localStorage.theme`. An inline `<head>` script applies it before paint; the server renders `dark`.
+- Default dark; header **ThemeToggle** (sun/moon, `size-8 rounded-md`) switches, stored in `localStorage.theme`.
+- The theme is **`<html data-theme="light|dark">`**, never a React-owned class: dark is the CSS default (`:root:not([data-theme="light"])`, `dark:` variant likewise). The inline `<head>` script sets it before paint; `PrefsSync` re-applies theme + currency in a layout effect when the `[locale]` layout remounts (a language switch used to reset a light theme to dark).
 - Every component is built from tokens so it works in both; check each UI change in both themes.
 
 ## 3. Typography
@@ -93,10 +99,22 @@ Numbers are always `tabular-nums`. Money is compact on cards (`$4.3k`) and full 
 
 Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
+### Core components (spec 2.2, `src/components/core/`, 2026-09-30)
+
+- **Card** `rounded-xl border bg-card`; `interactive` → `hover:border-border-strong hover:-translate-y-px`.
+- **SegmentedControl** radiogroup: container `rounded-lg border bg-background p-0.5` (`dark:bg-black/40`); selected segment `border-foreground/10 bg-secondary shadow-xs` (`dark:bg-black`), others `text-muted-foreground`.
+- **StatCard** (was StatTile): Card + UPPERCASE `text-caption text-faint` label, `text-2xl font-bold tabular-nums` value, muted caption.
+- **InsightCard**: Card with a 40px `size-10 rounded-lg border bg-background` icon box, `text-2xs` UPPERCASE label, content.
+- **VerifiedBadge**: `rounded-full` pill, `border-positive/30 bg-positive/10 text-positive` "ยืนยันแล้ว · Stripe" or muted `bg-secondary` "ยังไม่ยืนยัน". Shown next to the profile name (not on demo projects).
+- **EmptyOwnerCard** (`profile/Owner.tsx`): dashed `border-brand/50 text-brand-text rounded-xl` "+ เพิ่ม{label}" / "+ เชื่อมต่อ{label}" link to the editor anchor; renders **nothing for visitors**. `OwnerOnly` wraps a section that is entirely empty.
+- **UnverifiedLine**: one centered `text-caption text-faint` line "ยังไม่ยืนยัน: รายได้ทั้งหมด, MRR" (+ owner link to connect).
+- **Medal**: ranks 1–3 as a `size-6 rounded-full border-2` numbered ring (gold `warning`, silver `muted-foreground`, bronze `warning/60`); replaces the emoji medals.
+- **Logo** (`components/Logo.tsx`, paths in `lib/logo.ts`): spec §3 "Rising Fedora". `<Logo size variant="full|mark|mono" />`; ≤ 24px uses the simplified hat. Tile `#6e6cf3` in both themes (logo asset, like brand colours). Files: `public/logo.svg`, `public/logo-mono.svg`, `src/app/icon.svg`, `favicon.ico` (16/32/48), `apple-icon.png`, `public/icon-192.png`, `icon-512.png`, `logo-mono-512.png`.
+
 ### SiteHeader (sticky, ledgerly pattern)
 
 - `sticky top-0 z-40 border-b bg-background`, `h-14`, inner `max-w-6xl`.
-- Left: `BrandLogo` = the **blue app tile** (`public/brand/jaopor-tile.png`, `size-7 rounded-md`) + "JaoPor" wordmark (`text-sm font-bold`); links home. Nav links `text-xs text-muted-foreground hover:text-foreground` (active `text-foreground`): **Startups · Leaderboard (`/#leaderboard`) · Dashboard**. Hidden below `md`.
+- Left: `BrandLogo` = `<Logo>` (Rising Fedora mark 28px + "JaoPor" `font-extrabold tracking-[-0.02em]`); links home. Gaps `gap-3` below md so the header fits 375px. Nav links `text-xs text-muted-foreground hover:text-foreground` (active `text-foreground`): **Startups · Leaderboard (`/#leaderboard`) · Dashboard**. Hidden below `md`.
 - Right: **CurrencyToggle** (฿/$, §3 Currency), **search trigger** (`h-8 rounded-md border bg-card px-2.5 text-xs text-faint` with a search icon, "ค้นหา", and a `kbd` "/"; pressing `/` anywhere focuses the page search or opens `/startups`), primary **"+ เพิ่ม Startup"** (`h-8`, icon-only below `sm`), HeaderAuth (`whitespace-nowrap`), TH/EN (short code `EN`/`TH` below `sm`), ThemeToggle.
 
 ### Hero (home and directory)
@@ -149,20 +167,20 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 - One `rounded-xl border bg-card` container with `id="leaderboard"`.
 - Header row `px-5 py-3.5 border-b`: "Leaderboard" (`text-sm font-bold`) + a **LIVE dot** (`size-1.5 rounded-full bg-positive`) + right-side **metric dropdown**: MRR · Revenue (30d) · Visitors (30d) · Commits. Switching is client-side (lists are fetched server-side, page stays ISR).
 - Table (shadcn `Table`): header `text-2xs uppercase text-faint`; rows `border-b hover:bg-accent/40`, `py-3`:
-  - `#` (🥇🥈🥉, then number, `text-faint`) · logo 24 + name (`text-xs font-semibold`) over tagline (`text-2xs text-faint truncate`) · founder (avatar 16 round + name `text-xs text-muted-foreground`, hidden below `sm`) · value (right, `text-xs font-bold`) · growth (right, `text-xs`, hidden below `sm` for commits).
+  - `#` (`Medal` rings 1–3, then number, `text-faint`) · logo 24 + name (`text-xs font-semibold`) over tagline (`text-2xs text-faint truncate`) · founder (avatar 16 round + name `text-xs text-muted-foreground`, hidden below `sm`) · value (right, `text-xs font-bold`) · growth (right, `text-xs`, hidden below `sm` for commits).
 - Shows 10 rows, then "Show all (n) ↓" text button reveals up to 50. Footer line centered `text-2xs text-faint`: "Only verified numbers · synced from Stripe, RevenueCat, Plausible, Umami, GitHub".
 
 ### Profile header
 
 - Breadcrumb `text-2xs text-faint`: `JaoPor › Startups › {name}` (last item `text-foreground`).
-- Row: logo 72 `rounded-2xl border` · name (`text-2xl font-bold`) + founding badge · description paragraph `text-body text-muted-foreground max-w-2xl` (tagline, then the long description); right side actions: **Share** (outline-card button, opens ShareStudio) and **Visit ↗** (primary; the first project link).
+- Row: logo 72 `rounded-2xl border` · name (`text-2xl font-bold`) + founding badge + `VerifiedBadge` · description paragraph `text-body text-muted-foreground max-w-2xl` (tagline, then the long description); right side actions: **Share** (outline-card button, opens ShareStudio) and **Visit ↗** (primary; the first project link).
 - Under it: other ProjectLinks (small outline buttons) and the LookingForBanner.
 
-### StatTile (profile quick stats)
+### StatCard (profile quick stats)
 
 - `rounded-xl border bg-card p-4 space-y-2`: label (`text-caption uppercase tracking-wider text-faint font-semibold`) → value (`text-2xl font-bold tabular-nums`) → note (`text-caption text-muted-foreground`).
-- Row of 4 (`grid-cols-2 md:grid-cols-4 gap-3`): **All-time revenue** (note: "Ranked #n on JaoPor") · **MRR** (note: "n active subscriptions") · **Founder** (avatar 20 + name as value at `text-base`; note: 𝕏 handle) · **Founded** (month year; note: province + localized country name via `Intl.DisplayNames`; no flag emoji, Windows renders them as letters).
-- Unverified: "—" with InfoCard empty rules (owner `+ Connect`, visitor "Not verified yet").
+- Row (`grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-3`), **only tiles with data**: **All-time revenue** (note: "Ranked #n on JaoPor") · **MRR** (note: "n active subscriptions") · **Founder** (avatar 20 + name as value at `text-base`; note: 𝕏 handle) · **Founded** (month year; note: province + localized country name via `Intl.DisplayNames`; no flag emoji, Windows renders them as letters).
+- **Empty-state rule (spec 2.4):** unverified revenue/MRR tiles are dropped and replaced by one `UnverifiedLine`; Founded without a date shows as **Location** (ที่ตั้ง); nothing at all → owner-only `EmptyOwnerCard`. Visitors never see "–".
 
 ### RevenueChartCard
 
@@ -218,14 +236,14 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 
 - **ProjectLinks:** one link lists a project (website / App Store / Play / LINE OA / GitHub); outline `size="sm"` buttons with lucide `Globe`/`Smartphone`/`MessageCircle`/`Code`.
 - **LookingForBanner:** `rounded-xl border border-warning/30 bg-warning/5 p-3 text-xs` with `HandHelping` icon, asks as chips, primary "Try it" link.
-- **TractionTiles:** StatTile row "Verified traction": Visitors (30d) · Active users · Build proof (commits, % co-authored by Claude, first commit). Never convert users into revenue; self-typed numbers never appear.
+- **TractionTiles:** StatCard row (only metrics with data; owner sees EmptyOwnerCards) "Verified traction": Visitors (30d) · Active users · Build proof (commits, % co-authored by Claude, first commit). Never convert users into revenue; self-typed numbers never appear.
 - **VerifyPanel:** three bordered groups (Revenue: Stripe | RevenueCat · Visitors: **JaoPor snippet** | Plausible | Umami | Cloudflare · Build proof: GitHub), segmented source switch, numbered how-to, one primary "Verify". One source per group.
   - **JaoPor snippet** (no analytics account needed; listed first): a read-only code box (`rounded-lg border bg-card p-3 font-mono text-caption`) with the one-line `<script>` and a Copy button, then the install status: "รอการเข้าชมครั้งแรก" / "Waiting for the first visit" (muted, pulsing dot) → "นับตั้งแต่ {date}" / "Counting since {date}" (positive).
   - **Cloudflare:** API token (Account Analytics: Read only) + account ID. Numbers are **visits** (sessions), labelled so.
 - **TractionTiles source captions:** "นับโดย JaoPor ตั้งแต่ {date}" / "Counted by JaoPor since {date}" for the snippet; "ยืนยันผ่าน Cloudflare · visits" for Cloudflare.
 - **Tech stack card (InsightsGrid):** the owner's list; if empty, the stack detected from the connected GitHub repo, captioned "ตรวจพบจาก GitHub" / "Detected from GitHub" (`text-2xs text-faint`). Detection never overwrites the owner's list.
 - **Dashboard startup card:** `rounded-xl border bg-card p-4`, status chip, 3 tiles, completeness bar (`bg-brand`), one primary action + `⋯` menu.
-- **InfoCard:** every profile field always renders; empty → owner dashed `+ Add` (`text-brand`) / visitor "Not added". Owner detection client-side so the profile stays ISR.
+- **Empty fields (spec 2.4, replaces InfoCard's "always render" rule 2026-09-30):** visitors see only fields with data (InsightsGrid, TractionTiles, build story, tagline/description); the owner sees each empty slot as an `EmptyOwnerCard`; a section with no data at all is owner-only. Owner detection is client-side so the profile stays ISR.
 
 ### Footer
 
@@ -237,7 +255,7 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `/` Home           | Header · Hero (pill, H1, subline, ProviderStrip, SearchBar, links) · **Recently listed** (5 compact cards) · **Top traction** (5 compact cards, by verified visitors/commits) · **LeaderboardCard** · Footer |
 | `/startups`        | Header · Hero · FilterSidebar + results header + large card grid + pagination                                                                                                                                |
-| `/startup/[slug]`  | Breadcrumb · Profile header (logo, name, description, Share, Visit) · links + LookingFor · 4 StatTiles · RevenueChartCard (Stripe) · VerifiedStamp · TractionTiles · InsightsGrid · More startups            |
+| `/startup/[slug]`  | Breadcrumb · Profile header (logo, name, description, Share, Visit) · links + LookingFor · StatCards (data only) · RevenueChartCard (Stripe) · VerifiedStamp · TractionTiles · InsightsGrid · More startups  |
 | `/dashboard`       | Title + "+ Add Startup" · Dashboard startup cards                                                                                                                                                            |
 | Add-startup wizard | 2 steps: 1) name · project link (auto-detected) · category · built with · looking for · logo → 2) VerifyPanel or skip                                                                                        |
 | `/acquire`         | Phase 2: Directory layout + price/multiple filters and FOR SALE tags                                                                                                                                         |
@@ -258,14 +276,14 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 
 ## 9. Share assets
 
-- **Brand assets (2026-09-29, from the user):** mascot without background → home hero (`public/brand/jaopor-mascot.webp`, 512px, trimmed). Blue app tile → browser tab / home-screen icons (`src/app/icon.png` 512, `apple-icon.png` 180, `favicon.ico` 16–64; the source's painted checkerboard was cropped away and the corners made transparent). The header/footer/OG still use the small fedora `BrandMark` until the user decides.
+- **Brand assets (2026-09-29, from the user):** mascot without background → home hero (`public/brand/jaopor-mascot.webp`, 512px, trimmed). Blue app tile → browser tab / home-screen icons (`src/app/icon.png` 512, `apple-icon.png` 180, `favicon.ico` 16–64; the source's painted checkerboard was cropped away and the corners made transparent). **Superseded 2026-09-30:** the spec "Rising Fedora" SVG (`<Logo>`) is now the mark everywhere (header, footer, login, OG, share cards, badge, all icons); the mascot stays in the hero pill only. `public/brand/jaopor-tile.png` is unused.
 
 - **Which numbers:** `lib/share.ts → shareMetrics()` picks up to 3 **verified** numbers, strongest first: MRR → revenue 30d → visitors 30d → active users → commits.
 - **OG image** (`/[locale]/startup/[slug]/opengraph-image`): 1200×630 dark card (mark, name, tagline, up to 3 metric boxes, "✓ verified via …", URL). Fonts vendored in `src/assets/fonts` (OFL). The OG renderer has no CSS variables, so it keeps one `C` palette mirroring the `.dark` tokens (exception to "no raw hex"); the share-card route shares that palette.
 - **Embeddable badge** (`/api/badge/[slug]`, SVG, 28px high, `?theme=light`) + HTML snippet.
 - **ShareStudio** (§5) replaces the old share dialog and dropdown; the profile Share button opens it.
 - **Card "Copy link"** icon button on every StartupCard.
-- **Founding badge** `เจ้าพ่อรุ่นบุกเบิก #n` / `Founding JaoPor #n` (`border-brand/40 text-brand text-2xs font-bold rounded-sm`) for the first 100 projects.
+- **Founding badge** `เจ้าพ่อรุ่นบุกเบิก #n` / `Founding JaoPor #n` (`border-brand/40 text-brand-text text-2xs font-bold rounded-sm`) for the first 100 projects.
 
 ## 10. Do / Don't
 

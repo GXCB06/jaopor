@@ -12,6 +12,51 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Spec Phase 0: fixes & foundation (theme bug, domain, tokens, core components, empty states, Rising Fedora logo)
+
+**Done:**
+
+- **Spec:** `docs/SPEC.md` is the source of truth. `docs/design/{profile,dashboard}.png` are rendered from the user's HTML mockups (for Phase 9).
+- **Theme reset on language switch (user bug):**
+  - The theme is now `<html data-theme>`, set by the head script. Dark is the CSS default, via `:root:not([data-theme="light"])` and the `dark:` variant.
+  - `PrefsSync` re-applies theme and currency in a layout effect when the `[locale]` layout remounts.
+- **Domain (spec 6.1):**
+  - `publicEnv.siteUrl` now prefers Vercel's `NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL` over the hand-set, stale `NEXT_PUBLIC_SITE_URL`.
+  - This fixes `metadataBase`, OG/share URLs and the JaoPor snippet code shown in VerifyPanel, which pointed at the dead `mrr-mafia.vercel.app`.
+- **Tokens (spec 2.1):**
+  - Dark values adopted: bg `#0a0a0b`, text `#ededed`, muted `#a1a1a6`, subtle `#8a8a8f`, accent `#6e6cf3`, positive/negative/warning `#22c55e`/`#ef4444`/`#f59e0b`, popover `#1e1e20`, input `#3a3a40`.
+  - New tokens: `surface-2`, `border-strong`, and `brand-text` (`#8280f6`, because `#6e6cf3` text is 4.47:1 on cards, under AA).
+  - The chart pair was re-validated.
+  - The image renderers' palette was synced.
+- **Core components (spec 2.2, `src/components/core/`):** Card, SegmentedControl (ShareStudio uses it), InsightCard (40px icon box), VerifiedBadge (next to the profile name) and Medal (replaces the 🥇🥈🥉 emoji). StatTile → StatCard on Card.
+- **Format utils (spec 2.3):** `formatMoney` / `formatCompact` (`$1.2k`, `3.6M`) / `formatPct` (`↑ 19%`) / `formatMultiple` (`1.9x`). The existing `money*` helpers now build on them, and GrowthValue uses `formatPct`.
+- **Empty-state rule (spec 2.4) on the detail page:**
+  - Visitors see only data. There are no "–" or "ยังไม่ได้เพิ่ม" walls.
+  - Unverified revenue/MRR collapse into one muted `UnverifiedLine`.
+  - "Founded" without a date is labelled as the location.
+  - The owner sees dashed `EmptyOwnerCard` prompts that deep-link to the editor. Fully empty sections are owner-only.
+- **Rising Fedora logo (spec §3):**
+  - `<Logo size variant="full|mark|mono">` with paths in `lib/logo.ts`, used by the header, footer, login, OG, share cards and badge.
+  - Generated `public/logo.svg`, `logo-mono.svg`, `icon-192/512.png`, `logo-mono-512.png`, `src/app/icon.svg`, `favicon.ico` (16/32/48) and `apple-icon.png`. The mascot stays in the hero pill.
+- **Duplicate filter panel (spec 6.3):** `/startups` renders one form. A CSS-only checkbox opens it below `lg`, with no JS.
+- **375px:** the header gaps are tighter on mobile, and the provider-strip tooltips are `hidden` until hover. Together these removed 25px/15px of horizontal overflow on every page.
+
+**Files:** `docs/SPEC.md`, `docs/design/*.png`, `src/app/globals.css`, `src/lib/{theme,theme-script,public-env,format,logo,share-palette}.ts`, `src/lib/{public-env,format}.test.ts`, `src/components/{PrefsSync,Logo,BrandLogo,SiteHeader,ProviderStrip,ProfileBlocks,StartupBits,LeaderboardCard}.tsx`, `src/components/core/*`, `src/components/profile/{Owner,ProjectBlocks}.tsx`, `src/components/share/ShareStudio.tsx`, `src/app/[locale]/{layout,startup/[slug]/page,startup/[slug]/opengraph-image,startups/page,dashboard/page}.tsx`, `src/app/api/{badge,share-card}/[slug]/*`, `src/app/{icon.svg,favicon.ico,apple-icon.png}`, `public/{logo,logo-mono}.svg`, `public/icon-*.png`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- `npm run typecheck` ✓ · `npm run lint` ✓ · `npm test` ✓ (new: `resolveSiteUrl` prefers the production domain; `formatCompact`/`formatMoney`/`formatPct`/`formatMultiple`) · `npm run build` ✓ (the first run hit a transient Supabase 500 while prerendering `/th`; the rerun passed)
+- Browser pane:
+  - With the light theme stored, TH → EN → TH keeps `data-theme=light` and a white background; the currency is kept too.
+  - `/startups` has 1 filter form and 1 Apply button; the mobile toggle opens it.
+  - `/th/startup/jaopor` as a visitor shows no "–"; the unverified line and "ที่ตั้ง ไทย" are correct.
+  - The demo profile shows all data and InsightCards with icon boxes.
+  - Leaderboard medals show in light mode.
+- 375px: `scrollWidth` = 375 on `/th`, `/th/startups`, `/en/startups`, `/th/login`, `/th/dashboard` and both profiles.
+- The icons are served (`icon.svg`, `favicon.ico` 16/32/48, `apple-icon.png`). The OG image and badge render the new mark.
+- **Not verified:** owner-side `EmptyOwnerCard`s while signed in (login is still blocked on the Supabase URL config), and production OG URLs (need a deploy).
+
+**Next:** the user checks Phase 0, then Phase 1 (shared configs + migrations, SQL shown first)
+
 ## 2026-09-30 — Visitors without Plausible: JaoPor snippet + Cloudflare; GitHub stack detection
 
 **Done:**

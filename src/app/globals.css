@@ -2,7 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* Dark is the default; only data-theme="light" (set by the <head> script / toggle, never by React) turns it off. */
+@custom-variant dark (&:is(:root:not([data-theme="light"]) *));
 
 @theme inline {
   --color-background: var(--background);
@@ -23,6 +24,9 @@
   --color-faint: var(--faint);
   --font-heading: var(--font-sans);
   --color-brand: var(--brand);
+  --color-brand-text: var(--brand-text);
+  --color-surface-2: var(--surface-2);
+  --color-border-strong: var(--border-strong);
   --color-positive: var(--positive);
   --color-negative: var(--negative);
   --color-warning: var(--warning);
@@ -95,6 +99,9 @@
   --radius: 0.5rem;
   /* JaoPor brand accent (Design.md §2 ★): indigo, from the Figma file. Swap here only. */
   --brand: #4f46e5;
+  --brand-text: #4f46e5;
+  --surface-2: #ffffff;
+  --border-strong: #d4d4d8;
   --brand-foreground: #ffffff;
   --positive: #047857;
   --negative: #b91c1c;
@@ -109,38 +116,42 @@
   --sidebar-ring: #a1a1aa;
 }
 
-.dark {
+:root:not([data-theme="light"]) {
   /* Dark theme (default): zinc values measured from the Figma file. */
-  --background: #09090b;
-  --foreground: #fafafa;
+  --background: #0a0a0b;
+  --foreground: #ededed;
   --card: #141416;
-  --card-foreground: #fafafa;
-  --popover: #18181b;
-  --popover-foreground: #fafafa;
+  --card-foreground: #ededed;
+  --popover: #1e1e20;
+  --popover-foreground: #ededed;
   --primary: #f4f4f5;
   --primary-foreground: #09090b;
   --secondary: #18181b;
   --secondary-foreground: #fafafa;
   --muted: #18181b;
-  --muted-foreground: #a1a1aa;
-  --faint: #7c7c87;
+  --muted-foreground: #a1a1a6;
+  --faint: #8a8a8f;
   --accent: #1f1f23;
   --accent-foreground: #fafafa;
   --destructive: #f87171;
   --border: #26262a;
-  --input: #27272a;
+  --input: #3a3a40;
   --ring: #52525b;
   /* Validated with the dataviz validator on #141416: chart-1 = revenue, chart-2 = previous period. */
-  --chart-1: #6366f1;
+  --chart-1: #6e6cf3;
   --chart-2: #0d9488;
   --chart-3: #52525b;
   --chart-4: #3f3f46;
   --chart-5: #27272a;
-  --brand: #818cf8;
+  --brand: #6e6cf3;
+  /* Text/link indigo: --brand itself is 4.47:1 on cards (<4.5), so text uses this lighter step. */
+  --brand-text: #8280f6;
+  --surface-2: #1e1e20;
+  --border-strong: #3a3a40;
   --brand-foreground: #09090b;
-  --positive: #34d399;
-  --negative: #f87171;
-  --warning: #fbbf24;
+  --positive: #22c55e;
+  --negative: #ef4444;
+  --warning: #f59e0b;
   --sidebar: #141416;
   --sidebar-foreground: #fafafa;
   --sidebar-primary: #6366f1;
@@ -171,10 +182,10 @@
   html {
     color-scheme: light;
   }
-  html.dark {
+  html:not([data-theme="light"]) {
     color-scheme: dark;
   }
-  .dark option {
+  html:not([data-theme="light"]) option {
     background-color: var(--popover);
     color: var(--popover-foreground);
   }

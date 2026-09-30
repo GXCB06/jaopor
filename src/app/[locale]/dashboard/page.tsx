@@ -140,7 +140,7 @@ export default async function DashboardPage({
                       <span
                         className={cn(
                           "rounded-md border px-1.5 py-0.5 text-[10px] font-bold",
-                          verified && "border-brand/40 text-brand",
+                          verified && "border-brand/40 text-brand-text",
                           status === "statusError" &&
                             "border-warning/40 text-warning",
                           status === "statusUnverified" &&
@@ -171,9 +171,11 @@ export default async function DashboardPage({
                   <div>
                     <MetricLabel>{t("mrr")}</MetricLabel>
                     <p className="text-sm font-bold tabular-nums">
-                      {s.verification_status === "verified"
-                        ? <Money cents={s.mrr_cents} thbPerUsd={thbPerUsd} />
-                        : "—"}
+                      {s.verification_status === "verified" ? (
+                        <Money cents={s.mrr_cents} thbPerUsd={thbPerUsd} />
+                      ) : (
+                        "—"
+                      )}
                     </p>
                   </div>
                   <div>
@@ -202,7 +204,7 @@ export default async function DashboardPage({
                     {missing > 0 && (
                       <Link
                         href={`/startup/${s.slug}`}
-                        className="text-brand hover:underline"
+                        className="text-brand-text hover:underline"
                       >
                         {t("addMore", { count: missing })} ›
                       </Link>

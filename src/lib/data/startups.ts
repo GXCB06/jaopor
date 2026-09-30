@@ -102,7 +102,12 @@ export async function getRecent(limit = 12): Promise<StartupRow[]> {
   return data as StartupRow[];
 }
 
-export const DIRECTORY_SORTS = ["mrr", "visitors", "commits", "newest"] as const;
+export const DIRECTORY_SORTS = [
+  "mrr",
+  "visitors",
+  "commits",
+  "newest",
+] as const;
 export type DirectorySort = (typeof DIRECTORY_SORTS)[number];
 /** Project type filter: "app" matches App Store or Google Play. */
 export const PROJECT_TYPES = ["website", "app", "line", "github"] as const;
@@ -139,8 +144,7 @@ export async function listStartups(
     query = query.contains("looking_for", [filters.lookingFor]);
   if (filters.type === "app")
     query = query.or("app_store_url.not.is.null,play_store_url.not.is.null");
-  else if (filters.type)
-    query = query.not(`${filters.type}_url`, "is", null);
+  else if (filters.type) query = query.not(`${filters.type}_url`, "is", null);
   if (filters.q) {
     // Strip PostgREST filter syntax characters before building the OR expression.
     const term = filters.q

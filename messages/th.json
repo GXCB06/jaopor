@@ -16,7 +16,8 @@
     "skip": "ข้ามไปก่อน",
     "optional": "ไม่บังคับ",
     "notVerified": "ยังไม่ยืนยัน",
-    "genericError": "มีบางอย่างผิดพลาด กรุณาลองอีกครั้ง"
+    "genericError": "มีบางอย่างผิดพลาด กรุณาลองอีกครั้ง",
+    "verifiedVia": "ยืนยันแล้ว · {source}"
   },
   "Nav": {
     "startups": "สตาร์ทอัพ",
@@ -231,7 +232,11 @@
     "sampleShort": "ข้อมูลตัวอย่าง",
     "viaJaopor": "นับโดย JaoPor (สคริปต์ของเรา)",
     "viaCloudflare": "ยืนยันผ่าน Cloudflare · นับเป็นการเข้าชม (visits)",
-    "detectedStack": "ตรวจพบจาก GitHub"
+    "detectedStack": "ตรวจพบจาก GitHub",
+    "addNamed": "+ เพิ่ม{label}",
+    "connectNamed": "+ เชื่อมต่อ{label}",
+    "unverifiedLine": "ยังไม่ยืนยัน: {items}",
+    "tagline": "คำโปรยสั้น ๆ"
   },
   "Verified": {
     "stamp": "รายได้ยืนยันผ่าน API key ของ <b>{provider}</b>",

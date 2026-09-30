@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  // JaoPor: follow our own <html class="dark"> theme (Design.md §2 Theme), not next-themes.
+  // JaoPor: follow our own <html data-theme> theme (Design.md §2 Theme), not next-themes.
   const theme = useThemeMode();
 
   return (

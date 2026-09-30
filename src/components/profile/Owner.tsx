@@ -6,6 +6,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 // Design.md §5 InfoCard: the profile page is ISR-cached for everyone, so "is the viewer the
 // owner?" is decided in the browser from the session. UI hint only — writes are protected by RLS.
@@ -31,31 +32,73 @@ export function OwnerProvider({
   return <Ctx.Provider value={{ isOwner, startupId }}>{children}</Ctx.Provider>;
 }
 
-/** Empty field: "+ Add" (deep link to the editor) for the owner, "Not added" for visitors. */
-export function EmptyValue({
+/** Renders its children for the owner only (empty-state rule, spec 2.4: visitors see nothing). */
+export function OwnerOnly({ children }: { children: React.ReactNode }) {
+  const { isOwner } = useContext(Ctx);
+  return isOwner ? <>{children}</> : null;
+}
+
+/** Deep link into the editor: "revenue" / "verify-*" open the VerifyPanel group. */
+function useEditHref(field: string) {
+  const { startupId } = useContext(Ctx);
+  const anchor = field === "revenue" ? "verify-revenue" : field;
+  return {
+    href: `/dashboard/${startupId}/edit#${anchor}`,
+    verify: anchor.startsWith("verify"),
+  };
+}
+
+/**
+ * Spec 2.2 EmptyOwnerCard: dashed "+ เพิ่ม…" prompt linking to the edit form. Shown **only to the
+ * owner**; visitors get nothing (no "–" walls). Owner detection is client-side to keep ISR.
+ */
+export function EmptyOwnerCard({
   field,
-  visitorText,
+  label,
+  className,
 }: {
   field: string;
-  visitorText?: string;
+  label: string;
+  className?: string;
 }) {
-  const { isOwner, startupId } = useContext(Ctx);
+  const { isOwner } = useContext(Ctx);
   const t = useTranslations("Profile");
-  if (isOwner) {
-    // "revenue" / "verify-*" open the VerifyPanel group; everything else the field itself.
-    const anchor = field === "revenue" ? "verify-revenue" : field;
-    const verify = anchor.startsWith("verify");
-    return (
-      <Link
-        href={`/dashboard/${startupId}/edit#${anchor}`}
-        className="inline-flex rounded-md border border-dashed border-brand/50 px-2 py-0.5 text-caption text-brand hover:bg-brand/10"
-      >
-        {verify ? t("connect") : t("add")}
-      </Link>
-    );
-  }
+  const { href, verify } = useEditHref(field);
+  if (!isOwner) return null;
   return (
-    <p className="text-caption text-faint">{visitorText ?? t("notAdded")}</p>
+    <Link
+      href={href}
+      className={cn(
+        "flex min-h-14 items-center justify-center rounded-xl border border-dashed border-brand/50 px-4 py-3 text-center text-caption text-brand-text transition-colors hover:bg-brand/10",
+        className,
+      )}
+    >
+      {verify ? t("connectNamed", { label }) : t("addNamed", { label })}
+    </Link>
+  );
+}
+
+/**
+ * Spec 2.4: unverified metrics collapse into one muted line, not one card each. The owner also
+ * gets the shortcut into the VerifyPanel.
+ */
+export function UnverifiedLine({ items }: { items: string[] }) {
+  const { isOwner } = useContext(Ctx);
+  const t = useTranslations("Profile");
+  const { href } = useEditHref("revenue");
+  if (!items.length) return null;
+  return (
+    <p className="text-center text-caption text-faint">
+      {t("unverifiedLine", { items: items.join(", ") })}
+      {isOwner && (
+        <>
+          {" · "}
+          <Link href={href} className="text-brand-text hover:underline">
+            {t("connectStripe")}
+          </Link>
+        </>
+      )}
+    </p>
   );
 }
 

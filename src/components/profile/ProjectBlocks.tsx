@@ -12,9 +12,10 @@ import type { StartupRow } from "@/lib/data/startups";
 import { growthPct } from "@/lib/format";
 import { projectLinks, type LinkKind } from "@/lib/links";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
-import { StatTile } from "../ProfileBlocks";
+import { StatCard } from "../ProfileBlocks";
 import { Chip, GrowthValue } from "../StartupBits";
-import { EmptyValue } from "./Owner";
+import { Card } from "../core/Card";
+import { EmptyOwnerCard, OwnerOnly } from "./Owner";
 
 // Design.md §5 ProjectLinks · LookingForBanner · TractionTiles + BuildProof.
 
@@ -86,9 +87,8 @@ export async function LookingForBanner({ startup }: { startup: StartupRow }) {
 }
 
 export async function TractionTiles({ startup }: { startup: StartupRow }) {
-  const [t, common, format] = await Promise.all([
+  const [t, format] = await Promise.all([
     getTranslations("Profile"),
-    getTranslations("Common"),
     getFormatter(),
   ]);
   // Demo projects (sample data) never claim a verification source.
@@ -102,9 +102,6 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
           : source && isSource(source)
             ? t("via", { source: SOURCE_NAME[source] })
             : null;
-  const notVerified = (anchor: string) => (
-    <EmptyValue field={anchor} visitorText={common("notVerified")} />
-  );
   const n = (v: number) => format.number(v);
 
   const commits = startup.build_commits;
@@ -112,17 +109,25 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
     commits && startup.build_ai_commits !== null
       ? Math.round((startup.build_ai_commits / commits) * 100)
       : null;
-  const revenueCat = startup.verified_provider === "revenuecat";
 
-  return (
-    <section className="space-y-3">
-      <h2 className="text-sm font-bold">{t("traction")}</h2>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-        <StatTile
-          label={t("visitors30d")}
-          value={startup.visitors_30d !== null ? n(startup.visitors_30d) : "–"}
-          caption={
-            startup.visitors_30d !== null ? (
+  // Spec 2.4: a metric with no data is hidden for visitors and becomes a dashed prompt for the owner.
+  const tiles: {
+    key: string;
+    anchor: string;
+    label: string;
+    card: React.ReactNode | null;
+    span?: string;
+  }[] = [
+    {
+      key: "visitors",
+      anchor: "verify-traffic",
+      label: t("visitors30d"),
+      card:
+        startup.visitors_30d !== null ? (
+          <StatCard
+            label={t("visitors30d")}
+            value={n(startup.visitors_30d)}
+            caption={
               <span className="whitespace-normal">
                 <GrowthValue
                   pct={growthPct(
@@ -132,68 +137,94 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
                 />{" "}
                 {via(startup.traffic_provider)}
               </span>
-            ) : (
-              notVerified("verify-traffic")
-            )
-          }
-        />
-        <StatTile
-          label={t("activeUsers")}
-          value={startup.active_users !== null ? n(startup.active_users) : "–"}
-          caption={
-            startup.active_users !== null
-              ? via("revenuecat")
-              : revenueCat
-                ? via("revenuecat")
-                : notVerified("verify-revenue")
-          }
-        />
-        <div className="col-span-2 md:col-span-1">
-          <StatTile
-            label={t("buildProof")}
-            value={commits !== null ? t("commits", { count: commits }) : "–"}
-            caption={
-              commits !== null ? (
-                <span className="whitespace-normal">
-                  {[
-                    claudePct !== null && claudePct > 0
-                      ? t("claudeShare", { pct: claudePct })
-                      : null,
-                    startup.build_first_commit_at
-                      ? t("firstCommit", {
-                          date: format.dateTime(
-                            new Date(startup.build_first_commit_at),
-                            { dateStyle: "medium" },
-                          ),
-                        })
-                      : null,
-                    startup.build_stars
-                      ? t("stars", { count: n(startup.build_stars) })
-                      : null,
-                    via("github"),
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </span>
-              ) : (
-                notVerified("verify-build")
-              )
             }
           />
-        </div>
+        ) : null,
+    },
+    {
+      key: "users",
+      anchor: "verify-revenue",
+      label: t("activeUsers"),
+      card:
+        startup.active_users !== null ? (
+          <StatCard
+            label={t("activeUsers")}
+            value={n(startup.active_users)}
+            caption={via("revenuecat")}
+          />
+        ) : null,
+    },
+    {
+      key: "build",
+      anchor: "verify-build",
+      label: t("buildProof"),
+      span: "col-span-2 md:col-span-1",
+      card:
+        commits !== null ? (
+          <StatCard
+            label={t("buildProof")}
+            value={t("commits", { count: commits })}
+            caption={
+              <span className="whitespace-normal">
+                {[
+                  claudePct !== null && claudePct > 0
+                    ? t("claudeShare", { pct: claudePct })
+                    : null,
+                  startup.build_first_commit_at
+                    ? t("firstCommit", {
+                        date: format.dateTime(
+                          new Date(startup.build_first_commit_at),
+                          { dateStyle: "medium" },
+                        ),
+                      })
+                    : null,
+                  startup.build_stars
+                    ? t("stars", { count: n(startup.build_stars) })
+                    : null,
+                  via("github"),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            }
+          />
+        ) : null,
+    },
+  ];
+
+  const section = (
+    <section className="space-y-3">
+      <h2 className="text-sm font-bold">{t("traction")}</h2>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
+        {tiles.map((x) =>
+          x.card ? (
+            <div key={x.key} className={x.span}>
+              {x.card}
+            </div>
+          ) : (
+            <EmptyOwnerCard
+              key={x.key}
+              field={x.anchor}
+              label={x.label}
+              className={x.span}
+            />
+          ),
+        )}
       </div>
-      <div className="space-y-2 rounded-xl border bg-card p-4">
-        <p className="text-2xs font-bold tracking-wider text-faint uppercase">
-          {t("buildStory")}
-        </p>
-        {startup.build_story ? (
+      {startup.build_story ? (
+        <Card className="space-y-2 p-4">
+          <p className="text-2xs font-bold tracking-wider text-faint uppercase">
+            {t("buildStory")}
+          </p>
           <p className="text-xs leading-relaxed whitespace-pre-line">
             “{startup.build_story}”
           </p>
-        ) : (
-          <EmptyValue field="build_story" />
-        )}
-      </div>
+        </Card>
+      ) : (
+        <EmptyOwnerCard field="build_story" label={t("buildStory")} />
+      )}
     </section>
   );
+  const hasData = tiles.some((x) => x.card) || Boolean(startup.build_story);
+  return hasData ? section : <OwnerOnly>{section}</OwnerOnly>;
 }

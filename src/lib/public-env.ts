@@ -23,6 +23,23 @@ export function toOrigin(value: string | undefined): string | undefined {
   }
 }
 
+/**
+ * Canonical origin for OG images, share links and the visitor snippet.
+ * Vercel's own production domain wins over NEXT_PUBLIC_SITE_URL: that variable is set by hand and
+ * went stale when the domain was renamed, which pointed OG images at a dead host. Locally neither is
+ * set, so it falls back to NEXT_PUBLIC_SITE_URL, then localhost.
+ */
+export function resolveSiteUrl(env: {
+  productionUrl?: string;
+  siteUrl?: string;
+}): string {
+  return (
+    toOrigin(env.productionUrl) ??
+    toOrigin(env.siteUrl) ??
+    "http://localhost:3000"
+  );
+}
+
 export const publicEnv = {
   supabaseUrl:
     toOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL) ??
@@ -30,9 +47,8 @@ export const publicEnv = {
   supabasePublishableKey:
     clean(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) ??
     "sb_publishable_Jz9ha-2sWCh7c8Ax0ZCWlA_lAWEKHxg",
-  siteUrl:
-    toOrigin(process.env.NEXT_PUBLIC_SITE_URL) ??
-    // Set automatically by Vercel for Next.js projects (production domain, no protocol).
-    toOrigin(process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL) ??
-    "http://localhost:3000",
+  siteUrl: resolveSiteUrl({
+    productionUrl: process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL,
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+  }),
 };

@@ -9,6 +9,7 @@ import {
   type StartupRow,
 } from "@/lib/data/startups";
 import { moneyCompact, moneyFull } from "@/lib/format";
+import { LOGO_SMALL_HAT, LOGO_TILE } from "@/lib/logo";
 import { shareMetrics } from "@/lib/share";
 import {
   bucketMonthly,
@@ -18,12 +19,7 @@ import {
   weekColumns,
   type Point,
 } from "@/lib/share-card";
-import {
-  BRAND_HEX,
-  CARD_THEME,
-  MARK_PATH,
-  SWATCHES,
-} from "@/lib/share-palette";
+import { CARD_THEME, SWATCHES } from "@/lib/share-palette";
 
 // Design.md §5 ShareStudio images: Badge / Chart / Calendar PNGs of a project's VERIFIED numbers.
 // Every query parameter is validated against fixed lists (parseCardQuery); colours are swatch
@@ -102,16 +98,10 @@ export async function GET(
         fontSize: 18,
       }}
     >
-      <svg width="20" height="20" viewBox="0 0 24 24">
-        <rect width="24" height="24" rx="6" fill={BRAND_HEX} />
-        <path
-          d={MARK_PATH}
-          fill="none"
-          stroke="#ffffff"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+      <svg width="20" height="20" viewBox="0 0 64 64">
+        <rect width="64" height="64" rx="14" fill={LOGO_TILE} />
+        <path d={LOGO_SMALL_HAT} fill="#ffffff" />
+        <rect x="3" y="39" width="58" height="10" rx="5" fill="#ffffff" />
       </svg>
       {t("verifiedBy")}
     </div>

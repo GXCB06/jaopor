@@ -11,10 +11,12 @@ import {
   getTranslations,
   setRequestLocale,
 } from "next-intl/server";
+import { VerifiedBadge } from "@/components/core/VerifiedBadge";
 import {
-  EmptyValue,
+  EmptyOwnerCard,
   OwnerBar,
   OwnerProvider,
+  UnverifiedLine,
 } from "@/components/profile/Owner";
 import {
   LookingForBanner,
@@ -23,7 +25,7 @@ import {
 } from "@/components/profile/ProjectBlocks";
 import {
   InsightsGrid,
-  StatTile,
+  StatCard,
   VerifiedStamp,
 } from "@/components/ProfileBlocks";
 import { RevenueChart } from "@/components/RevenueChart";
@@ -42,6 +44,7 @@ import { moneyFull } from "@/lib/format";
 import { projectLinks } from "@/lib/links";
 import { publicEnv } from "@/lib/public-env";
 import { badgeHtml, shareMetrics } from "@/lib/share";
+import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { logoUrl } from "@/lib/supabase/public";
 
 export const revalidate = 60;
@@ -85,18 +88,18 @@ export default async function StartupPage({ params }: Props) {
   const verified = startup.verification_status === "verified";
   const [t, common, nav, sh, format, rank, series, more, thbPerUsd] =
     await Promise.all([
-    getTranslations("Profile"),
-    getTranslations("Common"),
-    getTranslations("Nav"),
-    getTranslations("Share"),
-    getFormatter(),
-    getRank(startup),
-    verified && startup.verified_provider === "stripe"
-      ? getRevenueSeries(startup.id, 120)
-      : Promise.resolve([]),
-    getMoreStartups(startup, 6),
-    getThbPerUsd(),
-  ]);
+      getTranslations("Profile"),
+      getTranslations("Common"),
+      getTranslations("Nav"),
+      getTranslations("Share"),
+      getFormatter(),
+      getRank(startup),
+      verified && startup.verified_provider === "stripe"
+        ? getRevenueSeries(startup.id, 120)
+        : Promise.resolve([]),
+      getMoreStartups(startup, 6),
+      getThbPerUsd(),
+    ]);
 
   // Share kit (Design.md §9): absolute URLs, verified numbers only.
   const url = `${publicEnv.siteUrl}/${locale}/startup/${startup.slug}`;
@@ -114,9 +117,10 @@ export default async function StartupPage({ params }: Props) {
   const primary = projectLinks(startup)[0];
   const owner = startup.owner;
   const ownerName = owner?.display_name ?? owner?.handle ?? null;
-  const notVerified = (
-    <EmptyValue field="revenue" visitorText={common("notVerified")} />
-  );
+  const verifiedSource =
+    verified && !startup.is_demo && isSource(startup.verified_provider)
+      ? SOURCE_NAME[startup.verified_provider]
+      : null;
   const tractionFirst =
     !verified &&
     (startup.visitors_30d !== null || startup.build_commits !== null);
@@ -155,17 +159,26 @@ export default async function StartupPage({ params }: Props) {
                   {startup.name}
                 </h1>
                 <FoundingBadge n={startup.founding_number} />
+                {!startup.is_demo && <VerifiedBadge source={verifiedSource} />}
               </div>
               <div className="max-w-2xl space-y-2 text-body text-muted-foreground">
                 {startup.tagline ? (
                   <p>{startup.tagline}</p>
                 ) : (
-                  <EmptyValue field="tagline" visitorText="" />
+                  <EmptyOwnerCard
+                    field="tagline"
+                    label={t("tagline")}
+                    className="w-fit"
+                  />
                 )}
                 {startup.description ? (
                   <p className="whitespace-pre-line">{startup.description}</p>
                 ) : (
-                  <EmptyValue field="description" visitorText="" />
+                  <EmptyOwnerCard
+                    field="description"
+                    label={t("description")}
+                    className="w-fit"
+                  />
                 )}
               </div>
             </div>
@@ -207,87 +220,87 @@ export default async function StartupPage({ params }: Props) {
         {/* A project without verified revenue leads with the numbers it does have (visitors, build). */}
         {tractionFirst && <TractionTiles startup={startup} />}
 
-        <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <StatTile
-            label={t("allTime")}
-            value={
-              verified ? (
-                <Money
-                  cents={startup.revenue_all_time_cents}
-                  thbPerUsd={thbPerUsd}
-                  full
-                />
-              ) : (
-                "–"
-              )
-            }
-            caption={
-              verified ? (rank ? t("rank", { rank }) : undefined) : notVerified
-            }
-          />
-          <StatTile
-            label={t("mrr")}
-            value={
-              verified ? (
-                <Money cents={startup.mrr_cents} thbPerUsd={thbPerUsd} full />
-              ) : (
-                "–"
-              )
-            }
-            caption={
-              verified
-                ? t("subscriptions", {
-                    count: startup.active_subscriptions ?? 0,
-                  })
-                : notVerified
-            }
-          />
-          <StatTile
-            label={t("founder")}
-            value={
-              ownerName ? (
-                <span className="flex items-center gap-2 text-base">
-                  {owner?.avatar_url ? (
-                    <Image
-                      src={owner.avatar_url}
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="size-5 rounded-full"
-                    />
-                  ) : null}
-                  <span className="truncate">{ownerName}</span>
-                </span>
-              ) : (
-                "–"
-              )
-            }
-            caption={owner?.x_handle ? `@${owner.x_handle} · 𝕏` : undefined}
-          />
-          <StatTile
-            label={t("founded")}
-            value={
-              startup.founded_on ? (
-                <span className="text-lg">
-                  {format.dateTime(new Date(startup.founded_on), {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </span>
-              ) : (
-                "–"
-              )
-            }
-            caption={
-              startup.country || startup.province ? (
-                [startup.province, countryName(startup.country, locale)]
-                  .filter(Boolean)
-                  .join(", ")
-              ) : (
-                <EmptyValue field="founded" />
-              )
-            }
-          />
+        {/* Spec 2.4: only tiles that have data; unverified numbers collapse into one muted line. */}
+        <section className="space-y-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
+            {verified && (
+              <StatCard
+                label={t("allTime")}
+                value={
+                  <Money
+                    cents={startup.revenue_all_time_cents}
+                    thbPerUsd={thbPerUsd}
+                    full
+                  />
+                }
+                caption={rank ? t("rank", { rank }) : undefined}
+              />
+            )}
+            {verified && (
+              <StatCard
+                label={t("mrr")}
+                value={
+                  <Money cents={startup.mrr_cents} thbPerUsd={thbPerUsd} full />
+                }
+                caption={t("subscriptions", {
+                  count: startup.active_subscriptions ?? 0,
+                })}
+              />
+            )}
+            {ownerName && (
+              <StatCard
+                label={t("founder")}
+                value={
+                  <span className="flex items-center gap-2 text-base">
+                    {owner?.avatar_url ? (
+                      <Image
+                        src={owner.avatar_url}
+                        alt=""
+                        width={20}
+                        height={20}
+                        className="size-5 rounded-full"
+                      />
+                    ) : null}
+                    <span className="truncate">{ownerName}</span>
+                  </span>
+                }
+                caption={owner?.x_handle ? `@${owner.x_handle} · 𝕏` : undefined}
+              />
+            )}
+            {startup.founded_on || startup.country || startup.province ? (
+              <StatCard
+                label={startup.founded_on ? t("founded") : t("location")}
+                value={
+                  startup.founded_on ? (
+                    <span className="text-lg">
+                      {format.dateTime(new Date(startup.founded_on), {
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </span>
+                  ) : (
+                    <span className="text-lg">
+                      {[startup.province, countryName(startup.country, locale)]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </span>
+                  )
+                }
+                caption={
+                  startup.founded_on && (startup.country || startup.province)
+                    ? [startup.province, countryName(startup.country, locale)]
+                        .filter(Boolean)
+                        .join(", ")
+                    : undefined
+                }
+              />
+            ) : (
+              <EmptyOwnerCard field="founded" label={t("founded")} />
+            )}
+          </div>
+          {!verified && !startup.is_demo && (
+            <UnverifiedLine items={[t("allTime"), t("mrr")]} />
+          )}
         </section>
 
         {series.length > 0 && (
@@ -318,7 +331,12 @@ export default async function StartupPage({ params }: Props) {
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {more.map((s) => (
-                <StartupCard key={s.id} startup={s} large thbPerUsd={thbPerUsd} />
+                <StartupCard
+                  key={s.id}
+                  startup={s}
+                  large
+                  thbPerUsd={thbPerUsd}
+                />
               ))}
             </div>
           </section>
