@@ -124,7 +124,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 - `sticky top-0 z-40 border-b bg-background`, `h-14`, inner `max-w-6xl`.
 - Left: `BrandLogo` = `<Logo>` (blue app tile 28px + "JaoPor" `font-extrabold tracking-[-0.02em]`); links home. Gaps `gap-3` below md so the header fits 375px. Nav links `text-xs text-muted-foreground hover:text-foreground` (active `text-foreground`): **Startups · Leaderboard (`/#leaderboard`) · Dashboard**. Hidden below `md`.
-- Right: **CurrencyToggle** (฿/$, §3 Currency), **search trigger** (`h-8 rounded-md border bg-card px-2.5 text-xs text-faint` with a search icon, "ค้นหา", and a `kbd` "/"; pressing `/` anywhere focuses the page search or opens `/startups`), primary **"+ เพิ่ม Startup"** (`h-8`, icon-only below `sm`), HeaderAuth (`whitespace-nowrap`), TH/EN (short code `EN`/`TH` below `sm`), ThemeToggle.
+- Right: **CurrencyToggle** (฿/$, §3 Currency), **search trigger** (`h-8 rounded-md border bg-card px-2.5 text-xs text-faint` with a search icon, "ค้นหา", and a `kbd` "/"; pressing `/` anywhere focuses the page search or opens `/startups`), primary **"+ เพิ่ม Startup"** (`h-8`, icon-only below `sm`), HeaderAuth (signed out: "เข้าสู่ระบบ" `whitespace-nowrap`; signed in: a `size-8` round avatar button (photo or letter) opening a DropdownMenu with the email, แดชบอร์ด and ออกจากระบบ), TH/EN (short code `EN`/`TH` below `sm`), ThemeToggle.
 
 ### Hero (home and directory)
 

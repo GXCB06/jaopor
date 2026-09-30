@@ -1,15 +1,28 @@
 "use client";
 
 import type { User } from "@supabase/supabase-js";
+import { LayoutDashboardIcon, LogOutIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-/** Client-side auth widget → the header needs no cookies, so public pages stay static. */
+/**
+ * Client-side auth widget → the header needs no cookies, so public pages stay static.
+ * Design.md §5 SiteHeader: signed in = one avatar button with a menu (fits 360px).
+ */
 export function HeaderAuth() {
   const t = useTranslations("Nav");
   const [user, setUser] = useState<User | null | undefined>(undefined);
+  const signOutForm = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -21,7 +34,7 @@ export function HeaderAuth() {
   }, []);
 
   if (user === undefined)
-    return <span className="h-4 w-16 animate-pulse rounded bg-muted" />;
+    return <span className="size-8 animate-pulse rounded-full bg-muted" />;
 
   if (!user) {
     return (
@@ -34,22 +47,50 @@ export function HeaderAuth() {
     );
   }
 
+  const meta = user.user_metadata as {
+    avatar_url?: string;
+    full_name?: string;
+    name?: string;
+  };
+  const name = meta.full_name ?? meta.name ?? user.email ?? "";
+  const avatar =
+    typeof meta.avatar_url === "string" &&
+    meta.avatar_url.startsWith("https://")
+      ? meta.avatar_url
+      : null;
+
   return (
-    <div className="flex items-center gap-3">
-      <Link
-        href="/dashboard"
-        className="text-xs font-medium text-muted-foreground hover:text-foreground md:hidden"
-      >
-        {t("dashboard")}
-      </Link>
-      <form action="/api/auth/signout" method="post">
-        <button
-          type="submit"
-          className="text-xs font-medium text-muted-foreground hover:text-foreground"
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          aria-label={t("account")}
+          className="inline-flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-secondary text-xs font-bold text-muted-foreground uppercase hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
         >
-          {t("signOut")}
-        </button>
-      </form>
-    </div>
+          {avatar ? (
+            // eslint-disable-next-line @next/next/no-img-element -- OAuth avatar, tiny
+            <img src={avatar} alt="" className="size-full object-cover" />
+          ) : (
+            name.slice(0, 1)
+          )}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-48">
+          <DropdownMenuLabel className="truncate text-caption font-normal text-muted-foreground">
+            {user.email ?? name}
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard">
+              <LayoutDashboardIcon aria-hidden="true" />
+              {t("dashboard")}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => signOutForm.current?.submit()}>
+            <LogOutIcon aria-hidden="true" />
+            {t("signOut")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <form ref={signOutForm} action="/api/auth/signout" method="post" hidden />
+    </>
   );
 }

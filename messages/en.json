@@ -32,7 +32,8 @@
     "leaderboard": "Leaderboard",
     "languageShort": "TH",
     "currencyThb": "Show amounts in Thai baht (฿)",
-    "currencyUsd": "Show amounts in US dollars ($)"
+    "currencyUsd": "Show amounts in US dollars ($)",
+    "account": "Your account"
   },
   "Footer": {
     "tagline": "The permanent home for AI-built projects from Thailand and Asia. Real work, real numbers.",
