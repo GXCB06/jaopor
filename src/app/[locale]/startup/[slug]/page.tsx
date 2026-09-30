@@ -46,6 +46,7 @@ import { publicEnv } from "@/lib/public-env";
 import { badgeHtml, shareMetrics } from "@/lib/share";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { logoUrl } from "@/lib/supabase/public";
+import { provinceName } from "@/lib/config/display";
 
 export const revalidate = 60;
 
@@ -296,7 +297,10 @@ export default async function StartupPage({ params }: Props) {
                     </span>
                   ) : (
                     <span className="text-lg">
-                      {[startup.province, countryName(startup.country, locale)]
+                      {[
+                        provinceName(startup.province, locale),
+                        countryName(startup.country, locale),
+                      ]
                         .filter(Boolean)
                         .join(", ")}
                     </span>
@@ -304,7 +308,10 @@ export default async function StartupPage({ params }: Props) {
                 }
                 caption={
                   startup.founded_on && (startup.country || startup.province)
-                    ? [startup.province, countryName(startup.country, locale)]
+                    ? [
+                        provinceName(startup.province, locale),
+                        countryName(startup.country, locale),
+                      ]
                         .filter(Boolean)
                         .join(", ")
                     : undefined

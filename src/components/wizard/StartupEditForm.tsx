@@ -9,11 +9,30 @@ import { Link, useRouter } from "@/i18n/navigation";
 import {
   AI_TOOLS,
   AUDIENCES,
-  CATEGORIES,
   FUNDING,
   TEAM_SIZES,
   type AiTool,
 } from "@/lib/catalog";
+import { CATEGORY_LIST } from "@/lib/config/categories";
+import {
+  CHANNEL_LIST,
+  CUSTOM_PREFIX,
+  MAX_CHANNELS,
+} from "@/lib/config/channels";
+import { toTechStack } from "@/lib/config/display";
+import { localizedLabel, localizedName } from "@/lib/config/localized";
+import {
+  STACK_GROUP_LABEL,
+  STORED_STACK_GROUPS,
+  aiToolLabel,
+  stackItems,
+  type TechStack,
+} from "@/lib/config/stack";
+import {
+  PRICING_CURRENCIES,
+  PRICING_PERIODS,
+  type PricingPeriod,
+} from "@/lib/pricing";
 import type { Tables } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -26,7 +45,13 @@ import {
   type LookingFor,
 } from "@/lib/links";
 import { cn } from "@/lib/utils";
-import { Field, Select, ToggleChips, inputClass } from "./fields";
+import {
+  Field,
+  ProvinceSelect,
+  Select,
+  ToggleChips,
+  inputClass,
+} from "./fields";
 import { uploadLogo } from "./StartupWizard";
 import { VerifyPanel, type ConnectionInfo } from "./VerifyPanel";
 
@@ -69,6 +94,8 @@ const list = (s: string, max: number) =>
     .filter(Boolean)
     .slice(0, max);
 
+const KNOWN_CHANNELS = new Set<string>(CHANNEL_LIST.map((c) => c.slug));
+
 export function StartupEditForm({
   userId,
   startup,
@@ -87,6 +114,7 @@ export function StartupEditForm({
   const st = useTranslations("Sources");
   const common = useTranslations("Common");
   const cat = useTranslations("Catalog");
+  const pr = useTranslations("Pricing");
   const locale = useLocale();
   const router = useRouter();
   const region = useMemo(
@@ -113,11 +141,19 @@ export function StartupEditForm({
     valueProposition: startup.value_proposition ?? "",
     problemSolved: startup.problem_solved ?? "",
     audience: startup.audience ?? "",
-    pricing: startup.pricing ?? "",
+    pricingAmount:
+      startup.pricing_amount !== null ? String(startup.pricing_amount) : "",
+    pricingCurrency: startup.pricing_currency ?? "THB",
+    pricingPeriod: (startup.pricing_period ?? "") as PricingPeriod | "",
+    pricingNote: startup.pricing_note ?? "",
     teamSize: startup.team_size ?? "",
     funding: startup.funding ?? "",
-    techStack: startup.tech_stack.join(", "),
-    channels: startup.marketing_channels.join(", "),
+    techStack: toTechStack(startup.tech_stack),
+    channels: startup.marketing_channels.filter((c) => KNOWN_CHANNELS.has(c)),
+    customChannels: startup.marketing_channels
+      .filter((c) => c.startsWith(CUSTOM_PREFIX))
+      .map((c) => c.slice(CUSTOM_PREFIX.length))
+      .join(", "),
     founderMessage: startup.founder_message ?? "",
   });
   const [logo, setLogo] = useState<File | null>(null);
@@ -156,6 +192,15 @@ export function StartupEditForm({
       links[LINK_COLUMN[kind]] = parsed?.url ?? null;
     }
     if (Object.values(links).every((v) => !v)) return setError(lt("needOne"));
+    const amount = f.pricingAmount.trim() ? Number(f.pricingAmount) : null;
+    const period = f.pricingPeriod || null;
+    const priced = period !== null && period !== "free";
+    if (priced && (amount === null || !Number.isFinite(amount) || amount < 0))
+      return setError(t("pricingAmount"));
+    const channels = [
+      ...f.channels,
+      ...list(f.customChannels, MAX_CHANNELS).map((c) => CUSTOM_PREFIX + c),
+    ].slice(0, MAX_CHANNELS);
     setBusy(true);
     try {
       const logoPath = logo
@@ -172,18 +217,21 @@ export function StartupEditForm({
           description: f.description.trim() || null,
           category: f.category,
           country: f.country,
-          province: f.province.trim() || null,
+          province: f.country === "TH" ? f.province || null : null,
           founded_on: f.founded ? `${f.founded}-01` : null,
           ai_tools: f.aiTools,
           logo_path: logoPath,
           value_proposition: f.valueProposition.trim() || null,
           problem_solved: f.problemSolved.trim() || null,
           audience: f.audience || null,
-          pricing: f.pricing.trim() || null,
+          pricing_amount: priced ? amount : null,
+          pricing_currency: priced ? f.pricingCurrency : null,
+          pricing_period: period,
+          pricing_note: f.pricingNote.trim() || null,
           team_size: f.teamSize || null,
           funding: f.funding || null,
-          tech_stack: list(f.techStack, 20),
-          marketing_channels: list(f.channels, 10),
+          tech_stack: f.techStack,
+          marketing_channels: channels,
           founder_message: f.founderMessage.trim() || null,
         })
         .eq("id", startup.id);
@@ -310,9 +358,9 @@ export function StartupEditForm({
             id="category-input"
             value={f.category}
             onChange={set("category")}
-            options={CATEGORIES.map((c) => ({
-              value: c,
-              label: cat(`category.${c}`),
+            options={CATEGORY_LIST.map((c) => ({
+              value: c.slug,
+              label: localizedName(c, locale),
             }))}
           />
         </Field>
@@ -341,12 +389,26 @@ export function StartupEditForm({
             }))}
           />
         </Field>
-        {text("province", "province", t("province"), 60)}
+        {f.country === "TH" && (
+          <Field
+            id="province"
+            label={t("province")}
+            htmlFor="province-input"
+            optional={common("optional")}
+          >
+            <ProvinceSelect
+              id="province-input"
+              value={f.province}
+              onChange={set("province")}
+              placeholder={t("choose")}
+            />
+          </Field>
+        )}
         <Field id="ai_tools" label={t("aiTools")} className="sm:col-span-2">
           <ToggleChips
             options={AI_TOOLS.map((x) => ({
               value: x,
-              label: cat(`tool.${x}`),
+              label: aiToolLabel(x, locale),
             }))}
             value={f.aiTools}
             onChange={set("aiTools")}
@@ -397,7 +459,74 @@ export function StartupEditForm({
             }))}
           />
         </Field>
-        {text("pricing", "pricing", t("pricing"), 300)}
+        <fieldset
+          id="pricing"
+          className="grid scroll-mt-24 gap-3 sm:col-span-2 sm:grid-cols-3"
+        >
+          <legend className="mb-2 text-xs font-medium">
+            {t("pricing")}{" "}
+            <span className="text-2xs font-normal text-muted-foreground">
+              ({common("optional")})
+            </span>
+          </legend>
+          <Field label={t("pricingPeriod")} htmlFor="pricing-period-input">
+            <Select
+              id="pricing-period-input"
+              value={f.pricingPeriod}
+              onChange={(v) => set("pricingPeriod")(v as PricingPeriod | "")}
+              placeholder={t("choose")}
+              options={PRICING_PERIODS.map((x) => ({
+                value: x,
+                label: pr(x),
+              }))}
+            />
+          </Field>
+          {f.pricingPeriod && f.pricingPeriod !== "free" && (
+            <>
+              <Field label={t("pricingAmount")} htmlFor="pricing-amount-input">
+                <input
+                  id="pricing-amount-input"
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step="0.01"
+                  required
+                  value={f.pricingAmount}
+                  onChange={(e) => set("pricingAmount")(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
+              <Field
+                label={t("pricingCurrency")}
+                htmlFor="pricing-currency-input"
+              >
+                <Select
+                  id="pricing-currency-input"
+                  value={f.pricingCurrency}
+                  onChange={set("pricingCurrency")}
+                  options={PRICING_CURRENCIES.map((c) => ({
+                    value: c,
+                    label: c === "THB" ? "฿ THB" : "$ USD",
+                  }))}
+                />
+              </Field>
+            </>
+          )}
+          <Field
+            label={t("pricingNote")}
+            htmlFor="pricing-note-input"
+            hint={t("pricingNoteHint")}
+            className="sm:col-span-3"
+          >
+            <input
+              id="pricing-note-input"
+              maxLength={300}
+              value={f.pricingNote}
+              onChange={(e) => set("pricingNote")(e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+        </fieldset>
         <Field
           id="team_size"
           label={t("teamSize")}
@@ -432,21 +561,57 @@ export function StartupEditForm({
             }))}
           />
         </Field>
+        <fieldset
+          id="tech_stack"
+          className="scroll-mt-24 space-y-3 sm:col-span-2"
+        >
+          <legend className="mb-2 text-xs font-medium">
+            {t("techStack")}{" "}
+            <span className="text-2xs font-normal text-muted-foreground">
+              ({common("optional")})
+            </span>
+          </legend>
+          {STORED_STACK_GROUPS.map((g) => (
+            <div key={g} className="space-y-1.5">
+              <p className="text-2xs text-muted-foreground">
+                {localizedName(STACK_GROUP_LABEL[g], locale)}
+              </p>
+              <ToggleChips
+                options={stackItems(g).map((i) => ({
+                  value: i.slug,
+                  label: i.label,
+                }))}
+                value={f.techStack[g] ?? []}
+                onChange={(v) => {
+                  const next: TechStack = { ...f.techStack, [g]: v };
+                  if (!v.length) delete next[g];
+                  set("techStack")(next);
+                }}
+              />
+            </div>
+          ))}
+        </fieldset>
+        <Field
+          id="marketing_channels"
+          label={t("marketingChannels")}
+          optional={common("optional")}
+          className="sm:col-span-2"
+        >
+          <ToggleChips
+            options={CHANNEL_LIST.map((c) => ({
+              value: c.slug as string,
+              label: localizedLabel(c, locale),
+            }))}
+            value={f.channels}
+            onChange={set("channels")}
+          />
+        </Field>
         {text(
-          "techStack",
-          "tech_stack",
-          t("techStack"),
-          400,
+          "customChannels",
+          "custom_channels",
+          t("customChannels"),
+          200,
           true,
-          "Next.js, Supabase, Stripe",
-        )}
-        {text(
-          "channels",
-          "marketing_channels",
-          t("marketingChannels"),
-          300,
-          true,
-          "Facebook, SEO, TikTok",
         )}
         <Field
           id="build_story"
@@ -473,7 +638,7 @@ export function StartupEditForm({
         >
           <Textarea
             id="msg-input"
-            maxLength={500}
+            maxLength={600}
             rows={3}
             value={f.founderMessage}
             onChange={(e) => set("founderMessage")(e.target.value)}

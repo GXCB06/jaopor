@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocale } from "next-intl";
+import { localizedName } from "@/lib/config/localized";
+import { PROVINCE_LIST, REGION_LIST } from "@/lib/config/provinces";
 import { cn } from "@/lib/utils";
 
 // Native form controls styled to Design.md §5 (SearchBar/Input tokens). Native <select> keeps
@@ -113,5 +116,43 @@ export function ToggleChips<T extends string>({
         );
       })}
     </div>
+  );
+}
+
+/** Spec 6.9 province select: 77 provinces grouped by region, names in the page language. */
+export function ProvinceSelect({
+  id,
+  value,
+  onChange,
+  placeholder,
+}: {
+  id: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  const locale = useLocale();
+  const collator = new Intl.Collator(locale);
+  return (
+    <select
+      id={id}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={inputClass}
+    >
+      <option value="">{placeholder}</option>
+      {REGION_LIST.map((r) => (
+        <optgroup key={r.slug} label={localizedName(r, locale)}>
+          {PROVINCE_LIST.filter((p) => p.region === r.slug)
+            .map((p) => ({ slug: p.slug, name: localizedName(p, locale) }))
+            .sort((a, b) => collator.compare(a.name, b.name))
+            .map((p) => (
+              <option key={p.slug} value={p.slug}>
+                {p.name}
+              </option>
+            ))}
+        </optgroup>
+      ))}
+    </select>
   );
 }

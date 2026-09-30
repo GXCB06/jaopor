@@ -57,35 +57,6 @@
     "topTraction": "ตัวเลขแรงสุด"
   },
   "Catalog": {
-    "category": {
-      "ai": "AI",
-      "saas": "SaaS",
-      "developer-tools": "เครื่องมือนักพัฒนา",
-      "fintech": "ฟินเทค",
-      "marketing": "การตลาด",
-      "ecommerce": "อีคอมเมิร์ซ",
-      "productivity": "เพิ่มประสิทธิภาพงาน",
-      "education": "การศึกษา",
-      "health": "สุขภาพ",
-      "content": "คอนเทนต์",
-      "design": "ดีไซน์",
-      "analytics": "วิเคราะห์ข้อมูล",
-      "mobile": "แอปมือถือ",
-      "other": "อื่น ๆ"
-    },
-    "tool": {
-      "claude-code": "Claude Code",
-      "opencode": "OpenCode",
-      "cursor": "Cursor",
-      "codex": "Codex",
-      "windsurf": "Windsurf",
-      "lovable": "Lovable",
-      "v0": "v0",
-      "replit": "Replit",
-      "bolt": "Bolt",
-      "other": "อื่น ๆ",
-      "claude": "Claude (แชท)"
-    },
     "audience": {
       "b2b": "B2B (ธุรกิจ)",
       "b2c": "B2C (ผู้บริโภค)",
@@ -269,7 +240,7 @@
     "description": "รายละเอียด",
     "category": "หมวดหมู่",
     "country": "ประเทศ",
-    "province": "จังหวัด / เมือง",
+    "province": "จังหวัด",
     "founded": "วันที่ก่อตั้ง",
     "aiTools": "สร้างด้วย (เครื่องมือ AI)",
     "logo": "โลโก้",
@@ -295,8 +266,8 @@
     "teamSize": "ขนาดทีม",
     "funding": "เงินทุน",
     "founderMessage": "ข้อความจากผู้ก่อตั้ง",
-    "techStack": "เทคโนโลยีที่ใช้ (คั่นด้วยจุลภาค)",
-    "marketingChannels": "ช่องทางการตลาด (คั่นด้วยจุลภาค)",
+    "techStack": "เทคโนโลยีที่ใช้",
+    "marketingChannels": "ช่องทางการตลาด",
     "finish": "เผยแพร่โปรไฟล์",
     "limitReached": "เพิ่มได้สูงสุด 5 สตาร์ทอัพต่อคน",
     "choose": "เลือก…",
@@ -312,7 +283,14 @@
     "links": "ลิงก์",
     "buildStory": "เล่าการสร้าง",
     "buildStoryHint": "เช่น ทำคนเดียว 2 สัปดาห์ด้วย Claude Code, 700 commits",
-    "skipVerify": "ยังไม่พร้อม? ข้ามไปก่อน แล้วค่อยยืนยันทีหลังจากหน้าแก้ไข"
+    "skipVerify": "ยังไม่พร้อม? ข้ามไปก่อน แล้วค่อยยืนยันทีหลังจากหน้าแก้ไข",
+    "customChannels": "ช่องทางอื่น (คั่นด้วยจุลภาค)",
+    "pricingAmount": "ราคา",
+    "pricingCurrency": "สกุลเงิน",
+    "pricingPeriod": "รอบบิล",
+    "pricingNote": "รายละเอียดราคา",
+    "pricingNoteHint": "เช่น ฟรี 1 เครื่อง, ส่วนลดรายปี",
+    "founderMessageCount": "{count}/600"
   },
   "Errors": {
     "invalid_key": "{source} ไม่ยอมรับคีย์หรือลิงก์นี้ — ตรวจแล้ววางใหม่อีกครั้ง",
@@ -524,5 +502,14 @@
     "visitorsIn": "ผู้เข้าชม · {period}",
     "less": "น้อย",
     "more": "มาก"
+  },
+  "Pricing": {
+    "month": "เดือน",
+    "year": "ปี",
+    "once": "ครั้งเดียว",
+    "free": "ฟรี",
+    "perMonth": "{price} / เดือน",
+    "perYear": "{price} / ปี",
+    "oneTime": "{price} (จ่ายครั้งเดียว)"
   }
 }

@@ -12,6 +12,51 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Spec Phase 1 (part 2): migration applied, app moved to the shared configs
+
+**Done:**
+
+- **Migration `spec_phase1_vocab` applied (user-approved SQL).** The back-fill matched the dry run:
+  - Provinces: 6/6 → slugs.
+  - Stack: to jsonb (`Prisma` and `LINE Messaging API` dropped, demo rows).
+  - Channels: to slugs (`custom:App Store optimization`).
+  - Pricing: MRRMafia → ฿990/month.
+- **Types:** `database.types.ts` updated with `provinces`, `fx_rates`, `startup_screenshots`, structured pricing, `demo_video_url`, `founder_role` and jsonb `tech_stack`.
+- **One source of truth:**
+  - `lib/catalog.ts` re-exports categories and AI tools from `lib/config`.
+  - Category and tool names come from config, so `messages Catalog.category|tool` were removed.
+  - Updated: directory filters (37 categories), footer, cards, profile, `/new` wizard and `AiToolChips`.
+- **Edit form:**
+  - Province select grouped by region (Thailand only).
+  - Structured pricing (period → amount + currency) plus a note.
+  - Tech stack as grouped toggle chips.
+  - Channel chips plus custom channels.
+  - Founder message up to 600.
+- **Profile:** province name (not the slug), "฿990 / เดือน" + note, grouped stack chips, channel labels. The dashboard completeness count uses the new fields.
+- **Other:**
+  - `lib/config/display.ts` (read-side helpers) and `lib/pricing.ts`.
+  - `supabase/demo_projects.sql` uses the new column shapes.
+
+**Files:** `supabase/migrations/20260930052136_spec_phase1_vocab.sql` (applied), `supabase/tests/rls_smoke.sql`, `supabase/demo_projects.sql`, `src/lib/supabase/database.types.ts`, `src/lib/{catalog,pricing}.ts`, `src/lib/config/display.ts`, `src/components/wizard/{StartupEditForm,StartupWizard,fields}.tsx`, `src/components/{ProfileBlocks,StartupCard,SiteFooter,AiToolChips}.tsx`, `src/app/[locale]/{startups,dashboard,startup/[slug]}/page.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- Advisors: nothing new (known leaked-password WARN; INFO: new indexes unused yet).
+- **RLS smoke 31/31**, new checks:
+  - T19 an owner saves stack/province/channels/pricing through the private-schema trigger.
+  - T20 unknown stack slug, T21 unknown channel and T22 unknown province are rejected.
+  - T23–T25: 8 screenshots OK, a 9th and a foreign-folder path are rejected.
+  - T26/T27: `fx_rates` and `provinces` are read-only.
+  - T28/T29: another user can't add to or edit someone's screenshots.
+  - T30/T31: anon reads screenshots and 77 provinces.
+- `npm test` 143/143 · `npm run typecheck` ✓ · `npm run lint` ✓ · `npm run build` ✓
+- Browser pane (local):
+  - Demo profile: "กรุงเทพมหานคร, ไทย", stack grouped (Frontend / แอป: Swift, SwiftUI · รับชำระเงิน: RevenueCat), channel labels.
+  - `/en/startup/mrrmafia`: "฿990 / month", "Mukdahan, Thailand".
+  - `/th/startups`: 37 categories, `?category=mobile` finds 1, footer categories from config.
+- **Not verified:** the edit form in a browser (needs a signed-in owner) and saving from it; the DB side is covered by T19–T22.
+
+**Next:** user signs in and edits a project (province, pricing, stack, channels); then Phase 2 (detail page: chart card, screenshots, founder message, logo chips; form 6.9)
+
 ## 2026-09-30 — Spec Phase 1 (part 1): shared configs + migration drafted, waiting for SQL approval
 
 **Done:**

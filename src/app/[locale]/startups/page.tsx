@@ -17,6 +17,8 @@ import {
 } from "@/lib/data/startups";
 import { getThbPerUsd } from "@/lib/data/fx";
 import { LOOKING_FOR, type LookingFor } from "@/lib/links";
+import { categoryName } from "@/lib/config/display";
+import { aiToolLabel } from "@/lib/config/stack";
 
 export async function generateMetadata({
   params,
@@ -56,10 +58,8 @@ export default async function StartupsPage({
   const sort = pick<DirectorySort>(DIRECTORY_SORTS, one(sp.sort)) ?? "mrr";
   const page = Math.max(1, Number(one(sp.page)) || 1);
 
-  const [t, cat, toolT, lf, { rows, total }, thbPerUsd] = await Promise.all([
+  const [t, lf, { rows, total }, thbPerUsd] = await Promise.all([
     getTranslations("Directory"),
-    getTranslations("Catalog.category"),
-    getTranslations("Catalog.tool"),
     getTranslations("LookingFor"),
     listStartups({ q, category, tool, verified, type, lookingFor, sort, page }),
     getThbPerUsd(),
@@ -109,7 +109,7 @@ export default async function StartupsPage({
           <option value="">{t("allCategories")}</option>
           {CATEGORIES.map((c) => (
             <option key={c} value={c}>
-              {cat(c)}
+              {categoryName(c, locale)}
             </option>
           ))}
         </select>
@@ -119,7 +119,7 @@ export default async function StartupsPage({
           <option value="">{t("allTools")}</option>
           {AI_TOOLS.filter((x) => x !== "other").map((x) => (
             <option key={x} value={x}>
-              {toolT(x)}
+              {aiToolLabel(x, locale)}
             </option>
           ))}
         </select>

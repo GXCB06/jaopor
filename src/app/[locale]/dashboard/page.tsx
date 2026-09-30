@@ -1,3 +1,5 @@
+import { stackCount } from "@/lib/config/display";
+import { hasPricing } from "@/lib/pricing";
 import type { Metadata } from "next";
 import {
   getFormatter,
@@ -55,10 +57,10 @@ function completeness(s: Tables<"startups">) {
     Boolean(s.value_proposition),
     Boolean(s.problem_solved),
     Boolean(s.audience),
-    Boolean(s.pricing),
+    hasPricing(s),
     Boolean(s.team_size),
     Boolean(s.funding),
-    s.tech_stack.length > 0,
+    stackCount(s.tech_stack) > 0,
     s.marketing_channels.length > 0,
     Boolean(s.founder_message),
     Boolean(s.build_story),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "@/i18n/navigation";
@@ -16,6 +16,8 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Field, Select, ToggleChips, inputClass } from "./fields";
 import { VerifyPanel } from "./VerifyPanel";
+import { categoryName } from "@/lib/config/display";
+import { aiToolLabel } from "@/lib/config/stack";
 
 // Design.md §6 Add-startup wizard — 2 short steps (feedback: "too much to fill in").
 // 1) name · ONE project link (website / store / LINE / GitHub, auto-detected) · category ·
@@ -54,7 +56,7 @@ export function StartupWizard({
 }) {
   const t = useTranslations("Wizard");
   const common = useTranslations("Common");
-  const cat = useTranslations("Catalog");
+  const locale = useLocale();
   const lt = useTranslations("Links");
   const lf = useTranslations("LookingFor");
   const router = useRouter();
@@ -191,7 +193,7 @@ export function StartupWizard({
                 onChange={setCategory}
                 options={CATEGORIES.map((c) => ({
                   value: c,
-                  label: cat(`category.${c}`),
+                  label: categoryName(c, locale),
                 }))}
               />
             </Field>
@@ -213,7 +215,7 @@ export function StartupWizard({
               <ToggleChips
                 options={AI_TOOLS.map((x) => ({
                   value: x,
-                  label: cat(`tool.${x}`),
+                  label: aiToolLabel(x, locale),
                 }))}
                 value={aiTools}
                 onChange={setAiTools}

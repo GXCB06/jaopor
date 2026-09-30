@@ -14,7 +14,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { categoryName, channelLabel, stackGroups } from "@/lib/config/display";
+import { aiToolLabel, type AiTool } from "@/lib/config/stack";
+import { formatPricing } from "@/lib/pricing";
 import { isSyncStale, type Owner, type StartupRow } from "@/lib/data/startups";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { cn } from "@/lib/utils";
@@ -125,8 +128,19 @@ type Insight = {
 };
 
 export async function InsightsGrid({ startup }: { startup: StartupRow }) {
-  const t = await getTranslations("Profile");
-  const cat = await getTranslations("Catalog");
+  const [t, cat, pr, locale] = await Promise.all([
+    getTranslations("Profile"),
+    getTranslations("Catalog"),
+    getTranslations("Pricing"),
+    getLocale(),
+  ]);
+  const price = formatPricing(startup, {
+    free: pr("free"),
+    perMonth: (price) => pr("perMonth", { price }),
+    perYear: (price) => pr("perYear", { price }),
+    oneTime: (price) => pr("oneTime", { price }),
+  });
+  const stack = stackGroups(startup.tech_stack, locale);
 
   const items: Insight[] = [
     {
@@ -153,20 +167,36 @@ export async function InsightsGrid({ startup }: { startup: StartupRow }) {
       icon: TagIcon,
       label: t("category"),
       field: "category",
-      content: chipList([cat(`category.${startup.category}` as "category.ai")]),
+      content: chipList([categoryName(startup.category, locale)]),
     },
     {
       icon: DollarSignIcon,
       label: t("pricing"),
       field: "pricing",
-      content: para(startup.pricing),
+      content:
+        price || startup.pricing_note ? (
+          <div className="space-y-1">
+            {price && (
+              <p className="text-sm font-semibold tabular-nums">{price}</p>
+            )}
+            {para(startup.pricing_note)}
+          </div>
+        ) : null,
     },
     {
       icon: Code2Icon,
       label: t("techStack"),
       field: "tech_stack",
-      content: startup.tech_stack.length ? (
-        chipList(startup.tech_stack)
+      content: stack.length ? (
+        // Spec 6.4: grouped under muted sub-labels, empty groups skipped (logo chips: Phase 2).
+        <div className="space-y-2.5">
+          {stack.map((g) => (
+            <div key={g.group} className="space-y-1.5">
+              <p className="text-2xs text-faint">{g.label}</p>
+              {chipList(g.items.map((i) => i.label))}
+            </div>
+          ))}
+        </div>
       ) : startup.build_stack.length ? (
         // Design.md §5: detected from the connected GitHub repo, never saved over the owner's list.
         <div className="space-y-2">
@@ -188,7 +218,7 @@ export async function InsightsGrid({ startup }: { startup: StartupRow }) {
       label: t("aiTools"),
       field: "ai_tools",
       content: chipList(
-        startup.ai_tools.map((x) => cat(`tool.${x}` as "tool.claude-code")),
+        startup.ai_tools.map((x) => aiToolLabel(x as AiTool, locale)),
       ),
     },
     {
@@ -203,7 +233,9 @@ export async function InsightsGrid({ startup }: { startup: StartupRow }) {
       icon: MegaphoneIcon,
       label: t("marketingChannels"),
       field: "marketing_channels",
-      content: chipList(startup.marketing_channels),
+      content: chipList(
+        startup.marketing_channels.map((c) => channelLabel(c, locale)),
+      ),
     },
     {
       icon: QuoteIcon,

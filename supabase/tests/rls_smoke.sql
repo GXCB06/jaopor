@@ -8,6 +8,7 @@ declare
   a uuid := '00000000-0000-4000-8000-00000000000a';
   b uuid := '00000000-0000-4000-8000-00000000000b';
   sid bigint;
+  sid2 bigint;
   n int;
   fnum int;
   out text := '';
@@ -31,7 +32,7 @@ begin
   exception when unique_violation then null;
   end;
   insert into public.startups (owner_id, slug, name, website_url) values (a, 'rls-test-a2', 'Test A2', 'https://a2.test')
-  returning founding_number into n;
+  returning id, founding_number into sid2, n;
   out := out || format('T11 number after failed insert: %s (expect %s) | ', n, fnum + 1);
 
   begin
@@ -100,6 +101,65 @@ begin
   exception when insufficient_privilege then out := out || 'T18 A writes build_stack: denied (good) | ';
   end;
 
+  -- spec_phase1_vocab: structured fields, vocab trigger, province FK, screenshots, lookup tables.
+  update public.startups
+  set tech_stack = '{"frontend": ["next-js"], "payments": ["promptpay"]}', province = 'mukdahan',
+      marketing_channels = array['seo', 'custom:Pantip ads'],
+      pricing_amount = 990, pricing_currency = 'THB', pricing_period = 'month', founder_role = 'Founder'
+  where id = sid;
+  get diagnostics n = row_count;
+  out := out || format('T19 A saves stack/province/channels/pricing: %s row (expect 1) | ', n);
+
+  begin
+    update public.startups set tech_stack = '{"frontend": ["stripe"]}' where id = sid;
+    out := out || 'T20 unknown stack slug: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T20 unknown stack slug: denied (good) | ';
+  end;
+
+  begin
+    update public.startups set marketing_channels = array['myspace'] where id = sid;
+    out := out || 'T21 unknown channel: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T21 unknown channel: denied (good) | ';
+  end;
+
+  begin
+    update public.startups set province = 'atlantis' where id = sid;
+    out := out || 'T22 unknown province: ALLOWED (BAD) | ';
+  exception when foreign_key_violation then out := out || 'T22 unknown province: denied (good) | ';
+  end;
+
+  insert into public.startup_screenshots (startup_id, path, kind, width, height, position)
+  select sid, sid || '/' || gen_random_uuid() || '.webp', 'desktop', 1600, 1000, g - 1
+  from generate_series(1, 8) g;
+  get diagnostics n = row_count;
+  out := out || format('T23 A adds 8 screenshots: %s (expect 8) | ', n);
+
+  begin
+    insert into public.startup_screenshots (startup_id, path, kind, width, height)
+    values (sid, sid || '/' || gen_random_uuid() || '.webp', 'mobile', 390, 844);
+    out := out || 'T24 9th screenshot: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T24 9th screenshot: denied (good) | ';
+  end;
+
+  begin
+    insert into public.startup_screenshots (startup_id, path, kind, width, height)
+    values (sid, '1/' || gen_random_uuid() || '.webp', 'desktop', 10, 10);
+    out := out || 'T25 screenshot path in another folder: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T25 screenshot path in another folder: denied (good) | ';
+  end;
+
+  begin
+    insert into public.fx_rates (day, usd_thb) values (current_date + 1, 1);
+    out := out || 'T26 A writes fx_rates: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T26 A writes fx_rates: denied (good) | ';
+  end;
+
+  begin
+    update public.provinces set region = 'south' where slug = 'bangkok';
+    out := out || 'T27 A edits provinces: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T27 A edits provinces: denied (good) | ';
+  end;
+
   execute 'reset role';
   perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
   execute 'set local role authenticated';
@@ -109,12 +169,26 @@ begin
   delete from public.startups where id = sid;
   get diagnostics n = row_count;
   out := out || format('T8 B deletes A startup: %s rows (expect 0) | ', n);
+  begin
+    -- A's second project (no screenshots yet), so only RLS can stop it (not the 8-image limit).
+    insert into public.startup_screenshots (startup_id, path, kind, width, height)
+    values (sid2, sid2 || '/' || gen_random_uuid() || '.webp', 'desktop', 10, 10);
+    out := out || 'T28 B adds screenshot to A startup: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T28 B adds screenshot to A startup: denied (good) | ';
+  end;
+  update public.startup_screenshots set caption = 'hacked' where startup_id = sid;
+  get diagnostics n = row_count;
+  out := out || format('T29 B edits A screenshots: %s rows (expect 0) | ', n);
 
   execute 'reset role';
   perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
   execute 'set local role anon';
   select count(*) into n from public.startups where id = sid;
   out := out || format('T9 anon sees published startup: %s (expect 1) | ', n);
+  select count(*) into n from public.startup_screenshots where startup_id = sid;
+  out := out || format('T30 anon sees screenshots of published startup: %s (expect 8) | ', n);
+  select count(*) into n from public.provinces;
+  out := out || format('T31 anon reads provinces: %s (expect 77) | ', n);
   begin
     insert into public.startups (owner_id, slug, name, website_url) values (a, 'rls-anon', 'Anon', 'https://x.test');
     out := out || 'T10 anon inserts: ALLOWED (BAD)';

@@ -1,7 +1,8 @@
-import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { AI_TOOLS, type AiTool } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
+import { aiToolLabel } from "@/lib/config/stack";
 
 /** "Built with Claude Code / OpenCode / …" filter chips (MRRMafia-specific, Design.md §5 InsightsGrid). */
 export function AiToolChips({
@@ -11,7 +12,7 @@ export function AiToolChips({
   active?: AiTool;
   tools?: readonly AiTool[];
 }) {
-  const tool = useTranslations("Catalog.tool");
+  const locale = useLocale();
   return (
     <div className="flex flex-wrap justify-center gap-2">
       {tools
@@ -25,7 +26,7 @@ export function AiToolChips({
               active === t && "border-brand/60 text-foreground",
             )}
           >
-            {tool(t)}
+            {aiToolLabel(t, locale)}
           </Link>
         ))}
     </div>

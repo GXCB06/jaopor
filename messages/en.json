@@ -57,35 +57,6 @@
     "topTraction": "Top traction"
   },
   "Catalog": {
-    "category": {
-      "ai": "AI",
-      "saas": "SaaS",
-      "developer-tools": "Developer tools",
-      "fintech": "Fintech",
-      "marketing": "Marketing",
-      "ecommerce": "E-commerce",
-      "productivity": "Productivity",
-      "education": "Education",
-      "health": "Health",
-      "content": "Content",
-      "design": "Design",
-      "analytics": "Analytics",
-      "mobile": "Mobile app",
-      "other": "Other"
-    },
-    "tool": {
-      "claude-code": "Claude Code",
-      "opencode": "OpenCode",
-      "cursor": "Cursor",
-      "codex": "Codex",
-      "windsurf": "Windsurf",
-      "lovable": "Lovable",
-      "v0": "v0",
-      "replit": "Replit",
-      "bolt": "Bolt",
-      "other": "Other",
-      "claude": "Claude (chat)"
-    },
     "audience": {
       "b2b": "B2B",
       "b2c": "B2C",
@@ -269,7 +240,7 @@
     "description": "Description",
     "category": "Category",
     "country": "Country",
-    "province": "Province / city",
+    "province": "Province",
     "founded": "Founded",
     "aiTools": "Built with (AI tools)",
     "logo": "Logo",
@@ -295,8 +266,8 @@
     "teamSize": "Team size",
     "funding": "Funding",
     "founderMessage": "Message from the founder",
-    "techStack": "Tech stack (comma separated)",
-    "marketingChannels": "Marketing channels (comma separated)",
+    "techStack": "Tech stack",
+    "marketingChannels": "Marketing channels",
     "finish": "Publish profile",
     "limitReached": "You can list up to 5 startups.",
     "choose": "Choose…",
@@ -312,7 +283,14 @@
     "links": "Links",
     "buildStory": "Build story",
     "buildStoryHint": "e.g. Solo, 2 weeks with Claude Code, 700 commits",
-    "skipVerify": "Not ready? Skip for now and verify later from the edit page."
+    "skipVerify": "Not ready? Skip for now and verify later from the edit page.",
+    "customChannels": "Other channels (comma separated)",
+    "pricingAmount": "Price",
+    "pricingCurrency": "Currency",
+    "pricingPeriod": "Billing",
+    "pricingNote": "Pricing details",
+    "pricingNoteHint": "e.g. free for 1 device, yearly discount",
+    "founderMessageCount": "{count}/600"
   },
   "Errors": {
     "invalid_key": "{source} didn't accept that key or link — check it and paste again.",
@@ -524,5 +502,14 @@
     "visitorsIn": "visitors · {period}",
     "less": "Less",
     "more": "More"
+  },
+  "Pricing": {
+    "month": "Month",
+    "year": "Year",
+    "once": "One-time",
+    "free": "Free",
+    "perMonth": "{price} / month",
+    "perYear": "{price} / year",
+    "oneTime": "{price} (one-time)"
   }
 }

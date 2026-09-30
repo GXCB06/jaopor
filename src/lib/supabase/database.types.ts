@@ -16,6 +16,27 @@ export type Database = {
   };
   public: {
     Tables: {
+      fx_rates: {
+        Row: {
+          day: string;
+          fetched_at: string;
+          source: string;
+          usd_thb: number;
+        };
+        Insert: {
+          day: string;
+          fetched_at?: string;
+          source?: string;
+          usd_thb: number;
+        };
+        Update: {
+          day?: string;
+          fetched_at?: string;
+          source?: string;
+          usd_thb?: number;
+        };
+        Relationships: [];
+      };
       pixel_visitors: {
         Row: {
           day: string;
@@ -128,6 +149,27 @@ export type Database = {
           },
         ];
       };
+      provinces: {
+        Row: {
+          name_en: string;
+          name_th: string;
+          region: string;
+          slug: string;
+        };
+        Insert: {
+          name_en: string;
+          name_th: string;
+          region: string;
+          slug: string;
+        };
+        Update: {
+          name_en?: string;
+          name_th?: string;
+          region?: string;
+          slug?: string;
+        };
+        Relationships: [];
+      };
       revenue_snapshots: {
         Row: {
           day: string;
@@ -157,6 +199,50 @@ export type Database = {
           },
         ];
       };
+      startup_screenshots: {
+        Row: {
+          caption: string | null;
+          created_at: string;
+          height: number;
+          id: number;
+          kind: string;
+          path: string;
+          position: number;
+          startup_id: number;
+          width: number;
+        };
+        Insert: {
+          caption?: string | null;
+          created_at?: string;
+          height: number;
+          id?: never;
+          kind: string;
+          path: string;
+          position?: number;
+          startup_id: number;
+          width: number;
+        };
+        Update: {
+          caption?: string | null;
+          created_at?: string;
+          height?: number;
+          id?: never;
+          kind?: string;
+          path?: string;
+          position?: number;
+          startup_id?: number;
+          width?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "startup_screenshots_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       startups: {
         Row: {
           active_subscriptions: number | null;
@@ -175,9 +261,11 @@ export type Database = {
           country: string;
           created_at: string;
           customers: number | null;
+          demo_video_url: string | null;
           description: string | null;
           founded_on: string | null;
           founder_message: string | null;
+          founder_role: string | null;
           founding_number: number | null;
           funding: string | null;
           github_repo: string | null;
@@ -193,7 +281,10 @@ export type Database = {
           name: string;
           owner_id: string;
           play_store_url: string | null;
-          pricing: string | null;
+          pricing_amount: number | null;
+          pricing_currency: string | null;
+          pricing_note: string | null;
+          pricing_period: string | null;
           problem_solved: string | null;
           province: string | null;
           revenue_30d_cents: number | null;
@@ -203,7 +294,7 @@ export type Database = {
           status: string;
           tagline: string | null;
           team_size: string | null;
-          tech_stack: string[];
+          tech_stack: Json;
           traffic_provider: string | null;
           traffic_synced_at: string | null;
           updated_at: string;
@@ -231,9 +322,11 @@ export type Database = {
           country?: string;
           created_at?: string;
           customers?: number | null;
+          demo_video_url?: string | null;
           description?: string | null;
           founded_on?: string | null;
           founder_message?: string | null;
+          founder_role?: string | null;
           founding_number?: number | null;
           funding?: string | null;
           github_repo?: string | null;
@@ -249,7 +342,10 @@ export type Database = {
           name: string;
           owner_id: string;
           play_store_url?: string | null;
-          pricing?: string | null;
+          pricing_amount?: number | null;
+          pricing_currency?: string | null;
+          pricing_note?: string | null;
+          pricing_period?: string | null;
           problem_solved?: string | null;
           province?: string | null;
           revenue_30d_cents?: number | null;
@@ -259,7 +355,7 @@ export type Database = {
           status?: string;
           tagline?: string | null;
           team_size?: string | null;
-          tech_stack?: string[];
+          tech_stack?: Json;
           traffic_provider?: string | null;
           traffic_synced_at?: string | null;
           updated_at?: string;
@@ -287,9 +383,11 @@ export type Database = {
           country?: string;
           created_at?: string;
           customers?: number | null;
+          demo_video_url?: string | null;
           description?: string | null;
           founded_on?: string | null;
           founder_message?: string | null;
+          founder_role?: string | null;
           founding_number?: number | null;
           funding?: string | null;
           github_repo?: string | null;
@@ -305,7 +403,10 @@ export type Database = {
           name?: string;
           owner_id?: string;
           play_store_url?: string | null;
-          pricing?: string | null;
+          pricing_amount?: number | null;
+          pricing_currency?: string | null;
+          pricing_note?: string | null;
+          pricing_period?: string | null;
           problem_solved?: string | null;
           province?: string | null;
           revenue_30d_cents?: number | null;
@@ -315,7 +416,7 @@ export type Database = {
           status?: string;
           tagline?: string | null;
           team_size?: string | null;
-          tech_stack?: string[];
+          tech_stack?: Json;
           traffic_provider?: string | null;
           traffic_synced_at?: string | null;
           updated_at?: string;
@@ -333,6 +434,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "startups_province_fkey";
+            columns: ["province"];
+            isOneToOne: false;
+            referencedRelation: "provinces";
+            referencedColumns: ["slug"];
           },
         ];
       };

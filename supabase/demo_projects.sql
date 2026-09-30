@@ -8,12 +8,13 @@
 --
 -- Run with Supabase MCP execute_sql (service role). Owner = the owner of the `mrrmafia` project.
 -- Remove with: delete from public.startups where is_demo;  (snapshots cascade)
+-- Column shapes follow migration spec_phase1_vocab (tech_stack jsonb of slugs, channel/province slugs).
 
 with owner as (
   select owner_id from public.startups where slug = 'mrrmafia'
 ),
 demo (slug, name, website_url, tagline, description, category, ai_tools, looking_for,
-      audience, team_size, funding, pricing, value_proposition, problem_solved,
+      audience, team_size, funding, pricing_note, value_proposition, problem_solved,
       tech_stack, marketing_channels, province, founded_on, days_ago,
       provider, mrr, rev30, rev_prev, rev_all, subs, active_users,
       traffic, visitors, visitors_prev, commits, ai_commits, stars, first_commit_days, build_story) as (
@@ -25,8 +26,8 @@ demo (slug, name, website_url, tagline, description, category, ai_tools, looking
    'b2b', 'solo', 'bootstrapped', 'ฟรี 1 เครื่อง · 299 บาท/เดือน ไม่จำกัดเครื่อง',
    'เปิดร้านขายได้ใน 10 นาที ไม่ต้องซื้อเครื่อง POS ราคาแพง',
    'ร้านเล็กยังจดยอดขายในสมุด ตัดสต็อกด้วยมือ และไม่รู้ว่าสินค้าตัวไหนทำกำไร',
-   array['Next.js', 'Supabase', 'Tailwind CSS'], array['Facebook groups', 'LINE OA'],
-   'กรุงเทพมหานคร', date '2026-03-01', 2,
+   '{"frontend": ["next-js", "tailwind-css"], "backend": ["supabase"]}'::jsonb, array['facebook-groups', 'line-oa'],
+   'bangkok', date '2026-03-01', 2,
    'stripe', 185000, 196000, 171000, 2140000, 64, null::int,
    'plausible', 9420, 8100, 1380, 1010, 0, 190,
    '6 เดือน ทำคนเดียวหลังเลิกงาน Claude Code เขียนเกือบทั้งหมด ผมรีวิวและคุยกับร้านจริงทุกสัปดาห์'),
@@ -38,8 +39,8 @@ demo (slug, name, website_url, tagline, description, category, ai_tools, looking
    'b2c', 'solo', 'bootstrapped', 'ฟรี 5 รูป/วัน · 59 บาท/เดือน ไม่จำกัด',
    'นับแคลอรี่ใน LINE ที่ใช้อยู่แล้วทุกวัน',
    'แอปนับแคลอรี่ส่วนใหญ่ไม่รู้จักอาหารไทย และต้องพิมพ์เมนูเองทุกมื้อ',
-   array['Python', 'LINE Messaging API', 'Claude API'], array['TikTok', 'Facebook groups'],
-   'ขอนแก่น', date '2026-06-15', 4,
+   '{"backend": ["python"], "ai": ["claude"]}'::jsonb, array['tiktok', 'facebook-groups'],
+   'khon-kaen', date '2026-06-15', 4,
    null, null, null, null, null, null, null,
    'umami', 14200, 9800, 640, 590, 12, 100,
    'เริ่มจากทำให้แม่ใช้เอง 2 สัปดาห์แรกเสร็จ MVP แล้วเพื่อน ๆ ขอใช้ต่อ'),
@@ -51,8 +52,8 @@ demo (slug, name, website_url, tagline, description, category, ai_tools, looking
    'b2b', '2-5', 'bootstrapped', '990 บาท/เดือน ต่อที่พัก (ไม่เกิน 30 ห้อง)',
    'เจ้าของที่พักประหยัดงานเอกสารวันละ 1–2 ชั่วโมง',
    'ที่พักเล็กจัดการหลาย OTA ด้วย Excel จองซ้ำบ่อย และทำ ตม.30 ด้วยมือ',
-   array['Next.js', 'PostgreSQL', 'Prisma'], array['SEO', 'Facebook groups'],
-   'เชียงใหม่', date '2025-11-10', 6,
+   '{"frontend": ["next-js"], "database": ["postgresql"]}'::jsonb, array['seo', 'facebook-groups'],
+   'chiang-mai', date '2025-11-10', 6,
    'stripe', 342000, 356000, 318000, 3860000, 38, null,
    'plausible', 5600, 5100, 2140, 1700, 0, 320,
    'สองคนพี่น้อง พี่ทำที่พักจริง น้องเขียนโค้ดกับ Claude ตอนนี้ลูกค้า 38 ที่พักทั่วภาคเหนือ'),
@@ -64,8 +65,8 @@ demo (slug, name, website_url, tagline, description, category, ai_tools, looking
    'b2b', 'solo', 'bootstrapped', 'ช่วงทดสอบ: ฟรี',
    'ถอดแบบบ้านเดี่ยว 1 หลังจาก 2 วันเหลือ 20 นาที',
    'ผู้รับเหมารายย่อยต้องถอดแบบด้วยมือหรือจ้างคนถอด ช้าและผิดบ่อย',
-   array['Python', 'FastAPI', 'React'], array['LinkedIn', 'Facebook groups'],
-   'นนทบุรี', date '2026-05-20', 9,
+   '{"frontend": ["react"], "backend": ["python", "fastapi"]}'::jsonb, array['linkedin', 'facebook-groups'],
+   'nonthaburi', date '2026-05-20', 9,
    null, null, null, null, null, null, null,
    'plausible', 3100, 1900, 980, 860, 42, 130,
    'ผมเป็นวิศวกรโยธา เขียนโค้ดไม่เป็นจนเจอ Claude Code 4 เดือน 980 commits'),
@@ -77,8 +78,8 @@ demo (slug, name, website_url, tagline, description, category, ai_tools, looking
    'b2c', 'solo', 'bootstrapped', 'ฟรี 10 รายการ · 39 บาท/เดือน ไม่จำกัด',
    'รู้ทันทีว่า "ลดราคา" ลดจริงไหม',
    'ร้านขึ้นราคาก่อนเซลล์แล้วลดกลับ คนซื้อไม่มีทางรู้ราคาจริงย้อนหลัง',
-   array['Swift', 'SwiftUI', 'RevenueCat'], array['TikTok', 'App Store optimization'],
-   'กรุงเทพมหานคร', date '2026-02-14', 12,
+   '{"frontend": ["swift", "swiftui"], "payments": ["revenuecat"]}'::jsonb, array['tiktok', 'custom:App Store optimization'],
+   'bangkok', date '2026-02-14', 12,
    'revenuecat', 64000, 68000, 52000, 412000, 212, 7850,
    null, null, null, 1520, 1100, 0, 220,
    'ทำคนเดียวตอนกลางคืน ใช้ Claude Code เขียน Swift ทั้งที่ไม่เคยเขียนมาก่อน')
@@ -86,7 +87,7 @@ demo (slug, name, website_url, tagline, description, category, ai_tools, looking
 ins as (
   insert into public.startups (
     owner_id, is_demo, slug, logo_path, name, website_url, tagline, description, category, ai_tools,
-    looking_for, audience, team_size, funding, pricing, value_proposition, problem_solved,
+    looking_for, audience, team_size, funding, pricing_note, value_proposition, problem_solved,
     tech_stack, marketing_channels, province, founded_on, created_at,
     verification_status, verified_provider, mrr_cents, revenue_30d_cents,
     revenue_prev_30d_cents, revenue_all_time_cents, active_subscriptions, active_users,
@@ -94,7 +95,7 @@ ins as (
     build_commits, build_ai_commits, build_stars, build_first_commit_at, build_synced_at,
     github_repo, build_story)
   select o.owner_id, true, d.slug, 'demo-logos/' || substring(d.slug from 6) || '.png', d.name, d.website_url, d.tagline, d.description, d.category,
-    d.ai_tools, d.looking_for, d.audience, d.team_size, d.funding, d.pricing,
+    d.ai_tools, d.looking_for, d.audience, d.team_size, d.funding, d.pricing_note,
     d.value_proposition, d.problem_solved, d.tech_stack, d.marketing_channels, d.province,
     d.founded_on, now() - make_interval(days => d.days_ago),
     case when d.provider is null then 'unverified' else 'verified' end, d.provider, d.mrr,

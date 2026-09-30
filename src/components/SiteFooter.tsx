@@ -1,12 +1,13 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { CATEGORIES } from "@/lib/catalog";
 import { BrandLogo } from "./BrandLogo";
+import { categoryName } from "@/lib/config/display";
 
 export function SiteFooter() {
   const t = useTranslations("Footer");
   const nav = useTranslations("Nav");
-  const cat = useTranslations("Catalog.category");
+  const locale = useLocale();
   const link = "text-caption text-faint hover:text-foreground";
 
   return (
@@ -49,7 +50,7 @@ export function SiteFooter() {
                   href={{ pathname: "/startups", query: { category: c } }}
                   className={link}
                 >
-                  {cat(c)}
+                  {categoryName(c, locale)}
                 </Link>
               </li>
             ))}

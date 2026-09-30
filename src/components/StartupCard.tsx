@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { StartupRow } from "@/lib/data/startups";
 import type { LookingFor } from "@/lib/links";
@@ -13,6 +13,7 @@ import {
   MetricLabel,
   StartupLogo,
 } from "./StartupBits";
+import { categoryName } from "@/lib/config/display";
 
 /**
  * Design.md §5 StartupCard. `compact` (home rows): 24px logo, 3 tiny metrics under a divider.
@@ -114,7 +115,7 @@ export function StartupCard({
   thbPerUsd?: number | null;
   className?: string;
 }) {
-  const cat = useTranslations("Catalog.category");
+  const locale = useLocale();
   const common = useTranslations("Common");
   const metrics = useMetrics(startup, large, thbPerUsd);
   const href = `/startup/${startup.slug}`;
@@ -177,11 +178,13 @@ export function StartupCard({
             </h3>
             {large ? (
               <span className="mt-1 inline-flex rounded-sm border bg-secondary px-1.5 text-3xs text-muted-foreground">
-                {cat(startup.category)}
+                {categoryName(startup.category, locale)}
               </span>
             ) : (
               <p className="flex min-w-0 items-center gap-1.5 text-2xs text-faint">
-                <span className="truncate">{cat(startup.category)}</span>
+                <span className="truncate">
+                  {categoryName(startup.category, locale)}
+                </span>
                 {startup.is_demo && <DemoTag />}
               </p>
             )}

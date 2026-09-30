@@ -113,6 +113,13 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 - **Medal**: ranks 1–3 as a `size-6 rounded-full border-2` numbered ring (gold `warning`, silver `muted-foreground`, bronze `warning/60`); replaces the emoji medals.
 - **Logo** (`components/Logo.tsx`): `<Logo size variant="full|mark" />` = the user's **blue app tile** (winking fedora mascot on JaoPor blue; `public/brand/jaopor-tile.png`, 128px) + "JaoPor" wordmark (`font-extrabold tracking-[-0.02em]`). User decision 2026-09-30, replacing the spec's SVG "Rising Fedora". Same tile as the tab icon (`src/app/icon.png` 512, `apple-icon.png`, `favicon.ico`, `public/icon-192/512.png`). Image renderers (OG, share cards, badge) inline it as a data URI via `lib/logo.ts` (badge: 64px copy in `src/assets/`).
 
+### Edit form vocab fields (spec Phase 1, 2026-09-30; Phase 2 upgrades them to searchable logo multi-selects)
+
+- **Province:** native `<select>` (`ProvinceSelect`) with one `<optgroup>` per region (6), provinces sorted by the page language; only shown when the country is Thailand.
+- **Pricing:** fieldset of billing period (month / year / one-time / free) → amount + currency (฿ THB / $ USD) when paid → free-text details. Profile shows "฿990 / เดือน" (`text-sm font-semibold tabular-nums`) above the note.
+- **Tech stack:** one `ToggleChips` row per stored group under a `text-2xs text-muted-foreground` group label. Profile groups chips under muted sub-labels and skips empty groups.
+- **Marketing channels:** `ToggleChips` of the config list + one "other channels" text input (comma separated → `custom:` values, max 10 in total).
+
 ### SiteHeader (sticky, ledgerly pattern)
 
 - `sticky top-0 z-40 border-b bg-background`, `h-14`, inner `max-w-6xl`.
