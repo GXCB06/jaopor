@@ -123,9 +123,9 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 ### SiteHeader (sticky, ledgerly pattern)
 
 - `sticky top-0 z-40 border-b bg-background`, `h-14`, inner `max-w-6xl`, gaps `gap-3` (`md:gap-6`).
-- Left: `BrandLogo` = `<Logo>` (blue app tile 28px + "JaoPor"). **Nav links from `lg`** (`text-xs text-muted-foreground hover:text-foreground`): สตาร์ทอัพ · หมวดหมู่ · กระดานผู้นำ · แดชบอร์ด (โอลิมปิก added in Phase 6).
+- Left: `BrandLogo` = `<Logo>` (blue app tile 28px + "JaoPor"). **Nav links from `lg`** (`text-xs text-muted-foreground hover:text-foreground`): สตาร์ทอัพ · หมวดหมู่ · โอลิมปิก · กระดานผู้นำ · แดชบอร์ด (`whitespace-nowrap`, `gap-4`/`xl:gap-5`; แดชบอร์ด only from `xl` because five links don't fit at 1024px and it is also in the avatar menu). Right-side gaps `lg:gap-2 xl:gap-3`.
 - Right: **CurrencyToggle** (฿/$; "THB/USD" text from `lg`), **search trigger** (`/` shortcut), primary **"+ เพิ่ม Startup"** (icon-only below `sm`), **HeaderAuth** (signed out: "เข้าสู่ระบบ" from `sm`, a `LogIn` icon button below; signed in: avatar menu), TH/EN (full name from `lg`) and ThemeToggle (both from `sm`), then **MobileNav** below `lg`: a `size-8` `Menu` icon button opening a DropdownMenu with the nav links, and below `sm` also the language switch and the theme switch.
-- Must fit 360px (no horizontal scroll) and 768px.
+- Must fit 360px (no horizontal scroll), 768px and 1024px in both languages.
 
 ### Hero (home and directory)
 
@@ -245,6 +245,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 - **Sticky save bar** (`sticky bottom-0 border-t bg-background/95 backdrop-blur py-3`): left "มีการเปลี่ยนแปลงที่ยังไม่บันทึก" (warning dot) or "บันทึกแล้ว"; right Cancel + Save (primary). Saves the whole form from any section; a validation error jumps to its section.
 - Deep links (`#field`, `#verify-*`, `#screenshots`) open the right section, then scroll + highlight the field.
 - **✨ ช่วยเติมจากเว็บไซต์** (outline button, section 1 header): reads the project's website (+ GitHub README) and fills only **empty** fields, then shows "เติมให้ {n} ช่อง — ตรวจแล้วกดบันทึก · เลิกทำ". Uses a free Gemini key when configured, otherwise the page's own title/description/structured data.
+- **ดึงจาก GitHub** (outline `sm` button with `GitBranch` icon above the stack combobox, 2026-09-30): reads the **public** repo in the GitHub link box (unsaved value allowed) — languages, root files (vercel.json, Dockerfile, fly.toml…) and manifests (package.json, requirements.txt, pyproject.toml, composer.json, Gemfile, pubspec.yaml, go.mod) — and shows the found items in the dashed "ตรวจพบจาก GitHub: … · เพิ่มทั้งหมด" strip. Disabled with a hint when there is no GitHub link. Private repos → "ไม่พบ repo สาธารณะ".
 
 ### ScreenshotsManager (edit form, spec 6.9)
 
@@ -284,6 +285,32 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
 - Sorted by count (desc), then config order. Count 0 → last and dimmed without losing contrast: icon box `opacity-40`, name `text-muted-foreground`; the count pill keeps full contrast (still a link).
 - Counts = listed projects (published, demo excluded) from `category_counts()`.
 - Bottom QuickSearch section.
+
+### Olympics page (`/[locale]/olympics`, spec 6.7, Phase 6)
+
+- `main max-w-6xl`: breadcrumb → H1 "โอลิมปิกจังหวัด" → subtitle → QuickSearch + "+ เพิ่ม Startup" (max 640px).
+- Controls: metric **SegmentedControl** (รายได้รวม · MRR · ผู้เข้าชม 30 วัน · Commits; full width on phones) and **region chips** (ทั้งหมด + 6 regions, each with its colour dot; `rounded-full border px-2.5 py-1 text-caption`, active `border-foreground/20 bg-secondary font-semibold`; a horizontal scroll row on phones). Both are in the URL (`?metric=` omitted for the default "revenue", `?region=`).
+- Ranked **ProvinceCard** list (`space-y-3`), then the empty provinces in one collapsed `<details>` card: "ยังไม่มีผลงานจาก {n} จังหวัด — เป็นคนแรกของจังหวัดคุณ" → province chips (to the province page) + Add button. Nothing ranked → a dashed card "ยังไม่มีจังหวัดไหนมีตัวเลข {metric} ที่ยืนยันแล้ว…".
+- Footnote `text-2xs text-faint` centred: verified numbers only · demo excluded · money in the chosen currency. Bottom QuickSearch section.
+- Rules (SQL `province_leaderboard` = TS `rankProvinces`): published, non-demo; revenue/MRR need verified revenue; visitors/commits count when synced. Sort total desc → startups desc → slug.
+
+### ProvinceCard (Olympics)
+
+- `Card p-4 sm:p-5`. Header row: rank (`Medal` 1–3, else `text-faint` number, `w-7`) · link (badge + name block) · total right (`text-lg font-bold tabular-nums`; money via `Money`, counts compact).
+- Name block: main name `text-sm font-bold` (Thai in th, English in en) + the other language `text-caption text-faint` from `sm`; below, **RegionChip** (`rounded-full border bg-secondary text-2xs`, colour dot `size-1.5` + region name) and "{n} สตาร์ทอัพ" `text-2xs text-muted-foreground`.
+- Top 5 under `border-t`: logo 20 + name (`text-xs font-semibold`, links to the profile) · share % (`text-2xs text-faint`, hidden when the total is 0) · value (`w-20 text-right text-xs font-bold`), then a `h-1 rounded-full bg-secondary` bar filled `bg-brand` to the share.
+
+### ProvinceBadge
+
+- `h-10 w-14 rounded-lg border bg-background` tile holding **ThailandMap**: a hand-simplified silhouette (6 region paths, ~150 points, viewBox 84×150). Other regions `fill-muted-foreground/30`, the province's region `--region-*`; `stroke-card` separates regions. Never an official provincial seal. Decorative (`aria-hidden`): the region name is always printed next to it.
+- The OG renderer draws the same paths (`REGION_HEX` in `share-palette.ts`).
+
+### Province page (`/[locale]/province/[slug]`, spec 6.7)
+
+- Breadcrumb JaoPor › โอลิมปิกจังหวัด › {province} → badge + H1 "สตาร์ทอัพจังหวัด{name}" → subtitle "ตัวเลขที่ยืนยันแล้วจาก{name} · {region}" → brand link "อันดับ #X ในโอลิมปิกจังหวัด (รายได้รวม)" (when ranked) → QuickSearch + Add.
+- "{n} สตาร์ทอัพ" then large StartupCards `sm:grid-cols-2 lg:grid-cols-3` with third stat **รวมทั้งหมด** (all-time revenue) instead of growth; demo projects keep their tag. More than 24 → "ดูทั้งหมด {n} ผลงาน →" to `/startups?province=`. None → dashed empty card + Add.
+- "← กลับไปโอลิมปิกจังหวัด", "จังหวัดใกล้เคียง" + RegionChip, chips of the other provinces in the region. Unknown slug → 404. OG: "{จังหวัด} / อันดับ #X ในโอลิมปิกจังหวัด" + the map with the region lit.
+- Profile stat card ก่อตั้ง/ที่ตั้ง caption: `MapPin` + "{จังหวัด} · อันดับ #X ในโอลิมปิก" linking to the province page (wraps on phones).
 
 ### Directory (`/startups`, Figma "Marketplace")
 

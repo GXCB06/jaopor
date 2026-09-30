@@ -35,7 +35,8 @@
     "currencyUsd": "แสดงเป็นดอลลาร์ ($)",
     "account": "บัญชีของคุณ",
     "categories": "หมวดหมู่",
-    "menu": "เมนู"
+    "menu": "เมนู",
+    "olympics": "โอลิมปิก"
   },
   "Footer": {
     "tagline": "บ้านถาวรของผลงานที่สร้างด้วย AI ในไทยและเอเชีย ผลงานจริง ตัวเลขจริง",
@@ -46,7 +47,8 @@
     "terms": "ข้อกำหนดการใช้งาน",
     "keySafety": "เราดูแลคีย์ของคุณอย่างไร",
     "builtWith": "สร้างด้วย JaoPor.dev ในประเทศไทย",
-    "allCategories": "ดูทุกหมวดหมู่"
+    "allCategories": "ดูทุกหมวดหมู่",
+    "olympics": "โอลิมปิกจังหวัด"
   },
   "Home": {
     "subline": "โชว์สิ่งที่คุณสร้างด้วย AI ไว้ในที่เดียว ค้นเจอได้ แชร์ได้ พร้อมรายได้และผู้ใช้ที่ยืนยันตรงจากระบบ ไม่ใช่ภาพหน้าจอ",
@@ -90,7 +92,8 @@
     "verified": "ยืนยันแล้ว",
     "revenueShort": "รายได้",
     "visitorsShort": "ผู้เข้าชม",
-    "demo": "ตัวอย่าง"
+    "demo": "ตัวอย่าง",
+    "revenueAllTime": "รวมทั้งหมด"
   },
   "Leaderboard": {
     "rank": "#",
@@ -231,7 +234,8 @@
     "nextShot": "ภาพถัดไป",
     "closeShot": "ปิด",
     "playDemo": "ดูวิดีโอเดโม",
-    "demoVideo": "วิดีโอเดโม {name}"
+    "demoVideo": "วิดีโอเดโม {name}",
+    "provinceRank": "{province} · อันดับ #{rank} ในโอลิมปิก"
   },
   "Verified": {
     "stamp": "รายได้ยืนยันผ่าน API key ของ <b>{provider}</b>",
@@ -329,7 +333,7 @@
     "draftDiscard": "ทิ้งและเริ่มใหม่",
     "stackDetected": "ตรวจพบจาก GitHub: {items}",
     "stackAddDetected": "เพิ่มทั้งหมด",
-    "stackGithubHint": "เชื่อม GitHub ในส่วน “ยืนยันตัวเลข” แล้ว JaoPor จะดึง tech stack จาก repo ให้อัตโนมัติ",
+    "stackGithubHint": "ใส่ลิงก์ GitHub (repo สาธารณะ) ในส่วน “ลิงก์และที่ตั้ง” แล้วกด “ดึงจาก GitHub” เพื่อเติม tech stack อัตโนมัติ",
     "nameRequired": "ใส่ชื่อผลงานก่อน",
     "provinceRequired": "เลือกจังหวัดของคุณ"
   },
@@ -619,7 +623,12 @@
     "undo": "เลิกทำ",
     "autofillNothing": "ไม่มีช่องว่างให้เติม หรือไม่พบข้อมูลในเว็บไซต์",
     "autofillNoSite": "ใส่ลิงก์เว็บไซต์ก่อน แล้วค่อยให้ช่วยเติม",
-    "autofillFailed": "อ่านเว็บไซต์ไม่สำเร็จ ลองอีกครั้งภายหลัง"
+    "autofillFailed": "อ่านเว็บไซต์ไม่สำเร็จ ลองอีกครั้งภายหลัง",
+    "stackFromGithub": "ดึงจาก GitHub",
+    "stackRepoNotFound": "ไม่พบ repo สาธารณะนี้บน GitHub (repo ส่วนตัวอ่านไม่ได้)",
+    "stackSlowDown": "GitHub ให้รอสักครู่ ลองใหม่อีกครั้ง",
+    "stackDetectFailed": "ดึงข้อมูลจาก GitHub ไม่สำเร็จ",
+    "stackNothingNew": "ไม่พบเทคโนโลยีใหม่เพิ่มจาก repo"
   },
   "Search": {
     "placeholder": "ค้นหาผลงาน หมวดหมู่ หรือจังหวัด…",
@@ -631,12 +640,45 @@
     "addFirst": "เพิ่มผลงานของคุณเป็นคนแรก",
     "seeAll": "ดูผลลัพธ์ทั้งหมดสำหรับ “{q}”",
     "close": "ปิดการค้นหา",
-    "sectionTitle": "หาผลงานอื่นต่อ"
+    "sectionTitle": "หาผลงานอื่นต่อ",
+    "olympicsChip": "โอลิมปิกจังหวัด →"
   },
   "Categories": {
     "title": "สำรวจหมวดหมู่",
     "subtitle": "สำรวจผลงานใน {n} หมวดหมู่",
     "breadcrumb": "หมวดหมู่",
     "projects": "{count, plural, other {ผลงาน}}"
+  },
+  "Olympics": {
+    "title": "โอลิมปิกจังหวัด",
+    "subtitle": "จังหวัดไหนสร้างผลงานด้วย AI ได้พีคที่สุด ตัดสินด้วยตัวเลขที่ยืนยันแล้วเท่านั้น",
+    "metric": "ตัววัด",
+    "metrics": {
+      "revenue": "รายได้รวม",
+      "mrr": "MRR",
+      "visitors": "ผู้เข้าชม 30 วัน",
+      "commits": "Commits"
+    },
+    "region": "ภาค",
+    "allRegions": "ทั้งหมด",
+    "startups": "{count, plural, other {# สตาร์ทอัพ}}",
+    "rank": "อันดับ {rank}",
+    "share": "{pct}% ของจังหวัด",
+    "noneYet": "ยังไม่มีจังหวัดไหนมีตัวเลข {metric} ที่ยืนยันแล้ว เชื่อมต่อแหล่งข้อมูลแล้วพาจังหวัดคุณขึ้นอันดับ 1",
+    "emptyProvinces": "ยังไม่มีผลงานจาก {n} จังหวัด — เป็นคนแรกของจังหวัดคุณ",
+    "footnote": "นับเฉพาะตัวเลขที่ยืนยันแล้ว · ไม่รวมโปรเจกต์ตัวอย่าง · ยอดเงินแสดงตามสกุลเงินที่คุณเลือก",
+    "teaser": "ดูโอลิมปิกจังหวัด"
+  },
+  "Province": {
+    "title": "สตาร์ทอัพจังหวัด{name}",
+    "subtitle": "ตัวเลขที่ยืนยันแล้วจาก{name} · {region}",
+    "count": "{count, plural, other {# สตาร์ทอัพ}}",
+    "rankLine": "อันดับ #{rank} ในโอลิมปิกจังหวัด ({metric})",
+    "back": "กลับไปโอลิมปิกจังหวัด",
+    "nearby": "จังหวัดใกล้เคียง",
+    "empty": "ยังไม่มีผลงานจาก{name} — เป็นคนแรกของจังหวัด",
+    "ogRank": "อันดับ #{rank} ในโอลิมปิกจังหวัด",
+    "ogNoRank": "โอลิมปิกจังหวัด · JaoPor",
+    "seeAll": "ดูทั้งหมด {n} ผลงาน →"
   }
 }

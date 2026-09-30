@@ -3,6 +3,7 @@
 import {
   GlobeIcon,
   LayoutGridIcon,
+  MedalIcon,
   MenuIcon,
   MoonIcon,
   RocketIcon,
@@ -54,6 +55,12 @@ export function MobileNav() {
           <Link href="/categories">
             <LayoutGridIcon aria-hidden="true" />
             {t("categories")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/olympics">
+            <MedalIcon aria-hidden="true" />
+            {t("olympics")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

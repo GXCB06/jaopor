@@ -169,35 +169,39 @@ describe("stack", () => {
       group: "payments",
       slug: "revenuecat",
     });
-    expect(matchStackLabel("Prisma")).toBeNull();
+    expect(matchStackLabel("Prisma")).toEqual({
+      group: "backend",
+      slug: "prisma",
+    });
+    expect(matchStackLabel("JavaScript")).toEqual({
+      group: "language",
+      slug: "javascript",
+    });
+    expect(matchStackLabel("COBOL")).toBeNull();
   });
 
-  it("matches the allowed slugs in every migration that (re)defines the vocab trigger", () => {
+  it("matches the allowed slugs of the latest migration that defines the vocab trigger", () => {
+    // Applied migrations are immutable history; only the newest definition must match config.
     const dir = join(process.cwd(), "supabase/migrations");
-    const triggers = readdirSync(dir)
+    const latest = readdirSync(dir)
+      .sort()
       .map((f) => readFileSync(join(dir, f), "utf8"))
-      .filter((sql) =>
-        sql.includes("function private.startups_validate_vocab"),
-      );
-    expect(triggers.length).toBeGreaterThan(0);
-    for (const sql of triggers)
-      for (const g of STORED_STACK_GROUPS) {
-        const m = sql.match(new RegExp(`'${g}', '(\\[[^\\]]*\\])'::jsonb`))!;
-        expect(JSON.parse(m[1])).toEqual(
-          STACK_LIST.filter((i) => i.group === g).map((i) => i.slug),
-        );
-      }
-  });
-
-  it("matches the migration's allowed slugs (first definition)", () => {
+      .filter((sql) => sql.includes("function private.startups_validate_vocab"))
+      .at(-1)!;
     for (const g of STORED_STACK_GROUPS) {
-      const m = MIGRATION.match(
-        new RegExp(`'${g}', '(\\[[^\\]]*\\])'::jsonb`),
-      )!;
+      const m = latest.match(new RegExp(String.raw`'${g}', '(\[[^\]]*\])'::jsonb`))!;
+      expect(m, g).toBeTruthy();
       expect(JSON.parse(m[1])).toEqual(
         STACK_LIST.filter((i) => i.group === g).map((i) => i.slug),
       );
     }
+  });
+
+  it("has a generated glyph for every Simple Icon the config uses", async () => {
+    const { GLYPHS } = await import("./glyphs");
+    for (const i of [...STACK_LIST, ...CHANNEL_LIST])
+      if ("simpleIcon" in i)
+        expect(GLYPHS[i.simpleIcon], i.simpleIcon).toBeTruthy();
   });
 });
 

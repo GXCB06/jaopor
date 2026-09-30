@@ -20,6 +20,10 @@ const jetbrains = JetBrains_Mono({
   variable: "--font-jetbrains",
 });
 
+// JaoPor lists itself: its own visitor snippet (public/v.js) counts unique visitors to this site
+// for the "jaopor" project. Production only; /api/collect ignores hits from any other host.
+const SELF_PROJECT = "jaopor";
+
 const plexThai = IBM_Plex_Sans_Thai({
   subsets: ["thai", "latin"],
   weight: ["400", "500", "600", "700"],
@@ -89,6 +93,9 @@ export default async function LocaleLayout({
           <SiteFooter />
           <Toaster position="bottom-center" />
         </NextIntlClientProvider>
+        {process.env.NODE_ENV === "production" && (
+          <script defer src="/v.js" data-project={SELF_PROJECT} />
+        )}
       </body>
     </html>
   );

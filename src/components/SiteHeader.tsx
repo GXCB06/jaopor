@@ -10,7 +10,7 @@ import { SearchShortcut } from "./SearchShortcut";
 import { ThemeToggle } from "./ThemeToggle";
 
 const navLink =
-  "text-xs font-medium text-muted-foreground transition-colors hover:text-foreground";
+  "text-xs font-medium whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground";
 
 /** Design.md §5 SiteHeader: sticky bar, nav links, "/" search, primary Add. */
 export function SiteHeader() {
@@ -21,12 +21,15 @@ export function SiteHeader() {
         <Link href="/" className="shrink-0 text-sm">
           <BrandLogo />
         </Link>
-        <nav className="hidden items-center gap-5 lg:flex">
+        <nav className="hidden items-center gap-4 lg:flex xl:gap-5">
           <Link href="/startups" className={navLink}>
             {t("startups")}
           </Link>
           <Link href="/categories" className={navLink}>
             {t("categories")}
+          </Link>
+          <Link href="/olympics" className={navLink}>
+            {t("olympics")}
           </Link>
           <Link
             href={{ pathname: "/", hash: "leaderboard" }}
@@ -34,11 +37,12 @@ export function SiteHeader() {
           >
             {t("leaderboard")}
           </Link>
-          <Link href="/dashboard" className={navLink}>
+          {/* 1024–1279px: 5 links don't fit; the dashboard is also in the avatar menu. */}
+          <Link href="/dashboard" className={`${navLink} hidden xl:inline`}>
             {t("dashboard")}
           </Link>
         </nav>
-        <div className="ml-auto flex items-center gap-0.5 sm:gap-3">
+        <div className="ml-auto flex items-center gap-0.5 sm:gap-3 lg:gap-2 xl:gap-3">
           <CurrencyToggle />
           <SearchShortcut />
           <Link

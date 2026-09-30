@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { stackFrom } from "@/lib/build/github";
+import { matchStackLabel } from "@/lib/config/stack";
 import { ProviderError } from "@/lib/revenue/types";
 import { fetchCloudflareTraffic, validateCloudflareToken } from "./cloudflare";
 import {
@@ -300,7 +301,7 @@ describe("stackFrom", () => {
       "React",
       "Tailwind CSS",
       "Supabase",
-      "Claude API",
+      "Claude",
       "TypeScript",
       "JavaScript",
     ]);
@@ -312,6 +313,145 @@ describe("stackFrom", () => {
       "Python",
     ]);
     expect(stackFrom({ Go: 1 }, "{not json")).toEqual(["Go"]);
+  });
+
+  it("reads other manifests and root files", () => {
+    expect(
+      stackFrom(
+        { Python: 900, HTML: 50 },
+        {
+          requirements: "Django==5.0\npsycopg2-binary>=2.9  # db\nopenai\n",
+          rootFiles: ["Dockerfile", "fly.toml", "README.md"],
+        },
+      ),
+    ).toEqual(["Django", "PostgreSQL", "OpenAI", "Fly.io", "Docker", "Python"]);
+    expect(
+      stackFrom(
+        { Dart: 10 },
+        { pubspec: "dependencies:\n  flutter:\n    sdk: flutter\n" },
+      ),
+    ).toEqual(["Flutter", "Dart"]);
+    expect(
+      stackFrom(
+        { PHP: 5 },
+        { composer: '{"require":{"laravel/framework":"^11"}}' },
+      ),
+    ).toEqual(["Laravel", "PHP"]);
+  });
+
+  it("lists HTML / CSS only when it is the main language", () => {
+    expect(stackFrom({ HTML: 90, JavaScript: 10 }, null)).toEqual([
+      "HTML / CSS",
+      "JavaScript",
+    ]);
+    expect(stackFrom({ JavaScript: 90, CSS: 10 }, null)).toEqual([
+      "JavaScript",
+    ]);
+  });
+
+  it("every label maps to a stack slug", () => {
+    const pkg = JSON.stringify({
+      dependencies: Object.fromEntries(
+        [
+          "next",
+          "nuxt",
+          "@remix-run/node",
+          "astro",
+          "@sveltejs/kit",
+          "solid-js",
+          "gatsby",
+          "expo",
+          "react-native",
+          "react",
+          "vue",
+          "svelte",
+          "@angular/core",
+          "electron",
+          "@tauri-apps/api",
+          "@ionic/react",
+          "@capacitor/core",
+          "vite",
+          "jquery",
+          "bootstrap",
+          "@mui/material",
+          "sass",
+          "three",
+          "redux",
+          "tailwindcss",
+          "express",
+          "hono",
+          "@nestjs/core",
+          "graphql",
+          "@trpc/server",
+          "@supabase/supabase-js",
+          "firebase",
+          "appwrite",
+          "pocketbase",
+          "convex",
+          "prisma",
+          "drizzle-orm",
+          "pg",
+          "mysql2",
+          "mongoose",
+          "redis",
+          "@upstash/redis",
+          "@neondatabase/serverless",
+          "@libsql/client",
+          "@pinecone-database/pinecone",
+          "@clerk/nextjs",
+          "auth0",
+          "resend",
+          "@sendgrid/mail",
+          "twilio",
+          "@sentry/nextjs",
+          "posthog-js",
+          "mixpanel-browser",
+          "algoliasearch",
+          "meilisearch",
+          "stripe",
+          "@paypal/checkout-server-sdk",
+          "omise",
+          "xendit-node",
+          "@line/bot-sdk",
+          "@anthropic-ai/sdk",
+          "openai",
+          "@google/genai",
+          "@mistralai/mistralai",
+          "ollama",
+          "langchain",
+          "elevenlabs",
+          "ai",
+        ].map((d) => [d, "1"]),
+      ),
+    });
+    const labels = [
+      ...stackFrom({}, pkg),
+      ...stackFrom({}, pkg.replace(/"next"[^,]*,/, "")),
+      ...stackFrom(
+        {},
+        {
+          rootFiles: [
+            "vercel.json",
+            "netlify.toml",
+            "wrangler.toml",
+            "fly.toml",
+            "railway.json",
+            "render.yaml",
+            "firebase.json",
+            "supabase",
+            "Dockerfile",
+            "Procfile",
+          ],
+          requirements:
+            "fastapi\nflask\nanthropic\ngoogle-genai\nlangchain\nline-bot-sdk\nsentry-sdk\npymongo\n",
+          gemfile: 'gem "rails"',
+          goMod: "module x",
+        },
+      ),
+      ...stackFrom({ SCSS: 9 }, null),
+    ];
+    const unmapped = [...new Set(labels)].filter((l) => !matchStackLabel(l));
+    expect(unmapped).toEqual([]);
   });
 
   it("never exceeds 20 labels", () => {

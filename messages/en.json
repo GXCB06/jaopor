@@ -35,7 +35,8 @@
     "currencyUsd": "Show amounts in US dollars ($)",
     "account": "Your account",
     "categories": "Categories",
-    "menu": "Menu"
+    "menu": "Menu",
+    "olympics": "Olympics"
   },
   "Footer": {
     "tagline": "The permanent home for AI-built projects from Thailand and Asia. Real work, real numbers.",
@@ -46,7 +47,8 @@
     "terms": "Terms",
     "keySafety": "How we handle your key",
     "builtWith": "Built with JaoPor.dev in Thailand",
-    "allCategories": "All categories"
+    "allCategories": "All categories",
+    "olympics": "Province Olympics"
   },
   "Home": {
     "subline": "Show what you built with AI in one place people can search and share, with revenue and users verified straight from the source, not screenshots.",
@@ -90,7 +92,8 @@
     "verified": "Verified",
     "revenueShort": "Revenue",
     "visitorsShort": "Visitors",
-    "demo": "Demo"
+    "demo": "Demo",
+    "revenueAllTime": "All-time"
   },
   "Leaderboard": {
     "rank": "#",
@@ -231,7 +234,8 @@
     "nextShot": "Next",
     "closeShot": "Close",
     "playDemo": "Watch the demo",
-    "demoVideo": "{name} demo video"
+    "demoVideo": "{name} demo video",
+    "provinceRank": "{province} · #{rank} in the Olympics"
   },
   "Verified": {
     "stamp": "Revenue is verified with <b>{provider}</b> API key.",
@@ -329,7 +333,7 @@
     "draftDiscard": "Discard them",
     "stackDetected": "Detected from GitHub: {items}",
     "stackAddDetected": "Add all",
-    "stackGithubHint": "Connect GitHub under “Verify your numbers” and JaoPor fills the stack from your repo",
+    "stackGithubHint": "Add your public GitHub repo under “Links & location”, then press “Pull from GitHub” to fill the stack",
     "nameRequired": "Enter the product name",
     "provinceRequired": "Choose your province"
   },
@@ -619,7 +623,12 @@
     "undo": "Undo",
     "autofillNothing": "No empty fields to fill, or nothing found on the website",
     "autofillNoSite": "Add your website link first",
-    "autofillFailed": "Couldn't read the website, please try again later"
+    "autofillFailed": "Couldn't read the website, please try again later",
+    "stackFromGithub": "Pull from GitHub",
+    "stackRepoNotFound": "No public GitHub repo found (private repos can't be read)",
+    "stackSlowDown": "GitHub asked us to wait. Try again shortly",
+    "stackDetectFailed": "Couldn't read the GitHub repo",
+    "stackNothingNew": "Nothing new found in the repo"
   },
   "Search": {
     "placeholder": "Search products, categories or provinces…",
@@ -631,12 +640,45 @@
     "addFirst": "be the first to add yours",
     "seeAll": "See all results for “{q}”",
     "close": "Close search",
-    "sectionTitle": "Find more products"
+    "sectionTitle": "Find more products",
+    "olympicsChip": "Province Olympics →"
   },
   "Categories": {
     "title": "Explore categories",
     "subtitle": "Explore products across {n} categories",
     "breadcrumb": "Categories",
     "projects": "{count, plural, one {project} other {projects}}"
+  },
+  "Olympics": {
+    "title": "Province Olympics",
+    "subtitle": "Which province builds the biggest things with AI? Judged on verified numbers only.",
+    "metric": "Metric",
+    "metrics": {
+      "revenue": "Total revenue",
+      "mrr": "MRR",
+      "visitors": "Visitors (30d)",
+      "commits": "Commits"
+    },
+    "region": "Region",
+    "allRegions": "All",
+    "startups": "{count, plural, one {# startup} other {# startups}}",
+    "rank": "Rank {rank}",
+    "share": "{pct}% of the province",
+    "noneYet": "No province has verified {metric} yet. Connect a source and put yours at #1",
+    "emptyProvinces": "No projects yet from {n} provinces. Be the first from yours",
+    "footnote": "Verified numbers only · demo projects excluded · money in your chosen currency",
+    "teaser": "See the Province Olympics"
+  },
+  "Province": {
+    "title": "Startups in {name}",
+    "subtitle": "Verified numbers from {name} · {region}",
+    "count": "{count, plural, one {# startup} other {# startups}}",
+    "rankLine": "#{rank} in the Province Olympics ({metric})",
+    "back": "Back to Province Olympics",
+    "nearby": "Nearby provinces",
+    "empty": "No projects from {name} yet. Be the first",
+    "ogRank": "#{rank} in the Province Olympics",
+    "ogNoRank": "Province Olympics · JaoPor",
+    "seeAll": "See all {n} projects →"
   }
 }

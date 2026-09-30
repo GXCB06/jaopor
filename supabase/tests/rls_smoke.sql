@@ -163,6 +163,12 @@ begin
     out := out || 'T33 custom entry in a known group: ALLOWED (BAD) | ';
   exception when check_violation then out := out || 'T33 custom entry in a known group: denied (good) | ';
   end;
+  -- stack_vocab_v2: the new groups (language / services / nocode) save for the owner.
+  update public.startups
+  set tech_stack = '{"language": ["javascript"], "services": ["line-messaging-api"], "nocode": ["wordpress"]}'
+  where id = sid;
+  get diagnostics n = row_count;
+  out := out || format('T36 new stack groups: %s row (expect 1) | ', n);
 
   -- fix_screenshot_storage_policies: owners write only in their own startup's folder.
   insert into storage.objects (bucket_id, name, owner_id) values ('screenshots', sid || '/' || gen_random_uuid() || '.webp', a::text);
@@ -209,6 +215,10 @@ begin
   out := out || format('T30 anon sees screenshots of published startup: %s (expect 8) | ', n);
   select count(*) into n from public.provinces;
   out := out || format('T31 anon reads provinces: %s (expect 77) | ', n);
+  select count(*) into n from public.category_counts() where startups > 0;
+  out := out || format('T37 anon calls category_counts: ok (%s categories) | ', n);
+  select count(*) into n from public.province_leaderboard('commits');
+  out := out || format('T38 anon calls province_leaderboard: ok (%s provinces) | ', n);
   begin
     insert into public.startups (owner_id, slug, name, website_url) values (a, 'rls-anon', 'Anon', 'https://x.test');
     out := out || 'T10 anon inserts: ALLOWED (BAD)';

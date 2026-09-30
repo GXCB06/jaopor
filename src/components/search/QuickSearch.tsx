@@ -158,7 +158,7 @@ export function QuickSearch({
     for (const p of results.provinces)
       options.push({
         key: `p-${p.slug}`,
-        href: `/startups?province=${p.slug}`,
+        href: `/province/${p.slug}`,
         group: "provinces",
       });
     if (query)
@@ -351,7 +351,7 @@ export function QuickSearch({
                   )}
                 </span>
               </>,
-              `/startups?province=${p.slug}`,
+              `/province/${p.slug}`,
             ),
           )}
           {query && !hasAny && (

@@ -482,6 +482,16 @@ export type Database = {
           startups: number;
         }[];
       };
+      province_leaderboard: {
+        Args: { metric?: string; region?: string };
+        Returns: {
+          province: string;
+          region_slug: string;
+          startups: number;
+          top: Json;
+          total: number;
+        }[];
+      };
       search_startups: {
         Args: { max_rows?: number; q: string };
         Returns: {

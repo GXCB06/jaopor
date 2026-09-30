@@ -22,13 +22,18 @@ const STORED = STACK_LIST.filter(
 
 /** Stack slugs are unique across the stored groups, so the option value is the slug alone. */
 export function stackOptions(locale: string): VocabOption[] {
-  return STORED.map((i) => ({
-    value: i.slug,
-    label: i.label,
-    group: localizedName(STACK_GROUP_LABEL[i.group], locale),
-    simpleIcon: i.simpleIcon,
-    lucideIcon: i.lucideIcon,
-  }));
+  // Grouped headers in the combobox need each group's items to be contiguous.
+  const order = (g: string) =>
+    STORED_STACK_GROUPS.indexOf(g as StoredStackGroup);
+  return [...STORED]
+    .sort((a, b) => order(a.group) - order(b.group))
+    .map((i) => ({
+      value: i.slug,
+      label: i.label,
+      group: localizedName(STACK_GROUP_LABEL[i.group], locale),
+      simpleIcon: i.simpleIcon,
+      lucideIcon: i.lucideIcon,
+    }));
 }
 
 export function stackToValues(stack: TechStack): string[] {

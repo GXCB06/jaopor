@@ -6,6 +6,7 @@ import {
   BadgeCheckIcon,
   BookOpenIcon,
   CheckCircle2Icon,
+  GitBranchIcon,
   Code2Icon,
   ImageIcon,
   InfoIcon,
@@ -347,6 +348,41 @@ export function StartupEditForm({
     }
   }
 
+  // ---- tech stack from a public GitHub repo --------------------------------------------------
+  const [detecting, setDetecting] = useState(false);
+  const [detected, setDetected] = useState<string[] | null>(null);
+  const githubLink = f.links.github.trim() || startup.github_url || "";
+  async function detectFromGithub() {
+    setDetecting(true);
+    try {
+      const res = await fetch(`/api/startups/${startup.id}/detect-stack`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ repo: githubLink }),
+      });
+      const body = (await res.json()) as { labels?: string[]; error?: string };
+      if (!res.ok || !body.labels) {
+        toast.error(
+          e(
+            body.error === "repo_not_found"
+              ? "stackRepoNotFound"
+              : body.error === "slow_down"
+                ? "stackSlowDown"
+                : "stackDetectFailed",
+          ),
+        );
+        return;
+      }
+      setDetected(body.labels);
+      if (suggestedStackValues(body.labels, f.techStack).length === 0)
+        toast.info(e("stackNothingNew"));
+    } catch {
+      toast.error(e("stackDetectFailed"));
+    } finally {
+      setDetecting(false);
+    }
+  }
+
   // ---- save -----------------------------------------------------------------------------------
   const fail = (section: SectionId, message: string) => {
     setError(message);
@@ -428,9 +464,9 @@ export function StartupEditForm({
     }
   }
 
-  // GitHub build proof already detects the stack (startups.build_stack): offer it in one click.
+  // Stack found in the repo (on demand, or saved by GitHub build proof): add it in one click.
   const stackSuggestion = suggestedStackValues(
-    startup.build_stack,
+    detected ?? startup.build_stack,
     f.techStack,
   );
 
@@ -961,10 +997,29 @@ export function StartupEditForm({
                   id="tech_stack"
                   label={t("techStack")}
                   htmlFor="stack-input"
-                  hint={startup.github_repo ? undefined : t("stackGithubHint")}
+                  hint={githubLink ? undefined : t("stackGithubHint")}
                   optional={common("optional")}
                   className="sm:col-span-2"
                 >
+                  <div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={detectFromGithub}
+                      disabled={detecting || !githubLink}
+                    >
+                      {detecting ? (
+                        <Loader2Icon
+                          className="animate-spin"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <GitBranchIcon aria-hidden="true" />
+                      )}
+                      {e("stackFromGithub")}
+                    </Button>
+                  </div>
                   {stackSuggestion.length > 0 && (
                     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed px-3 py-2 text-caption">
                       <span className="text-muted-foreground">

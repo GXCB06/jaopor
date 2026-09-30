@@ -33,6 +33,12 @@ export async function QuickSearchSection() {
               {localizedName(c, locale)}
             </Link>
           ))}
+          <Link
+            href="/olympics"
+            className="rounded-full border border-brand/40 bg-secondary px-2.5 py-0.5 text-2xs text-brand-text hover:underline"
+          >
+            {t("olympicsChip")}
+          </Link>
         </div>
       </div>
     </section>

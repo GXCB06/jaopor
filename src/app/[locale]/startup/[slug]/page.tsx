@@ -2,6 +2,7 @@ import {
   ArrowUpRightIcon,
   ChevronRightIcon,
   FlaskConicalIcon,
+  MapPinIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -40,6 +41,7 @@ import { Link } from "@/i18n/navigation";
 import { getThbPerUsd } from "@/lib/data/fx";
 import {
   getMoreStartups,
+  getProvinceLeaderboard,
   getRank,
   getChartSeries,
   getScreenshots,
@@ -57,6 +59,7 @@ import {
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { logoUrl } from "@/lib/supabase/public";
 import { provinceName } from "@/lib/config/display";
+import { DEFAULT_METRIC, provinceRank } from "@/lib/olympics";
 
 export const revalidate = 60;
 
@@ -113,19 +116,52 @@ export default async function StartupPage({ params }: Props) {
   if (!startup) notFound();
 
   const verified = startup.verification_status === "verified";
-  const [t, common, nav, sh, format, rank, series, shots, more, thbPerUsd] =
-    await Promise.all([
-      getTranslations("Profile"),
-      getTranslations("Common"),
-      getTranslations("Nav"),
-      getTranslations("Share"),
-      getFormatter(),
-      getRank(startup),
-      getChartSeries(startup),
-      getScreenshots(startup.id),
-      getMoreStartups(startup, 6),
-      getThbPerUsd(),
-    ]);
+  const [
+    t,
+    common,
+    nav,
+    sh,
+    format,
+    rank,
+    series,
+    shots,
+    more,
+    thbPerUsd,
+    olympics,
+  ] = await Promise.all([
+    getTranslations("Profile"),
+    getTranslations("Common"),
+    getTranslations("Nav"),
+    getTranslations("Share"),
+    getFormatter(),
+    getRank(startup),
+    getChartSeries(startup),
+    getScreenshots(startup.id),
+    getMoreStartups(startup, 6),
+    getThbPerUsd(),
+    startup.province
+      ? getProvinceLeaderboard(DEFAULT_METRIC)
+      : Promise.resolve([]),
+  ]);
+  // Spec 6.4 step 2: "📍 จังหวัด · อันดับ #X ในโอลิมปิก" → the province page.
+  const provinceNameText = provinceName(startup.province, locale);
+  const provinceRankNo = provinceRank(olympics, startup.province);
+  const provinceLink = provinceNameText ? (
+    <Link
+      href={`/province/${startup.province}`}
+      className="inline-flex max-w-full items-start gap-1 hover:text-foreground hover:underline"
+    >
+      <MapPinIcon className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
+      <span className="min-w-0 sm:truncate">
+        {provinceRankNo
+          ? t("provinceRank", {
+              province: provinceNameText,
+              rank: provinceRankNo,
+            })
+          : provinceNameText}
+      </span>
+    </Link>
+  ) : null;
   const chartMetrics = (["revenue", "mrr", "visitors"] as const).filter(
     (m) => series[m] !== null,
   );
@@ -322,14 +358,10 @@ export default async function StartupPage({ params }: Props) {
                   )
                 }
                 caption={
-                  startup.founded_on && (startup.country || startup.province)
-                    ? [
-                        provinceName(startup.province, locale),
-                        countryName(startup.country, locale),
-                      ]
-                        .filter(Boolean)
-                        .join(", ")
-                    : undefined
+                  provinceLink ??
+                  (startup.founded_on && startup.country
+                    ? countryName(startup.country, locale)
+                    : undefined)
                 }
               />
             ) : (

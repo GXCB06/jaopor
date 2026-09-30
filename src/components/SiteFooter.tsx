@@ -33,6 +33,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/olympics" className={link}>
+                {t("olympics")}
+              </Link>
+            </li>
+            <li>
               <Link href="/new" className={link}>
                 {nav("addStartup")}
               </Link>

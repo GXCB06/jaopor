@@ -12,6 +12,31 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Spec Phase 6: Province Olympics; tech stack v2 + "ดึงจาก GitHub"
+
+**Done:**
+
+- **`/[locale]/olympics`** (spec 6.7):
+  - Metric SegmentedControl (รายได้รวม · MRR · ผู้เข้าชม 30 วัน · Commits) + region chips. Both live in the URL (`?metric=&region=`).
+  - Ranked ProvinceCards: medal/rank, 56×40 badge (hand-simplified Thailand map with the region lit; no seals), names, region chip, count, total, top 5 with share % + bar.
+  - Provinces with no number collapse into "ยังไม่มีผลงานจาก {n} จังหวัด — เป็นคนแรกของจังหวัดคุณ" with chips + CTA.
+- **`/[locale]/province/[slug]`:** badge + title/subtitle, Olympics rank link, 3-column cards (รายได้ 30 วัน · MRR · รวมทั้งหมด), back link, nearby provinces, 404 for unknown slugs, OG image "{จังหวัด} อันดับ #X ในโอลิมปิกจังหวัด".
+- **Links:** profile stat card "📍 จังหวัด · อันดับ #X ในโอลิมปิก" (MapPin) → province page; header/footer/MobileNav "โอลิมปิก"; QuickSearch chip "โอลิมปิกจังหวัด →"; QuickSearch province results now open the province page.
+- **Header:** the 5th link overflowed at 1024–1045px. Links are nowrap, แดชบอร์ด shows from `xl` (it is also in the avatar menu), tighter lg gaps.
+- **Tech stack (user: "can't find JavaScript"):** +104 items (languages, more frameworks, services, no-code), grouped headers in the picker, max 20 per group. **"ดึงจาก GitHub"** button reads a **public** repo (languages, root files like vercel.json/Dockerfile/fly.toml, manifests package.json/requirements.txt/pyproject/composer/Gemfile/pubspec/go.mod) and offers the matches.
+- **SQL drafted, NOT applied:** `province_leaderboard(metric, region)` and `stack_vocab_v2` (trigger allow-list for the new slugs). Until applied, the olympics use the identical TS ranking; the stack expansion must not be deployed before its migration (the trigger would reject new slugs).
+
+**Files:** `supabase/migrations/{20260930144541_province_leaderboard,20260930143523_stack_vocab_v2}.sql` (drafts), `src/lib/olympics.ts` (+ test), `src/lib/data/startups.ts`, `src/lib/supabase/database.types.ts`, `src/app/[locale]/olympics/page.tsx`, `src/app/[locale]/province/[slug]/{page,opengraph-image}.tsx`, `src/components/olympics/*`, `src/components/{SiteHeader,SiteFooter,MobileNav,StartupCard}.tsx`, `src/components/search/*`, `src/app/[locale]/startup/[slug]/page.tsx`, `src/lib/build/github.ts`, `src/app/api/startups/[id]/detect-stack/route.ts`, `src/lib/config/{stack,glyphs}.ts`, `src/components/wizard/{StartupEditForm,vocab-options}.ts*`, `src/lib/share-palette.ts`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- SQL dry run (read-only select of the function body) matches the TS ranking: revenue → มุกดาหาร #1 (JaoPor ฿0); commits incl. demo → Bangkok 2900, Chiang Mai 2140…
+- Live GitHub detection: GXCB06/jaopor → Next.js, React, Tailwind CSS, Supabase, Vercel, TypeScript, JavaScript; django/djangoproject.com → Django, PostgreSQL, Redis, Stripe, Sentry, Docker, Heroku, Python…; missing repo → not public.
+- `npm test` 180/180 · typecheck ✓ · lint ✓ · build ✓
+- Browser pane (local): olympics at 1280 (dark + light) and 375 (no horizontal scroll); region chip → `?metric=commits&region=north` (9 provinces collapsed); metric switch keeps the region; `/province/bangkok` at 375; `/province/atlantis` → 404; profile rank link wraps at 375; OG image renders. Header row fits 1024 + 1280 in th/en.
+- **Not verified:** the "ดึงจาก GitHub" button in the edit form (needs sign-in; the route and detection are tested).
+
+**Next:** user approves `province_leaderboard`, `stack_vocab_v2` and `category_counts` SQL → apply, then deploy; Phase 7 (home polish)
+
 ## 2026-09-30 — Spec Phase 5: categories page; header fits every width; fresh pages after delete
 
 **Done:**

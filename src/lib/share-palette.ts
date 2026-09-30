@@ -49,3 +49,13 @@ export const SWATCH_IDS = Object.keys(SWATCHES) as SwatchId[];
 
 export const isSwatch = (v: unknown): v is SwatchId =>
   typeof v === "string" && v in SWATCHES;
+
+/** Region colours for image renderers (dark values of `--region-*`, Design.md §2). */
+export const REGION_HEX = {
+  north: "#3987e5",
+  northeast: "#d95926",
+  central: "#199e70",
+  east: "#9085e9",
+  west: "#c98500",
+  south: "#d55181",
+} as const;

@@ -30,6 +30,7 @@ function useMetrics(
   s: StartupRow,
   large: boolean,
   thbPerUsd: number | null,
+  third: "growth" | "allTime",
 ): Metric[] | null {
   const t = useTranslations("Card");
   if (s.verification_status === "verified") {
@@ -42,14 +43,21 @@ function useMetrics(
         label: t("mrr"),
         value: <Money cents={s.mrr_cents} thbPerUsd={thbPerUsd} />,
       },
-      {
-        label: t("growth"),
-        value: (
-          <GrowthValue
-            pct={growthPct(s.revenue_30d_cents, s.revenue_prev_30d_cents)}
-          />
-        ),
-      },
+      third === "allTime"
+        ? {
+            label: t("revenueAllTime"),
+            value: (
+              <Money cents={s.revenue_all_time_cents} thbPerUsd={thbPerUsd} />
+            ),
+          }
+        : {
+            label: t("growth"),
+            value: (
+              <GrowthValue
+                pct={growthPct(s.revenue_30d_cents, s.revenue_prev_30d_cents)}
+              />
+            ),
+          },
     ];
   }
   if (s.visitors_30d !== null || s.build_commits !== null) {
@@ -107,17 +115,20 @@ export function StartupCard({
   startup,
   large = false,
   thbPerUsd = null,
+  third = "growth",
   className,
 }: {
   startup: StartupRow;
   large?: boolean;
+  /** Third revenue stat: growth (default) or all-time revenue (province page, spec 6.7). */
+  third?: "growth" | "allTime";
   /** THB per USD for the currency switch (Design.md §3 Currency); null = USD only. */
   thbPerUsd?: number | null;
   className?: string;
 }) {
   const locale = useLocale();
   const common = useTranslations("Common");
-  const metrics = useMetrics(startup, large, thbPerUsd);
+  const metrics = useMetrics(startup, large, thbPerUsd, third);
   const href = `/startup/${startup.slug}`;
 
   const metricRow = (

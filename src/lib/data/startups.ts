@@ -1,7 +1,16 @@
 import type { Screenshot } from "@/lib/media";
 import "server-only";
 import type { AiTool, Category } from "@/lib/catalog";
+import type { Region } from "@/lib/config/provinces";
 import type { LookingFor } from "@/lib/links";
+import {
+  OLYMPIC_COLUMNS,
+  fromRpc,
+  rankProvinces,
+  type OlympicMetric,
+  type OlympicSource,
+  type ProvinceRank,
+} from "@/lib/olympics";
 import type { Tables } from "@/lib/supabase/database.types";
 import { createPublicClient } from "@/lib/supabase/public";
 
@@ -441,4 +450,27 @@ export async function getCategoryCounts(): Promise<Record<string, number>> {
   const out: Record<string, number> = {};
   for (const r of data) out[r.category] = (out[r.category] ?? 0) + 1;
   return out;
+}
+
+/**
+ * Spec 6.7 Province Olympics board. Uses the `province_leaderboard(metric, region)` RPC; until
+ * that migration exists it ranks the same columns here with the identical TS rules.
+ */
+export async function getProvinceLeaderboard(
+  metric: OlympicMetric,
+  region: Region | null = null,
+): Promise<ProvinceRank[]> {
+  const rpc = await db().rpc("province_leaderboard", {
+    metric,
+    region: region ?? undefined,
+  });
+  if (!rpc.error) return fromRpc(rpc.data ?? []);
+  const { data, error } = await db()
+    .from("startups")
+    .select(OLYMPIC_COLUMNS)
+    .not("province", "is", null)
+    .eq("is_demo", false)
+    .limit(5000);
+  if (error) throw error;
+  return rankProvinces(data as OlympicSource[], metric, region);
 }
