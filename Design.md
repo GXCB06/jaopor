@@ -191,27 +191,54 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 - Row (`grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-3`), **only tiles with data**: **All-time revenue** (note: "Ranked #n on JaoPor") · **MRR** (note: "n active subscriptions") · **Founder** (avatar 20 + name as value at `text-base`; note: 𝕏 handle) · **Founded** (month year; note: province + localized country name via `Intl.DisplayNames`; no flag emoji, Windows renders them as letters).
 - **Empty-state rule (spec 2.4):** unverified revenue/MRR tiles are dropped and replaced by one `UnverifiedLine`; Founded without a date shows as **Location** (ที่ตั้ง); nothing at all → owner-only `EmptyOwnerCard`. Visitors never see "–".
 
-### RevenueChartCard
+### RevenueChartCard (spec 6.4 step 3, Phase 2)
 
-- `rounded-xl border bg-card p-6`.
-- Header: 30-day total (`text-3xl font-bold`) + growth pill ("↑ 42% vs. prev period") on the left; right: range dropdown (**7 days · 30 days · 60 days**).
-- Plot `h-64`: Recharts area, `--chart-1` 2px line, faint area fill (0.25 → 0), grid `--border` horizontal only, axes `text-2xs` `--faint`. Hover: crosshair + tooltip (text tokens, never series colours).
-- Footer `mt-4 flex justify-between`: switches (shadcn-style 28×16 track) **Compare previous period** (adds dashed `--chart-2` line + mini legend) and **Trend view** (7-day moving average); right: nothing for now.
-- Below the card, centered: **VerifiedStamp**.
+- `Card p-4 sm:p-6`. Header left: period total (`text-3xl font-bold tabular-nums`; for **MRR** the latest value) + GrowthPill vs the previous period. Right: two compact selects (`h-7 rounded-lg border bg-secondary text-caption`): **metric** (รายได้ · MRR · ผู้เข้าชม, only those with data) and **period** (7 วัน · 30 วัน · 12 เดือน). 12 months plots weekly points.
+- Plot `h-64`: Recharts area, `--chart-1` 2px line, gradient fill (0.25 → 0), horizontal grid `--border`, axes `text-2xs --faint`. Hover: crosshair + tooltip in text tokens.
+- Footer switches: **เทียบช่วงก่อนหน้า** (dashed `--chart-2` + mini legend) and **Trend** (7-point moving average).
+- Under the plot, inside the card: `text-caption text-muted-foreground` stamp for the **selected metric's** source: check icon (`text-brand-text`) "ยืนยันผ่าน {Source} · อัปเดตล่าสุด {time}" (demo: "ข้อมูลตัวอย่าง").
+- No profit-margin pill: we have no cost data (spec item skipped until a source exists).
+- Nothing verified: the card is hidden for visitors; the owner sees an `EmptyOwnerCard` "+ เชื่อมต่อ Stripe เพื่อแสดงกราฟ".
 
 ### VerifiedStamp
 
 - `text-caption text-muted-foreground`, centered line: brand check icon · "Revenue is verified with **{Source}** API key. Last updated: {datetime}". Stale (> 48h) or error → amber text.
 
-### InsightsGrid ("Startup insights" bento)
+### InsightsGrid ("ข้อมูลเชิงลึก" bento, spec 6.4 step 6, Phase 2)
 
-- H2 then `grid sm:grid-cols-2 gap-3.5`. Each card `rounded-xl border bg-card p-4 space-y-3`: header = lucide icon `size-3.5 text-faint` + label (`text-2xs font-bold uppercase tracking-wider text-faint`); body `text-xs text-muted-foreground leading-relaxed`; chips `rounded-full border bg-secondary px-2.5 py-0.5 text-caption`.
-- Order and icons: Value proposition (`Lightbulb`) · Problem solved (`ShieldCheck`) · Audience (`Users`, chip B2B/B2C) · Market / category (`Tag`) · Pricing (`DollarSign`) · Tech stack (`Code2`, chips) · Team size (`User`) · **AI build tools** (`Sparkles`, JaoPor-specific) · Funding (`Landmark`) · Marketing channels (`Megaphone`) · Founder message (`Quote`, wide).
-- InfoCard rule applies: empty → owner `+ Add` (deep link to the editor field) / visitor "Not added".
+- H2, then **Value proposition** full width, then `grid lg:grid-cols-2 gap-3.5` of two stacked columns (1 column below `lg`):
+  - Left: กลุ่มลูกค้า (B2B/B2C chip + "~N ผู้ใช้" when active users are known) · ราคา · ขนาดทีม · เงินทุน · ช่องทางการตลาด (**logo chips**).
+  - Right: ปัญหาที่แก้ · ตลาด (category chip with its lucide icon) · เทคโนโลยีที่ใช้ (**logo chips grouped under muted sub-labels**, empty groups skipped) · สร้างด้วย (AI tool logo chips).
+- Cards are `InsightCard` (40px icon box). Empty-state rule: visitors see only cards with data; the owner sees `EmptyOwnerCard` prompts in the same slots.
+- **LogoChip:** `inline-flex items-center gap-1.5 rounded-full border bg-secondary px-2.5 py-0.5 text-caption` + 14px glyph. Glyph = Simple Icons path in the brand colour, or `--foreground`-ish fallback when the brand colour has < 3:1 contrast on that theme's card (precomputed `fgDark`/`fgLight` in `lib/config/glyphs.ts`); brands without a Simple Icon use their lucide icon in `text-muted-foreground`; custom entries use `Tag`.
+
+### FounderMessage (spec 6.4 step 5)
+
+- `Card p-5 sm:p-6 flex gap-5` (stacks below `sm`): 80px round avatar (letter avatar without a photo) · quote `text-base leading-[1.8] whitespace-pre-line` (paragraphs kept) · then name `font-bold` + role `text-muted-foreground` (`text-sm`). Hidden when empty; owner sees an `EmptyOwnerCard`.
+
+### ScreenshotGallery (spec 6.4 step 4)
+
+- Header row: "ภาพผลงาน" (`text-sm font-bold`) + domain link (`text-caption text-faint`) · right: counter "1 / 6" (`text-caption tabular-nums`) + ←/→ icon buttons (`size-8 rounded-md border`, desktop only).
+- Track: `flex gap-4 overflow-x-auto snap-x snap-mandatory` with a fade mask on the side that has more to scroll; focusable (`tabIndex=0`, ←/→ keys scroll one slide).
+- **Desktop shot:** 16:10 card `w-[88vw] sm:w-[720px] rounded-xl border bg-card overflow-hidden`, thin browser bar (`h-7 border-b px-3`: three `size-2 rounded-full bg-muted-foreground/30` dots + domain `text-2xs text-faint`). A single desktop shot is full width, no carousel.
+- **Mobile / LINE shot:** phone frame 9:19.5 `w-[260px] rounded-[28px] border-4 border-border bg-card overflow-hidden`.
+- Caption under each (`text-caption text-muted-foreground`). Images lazy after the first 2; `bg-muted` skeleton behind (no blur data stored).
+- **Demo video** (if set) is the first slide: dark 16:9 card with a centered play button (`size-14 rounded-full bg-background/80`); click swaps in the provider's embed iframe (YouTube nocookie / Loom / TikTok).
+- **Lightbox:** native `<dialog>` (`bg-background/95`, full screen): image `max-h-[85vh] object-contain`, caption + "n / N", ←/→ buttons + keys + swipe, × button; Esc / backdrop click close; focus stays inside (modal dialog).
+
+### ScreenshotsManager (edit form, spec 6.9)
+
+- Drop zone `rounded-xl border border-dashed p-6 text-center` ("ลากไฟล์มาวาง, วาง (Ctrl/Cmd+V) หรือคลิกเพื่อเลือก"), PNG/JPG/WebP ≤ 5MB, max 8. Files are resized in the browser to ≤ 2400px, re-encoded to WebP (drops EXIF/GPS), then uploaded to `screenshots/{startup_id}/{uuid}.webp`.
+- Grid of thumbnails (`grid grid-cols-2 sm:grid-cols-4 gap-3`): thumbnail, kind select (Desktop / Mobile / LINE; auto from aspect ratio), caption input (≤ 60), ←/→ move buttons + drag to reorder, delete (×). The first is marked "ภาพปก" (cover).
+
+### VocabCombobox (edit form, spec 6.9)
+
+- Searchable multi-select: selected **LogoChips with ×** above an input (`inputClass`); typing filters a listbox (`rounded-md border bg-popover shadow-md max-h-64 overflow-auto`) grouped under muted headers, each option with its glyph; ↑/↓/Enter/Esc; Backspace in an empty input removes the last chip. Channels allow a custom entry row "+ เพิ่ม “{text}”".
+- Province uses the single-select variant (grouped by region), required when the country is Thailand.
 
 ### More startups (profile bottom)
 
-- H2 "More startups" + "View all →" link; `grid sm:grid-cols-2 lg:grid-cols-3 gap-3` of large StartupCards (same category first, then newest; 6 max).
+- H2 "สตาร์ทอัพอื่น ๆ" + "View all →" link; `grid sm:grid-cols-2 lg:grid-cols-3 gap-3` of large StartupCards (same category first, then same province, then newest; 6 max).
 
 ### ShareStudio (Figma "Share button")
 

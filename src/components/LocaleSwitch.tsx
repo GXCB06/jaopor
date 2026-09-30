@@ -14,7 +14,8 @@ export function LocaleSwitch() {
   return (
     <button
       type="button"
-      aria-label={t("language")}
+      // The target language's name, in that language; the accessible name keeps the visible text.
+      lang={locale === "th" ? "en" : "th"}
       className="text-xs font-medium whitespace-nowrap text-muted-foreground hover:text-foreground"
       onClick={() =>
         router.replace(
@@ -24,7 +25,10 @@ export function LocaleSwitch() {
         )
       }
     >
-      <span className="sm:hidden">{t("languageShort")}</span>
+      <span className="sm:hidden">
+        {t("languageShort")}
+        <span className="sr-only"> {t("language")}</span>
+      </span>
       <span className="hidden sm:inline">{t("language")}</span>
     </button>
   );

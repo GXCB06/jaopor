@@ -26,9 +26,12 @@ import {
 import {
   InsightsGrid,
   StatCard,
-  VerifiedStamp,
+  ChartStamp,
+  FounderMessageCard,
 } from "@/components/ProfileBlocks";
-import { RevenueChart } from "@/components/RevenueChart";
+import { Card } from "@/components/core/Card";
+import { MetricChart } from "@/components/MetricChart";
+import { ScreenshotGallery } from "@/components/profile/ScreenshotGallery";
 import { ShareStudio } from "@/components/share/ShareStudio";
 import { FoundingBadge, Money, StartupLogo } from "@/components/StartupBits";
 import { StartupCard } from "@/components/StartupCard";
@@ -37,11 +40,12 @@ import { getThbPerUsd } from "@/lib/data/fx";
 import {
   getMoreStartups,
   getRank,
-  getRevenueSeries,
+  getChartSeries,
+  getScreenshots,
   getStartupBySlug,
 } from "@/lib/data/startups";
 import { moneyFull } from "@/lib/format";
-import { projectLinks } from "@/lib/links";
+import { projectLinks, websiteHost } from "@/lib/links";
 import { publicEnv } from "@/lib/public-env";
 import { badgeHtml, shareMetrics } from "@/lib/share";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
@@ -94,8 +98,8 @@ function countryName(code: string | null, locale: string): string {
   }
 }
 
-// Design.md §6 /startup/[slug] (Figma "Startup Public Profile") + §5 InfoCard: every section is
-// always shown; empty ones invite the owner to "+ Add" and read "Not added" for visitors.
+// Design.md §6 /startup/[slug] (spec 6.4 order: header · stats · chart · screenshots · founder
+// message · insights · more). Empty-state rule: visitors see data only, owners get "+ Add" prompts.
 export default async function StartupPage({ params }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
@@ -103,7 +107,7 @@ export default async function StartupPage({ params }: Props) {
   if (!startup) notFound();
 
   const verified = startup.verification_status === "verified";
-  const [t, common, nav, sh, format, rank, series, more, thbPerUsd] =
+  const [t, common, nav, sh, format, rank, series, shots, more, thbPerUsd] =
     await Promise.all([
       getTranslations("Profile"),
       getTranslations("Common"),
@@ -111,12 +115,14 @@ export default async function StartupPage({ params }: Props) {
       getTranslations("Share"),
       getFormatter(),
       getRank(startup),
-      verified && startup.verified_provider === "stripe"
-        ? getRevenueSeries(startup.id, 120)
-        : Promise.resolve([]),
+      getChartSeries(startup),
+      getScreenshots(startup.id),
       getMoreStartups(startup, 6),
       getThbPerUsd(),
     ]);
+  const chartMetrics = (["revenue", "mrr", "visitors"] as const).filter(
+    (m) => series[m] !== null,
+  );
 
   // Share kit (Design.md §9): absolute URLs, verified numbers only.
   const url = `${publicEnv.siteUrl}/${locale}/startup/${startup.slug}`;
@@ -326,16 +332,40 @@ export default async function StartupPage({ params }: Props) {
           )}
         </section>
 
-        {series.length > 0 && (
-          <section className="rounded-xl border bg-card p-4 sm:p-6">
-            <RevenueChart series={series} thbPerUsd={thbPerUsd} />
-          </section>
-        )}
-        {startup.verification_status !== "unverified" && (
-          <VerifiedStamp startup={startup} />
+        {/* Spec 6.4 step 3: chart card; nothing verified → owner-only prompt. */}
+        {chartMetrics.length > 0 ? (
+          <Card className="p-4 sm:p-6">
+            <MetricChart
+              series={series}
+              thbPerUsd={thbPerUsd}
+              stamps={Object.fromEntries(
+                chartMetrics.map((m) => [
+                  m,
+                  <ChartStamp key={m} startup={startup} metric={m} />,
+                ]),
+              )}
+            />
+          </Card>
+        ) : (
+          <EmptyOwnerCard field="revenue" label={t("connectChart")} />
         )}
 
         {!tractionFirst && <TractionTiles startup={startup} />}
+
+        {/* Spec 6.4 step 4: screenshots + demo video; owner prompt when empty. */}
+        {shots.length > 0 || startup.demo_video_url ? (
+          <ScreenshotGallery
+            name={startup.name}
+            domain={websiteHost(startup.website_url)}
+            websiteUrl={startup.website_url}
+            shots={shots}
+            videoUrl={startup.demo_video_url}
+          />
+        ) : (
+          <EmptyOwnerCard field="screenshots" label={t("screenshots")} />
+        )}
+
+        <FounderMessageCard startup={startup} />
 
         <div className="pt-3">
           <InsightsGrid startup={startup} />

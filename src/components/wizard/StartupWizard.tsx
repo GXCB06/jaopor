@@ -15,6 +15,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Field, Select, ToggleChips, inputClass } from "./fields";
+import { ScreenshotsManager } from "./ScreenshotsManager";
 import { VerifyPanel } from "./VerifyPanel";
 import { categoryName } from "@/lib/config/display";
 import { aiToolLabel } from "@/lib/config/stack";
@@ -254,6 +255,15 @@ export function StartupWizard({
             githubLogin={githubLogin}
             onConnected={() => setVerified(true)}
           />
+          <section className="space-y-3 border-t pt-4">
+            <h2 className="text-sm font-semibold">
+              {t("screenshots")}{" "}
+              <span className="text-2xs font-normal text-muted-foreground">
+                ({common("optional")})
+              </span>
+            </h2>
+            <ScreenshotsManager startupId={saved.id} initial={[]} />
+          </section>
           <div className="flex items-center justify-between gap-3 border-t pt-4">
             <p className="text-xs text-muted-foreground">
               {verified ? "" : t("skipVerify")}

@@ -6,6 +6,7 @@ import { getStartupBySlug } from "@/lib/data/startups";
 import { publicEnv } from "@/lib/public-env";
 import { shareMetrics, verifiedSources } from "@/lib/share";
 import { logoTileDataUri } from "@/lib/logo";
+import { ogCoverDataUri } from "@/lib/og-cover";
 import { BRAND_HEX, CARD_THEME } from "@/lib/share-palette";
 import { logoUrl } from "@/lib/supabase/public";
 
@@ -52,6 +53,7 @@ export default async function Image({
     logoTileDataUri(),
   ]);
 
+  const cover = startup ? await ogCoverDataUri(startup.id) : null;
   const metrics = startup ? shareMetrics(startup) : [];
   const sources = startup ? verifiedSources(startup) : [];
   const logo = startup ? logoUrl(startup.logo_path, { absolute: true }) : null;
@@ -71,8 +73,39 @@ export default async function Image({
         color: C.fg,
         padding: 64,
         fontFamily: "Plex",
+        position: "relative",
       }}
     >
+      {cover && (
+        // eslint-disable-next-line @next/next/no-img-element -- rendered by the OG renderer
+        <img
+          src={cover}
+          width={1200}
+          height={630}
+          alt=""
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: 1200,
+            height: 630,
+          }}
+        />
+      )}
+      {cover && (
+        // Darken so the name and numbers stay readable on any screenshot.
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: 1200,
+            height: 630,
+            background:
+              "linear-gradient(180deg, rgba(10,10,11,0.78) 0%, rgba(10,10,11,0.9) 55%, rgba(10,10,11,0.97) 100%)",
+          }}
+        />
+      )}
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
         {/* eslint-disable-next-line @next/next/no-img-element -- rendered by the OG renderer */}
         <img src={tile} width={44} height={44} alt="" />

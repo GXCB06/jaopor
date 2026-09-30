@@ -85,3 +85,33 @@ export function channelLabel(value: string, locale: string): string {
   const c = getChannel(value);
   return c ? localizedLabel(c, locale) : value;
 }
+
+export type GlyphRef = {
+  label: string;
+  simpleIcon?: string;
+  lucideIcon?: StackItem["lucideIcon"];
+};
+
+/** Channel value → chip data (custom entries get no icon → generic Tag). */
+export function channelChip(value: string, locale: string): GlyphRef {
+  const c = value.startsWith(CUSTOM_PREFIX) ? undefined : getChannel(value);
+  return {
+    label: channelLabel(value, locale),
+    simpleIcon: c && "simpleIcon" in c ? (c.simpleIcon as string) : undefined,
+    lucideIcon: c && "lucideIcon" in c ? c.lucideIcon : undefined,
+  };
+}
+
+/** AI build tool slug → chip data ("claude" is the Claude chat app). */
+export function aiToolChip(slug: string, locale: string): GlyphRef {
+  if (slug === "claude") return { label: "Claude", simpleIcon: "claude" };
+  const i = STACK_LIST.find(
+    (x) => x.group === "built_with" && x.slug === slug,
+  ) as StackItem | undefined;
+  if (!i) return { label: slug };
+  return {
+    label: locale === "th" && i.labelTh ? i.labelTh : i.label,
+    simpleIcon: i.simpleIcon,
+    lucideIcon: i.lucideIcon,
+  };
+}

@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { StartupEditForm } from "@/components/wizard/StartupEditForm";
 import { requireUserId } from "@/lib/auth";
 import { getConnections, getGithubLogin } from "@/lib/data/connections";
+import type { Screenshot } from "@/lib/media";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { robots: { index: false } };
@@ -24,10 +25,17 @@ export default async function EditStartupPage({
     .maybeSingle();
   if (!startup) notFound();
 
-  const [t, connections, githubLogin] = await Promise.all([
+  const [t, connections, githubLogin, shots] = await Promise.all([
     getTranslations("Profile"),
     getConnections(startup.id),
     getGithubLogin(),
+    // The owner's session (RLS) also sees screenshots of a hidden project.
+    supabase
+      .from("startup_screenshots")
+      .select("id, path, kind, caption, width, height, position")
+      .eq("startup_id", startup.id)
+      .order("position")
+      .order("id"),
   ]);
 
   return (
@@ -40,6 +48,7 @@ export default async function EditStartupPage({
         startup={startup}
         connections={connections}
         githubLogin={githubLogin}
+        screenshots={(shots.data ?? []) as Screenshot[]}
       />
     </main>
   );

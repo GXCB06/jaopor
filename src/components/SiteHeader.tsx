@@ -34,7 +34,7 @@ export function SiteHeader() {
             {t("dashboard")}
           </Link>
         </nav>
-        <div className="ml-auto flex items-center gap-1 sm:gap-3">
+        <div className="ml-auto flex items-center gap-0.5 sm:gap-3">
           <CurrencyToggle />
           <SearchShortcut />
           <Link

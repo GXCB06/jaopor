@@ -14,20 +14,11 @@ import {
   type AiTool,
 } from "@/lib/catalog";
 import { CATEGORY_LIST } from "@/lib/config/categories";
-import {
-  CHANNEL_LIST,
-  CUSTOM_PREFIX,
-  MAX_CHANNELS,
-} from "@/lib/config/channels";
-import { toTechStack } from "@/lib/config/display";
-import { localizedLabel, localizedName } from "@/lib/config/localized";
-import {
-  STACK_GROUP_LABEL,
-  STORED_STACK_GROUPS,
-  aiToolLabel,
-  stackItems,
-  type TechStack,
-} from "@/lib/config/stack";
+import { MAX_CHANNELS } from "@/lib/config/channels";
+import { channelLabel, toTechStack } from "@/lib/config/display";
+import { localizedName } from "@/lib/config/localized";
+import { aiToolLabel } from "@/lib/config/stack";
+import { videoEmbed, type Screenshot } from "@/lib/media";
 import {
   PRICING_CURRENCIES,
   PRICING_PERIODS,
@@ -45,15 +36,19 @@ import {
   type LookingFor,
 } from "@/lib/links";
 import { cn } from "@/lib/utils";
-import {
-  Field,
-  ProvinceSelect,
-  Select,
-  ToggleChips,
-  inputClass,
-} from "./fields";
+import { Field, Select, ToggleChips, inputClass } from "./fields";
 import { uploadLogo } from "./StartupWizard";
+import { ScreenshotsManager } from "./ScreenshotsManager";
+import {
+  channelOptions,
+  provinceOptions,
+  stackOptions,
+  stackToValues,
+  toCustomChannel,
+  valuesToStack,
+} from "./vocab-options";
 import { VerifyPanel, type ConnectionInfo } from "./VerifyPanel";
+import { VocabCombobox } from "./VocabCombobox";
 
 // One page with every field. Each field wrapper has id="<field>" so the profile's "+ Add"
 // cards can deep-link (/dashboard/[id]/edit#pricing) and the field gets highlighted.
@@ -87,25 +82,19 @@ const LINK_PLACEHOLDER: Record<LinkKind, string> = {
   github: "https://github.com/you/app",
 };
 
-const list = (s: string, max: number) =>
-  s
-    .split(",")
-    .map((x) => x.trim().slice(0, 40))
-    .filter(Boolean)
-    .slice(0, max);
-
-const KNOWN_CHANNELS = new Set<string>(CHANNEL_LIST.map((c) => c.slug));
 
 export function StartupEditForm({
   userId,
   startup,
   connections,
   githubLogin,
+  screenshots,
 }: {
   userId: string;
   startup: Tables<"startups">;
   connections: ConnectionInfo[];
   githubLogin: string | null;
+  screenshots: Screenshot[];
 }) {
   const t = useTranslations("Wizard");
   const p = useTranslations("Profile");
@@ -115,6 +104,10 @@ export function StartupEditForm({
   const common = useTranslations("Common");
   const cat = useTranslations("Catalog");
   const pr = useTranslations("Pricing");
+  const comboLabels = {
+    remove: (label: string) => t("removeItem", { label }),
+    noMatch: t("noMatch"),
+  };
   const locale = useLocale();
   const router = useRouter();
   const region = useMemo(
@@ -148,12 +141,10 @@ export function StartupEditForm({
     pricingNote: startup.pricing_note ?? "",
     teamSize: startup.team_size ?? "",
     funding: startup.funding ?? "",
-    techStack: toTechStack(startup.tech_stack),
-    channels: startup.marketing_channels.filter((c) => KNOWN_CHANNELS.has(c)),
-    customChannels: startup.marketing_channels
-      .filter((c) => c.startsWith(CUSTOM_PREFIX))
-      .map((c) => c.slice(CUSTOM_PREFIX.length))
-      .join(", "),
+    techStack: stackToValues(toTechStack(startup.tech_stack)),
+    channels: startup.marketing_channels,
+    demoVideo: startup.demo_video_url ?? "",
+    founderRole: startup.founder_role ?? "",
     founderMessage: startup.founder_message ?? "",
   });
   const [logo, setLogo] = useState<File | null>(null);
@@ -197,10 +188,9 @@ export function StartupEditForm({
     const priced = period !== null && period !== "free";
     if (priced && (amount === null || !Number.isFinite(amount) || amount < 0))
       return setError(t("pricingAmount"));
-    const channels = [
-      ...f.channels,
-      ...list(f.customChannels, MAX_CHANNELS).map((c) => CUSTOM_PREFIX + c),
-    ].slice(0, MAX_CHANNELS);
+    const demoVideo = f.demoVideo.trim();
+    if (demoVideo && !videoEmbed(demoVideo))
+      return setError(t("demoVideoInvalid"));
     setBusy(true);
     try {
       const logoPath = logo
@@ -230,8 +220,10 @@ export function StartupEditForm({
           pricing_note: f.pricingNote.trim() || null,
           team_size: f.teamSize || null,
           funding: f.funding || null,
-          tech_stack: f.techStack,
-          marketing_channels: channels,
+          tech_stack: valuesToStack(f.techStack),
+          marketing_channels: f.channels.slice(0, MAX_CHANNELS),
+          demo_video_url: demoVideo || null,
+          founder_role: f.founderRole.trim() || null,
           founder_message: f.founderMessage.trim() || null,
         })
         .eq("id", startup.id);
@@ -283,6 +275,11 @@ export function StartupEditForm({
           websiteHost={websiteHost(startup.website_url)}
           githubLogin={githubLogin}
         />
+      </section>
+
+      <section id="screenshots" className="scroll-mt-24 space-y-3">
+        <h2 className="text-sm font-semibold">{t("screenshots")}</h2>
+        <ScreenshotsManager startupId={startup.id} initial={screenshots} />
       </section>
 
       <form onSubmit={save} className="grid gap-4 sm:grid-cols-2">
@@ -390,17 +387,16 @@ export function StartupEditForm({
           />
         </Field>
         {f.country === "TH" && (
-          <Field
-            id="province"
-            label={t("province")}
-            htmlFor="province-input"
-            optional={common("optional")}
-          >
-            <ProvinceSelect
+          <Field id="province" label={t("province")} htmlFor="province-input">
+            <VocabCombobox
               id="province-input"
-              value={f.province}
-              onChange={set("province")}
-              placeholder={t("choose")}
+              multiple={false}
+              required
+              options={provinceOptions(locale)}
+              value={f.province ? [f.province] : []}
+              onChange={(v) => set("province")(v[0] ?? "")}
+              placeholder={t("provincePlaceholder")}
+              labels={comboLabels}
             />
           </Field>
         )}
@@ -561,58 +557,43 @@ export function StartupEditForm({
             }))}
           />
         </Field>
-        <fieldset
-          id="tech_stack"
-          className="scroll-mt-24 space-y-3 sm:col-span-2"
-        >
-          <legend className="mb-2 text-xs font-medium">
-            {t("techStack")}{" "}
-            <span className="text-2xs font-normal text-muted-foreground">
-              ({common("optional")})
-            </span>
-          </legend>
-          {STORED_STACK_GROUPS.map((g) => (
-            <div key={g} className="space-y-1.5">
-              <p className="text-2xs text-muted-foreground">
-                {localizedName(STACK_GROUP_LABEL[g], locale)}
-              </p>
-              <ToggleChips
-                options={stackItems(g).map((i) => ({
-                  value: i.slug,
-                  label: i.label,
-                }))}
-                value={f.techStack[g] ?? []}
-                onChange={(v) => {
-                  const next: TechStack = { ...f.techStack, [g]: v };
-                  if (!v.length) delete next[g];
-                  set("techStack")(next);
-                }}
-              />
-            </div>
-          ))}
-        </fieldset>
         <Field
-          id="marketing_channels"
-          label={t("marketingChannels")}
+          id="tech_stack"
+          label={t("techStack")}
+          htmlFor="stack-input"
           optional={common("optional")}
           className="sm:col-span-2"
         >
-          <ToggleChips
-            options={CHANNEL_LIST.map((c) => ({
-              value: c.slug as string,
-              label: localizedLabel(c, locale),
-            }))}
-            value={f.channels}
-            onChange={set("channels")}
+          <VocabCombobox
+            id="stack-input"
+            options={stackOptions(locale)}
+            value={f.techStack}
+            onChange={set("techStack")}
+            max={24}
+            placeholder={t("stackPlaceholder")}
+            labels={comboLabels}
           />
         </Field>
-        {text(
-          "customChannels",
-          "custom_channels",
-          t("customChannels"),
-          200,
-          true,
-        )}
+        <Field
+          id="marketing_channels"
+          label={t("marketingChannels")}
+          htmlFor="channels-input"
+          optional={common("optional")}
+          className="sm:col-span-2"
+        >
+          <VocabCombobox
+            id="channels-input"
+            options={channelOptions(locale)}
+            value={f.channels}
+            onChange={set("channels")}
+            max={MAX_CHANNELS}
+            placeholder={t("channelsPlaceholder")}
+            toCustom={toCustomChannel}
+            customLabel={(text) => t("addCustom", { text })}
+            describeCustom={(v) => channelLabel(v, locale)}
+            labels={comboLabels}
+          />
+        </Field>
         <Field
           id="build_story"
           label={t("buildStory")}
@@ -639,11 +620,35 @@ export function StartupEditForm({
           <Textarea
             id="msg-input"
             maxLength={600}
-            rows={3}
+            rows={4}
             value={f.founderMessage}
             onChange={(e) => set("founderMessage")(e.target.value)}
+            aria-describedby="msg-count"
           />
+          <p
+            id="msg-count"
+            aria-live="polite"
+            className="text-right text-2xs text-muted-foreground tabular-nums"
+          >
+            {t("founderMessageCount", { count: f.founderMessage.length })}
+          </p>
         </Field>
+        {text(
+          "founderRole",
+          "founder_role",
+          t("founderRole"),
+          60,
+          false,
+          t("founderRolePlaceholder"),
+        )}
+        {text(
+          "demoVideo",
+          "demo_video_url",
+          t("demoVideo"),
+          300,
+          true,
+          "https://youtu.be/…",
+        )}
 
         {error && (
           <p role="alert" className="text-sm text-destructive sm:col-span-2">

@@ -172,7 +172,24 @@ describe("stack", () => {
     expect(matchStackLabel("Prisma")).toBeNull();
   });
 
-  it("matches the migration's allowed slugs", () => {
+  it("matches the allowed slugs in every migration that (re)defines the vocab trigger", () => {
+    const dir = join(process.cwd(), "supabase/migrations");
+    const triggers = readdirSync(dir)
+      .map((f) => readFileSync(join(dir, f), "utf8"))
+      .filter((sql) =>
+        sql.includes("function private.startups_validate_vocab"),
+      );
+    expect(triggers.length).toBeGreaterThan(0);
+    for (const sql of triggers)
+      for (const g of STORED_STACK_GROUPS) {
+        const m = sql.match(new RegExp(`'${g}', '(\\[[^\\]]*\\])'::jsonb`))!;
+        expect(JSON.parse(m[1])).toEqual(
+          STACK_LIST.filter((i) => i.group === g).map((i) => i.slug),
+        );
+      }
+  });
+
+  it("matches the migration's allowed slugs (first definition)", () => {
     for (const g of STORED_STACK_GROUPS) {
       const m = MIGRATION.match(
         new RegExp(`'${g}', '(\\[[^\\]]*\\])'::jsonb`),

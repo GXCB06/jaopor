@@ -1,3 +1,4 @@
+import type { Screenshot } from "@/lib/media";
 import "server-only";
 import type { AiTool, Category } from "@/lib/catalog";
 import type { LookingFor } from "@/lib/links";
@@ -69,25 +70,26 @@ export async function getMoreStartups(
   startup: StartupRow,
   limit = 6,
 ): Promise<StartupRow[]> {
-  const [same, recent] = await Promise.all([
-    db()
-      .from("startups")
-      .select(SELECT)
-      .eq("category", startup.category)
-      .neq("id", startup.id)
-      .order("created_at", { ascending: false })
-      .limit(limit),
+  // Spec 6.4 step 7: same category first, then same province, then the newest.
+  const base = () =>
     db()
       .from("startups")
       .select(SELECT)
       .neq("id", startup.id)
       .order("created_at", { ascending: false })
-      .limit(limit),
+      .limit(limit);
+  const [same, local, recent] = await Promise.all([
+    base().eq("category", startup.category),
+    startup.province ? base().eq("province", startup.province) : null,
+    base(),
   ]);
-  if (same.error) throw same.error;
-  if (recent.error) throw recent.error;
+  for (const r of [same, local, recent]) if (r?.error) throw r.error;
   const seen = new Set<number>();
-  return [...(same.data as StartupRow[]), ...(recent.data as StartupRow[])]
+  return [
+    ...(same.data as StartupRow[]),
+    ...((local?.data ?? []) as StartupRow[]),
+    ...(recent.data as StartupRow[]),
+  ]
     .filter((s) => !seen.has(s.id) && seen.add(s.id))
     .slice(0, limit);
 }
@@ -257,4 +259,98 @@ export async function countStartups(): Promise<{
       .eq("verification_status", "verified"),
   ]);
   return { total: all.count ?? 0, verified: verified.count ?? 0 };
+}
+
+/**
+ * Spec 6.4 chart card data: zero-filled daily revenue + visitors and forward-filled MRR for the
+ * last `days` UTC days (enough for "12 months vs the previous 12"), as compact arrays.
+ */
+export type ChartSeries = {
+  /** First day (YYYY-MM-DD) of every array below. */
+  start: string;
+  /** Null before the first snapshot (no data yet ≠ zero), zero-filled after it. */
+  revenue: (number | null)[] | null;
+  /** Null until the first MRR snapshot; MRR is only snapshotted on sync days. */
+  mrr: (number | null)[] | null;
+  visitors: (number | null)[] | null;
+};
+
+export async function getChartSeries(
+  startup: StartupRow,
+  days = 730,
+): Promise<ChartSeries> {
+  // Ends yesterday: today is a partial day and would plunge the line to 0.
+  const now = Date.now() - 86_400_000;
+  const dayAt = (i: number) =>
+    new Date(now - (days - 1 - i) * 86_400_000).toISOString().slice(0, 10);
+  const start = dayAt(0);
+  const today = new Date(now + 86_400_000).toISOString().slice(0, 10);
+  const hasRevenue = startup.verification_status === "verified";
+  const hasTraffic = startup.visitors_30d !== null;
+
+  const [rev, traffic] = await Promise.all([
+    hasRevenue
+      ? db()
+          .from("revenue_snapshots")
+          .select("day, revenue_cents, mrr_cents")
+          .eq("startup_id", startup.id)
+          .gte("day", start)
+          .order("day")
+          .limit(days + 1)
+      : null,
+    hasTraffic
+      ? db()
+          .from("traffic_snapshots")
+          .select("day, visitors")
+          .eq("startup_id", startup.id)
+          .gte("day", start)
+          .order("day")
+          .limit(days)
+      : null,
+  ]);
+  if (rev?.error) throw rev.error;
+  if (traffic?.error) throw traffic.error;
+
+  let revenue: (number | null)[] | null = null;
+  let mrr: (number | null)[] | null = null;
+  if (rev?.data?.length) {
+    const byDay = new Map(rev.data.map((r) => [r.day, r]));
+    const firstRev = rev.data[0].day;
+    revenue = [];
+    mrr = [];
+    let last: number | null = null;
+    for (let i = 0; i < days; i++) {
+      const row = byDay.get(dayAt(i));
+      revenue.push(row?.revenue_cents ?? (dayAt(i) < firstRev ? null : 0));
+      if (row?.mrr_cents != null) last = row.mrr_cents;
+      mrr.push(last);
+    }
+    // Syncs write the current MRR on today's row: that's the latest level, so show it.
+    const todayMrr = byDay.get(today)?.mrr_cents;
+    if (todayMrr != null) mrr[days - 1] = todayMrr;
+    if (mrr.filter((v) => v !== null).length < 2) mrr = null;
+  }
+
+  let visitors: (number | null)[] | null = null;
+  if (traffic?.data?.length) {
+    const byDay = new Map(traffic.data.map((r) => [r.day, r.visitors]));
+    const first = traffic.data[0].day;
+    visitors = Array.from(
+      { length: days },
+      (_, i) => byDay.get(dayAt(i)) ?? (dayAt(i) < first ? null : 0),
+    );
+  }
+  return { start, revenue, mrr, visitors };
+}
+
+/** Spec 6.4 step 4: a startup's screenshots in display order (cover first). */
+export async function getScreenshots(startupId: number): Promise<Screenshot[]> {
+  const { data, error } = await db()
+    .from("startup_screenshots")
+    .select("id, path, kind, caption, width, height, position")
+    .eq("startup_id", startupId)
+    .order("position")
+    .order("id");
+  if (error) throw error;
+  return data as Screenshot[];
 }

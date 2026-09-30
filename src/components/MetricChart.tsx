@@ -13,25 +13,19 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  CHART_METRICS,
+  CHART_PERIODS,
+  chartWindow,
+  smooth,
+  type ChartMetric,
+  type ChartPeriod,
+} from "@/lib/chart-window";
 import { useCurrency } from "@/lib/currency";
-import { growthPct, money } from "@/lib/format";
+import type { ChartSeries } from "@/lib/data/startups";
+import { formatCompact, money } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { GrowthPill, Money } from "./StartupBits";
-
-type Point = { day: string; revenueCents: number };
-
-export const CHART_RANGES = [7, 30, 60] as const;
-type Range = (typeof CHART_RANGES)[number];
-
-const sum = (ps: Point[]) => ps.reduce((a, p) => a + p.revenueCents, 0);
-
-/** 7-day trailing average (the "Trend view" switch). */
-function smooth(values: number[]): number[] {
-  return values.map((_, i) => {
-    const w = values.slice(Math.max(0, i - 6), i + 1);
-    return Math.round(w.reduce((a, v) => a + v, 0) / w.length);
-  });
-}
+import { GrowthPill } from "./StartupBits";
 
 function Switch({
   checked,
@@ -66,82 +60,143 @@ function Switch({
   );
 }
 
+function CompactSelect<T extends string | number>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (v: T) => void;
+}) {
+  return (
+    <label className="relative">
+      <span className="sr-only">{label}</span>
+      <select
+        value={value}
+        onChange={(e) =>
+          onChange(
+            options.find((o) => String(o.value) === e.target.value)!.value,
+          )
+        }
+        className="h-7 appearance-none rounded-lg border bg-secondary pr-7 pl-2.5 text-caption font-medium"
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDownIcon
+        className="pointer-events-none absolute top-1/2 right-2 size-3 -translate-y-1/2 text-faint"
+        aria-hidden="true"
+      />
+    </label>
+  );
+}
+
 /**
- * Design.md §5 RevenueChartCard: headline total + growth pill, range dropdown, area chart
- * (--chart-1), optional dashed previous period (--chart-2) and 7-day trend. `series` is the
- * zero-filled daily revenue for the last 2 × 60 days, oldest first.
+ * Design.md §5 RevenueChartCard (spec 6.4 step 3): metric × period selects, period total +
+ * growth, area chart with optional previous period and trend, and the selected metric's source
+ * stamp. Only metrics with verified data are offered.
  */
-export function RevenueChart({
+export function MetricChart({
   series,
   thbPerUsd,
+  stamps,
 }: {
-  series: Point[];
+  series: ChartSeries;
   thbPerUsd: number | null;
+  /** Server-rendered "verified via … · updated …" line per metric. */
+  stamps: Partial<Record<ChartMetric, React.ReactNode>>;
 }) {
-  const currency = useCurrency();
-  const fmt = (cents: number, full = false) =>
-    money(cents, { currency, thbPerUsd, full });
   const t = useTranslations("Profile");
   const format = useFormatter();
-  const [range, setRange] = useState<Range>(30);
+  const currency = useCurrency();
+  const metrics = CHART_METRICS.filter((m) => series[m] !== null);
+  const [metric, setMetric] = useState<ChartMetric>(metrics[0] ?? "revenue");
+  const [period, setPeriod] = useState<ChartPeriod>(30);
   const [compare, setCompare] = useState(false);
   const [trend, setTrend] = useState(false);
   const gradientId = useId().replace(/:/g, "");
 
-  const current = series.slice(-range);
-  const previous = series.slice(-2 * range, -range);
-  const total = sum(current);
-  const growth = growthPct(total, sum(previous));
-
-  const cur = current.map((p) => p.revenueCents);
-  const prev = previous.map((p) => p.revenueCents);
+  const values = series[metric];
+  if (!values) return null;
+  const w = chartWindow(values, series.start, metric, period);
+  const cur = w.points.map((p) => p.value);
+  const prev = w.points.map((p) => p.previous);
   const curValues = trend ? smooth(cur) : cur;
   const prevValues = trend ? smooth(prev) : prev;
-  const data = current.map((p, i) => ({
+  const data = w.points.map((p, i) => ({
     day: p.day,
-    revenue: curValues[i],
-    previous: prevValues[i] ?? 0,
+    value: curValues[i],
+    previous: prevValues[i],
   }));
+
+  const isMoney = metric !== "visitors";
+  const fmt = (v: number | null, full = false) =>
+    v === null
+      ? "—"
+      : isMoney
+        ? money(v, { currency, thbPerUsd, full })
+        : full
+          ? format.number(v)
+          : formatCompact(v);
   const label = (day: string) =>
     format.dateTime(new Date(`${day}T00:00:00Z`), {
       day: "numeric",
       month: "short",
+      ...(period === 365 ? { year: "2-digit" } : {}),
     });
+  const periodLabel = (p: ChartPeriod) =>
+    p === 365 ? t("period365") : t("periodDays", { days: p });
+  const metricLabel = (m: ChartMetric) =>
+    m === "revenue"
+      ? t("metricRevenue")
+      : m === "mrr"
+        ? t("mrr")
+        : t("metricVisitors");
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2.5">
           <p className="text-3xl font-bold tracking-tight tabular-nums">
-            <Money cents={total} thbPerUsd={thbPerUsd} full />
+            {fmt(w.total, true)}
           </p>
-          <GrowthPill pct={growth} suffix={t("vsPrevShort")} />
+          <GrowthPill pct={w.growth} suffix={t("vsPrevShort")} />
         </div>
-        <label className="relative">
-          <span className="sr-only">{t("range")}</span>
-          <select
-            value={range}
-            onChange={(e) => setRange(Number(e.target.value) as Range)}
-            className="h-7 appearance-none rounded-lg border bg-secondary pr-7 pl-2.5 text-caption font-medium"
-          >
-            {CHART_RANGES.map((r) => (
-              <option key={r} value={r}>
-                {t("lastDays", { days: r })}
-              </option>
-            ))}
-          </select>
-          <ChevronDownIcon
-            className="pointer-events-none absolute top-1/2 right-2 size-3 -translate-y-1/2 text-faint"
-            aria-hidden="true"
+        <div className="flex gap-2">
+          {metrics.length > 1 && (
+            <CompactSelect
+              label={t("chartMetric")}
+              value={metric}
+              onChange={setMetric}
+              options={metrics.map((m) => ({
+                value: m,
+                label: metricLabel(m),
+              }))}
+            />
+          )}
+          <CompactSelect
+            label={t("range")}
+            value={period}
+            onChange={setPeriod}
+            options={CHART_PERIODS.map((p) => ({
+              value: p,
+              label: periodLabel(p),
+            }))}
           />
-        </label>
+        </div>
       </div>
 
       {compare && (
         <div className="flex gap-4 text-2xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <span className="h-0.5 w-4 rounded bg-chart-1" />
-            {t("lastDays", { days: range })}
+            {periodLabel(period)}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="h-0 w-4 border-t-2 border-dashed border-chart-2" />
@@ -150,7 +205,11 @@ export function RevenueChart({
         </div>
       )}
 
-      <div className="h-64 w-full" role="img" aria-label={t("chartTitle")}>
+      <div
+        className="h-64 w-full"
+        role="img"
+        aria-label={`${metricLabel(metric)} · ${periodLabel(period)}: ${fmt(w.total, true)}`}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
@@ -193,9 +252,13 @@ export function RevenueChart({
                 const row = payload[0].payload as (typeof data)[number];
                 return (
                   <div className="rounded-md border bg-popover px-2.5 py-1.5 text-caption">
-                    <p className="text-muted-foreground">{label(row.day)}</p>
+                    <p className="text-muted-foreground">
+                      {period === 365
+                        ? t("weekOf", { day: label(row.day) })
+                        : label(row.day)}
+                    </p>
                     <p className="font-bold tabular-nums">
-                      {fmt(row.revenue, true)}
+                      {fmt(row.value, true)}
                     </p>
                     {compare && (
                       <p className="text-muted-foreground tabular-nums">
@@ -214,25 +277,34 @@ export function RevenueChart({
                 strokeWidth={2}
                 strokeDasharray="4 4"
                 dot={false}
+                connectNulls
                 isAnimationActive={false}
               />
             )}
             <Area
               type="monotone"
-              dataKey="revenue"
+              dataKey="value"
               stroke="var(--chart-1)"
               strokeWidth={2}
               fill={`url(#${gradientId})`}
               activeDot={{ r: 4, stroke: "var(--card)", strokeWidth: 2 }}
+              connectNulls
               isAnimationActive={false}
             />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="flex flex-wrap gap-x-5 gap-y-2">
-        <Switch checked={compare} onChange={setCompare} label={t("compare")} />
-        <Switch checked={trend} onChange={setTrend} label={t("trend")} />
+      <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          <Switch
+            checked={compare}
+            onChange={setCompare}
+            label={t("compare")}
+          />
+          <Switch checked={trend} onChange={setTrend} label={t("trend")} />
+        </div>
+        {stamps[metric]}
       </div>
     </div>
   );

@@ -12,6 +12,54 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Spec Phase 2: detail page (chart, screenshots, founder message, logo-chip insights) + form 6.9
+
+**Done:**
+
+- **Chart card (spec 6.4 step 3, `MetricChart` + pure `lib/chart-window.ts`):**
+  - Metric (revenue / MRR / visitors, only those with data) × period (7 days / 30 days / 12 months, weekly points).
+  - Period total or latest MRR, growth vs the previous period, compare (dashed) and Trend switches.
+  - Per-metric source stamp ("ยืนยันผ่าน {Source} · อัปเดตล่าสุด").
+  - The series ends yesterday (today is partial), days before the first snapshot are empty (not 0), and today's MRR snapshot is folded in.
+  - Nothing verified → hidden for visitors, owner prompt "+ เชื่อมต่อ Stripe เพื่อแสดงกราฟ".
+  - No profit-margin pill: there is no cost data.
+- **Screenshots (spec 6.4 step 4, `ScreenshotGallery`):**
+  - Scroll-snap carousel; desktop shots in a browser frame (16:10, 720px / 88vw), mobile/LINE in a 9:19.5 phone frame; a single desktop shot is full width.
+  - Counter, ← → buttons, arrow keys, fade edges.
+  - Demo video as the first slide (click → YouTube-nocookie / Loom / TikTok embed).
+  - Lightbox (`<dialog>`: Esc/×/backdrop, ← → keys, swipe, caption, counter).
+  - Lazy loading after 2 images. A skeleton instead of blur (no blur data stored).
+- **Founder message card** (80px avatar, 18px/1.8 quote, name + role).
+- **Insights bento:**
+  - Value proposition full width, then 2 columns (market facts / product facts).
+  - **Logo chips** from a generated glyph map (`scripts/gen-glyphs.mts` → `lib/config/glyphs.ts`, 51 Simple Icons): brand colour when it reads at 3:1, a neutral otherwise (X, Vercel, Next.js, TikTok).
+  - Audience shows "~N ผู้ใช้".
+- **More startups:** same category, then same province, then newest.
+- **OG image:** the cover screenshot (WebP → JPEG via `sharp`, now a direct dependency) darkened behind the card.
+- **Form (spec 6.9):**
+  - `VocabCombobox` (searchable, keyboard, logo chips with ×): tech stack (grouped), channels (custom entries allowed), province (single, grouped by region, required when the country is Thailand).
+  - Founder message counter (≤600) + role.
+  - Demo video link (validated like the DB).
+  - `ScreenshotsManager` in the edit page and the wizard's step 2: drag & drop / paste / click, PNG/JPG/WebP ≤ 5MB, max 8; browser resize ≤ 2400px + WebP re-encode (drops EXIF/GPS); kind auto from aspect ratio (switchable to LINE); caption; reorder by drag or ← → buttons; the first is the cover.
+  - Deleting a project removes its screenshot files first.
+- **a11y:** the language switch's accessible name now includes its visible text (+ `lang`). The header fits at 360px.
+- **Drafted, NOT applied:** migration `stack_custom_entries` (custom tech-stack entries in an `other` group). Waiting for SQL approval.
+
+**Files:** `src/components/{MetricChart,ProfileBlocks,LocaleSwitch,SiteHeader,DashboardActions}.tsx`, `src/components/core/LogoChip.tsx`, `src/components/profile/ScreenshotGallery.tsx`, `src/components/wizard/{VocabCombobox,ScreenshotsManager,vocab-options,StartupEditForm,StartupWizard,fields}.tsx`, `src/lib/{chart-window,media,og-cover}.ts`, `src/lib/config/{glyphs,display}.ts`, `src/lib/data/startups.ts`, `src/app/[locale]/startup/[slug]/{page,opengraph-image}.tsx`, `src/app/[locale]/dashboard/[id]/edit/page.tsx`, `scripts/gen-glyphs.mts`, `supabase/migrations/20260930082846_stack_custom_entries.sql` (draft), `messages/*.json`, `Design.md`, `tsconfig.json`; removed `RevenueChart.tsx`
+**Verified:**
+
+- `npm test` 153/153 (new: chart window math, video embeds, kind detection, resize, drift check over every vocab-trigger migration) · typecheck ✓ · lint ✓ · build ✓
+- **Lighthouse accessibility 100** on `/th/startup/demo-raandee-pos`, `/th/startup/jaopor` and `/en/startup/mrrmafia`.
+- Browser pane:
+  - RaanDee chart: revenue 30 days, switches to visitors / 12 months ("ผู้เข้าชม · 12 เดือน").
+  - RaakaDee bento with brand-coloured logo chips (light theme).
+  - 360/375px: no horizontal scroll on profiles, home and directory.
+- **Not verified:**
+  - Owner flows need a signed-in session: uploading/reordering screenshots, the comboboxes, saving the edit form, the gallery/lightbox with real images and the OG cover.
+  - Safari may not encode WebP from canvas; the form then shows a "use Chrome/Edge/Firefox" message.
+
+**Next:** user approves `stack_custom_entries` SQL; user signs in (browser pane or own browser) to test uploads + form
+
 ## 2026-09-30 — Spec Phase 1 (part 2): migration applied, app moved to the shared configs
 
 **Done:**

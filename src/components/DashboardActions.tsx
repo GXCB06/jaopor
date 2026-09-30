@@ -77,10 +77,17 @@ export function DashboardActions({
   async function remove() {
     if (!window.confirm(t("deleteConfirm", { name }))) return;
     setBusy(true);
-    const { error } = await createClient()
-      .from("startups")
-      .delete()
-      .eq("id", id);
+    const db = createClient();
+    // Storage can't cascade from SQL: remove the project's screenshot files first (the owner's
+    // storage policies allow it), then the row (screenshot rows cascade).
+    const { data: files } = await db.storage
+      .from("screenshots")
+      .list(String(id), { limit: 100 });
+    if (files?.length)
+      await db.storage
+        .from("screenshots")
+        .remove(files.map((f) => `${id}/${f.name}`));
+    const { error } = await db.from("startups").delete().eq("id", id);
     setBusy(false);
     if (error) return toast.error(errors("server"));
     toast.success(t("deleted"));
