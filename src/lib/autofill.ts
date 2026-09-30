@@ -158,15 +158,17 @@ export function clamp(
   return `${(at > max * 0.6 ? cut.slice(0, at) : cut).trim()}…`;
 }
 
-/** Free draft without any AI: the page's own title/description + JSON-LD price. */
+/**
+ * Free draft without any AI: only what the page says about itself (meta description / first
+ * heading, JSON-LD price). Page headings are not stitched into the description: on real sites
+ * they are mostly navigation and card titles, which reads as noise.
+ */
 export function heuristicDraft(page: PageInfo): AutofillDraft {
   const draft: AutofillDraft = {};
-  const tagline = page.description || page.headings[0] || "";
-  draft.tagline = clamp(tagline, 140);
-  const long = [page.description, ...page.headings.slice(0, 4)]
-    .filter(Boolean)
-    .join("\n");
-  if (long && long !== draft.tagline) draft.description = clamp(long, 700);
+  draft.tagline = clamp(page.description || page.headings[0], 140);
+  // A long meta description is a better description than a clipped tagline.
+  if (page.description.length > 140)
+    draft.description = clamp(page.description, 700);
   if (page.price) {
     if (page.price.amount === 0) draft.pricingPeriod = "free";
     else if (
@@ -174,12 +176,14 @@ export function heuristicDraft(page: PageInfo): AutofillDraft {
     )
       draft.pricingNote = `${page.price.currency} ${page.price.amount}`;
   }
+  for (const k of Object.keys(draft) as (keyof AutofillDraft)[])
+    if (draft[k] === undefined) delete draft[k];
   return draft;
 }
 
-const STACK_SLUGS: string[] = STACK_LIST.filter((i) => i.group !== "built_with").map(
-  (i) => i.slug,
-);
+const STACK_SLUGS: string[] = STACK_LIST.filter(
+  (i) => i.group !== "built_with",
+).map((i) => i.slug);
 
 /** Gemini `responseSchema` (OpenAPI subset) for the draft. */
 export const DRAFT_SCHEMA = {

@@ -214,27 +214,32 @@ export function StartupEditForm({
   };
 
   // Deep link (#field from the profile's "+ Add"): open that field's section, then highlight it.
+  // Runs on load and on in-page hash changes.
   useEffect(() => {
-    const id = decodeURIComponent(window.location.hash.slice(1));
-    const el = id ? document.getElementById(id) : null;
-    const section = el?.closest<HTMLElement>("[data-section]")?.dataset
-      .section as SectionId | undefined;
-    if (!el || !section) return;
-    setActive(section);
-    const timer = setTimeout(() => {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      el.classList.add("ring-2", "ring-brand/60", "rounded-md");
-      el.querySelector<HTMLElement>("input, textarea, select")?.focus({
-        preventScroll: true,
-      });
-    }, 50);
-    const clear = setTimeout(
-      () => el.classList.remove("ring-2", "ring-brand/60"),
-      2600,
-    );
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const open = () => {
+      const id = decodeURIComponent(window.location.hash.slice(1));
+      const el = id ? document.getElementById(id) : null;
+      const target = el?.closest<HTMLElement>("[data-section]")?.dataset
+        .section as SectionId | undefined;
+      if (!el || !target) return;
+      setActive(target);
+      timers.push(
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.classList.add("ring-2", "ring-brand/60", "rounded-md");
+          el.querySelector<HTMLElement>("input, textarea, select")?.focus({
+            preventScroll: true,
+          });
+        }, 50),
+        setTimeout(() => el.classList.remove("ring-2", "ring-brand/60"), 2600),
+      );
+    };
+    open();
+    window.addEventListener("hashchange", open);
     return () => {
-      clearTimeout(timer);
-      clearTimeout(clear);
+      window.removeEventListener("hashchange", open);
+      timers.forEach(clearTimeout);
     };
   }, []);
 
@@ -562,11 +567,11 @@ export function StartupEditForm({
         </p>
       )}
 
-      <div className="grid gap-5 lg:grid-cols-[14rem_1fr]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[14rem_minmax(0,1fr)]">
         {/* Section nav: sticky column on desktop, scrolling chips on mobile */}
         <nav
           aria-label={e("sectionsLabel")}
-          className="lg:sticky lg:top-20 lg:self-start"
+          className="min-w-0 lg:sticky lg:top-20 lg:self-start"
         >
           <ul className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0">
             {SECTIONS.map(({ id, icon: Icon }) => {

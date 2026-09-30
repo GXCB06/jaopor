@@ -36,7 +36,8 @@ describe("heuristicDraft (no AI)", () => {
     expect(d.tagline).toBe(
       "POS บนเว็บสำหรับร้านค้าไทย & ร้านกาแฟ พิมพ์ใบเสร็จ ตัดสต็อก",
     );
-    expect(d.description).toContain("เปิดร้านได้ใน 10 นาที");
+    // Short meta description: used as the tagline only; headings are never stitched in.
+    expect(d.description).toBeUndefined();
     expect(d.pricingNote).toBe("THB 299");
   });
 
