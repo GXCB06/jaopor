@@ -25,11 +25,11 @@ export function LocaleSwitch() {
         )
       }
     >
-      <span className="sm:hidden">
+      <span className="lg:hidden">
         {t("languageShort")}
         <span className="sr-only"> {t("language")}</span>
       </span>
-      <span className="hidden sm:inline">{t("language")}</span>
+      <span className="hidden lg:inline">{t("language")}</span>
     </button>
   );
 }

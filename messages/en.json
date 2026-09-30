@@ -33,7 +33,9 @@
     "languageShort": "TH",
     "currencyThb": "Show amounts in Thai baht (฿)",
     "currencyUsd": "Show amounts in US dollars ($)",
-    "account": "Your account"
+    "account": "Your account",
+    "categories": "Categories",
+    "menu": "Menu"
   },
   "Footer": {
     "tagline": "The permanent home for AI-built projects from Thailand and Asia. Real work, real numbers.",
@@ -43,7 +45,8 @@
     "privacy": "Privacy",
     "terms": "Terms",
     "keySafety": "How we handle your key",
-    "builtWith": "Built with JaoPor.dev in Thailand"
+    "builtWith": "Built with JaoPor.dev in Thailand",
+    "allCategories": "All categories"
   },
   "Home": {
     "subline": "Show what you built with AI in one place people can search and share, with revenue and users verified straight from the source, not screenshots.",
@@ -629,5 +632,11 @@
     "seeAll": "See all results for “{q}”",
     "close": "Close search",
     "sectionTitle": "Find more products"
+  },
+  "Categories": {
+    "title": "Explore categories",
+    "subtitle": "Explore products across {n} categories",
+    "breadcrumb": "Categories",
+    "projects": "{count, plural, one {project} other {projects}}"
   }
 }

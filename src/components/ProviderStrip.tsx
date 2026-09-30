@@ -35,6 +35,7 @@ function Tile({
   return (
     <li className="group relative">
       <span
+        role="img"
         tabIndex={0}
         aria-label={label}
         // Brand colours come from the logo data (Design.md §5 ProviderStrip exception).

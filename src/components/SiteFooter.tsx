@@ -28,6 +28,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/categories" className={link}>
+                {nav("categories")}
+              </Link>
+            </li>
+            <li>
               <Link href="/new" className={link}>
                 {nav("addStartup")}
               </Link>
@@ -55,6 +60,12 @@ export function SiteFooter() {
               </li>
             ))}
           </ul>
+          <Link
+            href="/categories"
+            className="mt-3 inline-block text-caption text-brand-text hover:underline"
+          >
+            {t("allCategories")} →
+          </Link>
         </div>
         <div>
           <h3 className="mb-3 text-3xs font-semibold tracking-wider text-faint uppercase">

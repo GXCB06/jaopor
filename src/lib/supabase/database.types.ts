@@ -475,6 +475,13 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      category_counts: {
+        Args: never;
+        Returns: {
+          category: string;
+          startups: number;
+        }[];
+      };
       search_startups: {
         Args: { max_rows?: number; q: string };
         Returns: {

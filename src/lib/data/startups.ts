@@ -421,3 +421,24 @@ export async function popularStartups(max = 5): Promise<SearchHit[]> {
     is_demo: r.is_demo,
   }));
 }
+
+/**
+ * Spec 6.6: listed (published, non-demo) startups per category slug. Uses the grouped
+ * `category_counts()` RPC; until that migration exists it counts the category column here.
+ */
+export async function getCategoryCounts(): Promise<Record<string, number>> {
+  const rpc = await db().rpc("category_counts");
+  if (!rpc.error)
+    return Object.fromEntries(
+      (rpc.data ?? []).map((r) => [r.category, Number(r.startups)]),
+    );
+  const { data, error } = await db()
+    .from("startups")
+    .select("category")
+    .eq("is_demo", false)
+    .limit(5000);
+  if (error) throw error;
+  const out: Record<string, number> = {};
+  for (const r of data) out[r.category] = (out[r.category] ?? 0) + 1;
+  return out;
+}

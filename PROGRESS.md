@@ -12,6 +12,35 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Spec Phase 5: categories page; header fits every width; fresh pages after delete
+
+**Done:**
+
+- **Deleted projects still showing on home (user report):** home, leaderboard and directory are ISR pages, so after an idle period the first visitor gets the old copy (production had a 495 s-old STALE page that refreshed on the next request). Deleting now calls `revalidateDeleted(slug)`, which purges profile + home + directory in both locales. It only acts when the slug no longer exists publicly.
+- **`/[locale]/categories`** (spec 6.6):
+  - Breadcrumb, "สำรวจหมวดหมู่", "สำรวจผลงานใน 37 หมวดหมู่".
+  - 4/2/1-column grid of all 37 categories: 48px icon box + count pill, then name + 2-line description. Cards link to `/startups?category=`.
+  - Sorted by count, then config order. Zero-count cards come last and are dimmed without losing text contrast.
+  - Bottom QuickSearch section.
+- **Counts:** `getCategoryCounts()` uses the `category_counts()` RPC (listed, non-demo projects). Migration **drafted, not applied**; until it exists the page counts the category column (same result).
+- **Nav:** "หมวดหมู่" in the header and footer + "ดูทุกหมวดหมู่ →" under the footer category list.
+- **Header rework** (the new link made it overflow at 768px; EN at 360px was 8px over):
+  - Nav links from `lg`.
+  - New **MobileNav** menu below `lg` (สตาร์ทอัพ · หมวดหมู่ · กระดานผู้นำ · แดชบอร์ด, plus language + theme below `sm`).
+  - Sign-in is an icon below `sm`; THB/USD and the language's full name only from `lg`.
+- **a11y:** ProviderStrip logo tiles get `role="img"` (aria-label on a plain span was flagged).
+
+**Files:** `supabase/migrations/20260930133313_category_counts.sql` (draft), `src/lib/supabase/database.types.ts`, `src/lib/data/startups.ts`, `src/app/[locale]/categories/page.tsx`, `src/app/actions/revalidate.ts`, `src/components/{SiteHeader,SiteFooter,MobileNav,HeaderAuth,LocaleSwitch,CurrencyToggle,ProviderStrip,DashboardActions}.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- Counts equal the SQL grouped count (ai = 1, 36 × 0).
+- **Lighthouse accessibility 100** on `/th/categories` and `/th`.
+- Widths 360/375/640/768/1024/1280: `scrollWidth == clientWidth` everywhere (menu below lg, nav from lg). The phone menu lists 6 items.
+- `npm test` 170/170 · typecheck ✓ · lint ✓ · build ✓ (categories prerendered th/en).
+- Production home refreshed to the 6 remaining projects.
+
+**Next:** user approves `category_counts` SQL; Phase 6 (province Olympics)
+
 ## 2026-09-30 — Spec Phase 4: QuickSearch + search_startups; delete/disconnect confirm fix
 
 **Done:**

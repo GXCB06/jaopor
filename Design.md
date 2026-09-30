@@ -122,9 +122,10 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 ### SiteHeader (sticky, ledgerly pattern)
 
-- `sticky top-0 z-40 border-b bg-background`, `h-14`, inner `max-w-6xl`.
-- Left: `BrandLogo` = `<Logo>` (blue app tile 28px + "JaoPor" `font-extrabold tracking-[-0.02em]`); links home. Gaps `gap-3` below md so the header fits 375px. Nav links `text-xs text-muted-foreground hover:text-foreground` (active `text-foreground`): **Startups · Leaderboard (`/#leaderboard`) · Dashboard**. Hidden below `md`.
-- Right: **CurrencyToggle** (฿/$, §3 Currency), **search trigger** (`h-8 rounded-md border bg-card px-2.5 text-xs text-faint` with a search icon, "ค้นหา", and a `kbd` "/"; pressing `/` anywhere focuses the page search or opens `/startups`), primary **"+ เพิ่ม Startup"** (`h-8`, icon-only below `sm`), HeaderAuth (signed out: "เข้าสู่ระบบ" `whitespace-nowrap`; signed in: a `size-8` round avatar button (photo or letter) opening a DropdownMenu with the email, แดชบอร์ด and ออกจากระบบ), TH/EN (short code `EN`/`TH` below `sm`), ThemeToggle.
+- `sticky top-0 z-40 border-b bg-background`, `h-14`, inner `max-w-6xl`, gaps `gap-3` (`md:gap-6`).
+- Left: `BrandLogo` = `<Logo>` (blue app tile 28px + "JaoPor"). **Nav links from `lg`** (`text-xs text-muted-foreground hover:text-foreground`): สตาร์ทอัพ · หมวดหมู่ · กระดานผู้นำ · แดชบอร์ด (โอลิมปิก added in Phase 6).
+- Right: **CurrencyToggle** (฿/$; "THB/USD" text from `lg`), **search trigger** (`/` shortcut), primary **"+ เพิ่ม Startup"** (icon-only below `sm`), **HeaderAuth** (signed out: "เข้าสู่ระบบ" from `sm`, a `LogIn` icon button below; signed in: avatar menu), TH/EN (full name from `lg`) and ThemeToggle (both from `sm`), then **MobileNav** below `lg`: a `size-8` `Menu` icon button opening a DropdownMenu with the nav links, and below `sm` also the language switch and the theme switch.
+- Must fit 360px (no horizontal scroll) and 768px.
 
 ### Hero (home and directory)
 
@@ -275,6 +276,14 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
 - **Chart** 1200×630: period total + "รายได้ · {period}", logo + name chip, line + 18% area in the chosen colour, verified footer. 12 months = monthly points.
 - **Calendar** 1200×630: GitHub-style heatmap where every cell is a **"$" glyph ("฿" for THB projects: pricing in THB, or Thai projects without a price)**, 5 levels from `grid` gray to the chosen colour; month labels on top, จ./พ./ศ./อา. (Mon/Wed/Fri/Sun) on the left; legend "น้อย ฿ ฿ ฿ ฿ ฿ มาก".
 - Verified numbers only; demo projects never get numbers.
+
+### Categories page (`/[locale]/categories`, spec 6.6, Phase 5)
+
+- `main max-w-6xl`: breadcrumb (`text-2xs text-faint`: JaoPor › หมวดหมู่) → H1 "สำรวจหมวดหมู่" (`text-2xl font-bold`) → subtitle "สำรวจผลงานใน {n} หมวดหมู่" (`text-body text-muted-foreground`).
+- Grid `grid gap-3 sm:grid-cols-2 lg:grid-cols-4`. **CategoryCard** = `Card interactive p-4 flex flex-col gap-3` link to `/startups?category={slug}`: top row = 48px icon box (`size-12 rounded-lg border bg-background`, lucide icon `size-5`) + count pill on the right (`rounded-full border bg-secondary text-2xs`, bold number + "ผลงาน"); below, full width, name `text-sm font-bold` and description `text-caption text-muted-foreground line-clamp-2` (stacked so Thai names don't wrap into a narrow column at 4 columns).
+- Sorted by count (desc), then config order. Count 0 → last and dimmed without losing contrast: icon box `opacity-40`, name `text-muted-foreground`; the count pill keeps full contrast (still a link).
+- Counts = listed projects (published, demo excluded) from `category_counts()`.
+- Bottom QuickSearch section.
 
 ### Directory (`/startups`, Figma "Marketplace")
 

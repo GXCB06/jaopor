@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { SourceId } from "@/lib/sources/catalog";
+import { revalidateDeleted } from "@/app/actions/revalidate";
 import { useConfirm } from "@/components/core/useConfirm";
 import { createClient } from "@/lib/supabase/client";
 
@@ -104,6 +105,8 @@ export function DashboardActions({
     const { error } = await db.from("startups").delete().eq("id", id);
     setBusy(false);
     if (error) return toast.error(errors("server"));
+    // Home cards, leaderboard and the directory are cached (ISR): purge them now.
+    await revalidateDeleted(slug);
     toast.success(t("deleted"));
     router.refresh();
   }

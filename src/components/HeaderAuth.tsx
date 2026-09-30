@@ -1,7 +1,7 @@
 "use client";
 
 import type { User } from "@supabase/supabase-js";
-import { LayoutDashboardIcon, LogOutIcon } from "lucide-react";
+import { LayoutDashboardIcon, LogInIcon, LogOutIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -40,9 +40,11 @@ export function HeaderAuth() {
     return (
       <Link
         href="/login"
-        className="text-xs font-medium whitespace-nowrap text-muted-foreground hover:text-foreground"
+        aria-label={t("signIn")}
+        className="inline-flex h-8 items-center text-xs font-medium whitespace-nowrap text-muted-foreground hover:text-foreground max-sm:size-8 max-sm:justify-center max-sm:rounded-md max-sm:hover:bg-accent"
       >
-        {t("signIn")}
+        <LogInIcon className="size-4 sm:hidden" aria-hidden="true" />
+        <span className="hidden sm:inline">{t("signIn")}</span>
       </Link>
     );
   }

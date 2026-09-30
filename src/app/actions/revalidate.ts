@@ -26,3 +26,24 @@ export async function revalidateStartup(startupId: number): Promise<void> {
     revalidatePath(`/${locale}/startups`);
   }
 }
+
+/**
+ * After an owner deletes a project: purge the cached pages that listed it (home cards and
+ * leaderboard, directory, its own profile). Anyone may call this, but it only acts when the slug
+ * no longer exists publicly, so it can't be used to churn the cache of live projects.
+ */
+export async function revalidateDeleted(slug: string): Promise<void> {
+  if (!/^[a-z0-9-]{1,50}$/.test(slug)) return;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("startups")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (data) return;
+  for (const locale of routing.locales) {
+    revalidatePath(`/${locale}/startup/${slug}`);
+    revalidatePath(`/${locale}`);
+    revalidatePath(`/${locale}/startups`);
+  }
+}

@@ -5,6 +5,7 @@ import { BrandLogo } from "./BrandLogo";
 import { CurrencyToggle } from "./CurrencyToggle";
 import { HeaderAuth } from "./HeaderAuth";
 import { LocaleSwitch } from "./LocaleSwitch";
+import { MobileNav } from "./MobileNav";
 import { SearchShortcut } from "./SearchShortcut";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -20,9 +21,12 @@ export function SiteHeader() {
         <Link href="/" className="shrink-0 text-sm">
           <BrandLogo />
         </Link>
-        <nav className="hidden items-center gap-5 md:flex">
+        <nav className="hidden items-center gap-5 lg:flex">
           <Link href="/startups" className={navLink}>
             {t("startups")}
+          </Link>
+          <Link href="/categories" className={navLink}>
+            {t("categories")}
           </Link>
           <Link
             href={{ pathname: "/", hash: "leaderboard" }}
@@ -46,8 +50,12 @@ export function SiteHeader() {
             <span className="hidden sm:inline">{t("addStartup")}</span>
           </Link>
           <HeaderAuth />
-          <LocaleSwitch />
-          <ThemeToggle />
+          {/* Below sm the language and theme switches live in MobileNav's menu. */}
+          <div className="hidden items-center gap-3 sm:flex">
+            <LocaleSwitch />
+            <ThemeToggle />
+          </div>
+          <MobileNav />
         </div>
       </div>
     </header>
