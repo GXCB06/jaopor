@@ -350,3 +350,182 @@ Used in the nav (`/` shortcut), the hero, and a **bottom section** above the foo
 | **7. Home polish**                 | 6.2 teasers, CTA de-dupe, count hiding                                                                                                                                             | home works with 2 startups and with 200                                                                               |
 
 After every phase: a list of changed files, anything I need to do manually (env vars, Supabase settings), and what to test by hand.
+
+---
+
+## 10. Phase 8: Live visitors (free, self-hosted)
+
+Build a live-visitors feature using only Supabase Realtime + Vercel geo:
+
+1. Middleware / route handler reads geolocation() from @vercel/functions
+   (country, city, lat, lng) and exposes it to the client. Round lat/lng
+   to 1 decimal and add random jitter of ±0.05. Never send the IP.
+2. Client: a stable anonymous identity in localStorage: a DiceBear
+   avatar (generated locally with @dicebear/core, "notionists" style —
+   check the style's license) and a random name from
+   unique-names-generator (color + animal).
+3. One Supabase Realtime channel "live-visitors":
+   - presence.track({ id, name, avatar, country, city, lat, lng, path })
+   - update path on route change; broadcast "page_view" events for
+     the activity feed
+   - connect only while the map section is visible or the tab is
+     focused; disconnect on visibilitychange hidden.
+4. Home section "ตอนนี้มีคนดูอยู่" (replace the old live-visitors idea):
+   - default: SVG Thailand map by province (reuse provinces config),
+     avatar pins clustered per province with count badges
+   - toggle "🌏 ทั่วโลก": MapLibre GL with OpenFreeMap dark tiles
+   - top-left overlay: green live dot + "{n} คนกำลังดู JaoPor",
+     rows for Countries / Devices / top pages
+   - bottom-left: activity feed, last 4 events, "เมื่อสักครู่"
+   - × to hide (remembered in localStorage)
+5. Startup detail: small "👀 {n} คนกำลังดูผลงานนี้" pill when n ≥ 2.
+6. Graceful fallback: if Realtime fails or we hit the connection limit,
+   show only a count polled every 30s from a cached endpoint.
+7. Add a line to /privacy about anonymous city-level live location.
+   No new paid services.
+
+---
+
+## 11. Phase 9: Builder profiles & dashboard
+
+Visual source of truth: `docs/design/profile.png`, `docs/design/dashboard.png`.
+
+GOAL
+JaoPor becomes a networking platform where founders find co-founders.
+Profiles are built on PROOF (verified numbers, real commits, shipped
+products), not self-claims.
+
+ROUTES
+
+- Public profile: /[locale]/u/[username], with a rewrite so /@username
+  works too. Do NOT create a folder named "@username": in the App Router,
+  "@" folders are parallel routes.
+- Dashboard: /[locale]/dashboard (overview) plus subpages: startups,
+  profile, requests, saved, connections, settings. Extend the existing
+  dashboard; don't duplicate it.
+- Directory: /[locale]/builders (basic version, see 9c).
+
+9a. DATA MODEL (migrations, RLS on every table, show the SQL first)
+
+- profiles (extend the existing user/profile table if there is one):
+  username (unique, lowercase, 3–30 chars, block reserved words like
+  admin/dashboard/api/new/u), display_name, headline (≤80), bio (≤280),
+  avatar_url, province (slug from provinces config), status enum:
+  looking_cofounder | open_to_work | networking | busy.
+  looking_for jsonb {roles[], offer, commitment, deal, location,
+  industries[]}.
+  social_links jsonb {x, linkedin, github, facebook, youtube, tiktok,
+  website}.
+  show_in_directory bool (default true).
+  field_visibility jsonb (public | members | hidden, per field).
+- private_contacts (user_id, line_id, email): readable ONLY by the owner
+  and by users whose contact request that owner accepted. Never select
+  it in public queries.
+- skills config file /lib/config/skills.ts, grouped: Engineering,
+  Product, Design, Growth/Marketing, Sales, Ops/Finance, AI.
+  profile_skills (user_id, skill_slug, is_superpower, position). Max 3
+  superpowers, max 20 skills.
+- positions (user_id, title, company, start_date, end_date nullable,
+  description ≤200, position).
+- startup_members (startup_id, user_id, role enum
+  founder|cofounder|maker|contributor, status
+  pending|confirmed|declined, invited_by, created_at). Membership needs
+  BOTH sides: the owner invites and the member accepts, or the member
+  requests and the owner approves. Migrate existing startup owners in as
+  confirmed founders. Only confirmed members show on profiles.
+- follows (follower_id, following_id, created_at).
+- contact_requests (from_id, to_id, topic enum
+  cofounder|job|collab|other, message ≤500, status
+  pending|accepted|declined|blocked, created_at). Limit: 5 new requests
+  per sender per day, 1 pending request per pair. Must be logged in.
+- profile_views (profile_id, day, viewer_hash): unique per day. The hash
+  is made from a salted anonymous id; never store IPs.
+- Badges are COMPUTED, not stored: รุ่นบุกเบิก #N (first 100 users),
+  Verified Builder (≥1 verified startup), MRR milestones (฿1k / ฿10k /
+  ฿100k), streak (days in a row with activity).
+
+9b. PUBLIC PROFILE (match docs/design/profile.png)
+Layout: sticky left sidebar (296px) plus main column; stacked on mobile.
+
+- Sidebar: large avatar with a status dot, name, @username, status pill,
+  bio, buttons "ติดต่อ" (opens the contact request modal) and "ติดตาม",
+  follower counts, info list (province link + Olympics rank, current
+  role, website, socials). "ขอ LINE / อีเมล" is shown locked until a
+  request is accepted. Then badges, skills (3 superpowers highlighted in
+  accent), "สร้างด้วย" tools (from the stack config), and "รายงานผู้ใช้นี้".
+- Main:
+  1. "กำลังมองหา" card in accent color, only when status is
+     looking_cofounder or open_to_work. Shows ต้องการ chips, สิ่งที่ฉันมีให้,
+     ข้อตกลง, and a "ส่งคำขอคุย" button.
+  2. Proof strip: number of works, verified revenue/month (sum of
+     confirmed startups, converted to THB), GitHub stars, months building.
+     Verified numbers only; hide any stat that is 0 or unverified.
+  3. "ผลงานที่ปักหมุด": 2-column cards (up to 6, the owner picks the
+     order) with logo, name, role chip, description, main metric + growth,
+     and verified source.
+  4. Activity heatmap, GitHub-style, in accent shades: 53 weeks × 7 days
+     with Thai month labels and จ./พ./ศ. Counts GitHub commits (from the
+     existing GitHub sync), days with verified revenue, and startup
+     updates. Has a year switcher and a "น้อย … มาก" legend. Built from a
+     daily aggregated view, not calculated on each request.
+  5. Two columns: ประสบการณ์ timeline | กิจกรรมล่าสุด (auto events:
+     milestones, launches, badges, commit bursts).
+- Visitors never see empty sections; the owner sees dashed "+ เพิ่ม…"
+  prompts instead (same empty-state rule as SPEC 2.4).
+- OG image: avatar, name, headline, status, and verified revenue.
+- Link founders' avatars and names on startup detail pages to their
+  profiles.
+
+9c. DIRECTORY /builders (basic)
+Left filters (skill, province/region, status, สร้างด้วย, verified only)
+and a 3-column grid of compact cards (avatar, name, headline, status
+pill, top 3 skills, "N ผลงาน · ฿X/เดือน"). Only profiles with
+show_in_directory = true. Add a "คน" group to QuickSearch.
+
+9d. OWNER DASHBOARD (match docs/design/dashboard.png)
+
+- Sidebar: logo, ภาพรวม, ผลงานของฉัน (count), โปรไฟล์ของฉัน, คำขอคุย
+  (unread badge), ที่บันทึกไว้, การเชื่อมต่อ, ตั้งค่า. Section
+  "คอมมูนิตี้": คนสร้าง, หา Co-founder (disabled with "เร็ว ๆ นี้").
+  Bottom: user card + theme / language / log out icon buttons.
+- Header: "สวัสดี, {name}", a weekly views line, "ดูโปรไฟล์สาธารณะ ↗",
+  and "+ เพิ่มผลงาน".
+- Setup checklist: progress bar plus 6 items computed from data
+  (account, first startup, province, connect a verification provider,
+  skills + status, 3 screenshots). The next undone item is highlighted
+  in accent. Hide the whole card once all 6 are done.
+- "ผลงานของฉัน" table: columns ผลงาน | ผู้เข้าชม (7d) | อันดับ | MRR |
+  actions (edit / share / view, icon buttons with aria-labels).
+  Unverified rows show an inline amber banner: "เชื่อมต่อเพื่อขึ้นกระดาน
+  ผู้นำและโอลิมปิกจังหวัด" + "เชื่อมต่อ Stripe" + "ตัวเลือกอื่น".
+  Below the table, two dashed tiles, clearly different:
+  "เพิ่มผลงานใหม่" (never listed before) and "อ้างสิทธิ์ผลงาน"
+  (already listed by someone else; verify with a read-only API key).
+- Right column: "คำขอคุย" preview (the 2 latest pending, with
+  accept / skip, and a note "LINE / อีเมลจะแสดงหลังกดยอมรับเท่านั้น"),
+  and "โปรไฟล์ 7 วันที่ผ่านมา": views, and requests. Don't add the
+  "ค้นหาเจอ" (search appearances) stat unless we log search impressions;
+  leave it out for now.
+- Profile editor (dashboard/profile): every field above, with a live
+  preview link. Username change has an availability check. Drag to
+  reorder skills, positions and pinned works.
+- Requests page (dashboard/requests): inbox list; accepting reveals
+  private contacts to both sides and sends an email notification.
+  Also block and report.
+
+9e. ONBOARDING
+After the first login: choose a username (live availability check) →
+headline + province → status → skills (optional, skippable). Then land on
+the dashboard with the checklist.
+
+PRIVACY (PDPA)
+Contact details are only revealed after an accepted request. Every field
+has visibility settings. Directory opt-out. Report + block. Explain it
+on /privacy. Deleting an account removes the profile, skills, positions,
+follows, requests and memberships.
+
+BUILD ORDER (stop after each)
+9a migrations → 9d dashboard + profile editor + onboarding → 9b public
+profile → 9c directory.
+Done = lint/typecheck/build pass, RLS tested (another user can't read
+private_contacts or edit someone's profile), and pages work at 375px.

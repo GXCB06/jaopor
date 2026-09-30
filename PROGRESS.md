@@ -12,6 +12,23 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Phase 8 + 9 briefs recorded; Phase 9a migration drafted (not applied)
+
+**Done:**
+
+- Appended the user's Phase 8 (live visitors) and Phase 9 (builder profiles & dashboard) briefs to `docs/SPEC.md` §10–11, as the Phase 9 brief asks.
+- **Drafted, NOT applied:** `supabase/migrations/20260930155147_builder_profiles.sql`:
+  - profiles: headline, bio, province, status, looking_for, social_links, show_in_directory, field_visibility (jsonb shapes checked by a trigger); `handle` = username (+ reserved words). Clients can no longer select the visibility-controlled columns: `get_profile(handle)` masks them, `get_my_profile()` returns the owner's row, `handle_available()` for the username check.
+  - New tables private_contacts, profile_skills (50-skill vocabulary, ≤ 20, ≤ 3 superpowers), positions, startup_members (two-sided, owners back-filled as confirmed founders + trigger for new startups), follows, contact_requests (5/day, 1 pending per pair, block), profile_views, user_reports, build_activity; activity rollup as a private materialized view (`refresh_activity()` for the cron, `profile_activity()` to read).
+  - Review fix: the two guard triggers are SECURITY INVOKER (a definer function sees `current_user` = owner, which would have skipped every client check).
+- Checked Phase 8 dependencies: DiceBear notionists art is CC0 1.0 (code MIT, needs `@dicebear/core` 9), unique-names-generator MIT, maplibre-gl BSD-3, @vercel/functions Apache-2.0; OpenFreeMap `dark` style answers without a key.
+- Gemini key pasted in chat again: not stored or set anywhere (user adds it in Vercel).
+
+**Files:** `docs/SPEC.md`, `supabase/migrations/20260930155147_builder_profiles.sql` (draft)
+**Verified:** SQL reviewed by hand only (not run: the user approves first). After "apply": advisors, RLS smoke with new cases (B can't read A's contacts or edit A's profile; accepted request reveals contacts; request limits; two-sided membership; hidden fields masked for anon).
+
+**Next:** user approves the Phase 8 plan choices and the Phase 9a SQL
+
 ## 2026-09-30 — Compact categories + category pages; Olympics redesign
 
 **Done:**
