@@ -181,12 +181,13 @@ export async function getStartupBySlug(
 
 export type RevenuePoint = { day: string; revenueCents: number };
 
-/** Zero-filled daily revenue for the last `days` UTC days, oldest first. */
+/** Zero-filled daily revenue for the `days` UTC days up to yesterday, oldest first. */
 export async function getRevenueSeries(
   startupId: number,
   days = 60,
 ): Promise<RevenuePoint[]> {
-  const now = Date.now();
+  // Ends yesterday: today is a partial day (the line would drop to 0).
+  const now = Date.now() - 86_400_000;
   const dayAt = (i: number) =>
     new Date(now - (days - 1 - i) * 86_400_000).toISOString().slice(0, 10);
   const { data, error } = await db()
@@ -205,12 +206,13 @@ export async function getRevenueSeries(
 
 export type DailyPoint = { day: string; value: number };
 
-/** Zero-filled daily visitors (traffic_snapshots) for the last `days` UTC days, oldest first. */
+/** Zero-filled daily visitors (traffic_snapshots) for the `days` UTC days up to yesterday. */
 export async function getVisitorSeries(
   startupId: number,
   days = 60,
 ): Promise<DailyPoint[]> {
-  const now = Date.now();
+  // Ends yesterday: today is a partial day (the line would drop to 0).
+  const now = Date.now() - 86_400_000;
   const dayAt = (i: number) =>
     new Date(now - (days - 1 - i) * 86_400_000).toISOString().slice(0, 10);
   const { data, error } = await db()

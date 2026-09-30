@@ -240,18 +240,22 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 - H2 "สตาร์ทอัพอื่น ๆ" + "View all →" link; `grid sm:grid-cols-2 lg:grid-cols-3 gap-3` of large StartupCards (same category first, then same province, then newest; 6 max).
 
-### ShareStudio (Figma "Share button")
+### ShareStudio (spec 6.5, Phase 3)
 
-Dialog `sm:max-w-xl rounded-xl bg-popover`, title "Share verified numbers":
+Dialog `sm:max-w-xl rounded-xl bg-popover`, title "แชร์ตัวเลขที่ยืนยันแล้ว" (listing/verify moments keep their celebratory titles); × / Esc / backdrop close.
 
-1. **Startup link**: read-only input (`bg-card`) + `Copy` outline button.
-2. **Segmented tabs** (`rounded-lg border bg-card p-0.5`, active `bg-secondary text-foreground`): **Badge · Chart · Calendar · Post**.
-3. Options row (image tabs only): **Theme** segmented Light/Dark; **Period** segmented (Chart: 7d / 30d / 60d; Calendar: 3 / 6 / 12 months) ; **Colour** row of 12 round swatches (`size-6 rounded-full`, selected shows a check), label shows the colour name ("JaoPor indigo" default).
-4. **Preview**: the server-rendered PNG in a `rounded-xl border bg-card p-4` frame.
-5. Footer: **Download image** (outline, `download` attribute) and for Post: the ready-to-paste thread post with Copy text (primary), Facebook, LINE, Copy link, plus badge HTML copy.
+1. **ลิงก์ผลงาน**: read-only input + `คัดลอก` outline button that turns into "คัดลอกแล้ว ✓" for 2 s (no toast).
+2. **Tabs** = `SegmentedControl`: **Badge · กราฟรายได้ · ปฏิทิน · โพสต์** (Post = JaoPor's ready-to-paste thread text; spec lists the first three).
+3. Options: **Theme** Light/Dark; **Period** (chart 7 วัน / 30 วัน / 12 เดือน; calendar 12 / 6 / 3 เดือน); **สีเส้น / สี ฿** = 12 dots in spec order (blue, purple, indigo, sky, cyan, teal, emerald, lime, amber, orange, rose, pink), selected shows a check, the colour name on the right.
+4. **Preview**: the server-rendered PNG (`/api/share-card`) in a `rounded-xl border bg-card p-3` frame; **⤓ ดาวน์โหลดภาพ** saves exactly that PNG as `{slug}-{tab}.png` (server rendering kept instead of html-to-image: the download is byte-identical to the preview and works without canvas/CORS issues).
+5. Badge tab also has the **embeddable SVG badge** (`/api/badge/{slug}.svg?theme=dark|light`) with **คัดลอกโค้ด README** (Markdown) and **คัดลอก HTML**.
 
-- Images come from `GET /api/share-card/[slug]?kind=badge|chart|calendar&theme=light|dark&color=<id>&period=<n>` (next/og, 1200×630 for chart/calendar, 800×300 for badge), **verified numbers only**; unverified revenue → the card uses the strongest verified metric or says "Not verified yet". Colours come from a fixed server-side swatch list (ids, never raw user hex).
-- Opens from the profile **Share** button and automatically after listing/verifying (`?new=1` / `?verified=1`, stripped on close).
+Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
+
+- **Badge** 900×340: startup logo (WebP converted server-side; letter tile fallback) · UPPERCASE metric label ("TOTAL REVENUE" / "รายได้ทั้งหมด" first, else the strongest verified metric) · big mono value · "Verified by JaoPor" with the tile mark.
+- **Chart** 1200×630: period total + "รายได้ · {period}", logo + name chip, line + 18% area in the chosen colour, verified footer. 12 months = monthly points.
+- **Calendar** 1200×630: GitHub-style heatmap where every cell is a **"$" glyph ("฿" for THB projects: pricing in THB, or Thai projects without a price)**, 5 levels from `grid` gray to the chosen colour; month labels on top, จ./พ./ศ./อา. (Mon/Wed/Fri/Sun) on the left; legend "น้อย ฿ ฿ ฿ ฿ ฿ มาก".
+- Verified numbers only; demo projects never get numbers.
 
 ### Directory (`/startups`, Figma "Marketplace")
 

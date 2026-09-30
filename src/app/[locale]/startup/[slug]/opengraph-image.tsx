@@ -6,9 +6,8 @@ import { getStartupBySlug } from "@/lib/data/startups";
 import { publicEnv } from "@/lib/public-env";
 import { shareMetrics, verifiedSources } from "@/lib/share";
 import { logoTileDataUri } from "@/lib/logo";
-import { ogCoverDataUri } from "@/lib/og-cover";
+import { logoDataUri, ogCoverDataUri } from "@/lib/og-images";
 import { BRAND_HEX, CARD_THEME } from "@/lib/share-palette";
-import { logoUrl } from "@/lib/supabase/public";
 
 // Design.md §9 OG image: the card people see when a profile link is pasted into Facebook/LINE/X.
 // 1200×630, dark, name + up to 3 verified numbers + sources. Thai via IBM Plex Sans Thai,
@@ -56,9 +55,8 @@ export default async function Image({
   const cover = startup ? await ogCoverDataUri(startup.id) : null;
   const metrics = startup ? shareMetrics(startup) : [];
   const sources = startup ? verifiedSources(startup) : [];
-  const logo = startup ? logoUrl(startup.logo_path, { absolute: true }) : null;
-  // The renderer can't decode WebP; those logos fall back to the initial.
-  const logoOk = logo && !/\.webp$/i.test(logo);
+  // Any logo format (WebP included) is converted to PNG for the renderer.
+  const logo = startup ? await logoDataUri(startup.logo_path) : null;
   const host = new URL(publicEnv.siteUrl).host;
 
   return new ImageResponse(
@@ -128,7 +126,7 @@ export default async function Image({
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-        {logoOk ? (
+        {logo ? (
           // eslint-disable-next-line @next/next/no-img-element -- rendered by the OG renderer, not the browser
           <img
             src={logo}

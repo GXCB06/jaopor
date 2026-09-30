@@ -487,11 +487,11 @@
     },
     "studioTitle": "แชร์ตัวเลขที่ยืนยันแล้ว",
     "studioBody": "เลือกแบบการ์ด แล้วดาวน์โหลดไปโพสต์ได้เลย",
-    "link": "ลิงก์โปรไฟล์",
+    "link": "ลิงก์ผลงาน",
     "copy": "คัดลอก",
     "tab": {
-      "badge": "ป้าย",
-      "chart": "กราฟ",
+      "badge": "Badge",
+      "chart": "กราฟรายได้",
       "calendar": "ปฏิทิน",
       "post": "โพสต์"
     },
@@ -503,9 +503,9 @@
     "months": "{n} เดือน",
     "color": "สี",
     "swatch": {
-      "indigo": "คราม JaoPor",
-      "violet": "ม่วง",
       "blue": "น้ำเงิน",
+      "purple": "ม่วง",
+      "indigo": "คราม JaoPor",
       "sky": "ฟ้า",
       "cyan": "ฟ้าอมเขียว",
       "teal": "เขียวหัวเป็ด",
@@ -513,11 +513,16 @@
       "lime": "เขียวมะนาว",
       "amber": "เหลืองอำพัน",
       "orange": "ส้ม",
-      "red": "แดง",
+      "rose": "กุหลาบ",
       "pink": "ชมพู"
     },
     "previewAlt": "ตัวอย่างการ์ดสำหรับแชร์",
-    "download": "ดาวน์โหลดรูป"
+    "download": "ดาวน์โหลดภาพ",
+    "copied": "คัดลอกแล้ว",
+    "tabs": "แบบการ์ด",
+    "lineColor": "สีเส้น",
+    "glyphColor": "สี {symbol}",
+    "copyReadme": "คัดลอกโค้ด README"
   },
   "ShareCard": {
     "verifiedBy": "ยืนยันบน JaoPor",
@@ -527,14 +532,19 @@
       "revenue30d": "รายได้ 30 วัน",
       "visitors30d": "ผู้เข้าชม 30 วัน",
       "activeUsers": "ผู้ใช้แอคทีฟ",
-      "commits": "Commits"
+      "commits": "Commits",
+      "revenueAllTime": "รายได้ทั้งหมด"
     },
     "lastDays": "{n} วันล่าสุด",
     "lastMonths": "{n} เดือนล่าสุด",
     "revenueIn": "รายได้ · {period}",
     "visitorsIn": "ผู้เข้าชม · {period}",
     "less": "น้อย",
-    "more": "มาก"
+    "more": "มาก",
+    "dayMon": "จ.",
+    "dayWed": "พ.",
+    "dayFri": "ศ.",
+    "daySun": "อา."
   },
   "Pricing": {
     "month": "เดือน",

@@ -85,3 +85,41 @@ export function badgeHtml(
   const alt = `${name} on JaoPor`.replace(/[<>"&]/g, "");
   return `<a href="${profileUrl}"><img src="${badgeUrl}" alt="${alt}" height="28"></a>`;
 }
+
+/** Spec 6.5 "คัดลอกโค้ด README": Markdown image link for GitHub READMEs. */
+export function badgeMarkdown(
+  profileUrl: string,
+  badgeUrl: string,
+  name: string,
+): string {
+  const alt = `${name} on JaoPor`.replace(/[[\]()<>]/g, "");
+  return `[![${alt}](${badgeUrl})](${profileUrl})`;
+}
+
+/**
+ * Spec 6.5 badge card headline: all-time revenue ("TOTAL REVENUE") when revenue is verified,
+ * else the strongest verified metric. Null → the card says "not verified yet".
+ */
+export function badgeHeadline(
+  s: Numbers & { revenue_all_time_cents: number | null },
+): { id: ShareMetricId | "revenueAllTime"; value: string } | null {
+  if (s.is_demo) return null;
+  if (s.verification_status === "verified" && s.revenue_all_time_cents)
+    return {
+      id: "revenueAllTime",
+      value: moneyCompact(s.revenue_all_time_cents),
+    };
+  return shareMetrics(s, 1)[0] ?? null;
+}
+
+/**
+ * The glyph a project's calendar heatmap is drawn with (spec 6.5): "฿" for THB projects (priced
+ * in THB, or Thai projects without a price), "$" otherwise.
+ */
+export function projectCurrencySymbol(s: {
+  pricing_currency: string | null;
+  country: string;
+}): "฿" | "$" {
+  if (s.pricing_currency) return s.pricing_currency === "THB" ? "฿" : "$";
+  return s.country === "TH" ? "฿" : "$";
+}

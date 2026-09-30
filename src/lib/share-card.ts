@@ -6,7 +6,7 @@ export const CARD_KINDS = ["badge", "chart", "calendar"] as const;
 export type CardKind = (typeof CARD_KINDS)[number];
 
 /** Chart periods in days; calendar periods in months. */
-export const CHART_PERIODS = [30, 90, 365] as const;
+export const CHART_PERIODS = [7, 30, 365] as const;
 export const CALENDAR_PERIODS = [3, 6, 12] as const;
 
 export type CardQuery = {
@@ -32,10 +32,11 @@ export function parseCardQuery(sp: URLSearchParams): CardQuery {
     kind,
     theme: sp.get("theme") === "light" ? "light" : "dark",
     color: isSwatch(color) ? color : "indigo",
+    // Default: 30 days for the chart, 12 months for the calendar.
     period: oneOf(
       periods,
       Number(sp.get("period")),
-      periods[periods.length - 1],
+      kind === "calendar" ? 12 : 30,
     ),
     locale: sp.get("locale") === "en" ? "en" : "th",
   };

@@ -8,9 +8,11 @@ import {
   getVisitorSeries,
   type StartupRow,
 } from "@/lib/data/startups";
-import { moneyCompact, moneyFull } from "@/lib/format";
+import { getThbPerUsd } from "@/lib/data/fx";
+import { money } from "@/lib/format";
 import { logoTileDataUri } from "@/lib/logo";
-import { shareMetrics } from "@/lib/share";
+import { logoDataUri } from "@/lib/og-images";
+import { badgeHeadline, projectCurrencySymbol } from "@/lib/share";
 import {
   bucketMonthly,
   chartPaths,
@@ -54,30 +56,52 @@ async function loadSeries(s: StartupRow, days: number): Promise<Series | null> {
   return null;
 }
 
-const fmt = (metric: Series["metric"], v: number, full = false) =>
-  metric === "revenue"
-    ? full
-      ? moneyFull(v)
-      : moneyCompact(v)
-    : new Intl.NumberFormat("en", {
-        notation: full ? "standard" : "compact",
-      }).format(v);
-
 export async function GET(
   req: Request,
   ctx: RouteContext<"/api/share-card/[slug]">,
 ) {
   const { slug } = await ctx.params;
   const q = parseCardQuery(new URL(req.url).searchParams);
-  const startup = /^[a-z0-9-]{1,50}$/.test(slug)
+  const found = /^[a-z0-9-]{1,50}$/.test(slug)
     ? await getStartupBySlug(slug).catch(() => null)
     : null;
-  if (!startup) return new Response("Not found", { status: 404 });
+  if (!found) return new Response("Not found", { status: 404 });
+  // Local design check only: `?demo=1` renders a demo project's sample numbers. Ignored in
+  // production, where sample data never reaches a share image.
+  const startup =
+    process.env.NODE_ENV === "development" &&
+    new URL(req.url).searchParams.get("demo") === "1"
+      ? { ...found, is_demo: false }
+      : found;
 
   const C = CARD_THEME[q.theme];
+  // THB projects (spec 6.5 "฿ for THB startups") show money in baht at the site's rate;
+  // without a rate they stay in USD rather than guess.
+  const glyph = projectCurrencySymbol(startup);
+  const thbPerUsd = glyph === "฿" ? await getThbPerUsd() : null;
+  const currency = thbPerUsd ? "thb" : "usd";
+  const fmt = (metric: Series["metric"], v: number, full = false) =>
+    metric === "revenue"
+      ? money(v, { currency, thbPerUsd, full })
+      : new Intl.NumberFormat("en", {
+          notation: full ? "standard" : "compact",
+        }).format(v);
+  const headlineValue = (m: NonNullable<ReturnType<typeof badgeHeadline>>) => {
+    const cents =
+      m.id === "revenueAllTime"
+        ? startup.revenue_all_time_cents
+        : m.id === "mrr"
+          ? startup.mrr_cents
+          : m.id === "revenue30d"
+            ? startup.revenue_30d_cents
+            : null;
+    return cents !== null && thbPerUsd
+      ? money(cents, { currency: "thb", thbPerUsd })
+      : m.value;
+  };
   const accent = SWATCHES[q.color];
   const days = q.kind === "calendar" ? Math.round(q.period * 30.4) : q.period;
-  const [t, series, plex, plexBold, plexThai, plexThaiBold, mono, tile] =
+  const [t, series, plex, plexBold, plexThai, plexThaiBold, mono, tile, logo] =
     await Promise.all([
       getTranslations({ locale: q.locale, namespace: "ShareCard" }),
       q.kind === "badge" ? Promise.resolve(null) : loadSeries(startup, days),
@@ -87,6 +111,7 @@ export async function GET(
       font("ibm-plex-sans-thai-thai-700-normal.woff"),
       font("inconsolata-latin-700-normal.woff"),
       logoTileDataUri(),
+      logoDataUri(startup.logo_path),
     ]);
 
   const verifiedLine = (
@@ -105,24 +130,39 @@ export async function GET(
     </div>
   );
 
-  const nameChip = (
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+  const logoTile = (size: number) =>
+    logo ? (
+      // eslint-disable-next-line @next/next/no-img-element -- rendered by the OG renderer
+      <img
+        src={logo}
+        width={size}
+        height={size}
+        alt=""
+        style={{ borderRadius: size / 4.5 }}
+      />
+    ) : (
       <div
         style={{
-          width: 36,
-          height: 36,
-          borderRadius: 18,
+          width: size,
+          height: size,
+          borderRadius: size / 4.5,
           background: accent,
           color: "#ffffff",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 20,
+          fontSize: size * 0.55,
           fontWeight: 700,
+          flexShrink: 0,
         }}
       >
         {startup.name.slice(0, 1).toUpperCase()}
       </div>
+    );
+
+  const nameChip = (
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      {logoTile(36)}
       <span style={{ fontSize: 24, fontWeight: 700 }}>
         {startup.name.slice(0, 28)}
       </span>
@@ -134,7 +174,7 @@ export async function GET(
 
   if (q.kind === "badge") {
     size = { width: 900, height: 340 };
-    const m = shareMetrics(startup, 1)[0];
+    const m = badgeHeadline(startup);
     body = (
       <div
         style={{
@@ -148,23 +188,7 @@ export async function GET(
           width: "100%",
         }}
       >
-        <div
-          style={{
-            width: 120,
-            height: 120,
-            borderRadius: 60,
-            background: accent,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#ffffff",
-            fontSize: 64,
-            fontWeight: 700,
-            flexShrink: 0,
-          }}
-        >
-          {startup.name.slice(0, 1).toUpperCase()}
-        </div>
+        {logoTile(120)}
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <span
             style={{
@@ -174,9 +198,7 @@ export async function GET(
               textTransform: "uppercase",
             }}
           >
-            {m
-              ? `${startup.name.slice(0, 24)} · ${t(`metric.${m.id}`)}`
-              : startup.name.slice(0, 32)}
+            {m ? t(`metric.${m.id}`) : startup.name.slice(0, 32)}
           </span>
           <span
             style={{
@@ -186,8 +208,13 @@ export async function GET(
               lineHeight: 1.05,
             }}
           >
-            {m ? m.value : t("notVerified")}
+            {m ? headlineValue(m) : t("notVerified")}
           </span>
+          {m && (
+            <span style={{ fontSize: 22, fontWeight: 700 }}>
+              {startup.name.slice(0, 32)}
+            </span>
+          )}
           {verifiedLine}
         </div>
       </div>
@@ -246,7 +273,7 @@ export async function GET(
 
     let plot: React.ReactElement;
     if (q.kind === "chart") {
-      const W = 1000;
+      const W = 950; // card inner width 1040 − 70 axis labels − 16 gap
       const H = 300;
       const values = pts.map((p) => p.value);
       const { line, area, max } = chartPaths(values, W, H);
@@ -286,34 +313,96 @@ export async function GET(
       const cols = weekColumns(pts);
       const levels = heatLevels(pts.map((p) => p.value));
       const levelOf = new Map(pts.map((p, i) => [p.day, levels[i]]));
-      const cell = Math.min(
-        22,
-        Math.floor(1000 / Math.max(cols.length, 1)) - 4,
+      // Bigger cells for short periods so 3 months still fills the card.
+      const cell = Math.min(30, Math.floor(980 / Math.max(cols.length, 1)) - 3);
+      const opacity = [1, 0.35, 0.55, 0.78, 1];
+      const glyphCell = (lvl: number, key: number | string, px = cell) => (
+        <div
+          key={key}
+          style={{
+            width: px,
+            height: px,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: px * 0.95,
+            // "฿" only exists in the Thai subset; give it its own family so the renderer can't
+            // pick the Latin file (same family name) and draw a missing-glyph box.
+            fontFamily: glyph === "฿" ? "Baht" : "Mono",
+            fontWeight: glyph === "฿" ? 400 : 700,
+            lineHeight: 1,
+            color: lvl < 0 ? "transparent" : lvl === 0 ? C.grid : accent,
+            opacity: lvl <= 0 ? 1 : opacity[lvl],
+          }}
+        >
+          {glyph}
+        </div>
       );
-      const opacity = [0, 0.3, 0.55, 0.8, 1];
+      // Month label over the first column that contains the 1st of a month (or the first column).
+      const monthFmt = new Intl.DateTimeFormat(
+        q.locale === "th" ? "th-TH" : "en-US",
+        { month: "short", timeZone: "UTC" },
+      );
+      const monthLabels = cols.map((col, ci) => {
+        const first = col.find((p) => p && (p.day.endsWith("-01") || ci === 0));
+        return first ? monthFmt.format(new Date(`${first.day}T00:00:00Z`)) : "";
+      });
+      // Rows are Sun..Sat; label Mon, Wed, Fri, Sun (spec: จ./พ./ศ./อา.).
+      const dayLabel = (row: number) =>
+        ({ 1: t("dayMon"), 3: t("dayWed"), 5: t("dayFri"), 0: t("daySun") })[
+          row
+        ] ?? "";
       plot = (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ display: "flex", gap: 4 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", gap: 3, paddingLeft: 44 }}>
+            {monthLabels.map((m, ci) => (
+              <div
+                key={ci}
+                style={{
+                  width: cell,
+                  fontSize: 15,
+                  color: C.faint,
+                  whiteSpace: "nowrap",
+                  overflow: "visible",
+                  display: "flex",
+                }}
+              >
+                {m}
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 3 }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 3,
+                width: 41,
+              }}
+            >
+              {Array.from({ length: 7 }, (_, row) => (
+                <div
+                  key={row}
+                  style={{
+                    height: cell,
+                    fontSize: 14,
+                    color: C.faint,
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  {dayLabel(row)}
+                </div>
+              ))}
+            </div>
             {cols.map((col, ci) => (
               <div
                 key={ci}
-                style={{ display: "flex", flexDirection: "column", gap: 4 }}
+                style={{ display: "flex", flexDirection: "column", gap: 3 }}
               >
-                {col.map((p, ri) => {
-                  const lvl = p ? (levelOf.get(p.day) ?? 0) : -1;
-                  return (
-                    <div
-                      key={ri}
-                      style={{
-                        width: cell,
-                        height: cell,
-                        borderRadius: 4,
-                        background: lvl <= 0 ? C.grid : accent,
-                        opacity: lvl < 0 ? 0 : lvl === 0 ? 1 : opacity[lvl],
-                      }}
-                    />
-                  );
-                })}
+                {col.map((p, ri) =>
+                  glyphCell(p ? (levelOf.get(p.day) ?? 0) : -1, ri),
+                )}
               </div>
             ))}
           </div>
@@ -324,21 +413,11 @@ export async function GET(
               gap: 6,
               fontSize: 16,
               color: C.faint,
+              paddingLeft: 44,
             }}
           >
             {t("less")}
-            {[0, 1, 2, 3, 4].map((l) => (
-              <div
-                key={l}
-                style={{
-                  width: 16,
-                  height: 16,
-                  borderRadius: 3,
-                  background: l === 0 ? C.grid : accent,
-                  opacity: l === 0 ? 1 : opacity[l],
-                }}
-              />
-            ))}
+            {[0, 1, 2, 3, 4].map((l) => glyphCell(l, l, 18))}
             {t("more")}
           </div>
         </div>
@@ -396,6 +475,7 @@ export async function GET(
         { name: "Plex", data: plexThai, weight: 400, style: "normal" },
         { name: "Plex", data: plexThaiBold, weight: 700, style: "normal" },
         { name: "Mono", data: mono, weight: 700, style: "normal" },
+        { name: "Baht", data: plexThai, weight: 400, style: "normal" },
       ],
     },
   );

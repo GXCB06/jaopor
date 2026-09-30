@@ -491,7 +491,7 @@
     "copy": "Copy",
     "tab": {
       "badge": "Badge",
-      "chart": "Chart",
+      "chart": "Revenue chart",
       "calendar": "Calendar",
       "post": "Post"
     },
@@ -503,9 +503,9 @@
     "months": "{n} months",
     "color": "Colour",
     "swatch": {
-      "indigo": "JaoPor indigo",
-      "violet": "Violet",
       "blue": "Blue",
+      "purple": "Purple",
+      "indigo": "JaoPor indigo",
       "sky": "Sky",
       "cyan": "Cyan",
       "teal": "Teal",
@@ -513,11 +513,16 @@
       "lime": "Lime",
       "amber": "Amber",
       "orange": "Orange",
-      "red": "Red",
+      "rose": "Rose",
       "pink": "Pink"
     },
     "previewAlt": "Share card preview",
-    "download": "Download image"
+    "download": "Download image",
+    "copied": "Copied",
+    "tabs": "Card type",
+    "lineColor": "Line colour",
+    "glyphColor": "{symbol} colour",
+    "copyReadme": "Copy README code"
   },
   "ShareCard": {
     "verifiedBy": "Verified on JaoPor",
@@ -527,14 +532,19 @@
       "revenue30d": "Revenue 30d",
       "visitors30d": "Visitors 30d",
       "activeUsers": "Active users",
-      "commits": "Commits"
+      "commits": "Commits",
+      "revenueAllTime": "Total revenue"
     },
     "lastDays": "last {n} days",
     "lastMonths": "last {n} months",
     "revenueIn": "revenue · {period}",
     "visitorsIn": "visitors · {period}",
     "less": "Less",
-    "more": "More"
+    "more": "More",
+    "dayMon": "Mon",
+    "dayWed": "Wed",
+    "dayFri": "Fri",
+    "daySun": "Sun"
   },
   "Pricing": {
     "month": "Month",

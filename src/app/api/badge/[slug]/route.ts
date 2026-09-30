@@ -42,7 +42,8 @@ export async function GET(
   req: Request,
   ctx: RouteContext<"/api/badge/[slug]">,
 ) {
-  const { slug } = await ctx.params;
+  // Spec 6.5: `/api/badge/{slug}.svg` (what README embeds expect) and plain `/api/badge/{slug}`.
+  const slug = (await ctx.params).slug.replace(/\.svg$/, "");
   const light = new URL(req.url).searchParams.get("theme") === "light";
   const startup = /^[a-z0-9-]{1,50}$/.test(slug)
     ? await getStartupBySlug(slug).catch(() => null)

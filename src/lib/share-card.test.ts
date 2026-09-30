@@ -11,29 +11,34 @@ describe("parseCardQuery", () => {
   it("accepts known values", () => {
     const q = parseCardQuery(
       new URLSearchParams(
-        "kind=chart&theme=light&color=teal&period=90&locale=en",
+        "kind=chart&theme=light&color=teal&period=7&locale=en",
       ),
     );
     expect(q).toEqual({
       kind: "chart",
       theme: "light",
       color: "teal",
-      period: 90,
+      period: 7,
       locale: "en",
     });
   });
 
   it("falls back on anything unexpected (no caller-supplied colours)", () => {
     const q = parseCardQuery(
-      new URLSearchParams("kind=evil&theme=x&color=%23ff0000&period=7"),
+      new URLSearchParams("kind=evil&theme=x&color=%23ff0000&period=90"),
     );
     expect(q).toEqual({
       kind: "badge",
       theme: "dark",
       color: "indigo",
-      period: 365,
+      period: 30,
       locale: "th",
     });
+  });
+
+  it("accepts the spec's 12 swatches only (old ids fall back)", () => {
+    expect(parseCardQuery(new URLSearchParams("color=rose")).color).toBe("rose");
+    expect(parseCardQuery(new URLSearchParams("color=violet")).color).toBe("indigo");
   });
 
   it("uses month periods for the calendar", () => {

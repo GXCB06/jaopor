@@ -87,3 +87,57 @@ describe("share links + badge html", () => {
     );
   });
 });
+
+describe("share modal helpers (spec 6.5)", () => {
+  it("builds README Markdown", async () => {
+    const { badgeMarkdown } = await import("./share");
+    expect(
+      badgeMarkdown(
+        "https://jaopor.vercel.app/th/startup/x",
+        "https://jaopor.vercel.app/api/badge/x.svg",
+        "X [beta]",
+      ),
+    ).toBe(
+      "[![X beta on JaoPor](https://jaopor.vercel.app/api/badge/x.svg)](https://jaopor.vercel.app/th/startup/x)",
+    );
+  });
+
+  it("puts total revenue first on the badge card", async () => {
+    const { badgeHeadline } = await import("./share");
+    const verified = {
+      ...base,
+      verification_status: "verified",
+      verified_provider: "stripe",
+      mrr_cents: 50_000,
+      revenue_all_time_cents: 1_234_500,
+    };
+    expect(badgeHeadline(verified)).toEqual({
+      id: "revenueAllTime",
+      value: "$12.3k",
+    });
+    expect(badgeHeadline({ ...verified, revenue_all_time_cents: 0 })?.id).toBe(
+      "mrr",
+    );
+    expect(badgeHeadline({ ...verified, is_demo: true })).toBeNull();
+    expect(
+      badgeHeadline({ ...base, revenue_all_time_cents: 999, visitors_30d: 10 })
+        ?.id,
+    ).toBe("visitors30d");
+  });
+
+  it("picks the heatmap currency glyph", async () => {
+    const { projectCurrencySymbol } = await import("./share");
+    expect(
+      projectCurrencySymbol({ pricing_currency: "THB", country: "US" }),
+    ).toBe("฿");
+    expect(
+      projectCurrencySymbol({ pricing_currency: "USD", country: "TH" }),
+    ).toBe("$");
+    expect(
+      projectCurrencySymbol({ pricing_currency: null, country: "TH" }),
+    ).toBe("฿");
+    expect(
+      projectCurrencySymbol({ pricing_currency: null, country: "SG" }),
+    ).toBe("$");
+  });
+});

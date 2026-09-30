@@ -12,6 +12,68 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Spec Phase 3: share modal (6.5) + SVG badge endpoint
+
+**Done:**
+
+- **ShareStudio:**
+  - Title "แชร์ตัวเลขที่ยืนยันแล้ว". The link copy button turns into "คัดลอกแล้ว ✓" for 2 s.
+  - `SegmentedControl` tabs Badge / กราฟรายได้ / ปฏิทิน / โพสต์.
+  - Colour label per tab ("สีเส้น" / "สี ฿"); calendar periods shown 12 / 6 / 3.
+  - Downloads are named `{slug}-{tab}.png`.
+  - The Badge tab has the embeddable SVG badge + **คัดลอกโค้ด README** (Markdown) + HTML.
+- **Swatches:** the spec's 12 colours in order (blue, purple, indigo, sky, cyan, teal, emerald, lime, amber, orange, rose, pink). Old ids fall back to indigo.
+- **Chart periods:** 7 / 30 days / 12 months (monthly points).
+- **Card renderer:**
+  - Real startup logos: `lib/og-images.ts` converts any logo, WebP included, and the cover to PNG/JPEG data URIs. This also fixes WebP logos on the OG card.
+  - Badge headline: **TOTAL REVENUE** first, else the strongest verified metric.
+  - The calendar is a heatmap of **"฿"/"$" glyphs** with month labels, จ./พ./ศ./อา. rows and a glyph legend. THB projects (priced in THB, or Thai without a price) show ฿ glyphs and ฿ amounts at the site's rate.
+  - Chart and share series end yesterday. The chart fits the card.
+- **`/api/badge/{slug}.svg`** alias (plain `/api/badge/{slug}` still works).
+- **Dev-only `?demo=1`** on the share-card route to design-check with sample data (ignored in production).
+- Server rendering kept instead of `html-to-image` (agreed in the Phase 0 conflict list): the download is byte-identical to the preview.
+
+**Files:** `src/components/share/ShareStudio.tsx`, `src/app/api/share-card/[slug]/route.tsx`, `src/app/api/badge/[slug]/route.ts`, `src/lib/{share,share-card,share-palette,og-images}.ts`, `src/lib/{share,share-card}.test.ts`, `src/lib/data/startups.ts`, `src/app/[locale]/startup/[slug]/{page,opengraph-image}.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- `npm test` 159/159 (new: README Markdown, badge headline order, currency glyph rule, swatch fallback, periods) · typecheck ✓ · lint ✓ · build ✓
+- Rendered cards checked visually: badge (dark + light, ฿717.2k), chart 7/30 days (rose/purple), calendar 3/6/12 months (฿ glyphs, labels aligned).
+- `/api/badge/jaopor.svg` → 200 SVG; `bad.svg.svg` and `.png` → 404.
+- Browser pane: the modal shows title, 4 tabs, 12 swatches in spec order; "สี ฿" on the calendar tab; download names `demo-raandee-pos-badge.png` / `-calendar.png`; copied ✓ state for 2 s.
+- **Not verified:** a README on GitHub (camo) showing the SVG badge; the clipboard in a focused real tab (the test tab was in the background).
+
+**Next:** user checks the modal on a real project; Phase 4 (QuickSearch + `search_all` RPC, SQL shown first)
+
+## 2026-09-30 — Phase 2 fixes from user testing: screenshot upload, drafts across language switch, custom + GitHub stack
+
+**Done:**
+
+- **Screenshot upload failed (user report):**
+  - Cause: the storage policies' unqualified `name` inside `exists (select … from startups s …)` resolved to `startups.name`, so every upload got Storage 400.
+  - Fixed by migration `fix_screenshot_storage_policies` (`objects.name`).
+  - RLS smoke gained T34/T35 (owner uploads into own folder ✓, another startup's folder ✗).
+- **Unsaved form lost on language switch (user report):**
+  - `useSessionDraft` keeps the edit form and the wizard in sessionStorage. The key includes `updated_at` and only real changes are stored, so a draft never shows as "restored" when nothing changed.
+  - A "restored · discard" notice appears.
+  - The wizard also keeps step 2 + the created project, so a switch can't create a duplicate.
+- **Custom tech-stack entries:** migration `stack_custom_entries` applied (user-approved); `other` group of `custom:` values. RLS smoke T32/T33.
+- **Tech stack from GitHub (user idea):** the edit form offers "ตรวจพบจาก GitHub: … · เพิ่มทั้งหมด" from `build_stack` (known tools → slugs, others → custom). Without a repo there's a hint to connect GitHub.
+- **Fresh pages after edits:** `revalidateStartup` server action (owner-checked) revalidates the profile in both locales + home + directory after saves and screenshot changes.
+
+**Files:** `supabase/migrations/20260930082846_stack_custom_entries.sql`, `supabase/migrations/20260930085756_fix_screenshot_storage_policies.sql`, `supabase/tests/rls_smoke.sql`, `src/app/actions/revalidate.ts`, `src/lib/use-session-draft.ts`, `src/lib/config/{stack,display}.ts`, `src/components/wizard/{StartupEditForm,StartupWizard,ScreenshotsManager,vocab-options}.tsx`, `messages/*.json`
+**Verified:**
+
+- **RLS smoke 35/35.**
+- `npm test` 155/155 · typecheck ✓ · lint ✓ · build ✓
+- Production (browser pane, the user's session, test data removed afterwards):
+  - A pasted 1600×1000 PNG was stored as a 12KB WebP in `45/`, kind desktop.
+  - The profile shows it full width in the browser frame; the lightbox opens.
+  - The OG image shows the darkened cover.
+  - The TH → EN switch keeps the typed tagline with the notice; discard works.
+  - Deleting the screenshot removed both the row and the file.
+
+**Next:** Phase 3 (share modal 6.5)
+
 ## 2026-09-30 — Spec Phase 2: detail page (chart, screenshots, founder message, logo-chip insights) + form 6.9
 
 **Done:**

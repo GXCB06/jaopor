@@ -47,7 +47,12 @@ import {
 import { moneyFull } from "@/lib/format";
 import { projectLinks, websiteHost } from "@/lib/links";
 import { publicEnv } from "@/lib/public-env";
-import { badgeHtml, shareMetrics } from "@/lib/share";
+import {
+  badgeHtml,
+  badgeMarkdown,
+  projectCurrencySymbol,
+  shareMetrics,
+} from "@/lib/share";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { logoUrl } from "@/lib/supabase/public";
 import { provinceName } from "@/lib/config/display";
@@ -126,7 +131,7 @@ export default async function StartupPage({ params }: Props) {
 
   // Share kit (Design.md §9): absolute URLs, verified numbers only.
   const url = `${publicEnv.siteUrl}/${locale}/startup/${startup.slug}`;
-  const badgeSrc = `${publicEnv.siteUrl}/api/badge/${startup.slug}`;
+  const badgeSrc = `${publicEnv.siteUrl}/api/badge/${startup.slug}.svg`;
   const tagline = startup.tagline ? ` — ${startup.tagline}` : "";
   const metricsLine = shareMetrics(startup)
     .map((m) => `${sh(`metric.${m.id}`)} ${m.value}`)
@@ -213,6 +218,9 @@ export default async function StartupPage({ params }: Props) {
               post={post}
               text={`${startup.name}${tagline}`}
               badgeHtml={badgeHtml(url, badgeSrc, startup.name)}
+              badgeMarkdown={badgeMarkdown(url, badgeSrc, startup.name)}
+              badgeSrc={badgeSrc}
+              currencySymbol={projectCurrencySymbol(startup)}
             />
             {primary && (
               <a

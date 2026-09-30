@@ -32,9 +32,10 @@ import { SWATCHES, SWATCH_IDS, type SwatchId } from "@/lib/share-palette";
 import { cn } from "@/lib/utils";
 import { copy } from "./copy";
 
-// Design.md §5 ShareStudio (Figma "Share button"): link + Copy, tabs Badge / Chart / Calendar /
-// Post, theme + period + colour, server-rendered preview, Download. Opens from the profile's
-// Share button and automatically after listing/verifying (?new=1 / ?verified=1).
+// Design.md §5 ShareStudio (spec 6.5): link + Copy ("copied ✓" 2 s), SegmentedControl tabs
+// Badge / Chart / Calendar / Post, theme + period + colour, server-rendered preview, Download as
+// {slug}-{tab}.png, embeddable SVG badge with README/HTML code. Opens from the profile's Share
+// button and automatically after listing/verifying (?new=1 / ?verified=1).
 
 type Tab = CardKind | "post";
 const TABS: { id: Tab; icon: LucideIcon }[] = [
@@ -76,6 +77,9 @@ export function ShareStudio({
   post,
   text,
   badgeHtml,
+  badgeMarkdown,
+  badgeSrc,
+  currencySymbol,
 }: {
   slug: string;
   /** Absolute profile URL. */
@@ -85,6 +89,12 @@ export function ShareStudio({
   /** Short text for X / native share. */
   text: string;
   badgeHtml: string;
+  /** Spec 6.5 "คัดลอกโค้ด README". */
+  badgeMarkdown: string;
+  /** Absolute `/api/badge/{slug}.svg` URL (embed preview). */
+  badgeSrc: string;
+  /** "฿" or "$": the calendar heatmap glyph for this project. */
+  currencySymbol: string;
 }) {
   const t = useTranslations("Share");
   const locale = useLocale();
@@ -110,6 +120,29 @@ export function ShareStudio({
   const [chartPeriod, setChartPeriod] = useState<number>(30);
   const [calPeriod, setCalPeriod] = useState<number>(12);
   const links = shareLinks(url, text);
+  // Spec 6.5: the button itself says "คัดลอกแล้ว ✓" for 2 s.
+  const [copied, setCopied] = useState<string | null>(null);
+  async function copyInline(value: string, id: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(id);
+      setTimeout(() => setCopied((c) => (c === id ? null : c)), 2000);
+    } catch {
+      copy(value, t("copy"));
+    }
+  }
+  const copyLabel = (id: string, label: string) =>
+    copied === id ? (
+      <>
+        <CheckIcon className="size-3.5" aria-hidden="true" />
+        {t("copied")}
+      </>
+    ) : (
+      <>
+        <CopyIcon className="size-3.5" aria-hidden="true" />
+        {label}
+      </>
+    );
 
   function onOpenChange(next: boolean) {
     setManual(next);
@@ -171,38 +204,29 @@ export function ShareStudio({
             />
             <button
               type="button"
-              onClick={() => copy(url, t("linkCopied"))}
-              className={outlineBtn}
+              onClick={() => copyInline(url, "link")}
+              aria-live="polite"
+              className={cn(outlineBtn, "min-w-24 justify-center")}
             >
-              <CopyIcon className="size-3.5" aria-hidden="true" />
-              {t("copy")}
+              {copyLabel("link", t("copy"))}
             </button>
           </div>
         </div>
 
-        <div
-          role="tablist"
-          className="grid grid-cols-4 rounded-lg border bg-card p-0.5"
-        >
-          {TABS.map(({ id, icon: Icon }) => (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              aria-selected={tab === id}
-              onClick={() => setTab(id)}
-              className={cn(
-                "flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-caption transition-colors",
-                tab === id
-                  ? "bg-secondary font-semibold text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <Icon className="size-3.5 shrink-0" aria-hidden="true" />
-              <span className="truncate">{t(`tab.${id}`)}</span>
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          label={t("tabs")}
+          value={tab}
+          onChange={setTab}
+          options={TABS.map(({ id, icon: Icon }) => ({
+            value: id,
+            label: (
+              <span className="flex items-center justify-center gap-1.5">
+                <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+                <span className="truncate">{t(`tab.${id}`)}</span>
+              </span>
+            ),
+          }))}
+        />
 
         {kind && img ? (
           <>
@@ -233,7 +257,7 @@ export function ShareStudio({
                   label={t("period")}
                   value={calPeriod}
                   onChange={setCalPeriod}
-                  options={CALENDAR_PERIODS.map((p) => ({
+                  options={[...CALENDAR_PERIODS].reverse().map((p) => ({
                     value: p,
                     label: t("months", { n: p }),
                   }))}
@@ -243,7 +267,13 @@ export function ShareStudio({
 
             <div className="space-y-1.5">
               <div className="flex justify-between text-2xs text-faint">
-                <span>{t("color")}</span>
+                <span>
+                  {kind === "chart"
+                    ? t("lineColor")
+                    : kind === "calendar"
+                      ? t("glyphColor", { symbol: currencySymbol })
+                      : t("color")}
+                </span>
                 <span>{t(`swatch.${color}`)}</span>
               </div>
               <div
@@ -288,10 +318,42 @@ export function ShareStudio({
               />
             </div>
 
+            {kind === "badge" && (
+              <div className="space-y-2 rounded-xl border bg-card p-3">
+                <p className="text-xs font-semibold">{t("badgeTitle")}</p>
+                <p className="text-caption text-muted-foreground">
+                  {t("badgeBody")}
+                </p>
+                {/* eslint-disable-next-line @next/next/no-img-element -- SVG badge from our API */}
+                <img
+                  src={`${badgeSrc}${theme === "light" ? "?theme=light" : ""}`}
+                  alt=""
+                  height={28}
+                  className="h-7 w-auto"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => copyInline(badgeMarkdown, "readme")}
+                    className={outlineBtn}
+                  >
+                    {copyLabel("readme", t("copyReadme"))}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => copyInline(badgeHtml, "html")}
+                    className={outlineBtn}
+                  >
+                    {copyLabel("html", t("copyBadge"))}
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end">
               <a
                 href={img}
-                download={`jaopor-${slug}-${kind}.png`}
+                download={`${slug}-${kind}.png`}
                 className={outlineBtn}
               >
                 <DownloadIcon className="size-3.5" aria-hidden="true" />
@@ -337,26 +399,6 @@ export function ShareStudio({
               >
                 {t("x")}
               </a>
-            </div>
-            <div className="space-y-2 border-t pt-3">
-              <p className="text-xs font-semibold">{t("badgeTitle")}</p>
-              <p className="text-caption text-muted-foreground">
-                {t("badgeBody")}
-              </p>
-              {/* eslint-disable-next-line @next/next/no-img-element -- SVG badge from our API */}
-              <img
-                src={`/api/badge/${slug}`}
-                alt=""
-                height={28}
-                className="h-7 w-auto"
-              />
-              <button
-                type="button"
-                onClick={() => copy(badgeHtml, t("badgeCopied"))}
-                className={outlineBtn}
-              >
-                {t("copyBadge")}
-              </button>
             </div>
           </>
         )}

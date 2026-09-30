@@ -29,10 +29,11 @@ export type CardTheme = keyof typeof CARD_THEME;
 /** Brand mark tile colour (indigo, `--brand` / `--chart-1`). */
 export const BRAND_HEX = "#6e6cf3";
 
+// Spec 6.5 order: blue, purple, indigo, sky, cyan, teal, emerald, lime, amber, orange, rose, pink.
 export const SWATCHES = {
-  indigo: "#6e6cf3",
-  violet: "#8b5cf6",
   blue: "#3b82f6",
+  purple: "#a855f7",
+  indigo: "#6e6cf3",
   sky: "#0ea5e9",
   cyan: "#06b6d4",
   teal: "#14b8a6",
@@ -40,7 +41,7 @@ export const SWATCHES = {
   lime: "#84cc16",
   amber: "#f59e0b",
   orange: "#f97316",
-  red: "#ef4444",
+  rose: "#f43f5e",
   pink: "#ec4899",
 } as const;
 export type SwatchId = keyof typeof SWATCHES;
