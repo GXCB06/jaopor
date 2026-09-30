@@ -12,6 +12,38 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Edit page redesign (user feedback), free "fill from website" helper, avatar menu; Phase 4 SQL drafted
+
+**Done:**
+
+- **Edit page** (user: "overwhelming, too many sections at once"):
+  - Seven sections shown one at a time: ข้อมูลหลัก · ลิงก์และที่ตั้ง · เล่าเรื่องผลงาน · เทคโนโลยีและการตลาด · ภาพและวิดีโอ · ผู้ก่อตั้ง · ยืนยันตัวเลข.
+  - Section nav: sticky column on desktop, scrolling chips on mobile, with completion ticks / counts.
+  - "ข้อมูลครบ {pct}%" bar + next-missing link, prev/next buttons.
+  - Sticky save bar showing unsaved vs saved; it saves from any section.
+  - Validation errors jump to their section. Deep links (`#pricing`, `#verify-revenue`, `#screenshots`…) open the right section on load and on hash change.
+- **"✨ ช่วยเติมจากเว็บไซต์"** (user wants a free API):
+  - `POST /api/startups/[id]/autofill`, owner-only: reads the project's website with the SSRF guard (redirects re-checked, 1.5MB cap) + the public GitHub README.
+  - Fills only **empty** fields, with a "เติมให้ n ช่อง · เลิกทำ" notice; nothing is saved until the owner saves.
+  - Works with **no AI** from the page's own metadata / JSON-LD price.
+  - With a **free Gemini key** (`GEMINI_API_KEY`, optional `GEMINI_MODEL`, default `gemini-2.5-flash`) it drafts tagline, description, value, problem, audience, category, stack and pricing. The prompt fences website text as untrusted data; the output is validated against the enums and DB limits.
+- **Signed-in header:** one avatar button → menu (email, แดชบอร์ด, ออกจากระบบ). It used to wrap into 4 lines at 375px.
+- **Phase 4 SQL drafted, NOT applied:** `supabase/migrations/20260930102108_search_startups.sql` (`search_startups(q, max_rows)`, ILIKE + pg_trgm, security invoker). Read-only dry run: "saa"→MRRMafia, "raan"/"pos"→RaanDee POS, "ร้าน"→2 hits, "%" → none (wildcards escaped).
+
+**Files:** `src/components/wizard/{StartupEditForm,ScreenshotsManager}.tsx`, `src/components/HeaderAuth.tsx`, `src/lib/{autofill,autofill.test}.ts`, `src/lib/ai/gemini.ts`, `src/lib/env.ts`, `src/app/api/startups/[id]/autofill/route.ts`, `src/app/[locale]/dashboard/[id]/edit/page.tsx`, `.env.example`, `messages/*.json`, `Design.md`, `supabase/migrations/20260930102108_search_startups.sql` (draft)
+**Verified:**
+
+- `npm test` 166/166 (new autofill: page extraction, JSON-LD price, no-AI draft, strict model-output parsing, clamping, prompt fencing) · typecheck ✓ · lint ✓ · build ✓
+- Production (browser pane, the user's session, nothing saved):
+  - Sectioned edit page renders.
+  - "ช่วยเติมจากเว็บไซต์" filled 2 fields from jaopor.vercel.app (no-AI mode); undo restored everything.
+  - `#pricing` opens "เล่าเรื่องผลงาน"; `#founder_message` works on hash change.
+  - 375px: scrollWidth = 375 (was 1126 before `min-w-0`).
+  - Avatar menu shows email / dashboard / sign out.
+- **Not verified:** the Gemini path (no key yet); saving from the new layout (DB path unchanged, covered by RLS smoke).
+
+**Next:** user approves the `search_startups` SQL → Phase 4 QuickSearch UI; user optionally adds a free `GEMINI_API_KEY`
+
 ## 2026-09-30 — Spec Phase 3: share modal (6.5) + SVG badge endpoint
 
 **Done:**
