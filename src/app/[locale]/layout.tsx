@@ -40,6 +40,17 @@ export async function generateMetadata({
     metadataBase: new URL(publicEnv.siteUrl),
     title: { default: t("title"), template: `%s · ${common("brand")}` },
     description: t("description"),
+    // Spec 6.1 / Design.md §9: every page has a full Open Graph card (Facebook shows no preview
+    // without og:title/description). No og:url here: children would inherit the home URL. The image
+    // comes from ./opengraph-image.tsx.
+    openGraph: {
+      type: "website",
+      siteName: common("brand"),
+      locale: locale === "th" ? "th_TH" : "en_US",
+      title: t("title"),
+      description: t("description"),
+    },
+    twitter: { card: "summary_large_image" },
   };
 }
 

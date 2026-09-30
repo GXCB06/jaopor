@@ -12,6 +12,37 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Phase 0 follow-ups: Facebook preview, blue-tile logo everywhere, Supabase URLs
+
+**Done:**
+
+- **Facebook showed no preview:**
+  - The home page (and every page except profiles) had no Open Graph tags at all.
+  - Added a site-wide OG card (`[locale]/opengraph-image.tsx`: tile, JaoPor, headline, host) and layout `openGraph` + `twitter:card`.
+  - Profiles now send `og:description` (tagline, or the start of the description), `og:url`, `og:site_name`, `og:locale` and a canonical URL.
+  - Removed an inherited `og:url` that would have made every page share as the home page.
+  - Demo projects no longer put sample MRR in the page title.
+- **Logo (user decision):**
+  - The blue app tile is the mark everywhere again: tab icon (`icon.png`/`favicon.ico`/`apple-icon.png` restored), header, footer, login, OG card, share cards and SVG badge.
+  - `<Logo>` renders the tile. The renderers inline it as a data URI (`lib/logo.ts`); the badge CSP allows `img-src data:`.
+  - Removed the spec SVG mark and its files.
+- **Supabase Auth URL configuration** (browser pane, with the user signed in):
+  - The Site URL was set to the callback path; it's now `https://jaopor.vercel.app`.
+  - Added `https://jaopor.vercel.app/api/auth/callback` to the redirect allow-list.
+  - The GitHub OAuth app was updated by the user.
+
+**Files:** `src/app/[locale]/{layout,opengraph-image}.tsx`, `src/app/[locale]/startup/[slug]/{page,opengraph-image}.tsx`, `src/app/api/{badge,share-card}/[slug]/*`, `src/components/{Logo,BrandLogo}.tsx`, `src/lib/{logo,share-palette}.ts`, `src/app/{icon.png,apple-icon.png,favicon.ico}`, `public/icon-{192,512}.png`, `src/assets/jaopor-tile-64.png`, `Design.md`
+**Verified:**
+
+- `npm run typecheck` ✓ · `npm run lint` ✓ · `npm test` 129/129 ✓ · `npm run build` ✓
+- Local, with the Facebook user agent: `/th`, `/en/startups` and profiles all return og:title/description/image/site_name/type.
+- The home OG card, profile OG card, share card and badge render with the tile.
+- Browser pane: the header shows the tile; the icon links point to `icon.png`/`favicon.ico`/`apple-icon.png`.
+- Supabase dashboard shows the new Site URL and 3 redirect URLs.
+- **Not verified:** sign-in end-to-end on production; Facebook's own scrape (it caches the first scrape, so the user re-scrapes via the Sharing Debugger).
+
+**Next:** the user re-scrapes in the Facebook Sharing Debugger and tries sign-in; Phase 1 (configs + migration SQL for approval)
+
 ## 2026-09-30 — Spec Phase 0: fixes & foundation (theme bug, domain, tokens, core components, empty states, Rising Fedora logo)
 
 **Done:**

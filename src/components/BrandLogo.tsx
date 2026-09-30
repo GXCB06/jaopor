@@ -9,7 +9,7 @@ import { Logo, LogoMark } from "./Logo";
 
 /** The mark tile (login, small spots). */
 export function BrandMark({ className }: { className?: string }) {
-  return <LogoMark size={28} className={cn("size-7", className)} />;
+  return <LogoMark size={28} className={className} />;
 }
 
 /** Mark + wordmark (header, footer). */

@@ -57,14 +57,30 @@ export async function generateStaticParams() {
 type Props = PageProps<"/[locale]/startup/[slug]">;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const startup = await getStartupBySlug(slug);
   if (!startup) return {};
-  const verified = startup.verification_status === "verified";
+  // Demo projects carry sample numbers: never put them in a title that gets shared.
+  const verified =
+    startup.verification_status === "verified" && !startup.is_demo;
   const title = verified
     ? `${startup.name} — ${moneyFull(startup.mrr_cents)} MRR`
     : startup.name;
-  return { title, description: startup.tagline ?? undefined };
+  const description = startup.tagline ?? startup.description?.slice(0, 200);
+  // openGraph replaces the layout's object (shallow merge), so repeat siteName/type/locale here.
+  return {
+    title,
+    description,
+    alternates: { canonical: `/${locale}/startup/${startup.slug}` },
+    openGraph: {
+      type: "website",
+      siteName: "JaoPor",
+      locale: locale === "th" ? "th_TH" : "en_US",
+      title,
+      description,
+      url: `/${locale}/startup/${startup.slug}`,
+    },
+  };
 }
 
 /** Localized country name for an ISO 3166 alpha-2 code ("TH" → "ไทย" / "Thailand"). */

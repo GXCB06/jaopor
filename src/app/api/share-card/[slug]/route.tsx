@@ -9,7 +9,7 @@ import {
   type StartupRow,
 } from "@/lib/data/startups";
 import { moneyCompact, moneyFull } from "@/lib/format";
-import { LOGO_SMALL_HAT, LOGO_TILE } from "@/lib/logo";
+import { logoTileDataUri } from "@/lib/logo";
 import { shareMetrics } from "@/lib/share";
 import {
   bucketMonthly,
@@ -77,7 +77,7 @@ export async function GET(
   const C = CARD_THEME[q.theme];
   const accent = SWATCHES[q.color];
   const days = q.kind === "calendar" ? Math.round(q.period * 30.4) : q.period;
-  const [t, series, plex, plexBold, plexThai, plexThaiBold, mono] =
+  const [t, series, plex, plexBold, plexThai, plexThaiBold, mono, tile] =
     await Promise.all([
       getTranslations({ locale: q.locale, namespace: "ShareCard" }),
       q.kind === "badge" ? Promise.resolve(null) : loadSeries(startup, days),
@@ -86,6 +86,7 @@ export async function GET(
       font("ibm-plex-sans-thai-thai-400-normal.woff"),
       font("ibm-plex-sans-thai-thai-700-normal.woff"),
       font("inconsolata-latin-700-normal.woff"),
+      logoTileDataUri(),
     ]);
 
   const verifiedLine = (
@@ -98,11 +99,8 @@ export async function GET(
         fontSize: 18,
       }}
     >
-      <svg width="20" height="20" viewBox="0 0 64 64">
-        <rect width="64" height="64" rx="14" fill={LOGO_TILE} />
-        <path d={LOGO_SMALL_HAT} fill="#ffffff" />
-        <rect x="3" y="39" width="58" height="10" rx="5" fill="#ffffff" />
-      </svg>
+      {/* eslint-disable-next-line @next/next/no-img-element -- rendered by the OG renderer */}
+      <img src={tile} width={20} height={20} alt="" />
       {t("verifiedBy")}
     </div>
   );

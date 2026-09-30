@@ -1,4 +1,3 @@
-import { LOGO_TILE } from "./logo";
 // Design.md §9: the image renderers (OG card, SVG badge, share cards) have no CSS variables,
 // so they share this one palette mirroring the theme tokens in globals.css. Swatches are a
 // fixed list: the share-card route accepts only these ids, never a caller-supplied colour.
@@ -28,7 +27,7 @@ export const CARD_THEME = {
 export type CardTheme = keyof typeof CARD_THEME;
 
 /** Brand mark tile colour (indigo, `--brand` / `--chart-1`). */
-export const BRAND_HEX = LOGO_TILE;
+export const BRAND_HEX = "#6e6cf3";
 
 export const SWATCHES = {
   indigo: "#6e6cf3",

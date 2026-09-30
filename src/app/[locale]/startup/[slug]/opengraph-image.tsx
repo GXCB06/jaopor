@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { getStartupBySlug } from "@/lib/data/startups";
 import { publicEnv } from "@/lib/public-env";
 import { shareMetrics, verifiedSources } from "@/lib/share";
-import { LOGO_BRIM, LOGO_HAT, LOGO_LINE, LOGO_TILE } from "@/lib/logo";
+import { logoTileDataUri } from "@/lib/logo";
 import { BRAND_HEX, CARD_THEME } from "@/lib/share-palette";
 import { logoUrl } from "@/lib/supabase/public";
 
@@ -39,6 +39,7 @@ export default async function Image({
     plexLatin,
     plexLatinBold,
     mono,
+    tile,
   ] = await Promise.all([
     getStartupBySlug(slug),
     getTranslations({ locale, namespace: "Share" }),
@@ -48,6 +49,7 @@ export default async function Image({
     font("ibm-plex-sans-thai-latin-400-normal.woff"),
     font("ibm-plex-sans-thai-latin-700-normal.woff"),
     font("inconsolata-latin-700-normal.woff"),
+    logoTileDataUri(),
   ]);
 
   const metrics = startup ? shareMetrics(startup) : [];
@@ -72,19 +74,8 @@ export default async function Image({
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <svg width="44" height="44" viewBox="0 0 64 64">
-          <rect width="64" height="64" rx="15" fill={LOGO_TILE} />
-          <path d={LOGO_HAT} fill="#ffffff" />
-          <polyline
-            points={LOGO_LINE}
-            fill="none"
-            stroke={LOGO_TILE}
-            strokeWidth="3.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path d={LOGO_BRIM} fill="#ffffff" />
-        </svg>
+        {/* eslint-disable-next-line @next/next/no-img-element -- rendered by the OG renderer */}
+        <img src={tile} width={44} height={44} alt="" />
         <span style={{ fontSize: 30, fontWeight: 700 }}>JaoPor</span>
         {startup?.founding_number ? (
           <span

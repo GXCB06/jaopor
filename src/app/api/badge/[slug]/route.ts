@@ -1,6 +1,6 @@
 import { getStartupBySlug } from "@/lib/data/startups";
 import { badgeValue } from "@/lib/share";
-import { logoMarkInner } from "@/lib/logo";
+import { logoTileSmallDataUri } from "@/lib/logo";
 import { CARD_THEME } from "@/lib/share-palette";
 
 // Design.md §9 embeddable badge: `<img src="/api/badge/<slug>">` on the founder's site/README.
@@ -16,7 +16,7 @@ const MARK = 18;
 const esc = (s: string) =>
   s.replace(/[<>&"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
-function svg(left: string, right: string, light: boolean) {
+function svg(tile: string, left: string, right: string, light: boolean) {
   const leftW = Math.round(PAD + MARK + 6 + left.length * CHAR + PAD);
   const rightW = Math.round(PAD + right.length * CHAR + PAD);
   const w = leftW + rightW;
@@ -30,7 +30,7 @@ function svg(left: string, right: string, light: boolean) {
 <title>${esc(`${left}: ${right}`)}</title>
 <rect x="0.5" y="0.5" width="${w - 1}" height="27" rx="6" fill="${bg}" stroke="${border}"/>
 <rect x="${leftW}" y="1" width="${rightW - 1.5}" height="26" rx="5" fill="${panel}"/>
-<g transform="translate(${PAD} 5) scale(${MARK / 64})">${logoMarkInner({ small: true })}</g>
+<image x="${PAD}" y="5" width="${MARK}" height="${MARK}" href="${tile}"/>
 <g font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size="11" font-weight="700">
 <text x="${PAD + MARK + 6}" y="18" fill="${fg}">${esc(left)}</text>
 <text x="${leftW + PAD}" y="18" fill="${right === "listed" ? fg : value}">${esc(right)}</text>
@@ -51,6 +51,7 @@ export async function GET(
 
   const value = badgeValue(startup);
   const body = svg(
+    await logoTileSmallDataUri(),
     value ? "Verified on JaoPor" : "On JaoPor",
     value ?? "listed",
     light,
@@ -62,7 +63,7 @@ export async function GET(
       "X-Content-Type-Options": "nosniff",
       // An SVG opened directly must not run anything.
       "Content-Security-Policy":
-        "default-src 'none'; style-src 'unsafe-inline'",
+        "default-src 'none'; style-src 'unsafe-inline'; img-src data:",
     },
   });
 }

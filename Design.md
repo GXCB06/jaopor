@@ -109,12 +109,12 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 - **EmptyOwnerCard** (`profile/Owner.tsx`): dashed `border-brand/50 text-brand-text rounded-xl` "+ เพิ่ม{label}" / "+ เชื่อมต่อ{label}" link to the editor anchor; renders **nothing for visitors**. `OwnerOnly` wraps a section that is entirely empty.
 - **UnverifiedLine**: one centered `text-caption text-faint` line "ยังไม่ยืนยัน: รายได้ทั้งหมด, MRR" (+ owner link to connect).
 - **Medal**: ranks 1–3 as a `size-6 rounded-full border-2` numbered ring (gold `warning`, silver `muted-foreground`, bronze `warning/60`); replaces the emoji medals.
-- **Logo** (`components/Logo.tsx`, paths in `lib/logo.ts`): spec §3 "Rising Fedora". `<Logo size variant="full|mark|mono" />`; ≤ 24px uses the simplified hat. Tile `#6e6cf3` in both themes (logo asset, like brand colours). Files: `public/logo.svg`, `public/logo-mono.svg`, `src/app/icon.svg`, `favicon.ico` (16/32/48), `apple-icon.png`, `public/icon-192.png`, `icon-512.png`, `logo-mono-512.png`.
+- **Logo** (`components/Logo.tsx`): `<Logo size variant="full|mark" />` = the user's **blue app tile** (winking fedora mascot on JaoPor blue; `public/brand/jaopor-tile.png`, 128px) + "JaoPor" wordmark (`font-extrabold tracking-[-0.02em]`). User decision 2026-09-30, replacing the spec's SVG "Rising Fedora". Same tile as the tab icon (`src/app/icon.png` 512, `apple-icon.png`, `favicon.ico`, `public/icon-192/512.png`). Image renderers (OG, share cards, badge) inline it as a data URI via `lib/logo.ts` (badge: 64px copy in `src/assets/`).
 
 ### SiteHeader (sticky, ledgerly pattern)
 
 - `sticky top-0 z-40 border-b bg-background`, `h-14`, inner `max-w-6xl`.
-- Left: `BrandLogo` = `<Logo>` (Rising Fedora mark 28px + "JaoPor" `font-extrabold tracking-[-0.02em]`); links home. Gaps `gap-3` below md so the header fits 375px. Nav links `text-xs text-muted-foreground hover:text-foreground` (active `text-foreground`): **Startups · Leaderboard (`/#leaderboard`) · Dashboard**. Hidden below `md`.
+- Left: `BrandLogo` = `<Logo>` (blue app tile 28px + "JaoPor" `font-extrabold tracking-[-0.02em]`); links home. Gaps `gap-3` below md so the header fits 375px. Nav links `text-xs text-muted-foreground hover:text-foreground` (active `text-foreground`): **Startups · Leaderboard (`/#leaderboard`) · Dashboard**. Hidden below `md`.
 - Right: **CurrencyToggle** (฿/$, §3 Currency), **search trigger** (`h-8 rounded-md border bg-card px-2.5 text-xs text-faint` with a search icon, "ค้นหา", and a `kbd` "/"; pressing `/` anywhere focuses the page search or opens `/startups`), primary **"+ เพิ่ม Startup"** (`h-8`, icon-only below `sm`), HeaderAuth (`whitespace-nowrap`), TH/EN (short code `EN`/`TH` below `sm`), ThemeToggle.
 
 ### Hero (home and directory)
@@ -276,10 +276,11 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 
 ## 9. Share assets
 
-- **Brand assets (2026-09-29, from the user):** mascot without background → home hero (`public/brand/jaopor-mascot.webp`, 512px, trimmed). Blue app tile → browser tab / home-screen icons (`src/app/icon.png` 512, `apple-icon.png` 180, `favicon.ico` 16–64; the source's painted checkerboard was cropped away and the corners made transparent). **Superseded 2026-09-30:** the spec "Rising Fedora" SVG (`<Logo>`) is now the mark everywhere (header, footer, login, OG, share cards, badge, all icons); the mascot stays in the hero pill only. `public/brand/jaopor-tile.png` is unused.
+- **Brand assets (2026-09-29, from the user):** mascot without background → home hero (`public/brand/jaopor-mascot.webp`, 512px, trimmed). Blue app tile → browser tab / home-screen icons (`src/app/icon.png` 512, `apple-icon.png` 180, `favicon.ico` 16–64; the source's painted checkerboard was cropped away and the corners made transparent). **2026-09-30 (final, user):** the blue app tile is the mark everywhere: tab icon, header, footer, login, OG, share cards, badge. The spec's SVG "Rising Fedora" was tried and dropped. The mascot without background stays in the hero pill.
 
 - **Which numbers:** `lib/share.ts → shareMetrics()` picks up to 3 **verified** numbers, strongest first: MRR → revenue 30d → visitors 30d → active users → commits.
 - **OG image** (`/[locale]/startup/[slug]/opengraph-image`): 1200×630 dark card (mark, name, tagline, up to 3 metric boxes, "✓ verified via …", URL). Fonts vendored in `src/assets/fonts` (OFL). The OG renderer has no CSS variables, so it keeps one `C` palette mirroring the `.dark` tokens (exception to "no raw hex"); the share-card route shares that palette.
+- **Site OG card** (`/[locale]/opengraph-image`, 2026-09-30): tile + "JaoPor" + the two headline lines (second in brand) + host, on `bg`. Used by every page without its own image. Layout metadata sets `og:title/description/site_name/locale/type` and `twitter:card`; **no `og:url` in the layout** (children would inherit the home URL). Profiles repeat the full `openGraph` object (Next merges it shallowly) with their own `url` + description (tagline, else the first 200 chars of the description). Demo projects never put numbers in the title.
 - **Embeddable badge** (`/api/badge/[slug]`, SVG, 28px high, `?theme=light`) + HTML snippet.
 - **ShareStudio** (§5) replaces the old share dialog and dropdown; the profile Share button opens it.
 - **Card "Copy link"** icon button on every StartupCard.
