@@ -39,7 +39,7 @@ export default async function EditStartupPage({
   ]);
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-8">
+    <main className="mx-auto w-full max-w-5xl px-4 pt-8">
       <h1 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">
         {t("editProfile")} · {startup.name}
       </h1>

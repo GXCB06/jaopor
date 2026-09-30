@@ -323,7 +323,9 @@
     "draftDiscard": "Discard them",
     "stackDetected": "Detected from GitHub: {items}",
     "stackAddDetected": "Add all",
-    "stackGithubHint": "Connect GitHub under “Verify your numbers” and JaoPor fills the stack from your repo"
+    "stackGithubHint": "Connect GitHub under “Verify your numbers” and JaoPor fills the stack from your repo",
+    "nameRequired": "Enter the product name",
+    "provinceRequired": "Choose your province"
   },
   "Errors": {
     "invalid_key": "{source} didn't accept that key or link — check it and paste again.",
@@ -579,5 +581,37 @@
       "mobile": "Mobile",
       "line": "LINE"
     }
+  },
+  "Edit": {
+    "section": {
+      "basics": "Basics",
+      "links": "Links & location",
+      "story": "The story",
+      "stack": "Tech & marketing",
+      "media": "Images & video",
+      "founder": "Founder",
+      "verify": "Verify numbers"
+    },
+    "hint": {
+      "basics": "Name, tagline and a short description people see first",
+      "links": "Links people can actually open, and your province (used for the province Olympics)",
+      "story": "Who it helps, what it solves and what it costs",
+      "stack": "What you built it with and where customers come from",
+      "media": "Screenshots sell a product best; the first one is the cover",
+      "founder": "A short note from you to visitors",
+      "verify": "Connect payments, analytics or GitHub so your numbers are trusted"
+    },
+    "sectionsLabel": "Profile sections",
+    "progress": "Profile {pct}% complete",
+    "nextStep": "Next: {section}",
+    "complete": "Complete",
+    "unsaved": "You have unsaved changes",
+    "allSaved": "Everything is saved",
+    "autofill": "Fill from website",
+    "autofillDone": "Filled {n} fields from your website — review, then save",
+    "undo": "Undo",
+    "autofillNothing": "No empty fields to fill, or nothing found on the website",
+    "autofillNoSite": "Add your website link first",
+    "autofillFailed": "Couldn't read the website, please try again later"
   }
 }

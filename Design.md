@@ -226,6 +226,16 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 - **Demo video** (if set) is the first slide: dark 16:9 card with a centered play button (`size-14 rounded-full bg-background/80`); click swaps in the provider's embed iframe (YouTube nocookie / Loom / TikTok).
 - **Lightbox:** native `<dialog>` (`bg-background/95`, full screen): image `max-h-[85vh] object-contain`, caption + "n / N", ←/→ buttons + keys + swipe, × button; Esc / backdrop click close; focus stays inside (modal dialog).
 
+### Edit page (`/dashboard/[id]/edit`, redesign 2026-09-30, user feedback "too much at once")
+
+- **One section at a time.** Seven sections, each a `Card p-5 space-y-4` with a title (`text-sm font-bold`) and one helper line (`text-caption text-muted-foreground`): 1 ข้อมูลหลัก (name, tagline, description, category, logo) · 2 ลิงก์และที่ตั้ง (links, country, province, founded) · 3 เล่าเรื่องผลงาน (value, problem, audience, pricing, team, funding) · 4 เทคโนโลยีและการตลาด (built with, stack, channels, looking for) · 5 ภาพและวิดีโอ (screenshots, demo video) · 6 ผู้ก่อตั้ง (message, role, build story) · 7 ยืนยันตัวเลข (VerifyPanel).
+- **Section nav:** `lg` = sticky left column (`w-56`), each item icon + name + state (`CheckCircle2` positive when complete, else "2/5" `text-faint`); mobile = horizontal scroll chips under the title. Active item `bg-secondary font-semibold`.
+- **Progress header:** "ข้อมูลครบ {pct}%" + thin bar (`h-1.5 rounded-full bg-secondary` / fill `bg-brand`) + the next missing item as a link.
+- **Footer of each section:** "← ก่อนหน้า" / "ถัดไป →" ghost buttons.
+- **Sticky save bar** (`sticky bottom-0 border-t bg-background/95 backdrop-blur py-3`): left "มีการเปลี่ยนแปลงที่ยังไม่บันทึก" (warning dot) or "บันทึกแล้ว"; right Cancel + Save (primary). Saves the whole form from any section; a validation error jumps to its section.
+- Deep links (`#field`, `#verify-*`, `#screenshots`) open the right section, then scroll + highlight the field.
+- **✨ ช่วยเติมจากเว็บไซต์** (outline button, section 1 header): reads the project's website (+ GitHub README) and fills only **empty** fields, then shows "เติมให้ {n} ช่อง — ตรวจแล้วกดบันทึก · เลิกทำ". Uses a free Gemini key when configured, otherwise the page's own title/description/structured data.
+
 ### ScreenshotsManager (edit form, spec 6.9)
 
 - Drop zone `rounded-xl border border-dashed p-6 text-center` ("ลากไฟล์มาวาง, วาง (Ctrl/Cmd+V) หรือคลิกเพื่อเลือก"), PNG/JPG/WebP ≤ 5MB, max 8. Files are resized in the browser to ≤ 2400px, re-encoded to WebP (drops EXIF/GPS), then uploaded to `screenshots/{startup_id}/{uuid}.webp`.

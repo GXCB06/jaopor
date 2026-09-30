@@ -57,16 +57,20 @@ async function toWebp(
 export function ScreenshotsManager({
   startupId,
   initial,
+  onCountChange,
 }: {
   startupId: number;
   initial: Screenshot[];
+  /** Lets the edit page's progress header count screenshots. */
+  onCountChange?: (count: number) => void;
 }) {
   const t = useTranslations("Shots");
   const [shots, setShots] = useState<Screenshot[]>(initial);
   const shotsRef = useRef(shots);
   useEffect(() => {
     shotsRef.current = shots;
-  }, [shots]);
+    onCountChange?.(shots.length);
+  }, [shots, onCountChange]);
   const [busy, setBusy] = useState(0);
   const [over, setOver] = useState(false);
   const dragFrom = useRef<number | null>(null);
