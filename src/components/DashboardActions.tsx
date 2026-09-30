@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { SourceId } from "@/lib/sources/catalog";
+import { useConfirm } from "@/components/core/useConfirm";
 import { createClient } from "@/lib/supabase/client";
 
 /** Design.md §5 Dashboard startup card: ONE primary action + an overflow "⋯" menu. */
@@ -67,6 +68,8 @@ export function DashboardActions({
     }
   }
 
+  const [confirm, confirmDialog] = useConfirm();
+
   async function copyLink() {
     await navigator.clipboard.writeText(
       new URL(`/startup/${slug}`, window.location.origin).toString(),
@@ -75,18 +78,29 @@ export function DashboardActions({
   }
 
   async function remove() {
-    if (!window.confirm(t("deleteConfirm", { name }))) return;
+    const ok = await confirm({
+      title: t("deleteTitle", { name }),
+      body: t("deleteConfirm", { name }),
+      confirmLabel: t("delete"),
+      destructive: true,
+    });
+    if (!ok) return;
     setBusy(true);
     const db = createClient();
     // Storage can't cascade from SQL: remove the project's screenshot files first (the owner's
-    // storage policies allow it), then the row (screenshot rows cascade).
-    const { data: files } = await db.storage
-      .from("screenshots")
-      .list(String(id), { limit: 100 });
-    if (files?.length)
-      await db.storage
+    // storage policies allow it), then the row (screenshot rows cascade). A storage hiccup must
+    // not block deleting the project.
+    try {
+      const { data: files } = await db.storage
         .from("screenshots")
-        .remove(files.map((f) => `${id}/${f.name}`));
+        .list(String(id), { limit: 100 });
+      if (files?.length)
+        await db.storage
+          .from("screenshots")
+          .remove(files.map((f) => `${id}/${f.name}`));
+    } catch {
+      // ignore
+    }
     const { error } = await db.from("startups").delete().eq("id", id);
     setBusy(false);
     if (error) return toast.error(errors("server"));
@@ -96,6 +110,7 @@ export function DashboardActions({
 
   return (
     <div className="flex items-center gap-2">
+      {confirmDialog}
       {verified ? (
         <Button asChild size="sm" className="px-4">
           <Link href={`/startup/${slug}`}>{t("viewProfile")}</Link>

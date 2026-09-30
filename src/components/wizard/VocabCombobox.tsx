@@ -3,6 +3,7 @@
 import { XIcon, type LucideIcon } from "lucide-react";
 import { useId, useMemo, useRef, useState } from "react";
 import { Glyph, LogoChip } from "@/components/core/LogoChip";
+import { normalizeSearch } from "@/lib/search-text";
 import { cn } from "@/lib/utils";
 import { inputClass } from "./fields";
 
@@ -16,13 +17,8 @@ export type VocabOption = {
   lucideIcon?: LucideIcon;
 };
 
-// Thai tone marks / vowels shouldn't block a match ("เชียงใหม" still finds "เชียงใหม่").
-const norm = (s: string) =>
-  s
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[̀-ͯัิ-ฺ็-๎]/g, "")
-    .replace(/[^\p{L}\p{N}]+/gu, "");
+// Shared with QuickSearch: Thai tone marks, case and punctuation don't block a match.
+const norm = normalizeSearch;
 
 /**
  * Design.md §5 VocabCombobox (spec 6.9): searchable select with logo chips. `multiple` keeps

@@ -2,7 +2,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BrandPill } from "@/components/BrandLogo";
 import { LeaderboardCard, type BoardRow } from "@/components/LeaderboardCard";
 import { ProviderStrip } from "@/components/ProviderStrip";
-import { SearchBar } from "@/components/SearchBar";
+import { AddStartupButton, QuickSearch } from "@/components/search/QuickSearch";
+import { QuickSearchSection } from "@/components/search/QuickSearchSection";
 import { StartupCard } from "@/components/StartupCard";
 import { Link } from "@/i18n/navigation";
 import {
@@ -105,8 +106,9 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <div className="mb-6">
           <ProviderStrip />
         </div>
-        <div className="w-full max-w-xl">
-          <SearchBar locale={locale} />
+        <div className="flex w-full max-w-xl items-start gap-2 text-left">
+          <QuickSearch />
+          <AddStartupButton />
         </div>
         <nav className="mt-3 flex items-center gap-2 text-caption text-faint">
           <Link href="/new" className={subLink}>
@@ -147,6 +149,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <div className="mt-9">
         <LeaderboardCard boards={boards} thbPerUsd={thbPerUsd} />
       </div>
+      <QuickSearchSection />
     </main>
   );
 }

@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BrandPill } from "@/components/BrandLogo";
 import { ProviderStrip } from "@/components/ProviderStrip";
-import { SearchBar } from "@/components/SearchBar";
+import { AddStartupButton, QuickSearch } from "@/components/search/QuickSearch";
+import { QuickSearchSection } from "@/components/search/QuickSearchSection";
 import { StartupCard } from "@/components/StartupCard";
 import { Link } from "@/i18n/navigation";
 import { AI_TOOLS, CATEGORIES, isAiTool, isCategory } from "@/lib/catalog";
@@ -17,6 +18,8 @@ import {
 } from "@/lib/data/startups";
 import { getThbPerUsd } from "@/lib/data/fx";
 import { LOOKING_FOR, type LookingFor } from "@/lib/links";
+import { localizedName } from "@/lib/config/localized";
+import { PROVINCE_LIST, REGION_LIST, isProvince } from "@/lib/config/provinces";
 import { categoryName } from "@/lib/config/display";
 import { aiToolLabel } from "@/lib/config/stack";
 
@@ -55,13 +58,24 @@ export default async function StartupsPage({
   const verified = one(sp.verified) === "1";
   const type = pick<ProjectType>(PROJECT_TYPES, one(sp.type));
   const lookingFor = pick<LookingFor>(LOOKING_FOR, one(sp.lookingFor));
+  const province = isProvince(one(sp.province)) ? one(sp.province) : undefined;
   const sort = pick<DirectorySort>(DIRECTORY_SORTS, one(sp.sort)) ?? "mrr";
   const page = Math.max(1, Number(one(sp.page)) || 1);
 
   const [t, lf, { rows, total }, thbPerUsd] = await Promise.all([
     getTranslations("Directory"),
     getTranslations("LookingFor"),
-    listStartups({ q, category, tool, verified, type, lookingFor, sort, page }),
+    listStartups({
+      q,
+      category,
+      tool,
+      verified,
+      type,
+      lookingFor,
+      province,
+      sort,
+      page,
+    }),
     getThbPerUsd(),
   ]);
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -73,6 +87,7 @@ export default async function StartupsPage({
     verified: verified ? "1" : undefined,
     type,
     lookingFor,
+    province,
     sort: sort === "mrr" ? undefined : sort,
   };
   const href = (patch: Record<string, string | undefined>) => ({
@@ -89,6 +104,7 @@ export default async function StartupsPage({
     verified || undefined,
     type,
     lookingFor,
+    province,
   ].filter(Boolean).length;
 
   // GET form: works without JS. Changing a select needs "Apply" (no client code here).
@@ -111,6 +127,24 @@ export default async function StartupsPage({
             <option key={c} value={c}>
               {categoryName(c, locale)}
             </option>
+          ))}
+        </select>
+      </Field>
+      <Field label={t("province")}>
+        <select
+          name="province"
+          defaultValue={province ?? ""}
+          className={selectCls}
+        >
+          <option value="">{t("allProvinces")}</option>
+          {REGION_LIST.map((r) => (
+            <optgroup key={r.slug} label={localizedName(r, locale)}>
+              {PROVINCE_LIST.filter((p) => p.region === r.slug).map((p) => (
+                <option key={p.slug} value={p.slug}>
+                  {localizedName(p, locale)}
+                </option>
+              ))}
+            </optgroup>
           ))}
         </select>
       </Field>
@@ -186,12 +220,9 @@ export default async function StartupsPage({
         <div className="mb-6">
           <ProviderStrip />
         </div>
-        <div className="w-full max-w-xl">
-          <SearchBar
-            locale={locale}
-            defaultValue={q}
-            autoFocus={one(sp.focus) === "1"}
-          />
+        <div className="flex w-full max-w-xl items-start gap-2 text-left">
+          <QuickSearch defaultValue={q} autoFocus={one(sp.focus) === "1"} />
+          <AddStartupButton />
         </div>
       </section>
 
@@ -291,6 +322,7 @@ export default async function StartupsPage({
           )}
         </section>
       </div>
+      <QuickSearchSection />
     </main>
   );
 }

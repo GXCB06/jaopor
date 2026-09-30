@@ -12,6 +12,36 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Spec Phase 4: QuickSearch + search_startups; delete/disconnect confirm fix
+
+**Done:**
+
+- **Delete project did nothing (user report):** `window.confirm` is blocked in the Claude app's browser and silently returned "cancel", so no request was ever sent (logs showed no DELETE). Replaced it with an in-page `useConfirm` dialog for **delete project** and **disconnect source**. Screenshot-file cleanup can no longer block the delete.
+- **Migration `search_startups` applied (user-approved):** ILIKE on name/slug/tagline/description + trigram similarity on the name, wildcards escaped, security invoker (published only). Ranking: exact → prefix → verified → MRR → similarity.
+- **`GET /api/search?q=&locale=`:** startups (RPC) + categories and provinces matched from `lib/config` (Thai tone marks ignored, slugs match: "mukda" → มุกดาหาร). Empty q → "ยอดนิยม". Edge-cached 30 s.
+- **`QuickSearch`** (spec 6.8), in the hero (home, directory) and a new **bottom section "หาผลงานอื่นต่อ"** on home, directory and startup detail:
+  - 200 ms debounce with aborted stale requests.
+  - Grouped results (startups with logo, highlighted match, verified source; categories; provinces with region), plus "ดูผลลัพธ์ทั้งหมด".
+  - Skeletons and a no-results line linking to /new.
+  - ↑/↓/Enter/Esc/click-outside, ARIA combobox/listbox.
+  - Opens upward when less than 440px is below.
+  - Phones: the same element becomes a full-screen sheet (no remount, so the keyboard stays open) with scroll lock.
+- **Directory:** province filter (grouped by region) + `?province=`. Text search now also matches slug and description, the same as QuickSearch.
+- `SearchBar` removed; VocabCombobox shares `normalizeSearch`.
+- **Gemini key:** the user pasted it in chat. I did not store it anywhere (I can't set Vercel env and don't enter keys). The user adds `GEMINI_API_KEY` in Vercel.
+
+**Files:** `supabase/migrations/20260930102108_search_startups.sql`, `src/lib/supabase/database.types.ts`, `src/lib/data/startups.ts`, `src/lib/search-text.ts` (+ test), `src/app/api/search/route.ts`, `src/components/search/{QuickSearch,QuickSearchSection}.tsx`, `src/components/core/useConfirm.tsx`, `src/components/{DashboardActions}.tsx`, `src/components/wizard/{VerifyPanel,VocabCombobox}.tsx`, `src/app/[locale]/{page,startups/page,startup/[slug]/page}.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- SQL as anon: "raan"→RaanDee POS, "saa"→MRRMafia, "%"/blank → none, max_rows respected. Advisors: nothing new.
+- `npm test` 170/170 (new: normalizer, category/province matching, highlight split) · typecheck ✓ · lint ✓ · build ✓
+- Browser pane (local):
+  - Hero "ร้าน" → RaanDee POS / RaakaDee + category "อาหารและร้านอาหาร" with the match highlighted; ↓ + Enter opened RaanDee.
+  - 375px bottom section → full-screen sheet; typing "mukda" → มุกดาหาร; tapping it → `/startups?province=mukdahan` (2 projects, filter preselected); scroll lock released; no horizontal scroll.
+- **Not verified:** "พ่อ" → "เจ้าพ่อ" (no project text contains it yet; substring matching is proven by "ร้าน"); the delete dialog end-to-end (the user tries it; only the dialog/cancel path is checked).
+
+**Next:** user adds `GEMINI_API_KEY` in Vercel and redeploys; Phase 5 (categories page)
+
 ## 2026-09-30 — Edit page redesign (user feedback), free "fill from website" helper, avatar menu; Phase 4 SQL drafted
 
 **Done:**

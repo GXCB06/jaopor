@@ -475,7 +475,21 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      search_startups: {
+        Args: { max_rows?: number; q: string };
+        Returns: {
+          category: string;
+          id: number;
+          is_demo: boolean;
+          logo_path: string;
+          mrr_cents: number;
+          name: string;
+          slug: string;
+          tagline: string;
+          verification_status: string;
+          verified_provider: string;
+        }[];
+      };
     };
     Enums: {
       [_ in never]: never;

@@ -34,6 +34,7 @@ import { MetricChart } from "@/components/MetricChart";
 import { ScreenshotGallery } from "@/components/profile/ScreenshotGallery";
 import { ShareStudio } from "@/components/share/ShareStudio";
 import { FoundingBadge, Money, StartupLogo } from "@/components/StartupBits";
+import { QuickSearchSection } from "@/components/search/QuickSearchSection";
 import { StartupCard } from "@/components/StartupCard";
 import { Link } from "@/i18n/navigation";
 import { getThbPerUsd } from "@/lib/data/fx";
@@ -402,6 +403,7 @@ export default async function StartupPage({ params }: Props) {
             </div>
           </section>
         )}
+        <QuickSearchSection />
       </main>
     </OwnerProvider>
   );

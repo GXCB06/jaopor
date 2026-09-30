@@ -143,7 +143,9 @@
       "visitors": "Most visitors",
       "commits": "Most commits",
       "newest": "Newest"
-    }
+    },
+    "province": "Province",
+    "allProvinces": "All provinces"
   },
   "Profile": {
     "visit": "Visit",
@@ -352,7 +354,7 @@
     "refresh": "Refresh numbers",
     "refreshed": "Numbers updated",
     "delete": "Delete",
-    "deleteConfirm": "Delete {name}? This removes its profile and revenue history.",
+    "deleteConfirm": "The profile, screenshots and all number history are deleted for good. This can't be undone.",
     "deleted": "Startup deleted",
     "hidden": "Hidden by moderators",
     "lastSync": "Last sync {time}",
@@ -369,7 +371,8 @@
     "addMore": "{count, plural, =0 {All done, nice!} one {Add # more field to stand out} other {Add # more fields to stand out}}",
     "mrr": "MRR",
     "revenue30d": "Revenue (30d)",
-    "lastSyncLabel": "Last sync"
+    "lastSyncLabel": "Last sync",
+    "deleteTitle": "Delete {name}?"
   },
   "Links": {
     "website": "Website",
@@ -614,5 +617,17 @@
     "autofillNothing": "No empty fields to fill, or nothing found on the website",
     "autofillNoSite": "Add your website link first",
     "autofillFailed": "Couldn't read the website, please try again later"
+  },
+  "Search": {
+    "placeholder": "Search products, categories or provinces…",
+    "groupStartups": "Startups",
+    "groupCategories": "Categories",
+    "groupProvinces": "Provinces",
+    "popular": "Popular",
+    "noResults": "No results for “{q}” ·",
+    "addFirst": "be the first to add yours",
+    "seeAll": "See all results for “{q}”",
+    "close": "Close search",
+    "sectionTitle": "Find more products"
   }
 }

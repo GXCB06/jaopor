@@ -122,6 +122,7 @@ export type DirectoryFilters = {
   verified?: boolean;
   type?: ProjectType;
   lookingFor?: LookingFor;
+  province?: string;
   sort?: DirectorySort;
   page?: number;
 };
@@ -140,6 +141,7 @@ export async function listStartups(
 ): Promise<{ rows: StartupRow[]; total: number }> {
   let query = db().from("startups").select(SELECT, { count: "exact" });
   if (filters.category) query = query.eq("category", filters.category);
+  if (filters.province) query = query.eq("province", filters.province);
   if (filters.tool) query = query.contains("ai_tools", [filters.tool]);
   if (filters.verified) query = query.eq("verification_status", "verified");
   if (filters.lookingFor)
@@ -153,7 +155,11 @@ export async function listStartups(
       .replace(/[%,()*\\]/g, " ")
       .trim()
       .slice(0, 60);
-    if (term) query = query.or(`name.ilike.%${term}%,tagline.ilike.%${term}%`);
+    // Same fields as the search_startups RPC (QuickSearch), so "see all results" matches it.
+    if (term)
+      query = query.or(
+        `name.ilike.%${term}%,slug.ilike.%${term}%,tagline.ilike.%${term}%,description.ilike.%${term}%`,
+      );
   }
   const page = Math.max(1, filters.page ?? 1);
   const { data, error, count } = await query
@@ -355,4 +361,63 @@ export async function getScreenshots(startupId: number): Promise<Screenshot[]> {
     .order("id");
   if (error) throw error;
   return data as Screenshot[];
+}
+
+export type SearchHit = {
+  id: number;
+  slug: string;
+  name: string;
+  tagline: string | null;
+  logo_path: string | null;
+  category: string;
+  verified: boolean;
+  /** Verifying revenue provider id when verified (e.g. "stripe"). */
+  provider: string | null;
+  is_demo: boolean;
+};
+
+/** Spec 6.8: startup hits for QuickSearch (RPC search_startups; published only via RLS). */
+export async function searchStartups(q: string, max = 6): Promise<SearchHit[]> {
+  const { data, error } = await db().rpc("search_startups", {
+    q: q.slice(0, 60),
+    max_rows: max,
+  });
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    slug: r.slug,
+    name: r.name,
+    tagline: r.tagline,
+    logo_path: r.logo_path,
+    category: r.category,
+    verified: r.verification_status === "verified" && !r.is_demo,
+    provider: r.verified_provider,
+    is_demo: r.is_demo,
+  }));
+}
+
+/** Spec 6.8 "ยอดนิยม": what an empty, focused search shows (verified first, then MRR, then new). */
+export async function popularStartups(max = 5): Promise<SearchHit[]> {
+  const { data, error } = await db()
+    .from("startups")
+    .select(
+      "id, slug, name, tagline, logo_path, category, verification_status, verified_provider, is_demo",
+    )
+    .order("is_demo", { ascending: true })
+    .order("verification_status", { ascending: false })
+    .order("mrr_cents", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false })
+    .limit(max);
+  if (error) throw error;
+  return data.map((r) => ({
+    id: r.id,
+    slug: r.slug,
+    name: r.name,
+    tagline: r.tagline,
+    logo_path: r.logo_path,
+    category: r.category,
+    verified: r.verification_status === "verified" && !r.is_demo,
+    provider: r.verified_provider,
+    is_demo: r.is_demo,
+  }));
 }

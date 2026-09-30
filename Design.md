@@ -136,10 +136,15 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 - Label `text-caption text-muted-foreground`, then one row of **real provider logos** (user request 2026-09-30): `size-8 rounded-lg` tiles in the brand's own colour with the glyph in white (dark glyph on yellow brands), `ring-1 ring-border` so black tiles show on the dark page. Hover/focus shows a tooltip with the name (`bg-popover border rounded-md text-xs`). Upcoming sources are the same tiles at `opacity-40` with "coming soon" in the tooltip.
 - Logos: Simple Icons SVG paths (CC0) in `src/lib/brand-icons.ts`, used only to say which service verifies a number (no endorsement implied). Polar has no Simple Icons entry, so it's a letter tile. Brand colours are the second hex exception after the image renderers.
 
-### SearchBar
+### QuickSearch (spec 6.8, Phase 4 — replaces SearchBar)
 
-- Input `h-9 rounded-md border-input bg-card pl-9 text-xs placeholder:text-faint`, leading search icon, trailing `kbd` "/" (hidden on mobile). Placeholder is an example query in quotes.
-- Right: primary button `+ เพิ่ม Startup` (`bg-primary text-primary-foreground h-9 rounded-md px-3.5 text-xs font-semibold`; icon-only below `sm` so the input keeps its width).
+- One client component, used in the **hero** (home, directory) and the **bottom section** (home, directory, startup detail; later categories / olympics / province). Input = `h-9 rounded-md border border-input bg-card pl-9 text-xs` + search icon + `kbd "/"` (sm+), inside a GET `form role="search"` to `/startups?q=` (works without JS); "+ เพิ่ม Startup" primary button next to it.
+- Search starts at 1 character, 200 ms debounce, stale requests aborted. `GET /api/search?q=&locale=`.
+- **Panel:** `absolute z-30 w-full rounded-xl border bg-popover shadow-lg max-h-[420px] overflow-y-auto p-1.5`; opens **upward** when less than 440px is left below the input; never off-screen. Groups with `text-3xs uppercase text-faint` headers: **สตาร์ทอัพ** (≤ 6: logo 28 · name with the match in `<mark class="bg-brand/20 text-foreground rounded-sm">` · verified check + source · 1-line tagline) · **หมวดหมู่** (icon + name) · **จังหวัด** (name + region). Empty groups hidden. Last row: "ดูผลลัพธ์ทั้งหมดสำหรับ “{q}” →".
+- Focused + empty: "ยอดนิยม" (5 startups) + 8 category chips. Loading: 3 skeleton rows. No results: "ไม่พบ “{q}” · เพิ่มผลงานของคุณเป็นคนแรก" (link to /new).
+- Keyboard: ↑/↓ (scrolls into view), Enter opens, Esc closes, click outside closes. ARIA combobox + listbox, options have ids for `aria-activedescendant`.
+- **Mobile (< 640px):** focusing opens a full-screen sheet (`fixed inset-0 z-50 bg-background`) with the input pinned at the top, a close button and the same results.
+- **Bottom section:** `border-t pt-12 mt-16`, centered `max-w-[640px]`: muted heading "หาผลงานอื่นต่อ" (`text-sm text-muted-foreground`), the QuickSearch row, then chips (top 8 categories).
 
 ### Buttons
 
@@ -225,6 +230,10 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 - Caption under each (`text-caption text-muted-foreground`). Images lazy after the first 2; `bg-muted` skeleton behind (no blur data stored).
 - **Demo video** (if set) is the first slide: dark 16:9 card with a centered play button (`size-14 rounded-full bg-background/80`); click swaps in the provider's embed iframe (YouTube nocookie / Loom / TikTok).
 - **Lightbox:** native `<dialog>` (`bg-background/95`, full screen): image `max-h-[85vh] object-contain`, caption + "n / N", ←/→ buttons + keys + swipe, × button; Esc / backdrop click close; focus stays inside (modal dialog).
+
+### ConfirmDialog (`useConfirm`, 2026-09-30)
+
+- Every destructive confirm (delete project, disconnect a source) is an in-page `Dialog sm:max-w-sm`: bold title question ("ลบ {name}?"), one consequence line (`text-caption`), Cancel (outline) + destructive button (autofocus). Never `window.confirm` (embedded browsers block it; it silently returned "cancel" in the Claude app browser).
 
 ### Edit page (`/dashboard/[id]/edit`, redesign 2026-09-30, user feedback "too much at once")
 

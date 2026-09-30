@@ -15,6 +15,7 @@ import {
   type SourceKind,
 } from "@/lib/sources/catalog";
 import { publicEnv } from "@/lib/public-env";
+import { useConfirm } from "@/components/core/useConfirm";
 import { cn } from "@/lib/utils";
 import { copy } from "@/components/share/copy";
 import { Field, inputClass } from "./fields";
@@ -412,11 +413,16 @@ function ConnectedRow({
   const [busy, setBusy] = useState(false);
   const { source } = connection;
   const url = `/api/startups/${startupId}/sources/${source}`;
+  const [confirm, confirmDialog] = useConfirm();
 
   async function act(method: "PATCH" | "DELETE") {
     if (
       method === "DELETE" &&
-      !window.confirm(t("disconnectConfirm", { source: SOURCE_NAME[source] }))
+      !(await confirm({
+        title: t("disconnectConfirm", { source: SOURCE_NAME[source] }),
+        confirmLabel: t("disconnect"),
+        destructive: true,
+      }))
     )
       return;
     setBusy(true);
@@ -440,6 +446,7 @@ function ConnectedRow({
     const waiting = connection.status === "pending";
     return (
       <div className="space-y-3 rounded-md bg-muted/40 p-3 text-sm">
+        {confirmDialog}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p
             className={cn(
@@ -492,6 +499,7 @@ function ConnectedRow({
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-muted/40 p-3 text-sm">
+      {confirmDialog}
       <div className="min-w-0 space-y-0.5">
         <p
           className={
