@@ -4,6 +4,7 @@ import { LeaderboardCard, type BoardRow } from "@/components/LeaderboardCard";
 import { ProviderStrip } from "@/components/ProviderStrip";
 import { AddStartupButton, QuickSearch } from "@/components/search/QuickSearch";
 import { QuickSearchSection } from "@/components/search/QuickSearchSection";
+import { HomeTeasers } from "@/components/home/HomeTeasers";
 import { StartupCard } from "@/components/StartupCard";
 import { Link } from "@/i18n/navigation";
 import {
@@ -62,7 +63,8 @@ function boardRow(s: StartupRow, metric: BoardMetric): BoardRow {
   };
 }
 
-// Design.md §6 Home: hero · Recently listed · Top traction · LeaderboardCard.
+// Design.md §6 Home: hero · Recently listed · Top traction · LeaderboardCard · teasers ·
+// QuickSearch. "+ เพิ่ม Startup" appears only in the nav and the hero (spec 6.2).
 export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -100,7 +102,10 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             href="/startups"
             className="whitespace-nowrap text-foreground underline underline-offset-4"
           >
-            {t("explore", { total: counts.total })}
+            {/* Spec 6.2: a small number reads as "empty site", so the count shows from 20. */}
+            {counts.total >= 20
+              ? t("explore", { total: counts.total })
+              : t("exploreAll")}
           </Link>
         </p>
         <div className="mb-6">
@@ -111,8 +116,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           <AddStartupButton />
         </div>
         <nav className="mt-3 flex items-center gap-2 text-caption text-faint">
-          <Link href="/new" className={subLink}>
-            {nav("addStartup")}
+          <Link href="/categories" className={subLink}>
+            {nav("categories")}
+          </Link>
+          {dot}
+          <Link href="/olympics" className={subLink}>
+            {nav("olympics")}
           </Link>
           {dot}
           <Link
@@ -120,10 +129,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             className={subLink}
           >
             {nav("leaderboard")}
-          </Link>
-          {dot}
-          <Link href="/dashboard" className={subLink}>
-            {nav("dashboard")}
           </Link>
         </nav>
       </section>
@@ -149,7 +154,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <div className="mt-9">
         <LeaderboardCard boards={boards} thbPerUsd={thbPerUsd} />
       </div>
-      <QuickSearchSection />
+      <HomeTeasers thbPerUsd={thbPerUsd} />
+      <QuickSearchSection add={false} chips={false} />
     </main>
   );
 }
@@ -199,17 +205,11 @@ function CardRow({
   );
 }
 
-async function EmptyState({ text }: { text: string }) {
-  const nav = await getTranslations("Nav");
+// No button here: the hero's "+ เพิ่ม Startup" is right above (spec 6.2: the CTA at most twice).
+function EmptyState({ text }: { text: string }) {
   return (
     <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-8 text-center">
       <p className="text-xs text-muted-foreground">{text}</p>
-      <Link
-        href="/new"
-        className="inline-flex h-8 items-center rounded-md bg-primary px-3.5 text-xs font-semibold text-primary-foreground"
-      >
-        {nav("addStartup")}
-      </Link>
     </div>
   );
 }

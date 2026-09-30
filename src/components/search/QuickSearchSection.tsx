@@ -2,10 +2,19 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { CATEGORY_LIST } from "@/lib/config/categories";
 import { localizedName } from "@/lib/config/localized";
+import { cn } from "@/lib/utils";
 import { AddStartupButton, QuickSearch } from "./QuickSearch";
 
 /** Design.md §5 QuickSearch bottom section (spec 6.8): "หาผลงานอื่นต่อ" above the footer. */
-export async function QuickSearchSection() {
+export async function QuickSearchSection({
+  add = true,
+  chips = true,
+}: {
+  /** Home hides the Add button (spec 6.2: the CTA appears at most twice per page). */
+  add?: boolean;
+  /** Home hides the category chips (its categories teaser already lists them). */
+  chips?: boolean;
+} = {}) {
   const [t, locale] = await Promise.all([
     getTranslations("Search"),
     getLocale(),
@@ -21,9 +30,14 @@ export async function QuickSearchSection() {
         </h2>
         <div className="flex items-start gap-2 text-left">
           <QuickSearch />
-          <AddStartupButton />
+          {add && <AddStartupButton />}
         </div>
-        <div className="flex flex-wrap justify-center gap-1.5">
+        <div
+          className={cn(
+            "flex flex-wrap justify-center gap-1.5",
+            !chips && "hidden",
+          )}
+        >
           {CATEGORY_LIST.slice(0, 8).map((c) => (
             <Link
               key={c.slug}

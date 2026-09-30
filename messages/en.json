@@ -60,7 +60,11 @@
     "verifiedBy": "Numbers verified by:",
     "comingSoon": "coming soon",
     "explore": "Explore all {total} projects",
-    "topTraction": "Top traction"
+    "topTraction": "Top traction",
+    "exploreAll": "Explore all projects",
+    "categoriesTeaser": "Explore categories",
+    "olympicsTeaser": "Province Olympics",
+    "olympicsTeaserSub": "Ranked by verified revenue"
   },
   "Catalog": {
     "audience": {
@@ -114,7 +118,8 @@
     "showAll": "Show all ({count}) ↓",
     "showLess": "Show less ↑",
     "footer": "Verified numbers only · synced from Stripe, RevenueCat, Plausible, Umami, GitHub",
-    "demo": "Demo"
+    "demo": "Demo",
+    "emptyCta": "Verify your numbers"
   },
   "Directory": {
     "title": "All startups",

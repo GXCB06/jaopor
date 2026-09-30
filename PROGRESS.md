@@ -12,6 +12,30 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Migrations applied + deployed; JaoPor counts its own visitors; spec Phase 7 home polish
+
+**Done:**
+
+- **Applied (user: "apply"):** `category_counts`, `stack_vocab_v2`, `province_leaderboard`. Fix before applying: the IN parameter `region` and the OUT column `region` can't share a name, so the output column is `region_slug` (types regenerated and identical to the hand edits).
+- **Deployed** Phase 6 + tech stack v2 (commit 0a5972e). Production `/th/olympics` and `/th/province/mukdahan` answer 200.
+- **JaoPor snippet on jaopor.vercel.app (user: "Yes"):** `<script defer src="/v.js" data-project="jaopor">` in the locale layout, production builds only (confirmed in the production HTML). Counting starts when the owner presses "เริ่มนับ" in the dashboard's traffic section (no `jaopor` connection exists yet; /api/collect ignores hits until then).
+- **Phase 7 (spec 6.2):**
+  - "ดูผลงานทั้งหมด {n} ชิ้น" shows the number only from 20 projects.
+  - "+ เพิ่ม Startup" only in the nav and the hero. Hero sub-links are now หมวดหมู่ · โอลิมปิก · กระดานผู้นำ; the empty "recent" state and the bottom QuickSearch lost their Add buttons.
+  - New HomeTeasers: "สำรวจหมวดหมู่" (8 busiest categories with counts) and "โอลิมปิกจังหวัด" (top 3 provinces, hidden while none is ranked).
+  - Leaderboard empty state gets "ยืนยันตัวเลขของคุณ →".
+
+**Files:** `supabase/migrations/20260930144541_province_leaderboard.sql`, `supabase/tests/rls_smoke.sql` (T36–T38), `src/lib/olympics{,.test}.ts`, `src/lib/supabase/database.types.ts`, `src/app/[locale]/{layout,page}.tsx`, `src/components/home/HomeTeasers.tsx`, `src/components/search/QuickSearchSection.tsx`, `src/components/LeaderboardCard.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- As anon: `province_leaderboard('revenue')` → mukdahan 0, `('commits')` → mukdahan 46, `('commits','north')` and an invalid metric → no rows; `category_counts()` → ai 1.
+- Stack trigger: language/services/nocode accepted, `javascriptx` rejected (rolled back). RLS smoke **38/38** (new T36 new stack groups, T37/T38 anon calls the RPCs). Advisors: nothing new (the old leaked-password WARN is a dashboard setting).
+- `npm test` 180/180 · typecheck ✓ · lint ✓ · build ✓
+- Browser pane (local) home at 1280 and 375: no horizontal scroll; visible Add links = header + hero (+ footer text link); teasers render (categories chips; มุกดาหาร #1 ฿0).
+- **Not verified:** home with 200 projects (layout caps: 6 cards per row, leaderboard 10 → 50, 8 chips, 3 provinces; the count appears from 20).
+
+**Next:** user presses "เริ่มนับ" for JaoPor's own traffic; Phase 8/9 plans (parked) when the user says go
+
 ## 2026-09-30 — Spec Phase 6: Province Olympics; tech stack v2 + "ดึงจาก GitHub"
 
 **Done:**

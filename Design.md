@@ -286,6 +286,13 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
 - Counts = listed projects (published, demo excluded) from `category_counts()`.
 - Bottom QuickSearch section.
 
+### HomeTeasers (home, spec 6.2, Phase 7)
+
+- After the LeaderboardCard: `grid gap-3 md:grid-cols-2`. Left `Card p-5` "สำรวจหมวดหมู่" + "ดูทั้งหมด ›" (`text-caption text-faint`) → 8 busiest categories as chips (`rounded-full border bg-secondary px-2.5 py-1 text-caption`, lucide icon `size-3.5`, bold count when > 0) → `/startups?category=`. Right `Card p-5` "โอลิมปิกจังหวัด" → top 3 provinces (Medal · ProvinceBadge `h-8 w-11` · name · total) + caption "จัดอันดับจากรายได้ที่ยืนยันแล้ว". No ranked province → the Olympics card is omitted and categories take the full width.
+- Home CTA rule: "+ เพิ่ม Startup" only in the header and the hero. The hero sub-links are หมวดหมู่ · โอลิมปิก · กระดานผู้นำ; the "Recently added" empty state has no button; the bottom QuickSearch section renders without its Add button and chips (`add={false} chips={false}`).
+- Hero "ดูผลงานทั้งหมด {n} ชิ้น" shows the number only from 20 projects ("ดูผลงานทั้งหมด" below).
+- LeaderboardCard empty state: "ยังไม่มีตัวเลขที่ยืนยัน… มาเป็นคนแรกบนกระดาน" + `text-brand-text` link "ยืนยันตัวเลขของคุณ →" (/dashboard).
+
 ### Olympics page (`/[locale]/olympics`, spec 6.7, Phase 6)
 
 - `main max-w-6xl`: breadcrumb → H1 "โอลิมปิกจังหวัด" → subtitle → QuickSearch + "+ เพิ่ม Startup" (max 640px).
@@ -346,14 +353,14 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 
 ## 6. Page templates
 
-| Route              | Structure (top → bottom)                                                                                                                                                                                     |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `/` Home           | Header · Hero (pill, H1, subline, ProviderStrip, SearchBar, links) · **Recently listed** (5 compact cards) · **Top traction** (5 compact cards, by verified visitors/commits) · **LeaderboardCard** · Footer |
-| `/startups`        | Header · Hero · FilterSidebar + results header + large card grid + pagination                                                                                                                                |
-| `/startup/[slug]`  | Breadcrumb · Profile header (logo, name, description, Share, Visit) · links + LookingFor · StatCards (data only) · RevenueChartCard (Stripe) · VerifiedStamp · TractionTiles · InsightsGrid · More startups  |
-| `/dashboard`       | Title + "+ Add Startup" · Dashboard startup cards                                                                                                                                                            |
-| Add-startup wizard | 2 steps: 1) name · project link (auto-detected) · category · built with · looking for · logo → 2) VerifyPanel or skip                                                                                        |
-| `/acquire`         | Phase 2: Directory layout + price/multiple filters and FOR SALE tags                                                                                                                                         |
+| Route              | Structure (top → bottom)                                                                                                                                                                                                                                                            |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/` Home           | Header · Hero (pill, H1, subline, ProviderStrip, SearchBar, links) · **Recently listed** (5 compact cards) · **Top traction** (5 compact cards, by verified visitors/commits) · **LeaderboardCard** · **HomeTeasers** (categories + Olympics) · QuickSearch (no Add/chips) · Footer |
+| `/startups`        | Header · Hero · FilterSidebar + results header + large card grid + pagination                                                                                                                                                                                                       |
+| `/startup/[slug]`  | Breadcrumb · Profile header (logo, name, description, Share, Visit) · links + LookingFor · StatCards (data only) · RevenueChartCard (Stripe) · VerifiedStamp · TractionTiles · InsightsGrid · More startups                                                                         |
+| `/dashboard`       | Title + "+ Add Startup" · Dashboard startup cards                                                                                                                                                                                                                                   |
+| Add-startup wizard | 2 steps: 1) name · project link (auto-detected) · category · built with · looking for · logo → 2) VerifyPanel or skip                                                                                                                                                               |
+| `/acquire`         | Phase 2: Directory layout + price/multiple filters and FOR SALE tags                                                                                                                                                                                                                |
 
 ## 7. States
 

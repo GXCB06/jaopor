@@ -83,9 +83,15 @@ export function LeaderboardCard({
       </div>
 
       {rows.length === 0 ? (
-        <p className="px-5 py-10 text-center text-xs text-muted-foreground">
-          {t("empty")}
-        </p>
+        <div className="flex flex-col items-center gap-2 px-5 py-10 text-center">
+          <p className="text-xs text-muted-foreground">{t("empty")}</p>
+          <Link
+            href="/dashboard"
+            className="text-caption font-medium text-brand-text hover:underline"
+          >
+            {t("emptyCta")} →
+          </Link>
+        </div>
       ) : (
         <table className="w-full table-fixed text-left">
           <thead>
