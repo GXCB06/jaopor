@@ -6,7 +6,9 @@ import { getProvince, getRegion } from "./provinces";
 import {
   STACK_GROUP_LABEL,
   STACK_LIST,
+  STACK_CUSTOM_PREFIX,
   STORED_STACK_GROUPS,
+  isCustomStackValue,
   type StackItem,
   type StoredStackGroup,
   type TechStack,
@@ -48,6 +50,13 @@ export function toTechStack(v: unknown): TechStack {
     );
     if (known.length) out[g] = known;
   }
+  const other = (v as Record<string, unknown>).other;
+  if (Array.isArray(other)) {
+    const custom = other.filter(
+      (s): s is string => typeof s === "string" && isCustomStackValue(s),
+    );
+    if (custom.length) out.other = custom;
+  }
   return out;
 }
 
@@ -59,7 +68,7 @@ export function stackCount(v: unknown): number {
 }
 
 export type StackGroupView = {
-  group: StoredStackGroup;
+  group: StoredStackGroup | "other";
   label: string;
   items: StackItem[];
 };
@@ -67,7 +76,21 @@ export type StackGroupView = {
 /** Non-empty groups in display order, each with its items (spec 6.4: empty groups skipped). */
 export function stackGroups(v: unknown, locale: string): StackGroupView[] {
   const stack = toTechStack(v);
-  return STORED_STACK_GROUPS.flatMap((g) => {
+  const custom: StackGroupView[] = stack.other?.length
+    ? [
+        {
+          group: "other",
+          label: localizedName(OTHER_GROUP_LABEL, locale),
+          // Custom tools have no logo: the chip falls back to a generic icon.
+          items: stack.other.map((s) => ({
+            slug: s,
+            label: s.slice(STACK_CUSTOM_PREFIX.length),
+            group: "frontend" as const,
+          })),
+        },
+      ]
+    : [];
+  return STORED_STACK_GROUPS.flatMap((g): StackGroupView[] => {
     const slugs = stack[g];
     if (!slugs?.length) return [];
     const items = slugs
@@ -76,8 +99,10 @@ export function stackGroups(v: unknown, locale: string): StackGroupView[] {
     return [
       { group: g, label: localizedName(STACK_GROUP_LABEL[g], locale), items },
     ];
-  });
+  }).concat(custom);
 }
+
+const OTHER_GROUP_LABEL = { nameTh: "อื่น ๆ", nameEn: "Other" };
 
 /** Stored channel value → label ("facebook-groups" → "กลุ่ม Facebook", "custom:Pantip ads" → "Pantip ads"). */
 export function channelLabel(value: string, locale: string): string {

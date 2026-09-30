@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { revalidateStartup } from "@/app/actions/revalidate";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -35,6 +36,7 @@ import {
   type LinkKind,
   type LookingFor,
 } from "@/lib/links";
+import { useSessionDraft } from "@/lib/use-session-draft";
 import { cn } from "@/lib/utils";
 import { Field, Select, ToggleChips, inputClass } from "./fields";
 import { uploadLogo } from "./StartupWizard";
@@ -44,7 +46,9 @@ import {
   provinceOptions,
   stackOptions,
   stackToValues,
+  suggestedStackValues,
   toCustomChannel,
+  toCustomStack,
   valuesToStack,
 } from "./vocab-options";
 import { VerifyPanel, type ConnectionInfo } from "./VerifyPanel";
@@ -81,7 +85,6 @@ const LINK_PLACEHOLDER: Record<LinkKind, string> = {
   line: "@yourbot",
   github: "https://github.com/you/app",
 };
-
 
 export function StartupEditForm({
   userId,
@@ -148,6 +151,17 @@ export function StartupEditForm({
     founderMessage: startup.founder_message ?? "",
   });
   const [logo, setLogo] = useState<File | null>(null);
+  // A language switch remounts the page: keep unsaved edits for this tab. The key includes
+  // updated_at, so a draft never overrides newer saved data.
+  const [restored, setRestored] = useState(false);
+  const clearDraft = useSessionDraft(
+    `jaopor:draft:startup:${startup.id}:${startup.updated_at}`,
+    f,
+    (draft) => {
+      setF(draft);
+      setRestored(true);
+    },
+  );
   const set =
     <K extends keyof typeof f>(k: K) =>
     (v: (typeof f)[K]) =>
@@ -228,6 +242,8 @@ export function StartupEditForm({
         })
         .eq("id", startup.id);
       if (dbErr) throw dbErr;
+      await revalidateStartup(startup.id);
+      clearDraft();
       toast.success(common("save") + " ✓");
       router.push(`/startup/${startup.slug}`);
       router.refresh();
@@ -237,6 +253,12 @@ export function StartupEditForm({
       setBusy(false);
     }
   }
+
+  // GitHub build proof already detects the stack (startups.build_stack): offer it in one click.
+  const stackSuggestion = suggestedStackValues(
+    startup.build_stack,
+    f.techStack,
+  );
 
   const text = (
     key: keyof typeof f,
@@ -281,6 +303,25 @@ export function StartupEditForm({
         <h2 className="text-sm font-semibold">{t("screenshots")}</h2>
         <ScreenshotsManager startupId={startup.id} initial={screenshots} />
       </section>
+
+      {restored && (
+        <p
+          role="status"
+          className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-brand/40 bg-brand/5 px-3 py-2 text-caption"
+        >
+          {t("draftRestored")}
+          <button
+            type="button"
+            onClick={() => {
+              clearDraft();
+              window.location.reload();
+            }}
+            className="text-brand-text hover:underline"
+          >
+            {t("draftDiscard")}
+          </button>
+        </p>
+      )}
 
       <form onSubmit={save} className="grid gap-4 sm:grid-cols-2">
         <h2 className="text-sm font-semibold sm:col-span-2">
@@ -561,9 +602,35 @@ export function StartupEditForm({
           id="tech_stack"
           label={t("techStack")}
           htmlFor="stack-input"
+          hint={startup.github_repo ? undefined : t("stackGithubHint")}
           optional={common("optional")}
           className="sm:col-span-2"
         >
+          {stackSuggestion.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed px-3 py-2 text-caption">
+              <span className="text-muted-foreground">
+                {t("stackDetected", {
+                  items: stackSuggestion
+                    .map((v) =>
+                      v.startsWith("custom:")
+                        ? v.slice("custom:".length)
+                        : (stackOptions(locale).find((o) => o.value === v)
+                            ?.label ?? v),
+                    )
+                    .join(", "),
+                })}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  set("techStack")([...f.techStack, ...stackSuggestion])
+                }
+                className="font-medium text-brand-text hover:underline"
+              >
+                {t("stackAddDetected")}
+              </button>
+            </div>
+          )}
           <VocabCombobox
             id="stack-input"
             options={stackOptions(locale)}
@@ -571,6 +638,9 @@ export function StartupEditForm({
             onChange={set("techStack")}
             max={24}
             placeholder={t("stackPlaceholder")}
+            toCustom={toCustomStack}
+            customLabel={(text) => t("addCustom", { text })}
+            describeCustom={(v) => v.slice("custom:".length)}
             labels={comboLabels}
           />
         </Field>

@@ -230,3 +230,44 @@ describe("channels", () => {
     expect(quoted(list)).toEqual(CHANNEL_LIST.map((c) => c.slug));
   });
 });
+
+describe("custom stack entries (stack_custom_entries)", () => {
+  it("allows custom: values only in the other group", async () => {
+    const { toTechStack, stackGroups } = await import("./display");
+    expect(
+      isValidTechStack({ other: ["custom:Prisma"], frontend: ["react"] }),
+    ).toBe(true);
+    expect(isValidTechStack({ frontend: ["custom:Prisma"] })).toBe(false);
+    expect(isValidTechStack({ other: ["prisma"] })).toBe(false);
+    expect(isValidTechStack({ other: [`custom:${"x".repeat(31)}`] })).toBe(
+      false,
+    );
+    const stack = toTechStack({
+      other: ["custom:Prisma", 5],
+      backend: ["python"],
+    });
+    expect(stack).toEqual({ backend: ["python"], other: ["custom:Prisma"] });
+    expect(
+      stackGroups(stack, "en").map((g) => [
+        g.group,
+        g.items.map((i) => i.label),
+      ]),
+    ).toEqual([
+      ["backend", ["Python"]],
+      ["other", ["Prisma"]],
+    ]);
+  });
+
+  it("round-trips the form values", async () => {
+    const { stackToValues, valuesToStack, toCustomStack } =
+      await import("@/components/wizard/vocab-options");
+    const values = ["next-js", "supabase", toCustomStack("LINE Messaging API")];
+    const stack = valuesToStack(values);
+    expect(stack).toEqual({
+      frontend: ["next-js"],
+      backend: ["supabase"],
+      other: ["custom:LINE Messaging API"],
+    });
+    expect(stackToValues(stack)).toEqual(values);
+  });
+});

@@ -318,7 +318,12 @@
     "founderRolePlaceholder": "เช่น ผู้ก่อตั้ง, CEO",
     "demoVideo": "ลิงก์วิดีโอเดโม (YouTube, Loom, TikTok)",
     "demoVideoInvalid": "รองรับเฉพาะลิงก์วิดีโอจาก YouTube, Loom หรือ TikTok",
-    "screenshots": "ภาพผลงาน"
+    "screenshots": "ภาพผลงาน",
+    "draftRestored": "กู้คืนข้อมูลที่คุณกรอกไว้แต่ยังไม่ได้บันทึก",
+    "draftDiscard": "ทิ้งและเริ่มใหม่",
+    "stackDetected": "ตรวจพบจาก GitHub: {items}",
+    "stackAddDetected": "เพิ่มทั้งหมด",
+    "stackGithubHint": "เชื่อม GitHub ในส่วน “ยืนยันตัวเลข” แล้ว JaoPor จะดึง tech stack จาก repo ให้อัตโนมัติ"
   },
   "Errors": {
     "invalid_key": "{source} ไม่ยอมรับคีย์หรือลิงก์นี้ — ตรวจแล้ววางใหม่อีกครั้ง",

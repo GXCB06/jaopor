@@ -13,6 +13,8 @@ import {
   type LookingFor,
 } from "@/lib/links";
 import { createClient } from "@/lib/supabase/client";
+import { revalidateStartup } from "@/app/actions/revalidate";
+import { useSessionDraft } from "@/lib/use-session-draft";
 import { cn } from "@/lib/utils";
 import { Field, Select, ToggleChips, inputClass } from "./fields";
 import { ScreenshotsManager } from "./ScreenshotsManager";
@@ -79,6 +81,22 @@ export function StartupWizard({
   const [lookingFor, setLookingFor] = useState<LookingFor[]>([]);
   const [logo, setLogo] = useState<File | null>(null);
 
+  // Survive a language switch (the layout remounts): keep the typed fields and, after step 1,
+  // the created project, so step 2 doesn't fall back to step 1 and create a duplicate.
+  const clearDraft = useSessionDraft(
+    "jaopor:draft:new-startup",
+    { step, saved, name, link, category, aiTools, lookingFor },
+    (d) => {
+      setStep(d.step);
+      setSaved(d.saved);
+      setName(d.name);
+      setLink(d.link);
+      setCategory(d.category);
+      setAiTools(d.aiTools);
+      setLookingFor(d.lookingFor);
+    },
+  );
+
   const parsed = parseProjectLink(link);
 
   async function create(e: React.FormEvent) {
@@ -125,13 +143,16 @@ export function StartupWizard({
     }
   }
 
-  const goToProfile = () =>
-    saved &&
+  const goToProfile = () => {
+    if (!saved) return;
+    clearDraft();
+    void revalidateStartup(saved.id);
     router.push({
       pathname: `/startup/${saved.slug}`,
       // Post-listing share moment (Design.md §9): the profile opens the share dialog.
       query: verified ? { verified: "1" } : { new: "1" },
     });
+  };
 
   return (
     <div className="space-y-6">

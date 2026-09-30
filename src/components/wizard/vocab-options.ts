@@ -5,7 +5,11 @@ import { PROVINCE_LIST, REGION_LIST } from "@/lib/config/provinces";
 import {
   STACK_GROUP_LABEL,
   STACK_LIST,
+  MAX_CUSTOM_STACK_LABEL,
+  STACK_CUSTOM_PREFIX,
   STORED_STACK_GROUPS,
+  isCustomStackValue,
+  matchStackLabel,
   type StackItem,
   type StoredStackGroup,
   type TechStack,
@@ -28,12 +32,22 @@ export function stackOptions(locale: string): VocabOption[] {
 }
 
 export function stackToValues(stack: TechStack): string[] {
-  return STORED_STACK_GROUPS.flatMap((g) => stack[g] ?? []);
+  return [
+    ...STORED_STACK_GROUPS.flatMap((g) => stack[g] ?? []),
+    ...(stack.other ?? []),
+  ];
 }
+
+export const toCustomStack = (text: string) =>
+  `${STACK_CUSTOM_PREFIX}${text.slice(0, MAX_CUSTOM_STACK_LABEL)}`;
 
 export function valuesToStack(values: string[]): TechStack {
   const out: TechStack = {};
   for (const v of values) {
+    if (isCustomStackValue(v)) {
+      (out.other ??= []).push(v);
+      continue;
+    }
     const item = STORED.find((i) => i.slug === v);
     if (!item) continue;
     const g = item.group as StoredStackGroup;
@@ -68,4 +82,21 @@ export function provinceOptions(locale: string): VocabOption[] {
       }))
       .sort((a, b) => collator.compare(a.label, b.label)),
   );
+}
+
+/**
+ * GitHub-detected labels (startups.build_stack) → form values: known tools become their slug,
+ * anything else (TypeScript, Prisma…) a custom entry. Values already chosen are skipped.
+ */
+export function suggestedStackValues(
+  buildStack: string[],
+  current: string[],
+): string[] {
+  const out: string[] = [];
+  for (const label of buildStack) {
+    const hit = matchStackLabel(label);
+    const v = hit ? hit.slug : toCustomStack(label);
+    if (!current.includes(v) && !out.includes(v)) out.push(v);
+  }
+  return out;
 }

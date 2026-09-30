@@ -318,7 +318,12 @@
     "founderRolePlaceholder": "e.g. Founder, CEO",
     "demoVideo": "Demo video link (YouTube, Loom, TikTok)",
     "demoVideoInvalid": "Only YouTube, Loom or TikTok video links are supported",
-    "screenshots": "Screenshots"
+    "screenshots": "Screenshots",
+    "draftRestored": "Restored the changes you hadn't saved yet",
+    "draftDiscard": "Discard them",
+    "stackDetected": "Detected from GitHub: {items}",
+    "stackAddDetected": "Add all",
+    "stackGithubHint": "Connect GitHub under “Verify your numbers” and JaoPor fills the stack from your repo"
   },
   "Errors": {
     "invalid_key": "{source} didn't accept that key or link — check it and paste again.",

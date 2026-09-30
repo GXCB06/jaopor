@@ -21,6 +21,7 @@ import {
   type Screenshot,
   type ScreenshotKind,
 } from "@/lib/media";
+import { revalidateStartup } from "@/app/actions/revalidate";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { inputClass } from "./fields";
@@ -110,6 +111,7 @@ export function ScreenshotsManager({
           throw error;
         }
         setShots((s) => [...s, data as Screenshot]);
+        void revalidateStartup(startupId);
       } catch (e) {
         toast.error(
           e instanceof Error && e.message === "no-webp"
@@ -146,6 +148,7 @@ export function ScreenshotsManager({
       .update(patch)
       .eq("id", id);
     if (error) toast.error(t("saveFailed"));
+    else void revalidateStartup(startupId);
   }
 
   async function reorder(from: number, to: number) {
@@ -170,6 +173,7 @@ export function ScreenshotsManager({
     if (error) return toast.error(t("saveFailed"));
     await db().storage.from(BUCKET).remove([s.path]);
     setShots((all) => all.filter((x) => x.id !== s.id));
+    void revalidateStartup(startupId);
   }
 
   const full = shots.length + busy >= MAX_SCREENSHOTS;

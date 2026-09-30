@@ -154,6 +154,26 @@ begin
   exception when insufficient_privilege then out := out || 'T26 A writes fx_rates: denied (good) | ';
   end;
 
+  -- stack_custom_entries: custom tools only in the `other` group.
+  update public.startups set tech_stack = '{"other": ["custom:Prisma"], "frontend": ["react"]}' where id = sid;
+  get diagnostics n = row_count;
+  out := out || format('T32 custom stack entry in other: %s row (expect 1) | ', n);
+  begin
+    update public.startups set tech_stack = '{"frontend": ["custom:Prisma"]}' where id = sid;
+    out := out || 'T33 custom entry in a known group: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T33 custom entry in a known group: denied (good) | ';
+  end;
+
+  -- fix_screenshot_storage_policies: owners write only in their own startup's folder.
+  insert into storage.objects (bucket_id, name, owner_id) values ('screenshots', sid || '/' || gen_random_uuid() || '.webp', a::text);
+  get diagnostics n = row_count;
+  out := out || format('T34 A uploads into own startup folder: %s (expect 1) | ', n);
+  begin
+    insert into storage.objects (bucket_id, name, owner_id) values ('screenshots', '1/' || gen_random_uuid() || '.webp', a::text);
+    out := out || 'T35 A uploads into another startup folder: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T35 A uploads into another startup folder: denied (good) | ';
+  end;
+
   begin
     update public.provinces set region = 'south' where slug = 'bangkok';
     out := out || 'T27 A edits provinces: ALLOWED (BAD) | ';

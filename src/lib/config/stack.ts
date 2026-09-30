@@ -281,7 +281,21 @@ export function aiToolLabel(slug: AiTool, locale: string): string {
   return locale === "th" && item.labelTh ? item.labelTh : item.label;
 }
 
-export type TechStack = Partial<Record<StoredStackGroup, string[]>>;
+/**
+ * Stored stack: slugs per known group, plus `other` for the owner's own tools as
+ * `custom:<1-30 chars>` (migration stack_custom_entries).
+ */
+export type TechStack = Partial<Record<StoredStackGroup, string[]>> & {
+  other?: string[];
+};
+
+export const STACK_CUSTOM_PREFIX = "custom:";
+export const MAX_CUSTOM_STACK_LABEL = 30;
+
+export const isCustomStackValue = (v: string) =>
+  v.startsWith(STACK_CUSTOM_PREFIX) &&
+  v.length > STACK_CUSTOM_PREFIX.length &&
+  v.length <= STACK_CUSTOM_PREFIX.length + MAX_CUSTOM_STACK_LABEL;
 
 const ALLOWED: Record<StoredStackGroup, Set<string>> = Object.fromEntries(
   STORED_STACK_GROUPS.map((g) => [
@@ -295,11 +309,15 @@ export function isValidTechStack(v: unknown): v is TechStack {
   if (!v || typeof v !== "object" || Array.isArray(v)) return false;
   return Object.entries(v).every(
     ([g, list]) =>
-      g in ALLOWED &&
+      (g in ALLOWED || g === "other") &&
       Array.isArray(list) &&
       list.length <= 12 &&
       list.every(
-        (s) => typeof s === "string" && ALLOWED[g as StoredStackGroup].has(s),
+        (s) =>
+          typeof s === "string" &&
+          (g === "other"
+            ? isCustomStackValue(s)
+            : ALLOWED[g as StoredStackGroup].has(s)),
       ),
   );
 }
@@ -312,6 +330,7 @@ export function matchStackLabel(
   const n = norm(label);
   const alias: Record<string, string> = {
     claudeapi: "claude",
+    openaiapi: "openai",
     anthropic: "claude",
     postgres: "postgresql",
     nextjs: "next-js",
