@@ -41,7 +41,7 @@ export async function QuickSearchSection({
           {CATEGORY_LIST.slice(0, 8).map((c) => (
             <Link
               key={c.slug}
-              href={{ pathname: "/startups", query: { category: c.slug } }}
+              href={`/category/${c.slug}`}
               className="rounded-full border bg-secondary px-2.5 py-0.5 text-2xs text-muted-foreground hover:text-foreground"
             >
               {localizedName(c, locale)}

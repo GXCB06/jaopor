@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  boardSummary,
   emptyProvinces,
+  regionStandings,
   fromRpc,
   parseMetric,
   parseRegion,
@@ -132,7 +134,13 @@ describe("helpers", () => {
           total: "46",
           top: [{ slug: "j", name: "J", logo_path: null, value: "46" }],
         },
-        { province: "nowhere", region_slug: "x", startups: 1, total: 1, top: [] },
+        {
+          province: "nowhere",
+          region_slug: "x",
+          startups: 1,
+          total: 1,
+          top: [],
+        },
       ]),
     ).toEqual([
       {
@@ -143,5 +151,36 @@ describe("helpers", () => {
         top: [{ slug: "j", name: "J", logo_path: null, value: 46 }],
       },
     ]);
+  });
+});
+
+describe("region standings", () => {
+  it("lists all 6 regions, biggest first, with province coverage", () => {
+    const r = regionStandings(rankProvinces(ROWS, "commits"));
+    expect(r).toHaveLength(6);
+    expect(r[0]).toEqual({
+      region: "northeast",
+      total: 50,
+      provinces: 1,
+      of: 20,
+      startups: 1,
+    });
+    expect(r[1].region).toBe("central");
+    expect(r.slice(2).every((x) => x.total === 0)).toBe(true);
+    // Empty regions keep config order.
+    expect(r.slice(2).map((x) => x.region)).toEqual([
+      "north",
+      "east",
+      "west",
+      "south",
+    ]);
+  });
+
+  it("summarises a board", () => {
+    expect(boardSummary(rankProvinces(ROWS, "mrr"))).toEqual({
+      provinces: 2,
+      startups: 3,
+      total: 1700,
+    });
   });
 });

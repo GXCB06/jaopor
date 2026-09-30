@@ -12,6 +12,29 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Compact categories + category pages; Olympics redesign
+
+**Done:**
+
+- **Categories (user: "cards too big to scan", follow TrustMRR):** one-line cards (40px icon · name + "{n} ผลงาน" · one-line description), 4/2/1 columns, centred header.
+- **`/category/[slug]` (user: "mark the category topic"):** the category is the page title ("ผลงานหมวด {name}" + icon tile + "พบ {n} ผลงาน"), search + Add, 3-column cards, other categories. Every category link (categories page, footer, QuickSearch, home teaser) now opens it.
+- **Olympics redesign (user: "one of our selling points"):**
+  - Event hero: eyebrow "JaoPor Olympics · ฤดูกาล 2026", live stats (provinces n/77, projects, metric total), "ส่งผลงานแทนจังหวัดคุณ", "แชร์อันดับ" (share sheet or copy), big clickable map (regions lit in their colour; click filters).
+  - Podium for the top 3; empty places are "ที่ว่าง" invitations.
+  - Standings table from #4 (rows link to the province); open provinces grouped by region.
+  - Side panel "ภาคไหนนำ" (all 6 regions, bars, n/of coverage; filters) + "จังหวัดของคุณอยู่อันดับไหน?" finder.
+  - OG image for shared links: podium + map. ProvinceCard removed.
+- SegmentedControl segments no longer wrap.
+
+**Files:** `src/app/[locale]/{categories/page,category/[slug]/page,olympics/page,olympics/opengraph-image}.tsx`, `src/components/olympics/{OlympicsMap,Podium,StandingsTable,RegionStandings,ProvinceFinder,ShareBoardButton,OlympicValue}.tsx`, `src/lib/olympics{,.test}.ts`, `src/components/{SiteFooter,core/SegmentedControl,home/HomeTeasers}.tsx`, `src/components/search/*`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- `npm test` 182/182 (region standings + board summary) · typecheck ✓ · lint ✓ · build ✓
+- Browser pane: categories 1280 dark; `/category/ecommerce` 1280, `/category/ai` 375; Olympics 1280 + 375 (no horizontal scroll, podium 2-1-3 with open places, map, region panel); OG image renders. Fixed a hydration mismatch in the map's `<title>` found during the check.
+- **Not verified:** the standings table with ≥ 4 ranked provinces (only มุกดาหาร has numbers today).
+
+**Next:** Phase 8 plan + Phase 9 plan/SQL for approval
+
 ## 2026-09-30 — Migrations applied + deployed; JaoPor counts its own visitors; spec Phase 7 home polish
 
 **Done:**

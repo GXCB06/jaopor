@@ -152,7 +152,7 @@ export function QuickSearch({
     for (const c of results.categories)
       options.push({
         key: `c-${c.slug}`,
-        href: `/startups?category=${c.slug}`,
+        href: `/category/${c.slug}`,
         group: "categories",
       });
     for (const p of results.provinces)
@@ -330,7 +330,7 @@ export function QuickSearch({
                   <Highlight text={c.label} q={query} />
                 </span>
               </>,
-              `/startups?category=${c.slug}`,
+              `/category/${c.slug}`,
             );
           })}
           {results.provinces.length > 0 && header(t("groupProvinces"))}
@@ -383,7 +383,7 @@ export function QuickSearch({
               {TOP_CATEGORIES.map((c) => (
                 <Link
                   key={c.slug}
-                  href={{ pathname: "/startups", query: { category: c.slug } }}
+                  href={`/category/${c.slug}`}
                   onClick={close}
                   className="rounded-full border bg-secondary px-2.5 py-0.5 text-2xs text-muted-foreground hover:text-foreground"
                 >

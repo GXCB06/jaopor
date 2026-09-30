@@ -55,7 +55,7 @@ export async function HomeTeasers({ thbPerUsd }: { thbPerUsd: number | null }) {
           {top.map(({ slug, icon: Icon, count, ...c }) => (
             <li key={slug}>
               <Link
-                href={{ pathname: "/startups", query: { category: slug } }}
+                href={`/category/${slug}`}
                 className="inline-flex items-center gap-1.5 rounded-full border bg-secondary px-2.5 py-1 text-caption text-muted-foreground hover:text-foreground"
               >
                 <Icon className="size-3.5 shrink-0" aria-hidden="true" />

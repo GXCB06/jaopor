@@ -652,7 +652,7 @@
     "title": "Explore categories",
     "subtitle": "Explore products across {n} categories",
     "breadcrumb": "Categories",
-    "projects": "{count, plural, one {project} other {projects}}"
+    "projects": "{count, plural, one {# project} other {# projects}}"
   },
   "Olympics": {
     "title": "Province Olympics",
@@ -668,11 +668,31 @@
     "allRegions": "All",
     "startups": "{count, plural, one {# startup} other {# startups}}",
     "rank": "Rank {rank}",
-    "share": "{pct}% of the province",
-    "noneYet": "No province has verified {metric} yet. Connect a source and put yours at #1",
-    "emptyProvinces": "No projects yet from {n} provinces. Be the first from yours",
+    "share": "Share the board",
+    "emptyProvinces": "{n} provinces still open. Be the first from yours",
     "footnote": "Verified numbers only · demo projects excluded · money in your chosen currency",
-    "teaser": "See the Province Olympics"
+    "eyebrow": "JaoPor Olympics · season {year}",
+    "statProvinces": "provinces in",
+    "statProjects": "projects",
+    "statTotal": "total {metric}",
+    "ctaCompete": "Compete for your province",
+    "linkCopied": "Link copied",
+    "shareText": "Which Thai province builds the biggest things with AI? See the Province Olympics on JaoPor",
+    "mapHint": "Tap a region on the map to see its ranking",
+    "regionEmpty": "no projects yet",
+    "podium": "Top 3",
+    "podiumTitle": "{metric} leaders · {scope}",
+    "nationwide": "Nationwide",
+    "openSpot": "Open spot",
+    "openSpotHint": "Compete for your province",
+    "province": "Province",
+    "topProjects": "Top projects",
+    "coverage": "{n}/{of} provinces",
+    "regionsTitle": "Which region leads",
+    "finderTitle": "Where does your province rank?",
+    "finderPlaceholder": "Pick a province…",
+    "restTitle": "The rest of the board",
+    "clearRegion": "Clear region filter"
   },
   "Province": {
     "title": "Startups in {name}",
@@ -685,5 +705,12 @@
     "ogRank": "#{rank} in the Province Olympics",
     "ogNoRank": "Province Olympics · JaoPor",
     "seeAll": "See all {n} projects →"
+  },
+  "Category": {
+    "title": "{name} projects",
+    "subtitle": "{desc} Discover <b>{count}</b> projects.",
+    "empty": "No projects in {name} yet. Add yours and be the first",
+    "seeAll": "See all {n} projects →",
+    "others": "Other categories"
   }
 }

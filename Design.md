@@ -278,13 +278,18 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
 - **Calendar** 1200×630: GitHub-style heatmap where every cell is a **"$" glyph ("฿" for THB projects: pricing in THB, or Thai projects without a price)**, 5 levels from `grid` gray to the chosen colour; month labels on top, จ./พ./ศ./อา. (Mon/Wed/Fri/Sun) on the left; legend "น้อย ฿ ฿ ฿ ฿ ฿ มาก".
 - Verified numbers only; demo projects never get numbers.
 
-### Categories page (`/[locale]/categories`, spec 6.6, Phase 5)
+### Categories page (`/[locale]/categories`, spec 6.6; compact redesign 2026-09-30, user: "too big to scan", TrustMRR pattern)
 
-- `main max-w-6xl`: breadcrumb (`text-2xs text-faint`: JaoPor › หมวดหมู่) → H1 "สำรวจหมวดหมู่" (`text-2xl font-bold`) → subtitle "สำรวจผลงานใน {n} หมวดหมู่" (`text-body text-muted-foreground`).
-- Grid `grid gap-3 sm:grid-cols-2 lg:grid-cols-4`. **CategoryCard** = `Card interactive p-4 flex flex-col gap-3` link to `/startups?category={slug}`: top row = 48px icon box (`size-12 rounded-lg border bg-background`, lucide icon `size-5`) + count pill on the right (`rounded-full border bg-secondary text-2xs`, bold number + "ผลงาน"); below, full width, name `text-sm font-bold` and description `text-caption text-muted-foreground line-clamp-2` (stacked so Thai names don't wrap into a narrow column at 4 columns).
-- Sorted by count (desc), then config order. Count 0 → last and dimmed without losing contrast: icon box `opacity-40`, name `text-muted-foreground`; the count pill keeps full contrast (still a link).
-- Counts = listed projects (published, demo excluded) from `category_counts()`.
-- Bottom QuickSearch section.
+- `main max-w-6xl`: centred breadcrumb (JaoPor › หมวดหมู่, `text-caption text-faint`) → centred H1 "สำรวจหมวดหมู่" (`text-2xl md:text-3xl font-bold`) → subtitle.
+- Grid `grid gap-3 sm:grid-cols-2 lg:grid-cols-4` of **one-line CategoryCards**: `rounded-xl border bg-card p-3 flex items-center gap-3` link (hover `border-border-strong`) → 40px icon box (`size-10 rounded-lg bg-background`, icon 18px) · name (`text-sm font-semibold truncate`) + count (`text-2xs font-bold text-brand-text`, "{n} ผลงาน", only when > 0) · description one line (`text-caption text-muted-foreground truncate`).
+- Sorted by count, then config order. Count 0 → icon `opacity-50`, name `text-muted-foreground`.
+- Cards (and every category link: footer, QuickSearch, home teaser) open **`/category/{slug}`**.
+
+### Category page (`/[locale]/category/[slug]`, 2026-09-30)
+
+- The category **is the title**, so the visitor always sees the topic: centred breadcrumb JaoPor › หมวดหมู่ › {name} → 48px icon tile (`size-12 rounded-xl border bg-card`) → H1 "ผลงานหมวด {name}" → description + "พบ **{n}** ผลงานในหมวดนี้" → QuickSearch + Add (max 640px, centred).
+- Large StartupCards `sm:grid-cols-2 lg:grid-cols-3` with third stat รวมทั้งหมด; more than 24 → "ดูทั้งหมด {n} ผลงาน →" (`/startups?category=`). Empty → dashed card + Add.
+- "หมวดหมู่อื่น": 12 busiest other categories as icon chips + "หมวดหมู่ →". Unknown slug → 404.
 
 ### HomeTeasers (home, spec 6.2, Phase 7)
 
@@ -293,24 +298,20 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
 - Hero "ดูผลงานทั้งหมด {n} ชิ้น" shows the number only from 20 projects ("ดูผลงานทั้งหมด" below).
 - LeaderboardCard empty state: "ยังไม่มีตัวเลขที่ยืนยัน… มาเป็นคนแรกบนกระดาน" + `text-brand-text` link "ยืนยันตัวเลขของคุณ →" (/dashboard).
 
-### Olympics page (`/[locale]/olympics`, spec 6.7, Phase 6)
+### Olympics page (`/[locale]/olympics`, spec 6.7; redesign 2026-09-30, user: "one of our selling points")
 
-- `main max-w-6xl`: breadcrumb → H1 "โอลิมปิกจังหวัด" → subtitle → QuickSearch + "+ เพิ่ม Startup" (max 640px).
-- Controls: metric **SegmentedControl** (รายได้รวม · MRR · ผู้เข้าชม 30 วัน · Commits; full width on phones) and **region chips** (ทั้งหมด + 6 regions, each with its colour dot; `rounded-full border px-2.5 py-1 text-caption`, active `border-foreground/20 bg-secondary font-semibold`; a horizontal scroll row on phones). Both are in the URL (`?metric=` omitted for the default "revenue", `?region=`).
-- Ranked **ProvinceCard** list (`space-y-3`), then the empty provinces in one collapsed `<details>` card: "ยังไม่มีผลงานจาก {n} จังหวัด — เป็นคนแรกของจังหวัดคุณ" → province chips (to the province page) + Add button. Nothing ranked → a dashed card "ยังไม่มีจังหวัดไหนมีตัวเลข {metric} ที่ยืนยันแล้ว…".
-- Footnote `text-2xs text-faint` centred: verified numbers only · demo excluded · money in the chosen currency. Bottom QuickSearch section.
-- Rules (SQL `province_leaderboard` = TS `rankProvinces`): published, non-demo; revenue/MRR need verified revenue; visitors/commits count when synced. Sort total desc → startups desc → slug.
-
-### ProvinceCard (Olympics)
-
-- `Card p-4 sm:p-5`. Header row: rank (`Medal` 1–3, else `text-faint` number, `w-7`) · link (badge + name block) · total right (`text-lg font-bold tabular-nums`; money via `Money`, counts compact).
-- Name block: main name `text-sm font-bold` (Thai in th, English in en) + the other language `text-caption text-faint` from `sm`; below, **RegionChip** (`rounded-full border bg-secondary text-2xs`, colour dot `size-1.5` + region name) and "{n} สตาร์ทอัพ" `text-2xs text-muted-foreground`.
-- Top 5 under `border-t`: logo 20 + name (`text-xs font-semibold`, links to the profile) · share % (`text-2xs text-faint`, hidden when the total is 0) · value (`w-20 text-right text-xs font-bold`), then a `h-1 rounded-full bg-secondary` bar filled `bg-brand` to the share.
+- **Hero** `rounded-2xl border bg-card` with a soft brand radial glow; `md:grid-cols-[1fr_auto]`:
+  - left: eyebrow pill (`Trophy`, "JaoPor Olympics · ฤดูกาล {year}", `border-brand/40 text-brand-text text-2xs uppercase`) · H1 `text-3xl md:text-4xl font-extrabold` · subtitle · 3 live stats under `border-t` (จังหวัดลงแข่ง "{n}/77", ผลงาน, "{metric} รวม"; value `text-xl sm:text-2xl font-bold`, label `text-2xs uppercase text-faint`) · CTAs: primary "+ ส่งผลงานแทนจังหวัดคุณ" (/new) + outline "แชร์อันดับ" (share sheet, else copy link).
+  - right: **OlympicsMap** (`h-44 sm:h-64 md:h-80`): regions with a number in their `--region-*` colour, others `fill-muted-foreground/25`; click filters by region (click again clears), the selected region gets a foreground outline and the others dim. Caption "แตะภาคบนแผนที่เพื่อดูอันดับในภาค". The SVG is aria-hidden; RegionStandings is the accessible control.
+- **Controls:** metric SegmentedControl (nowrap segments) + a removable region chip when filtered. Metric and region stay in the URL.
+- **Podium** card: title "ผู้นำ {metric} · {scope}", 3 columns (DOM order 1-2-3, shown 2-1-3): province badge, name, total, logo stack; pedestals `rounded-t-lg border border-t-4 bg-secondary` with heights 1st > 2nd > 3rd and medal-tone top border + big rank number. An empty place = dashed "+ ที่ว่าง · ส่งผลงานแทนจังหวัดคุณ" link.
+- `lg:grid-cols-[1fr_300px]`: left **StandingsTable** (#4 onward: rank · region dot + province + "{region} · {n} สตาร์ทอัพ" · top-project logos (md+) · total + a bar relative to the leader; whole row links to the province page) and the **open provinces** `<details>` (dashed, open while ≤ 3 ranked) grouped by region with chips + CTA. Right aside: **RegionStandings** "ภาคไหนนำ" (all 6 regions: dot, name, total, bar in region colour, "{n}/{of} จังหวัด"; links filter) and **ProvinceFinder** (native select grouped by region → province page).
+- Footnote + bottom QuickSearch. OG image: podium list (medal rings, ฿ totals, "ที่ว่าง") + map.
 
 ### ProvinceBadge
 
 - `h-10 w-14 rounded-lg border bg-background` tile holding **ThailandMap**: a hand-simplified silhouette (6 region paths, ~150 points, viewBox 84×150). Other regions `fill-muted-foreground/30`, the province's region `--region-*`; `stroke-card` separates regions. Never an official provincial seal. Decorative (`aria-hidden`): the region name is always printed next to it.
-- The OG renderer draws the same paths (`REGION_HEX` in `share-palette.ts`).
+- The OG renderers draw the same paths (`REGION_HEX` in `share-palette.ts`).
 
 ### Province page (`/[locale]/province/[slug]`, spec 6.7)
 

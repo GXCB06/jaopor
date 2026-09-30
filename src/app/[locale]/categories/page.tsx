@@ -1,7 +1,6 @@
 import { ChevronRightIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Card } from "@/components/core/Card";
 import { QuickSearchSection } from "@/components/search/QuickSearchSection";
 import { Link } from "@/i18n/navigation";
 import { CATEGORY_LIST } from "@/lib/config/categories";
@@ -22,8 +21,9 @@ export async function generateMetadata({
   };
 }
 
-// Design.md §6 Categories page (spec 6.6): every category with its project count, busiest first,
-// empty ones last and dimmed. Each card opens the directory filtered to that category.
+// Design.md §6 Categories page (spec 6.6, compact TrustMRR-style list, 2026-09-30): centred header,
+// 4/2/1-column grid of one-line cards (icon · name + count · one-line description), busiest first,
+// empty ones last and dimmed. Each card opens /category/{slug}.
 export default async function CategoriesPage({
   params,
 }: PageProps<"/[locale]/categories">) {
@@ -45,7 +45,7 @@ export default async function CategoriesPage({
     <main className="mx-auto w-full max-w-6xl px-4 pt-8">
       <nav
         aria-label="breadcrumb"
-        className="mb-4 flex items-center gap-1.5 text-2xs text-faint"
+        className="mb-6 flex items-center justify-center gap-1.5 text-caption text-faint"
       >
         <Link href="/" className="hover:text-foreground">
           {common("brand")}
@@ -53,53 +53,51 @@ export default async function CategoriesPage({
         <ChevronRightIcon className="size-3" aria-hidden="true" />
         <span className="text-foreground">{t("breadcrumb")}</span>
       </nav>
-      <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
-      <p className="mt-2 mb-6 text-body text-muted-foreground">
-        {t("subtitle", { n: CATEGORY_LIST.length })}
-      </p>
+      <header className="mb-8 text-center">
+        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+          {t("title")}
+        </h1>
+        <p className="mt-2 text-body text-muted-foreground">
+          {t("subtitle", { n: CATEGORY_LIST.length })}
+        </p>
+      </header>
 
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map(({ slug, icon: Icon, count, ...c }) => (
-          <li key={slug}>
+          <li key={slug} className="min-w-0">
             <Link
-              href={{ pathname: "/startups", query: { category: slug } }}
-              className="group block h-full rounded-xl focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+              href={`/category/${slug}`}
+              className="group flex h-full min-w-0 items-center gap-3 rounded-xl border bg-card p-3 transition-colors hover:border-border-strong focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
             >
-              <Card
-                interactive
-                // Empty categories are dimmed (spec) but stay readable: only the icon fades and
-                // the name drops to muted text; text never loses contrast.
-                className="flex h-full flex-col gap-3 p-4"
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "flex size-10 shrink-0 items-center justify-center rounded-lg bg-background text-muted-foreground group-hover:text-foreground",
+                  count === 0 && "opacity-50",
+                )}
               >
-                <span className="flex items-start justify-between gap-2">
-                  <span
-                    aria-hidden="true"
-                    className={cn(
-                      "flex size-12 shrink-0 items-center justify-center rounded-lg border bg-background text-muted-foreground group-hover:text-foreground",
-                      count === 0 && "opacity-40",
-                    )}
-                  >
-                    <Icon className="size-5" />
-                  </span>
-                  <span className="rounded-full border bg-secondary px-2 py-0.5 text-2xs text-muted-foreground tabular-nums">
-                    <span className="font-bold text-foreground">{count}</span>{" "}
-                    {t("projects", { count })}
-                  </span>
-                </span>
-                <span className="min-w-0 space-y-1">
+                <Icon className="size-[18px]" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex min-w-0 items-baseline gap-2">
                   <span
                     className={cn(
-                      "block text-sm font-bold",
+                      "truncate text-sm font-semibold",
                       count === 0 && "text-muted-foreground",
                     )}
                   >
                     {localizedName(c, locale)}
                   </span>
-                  <span className="line-clamp-2 text-caption text-muted-foreground">
-                    {locale === "th" ? c.descTh : c.descEn}
-                  </span>
+                  {count > 0 && (
+                    <span className="shrink-0 text-2xs font-bold text-brand-text tabular-nums">
+                      {t("projects", { count })}
+                    </span>
+                  )}
                 </span>
-              </Card>
+                <span className="block truncate text-caption text-muted-foreground">
+                  {locale === "th" ? c.descTh : c.descEn}
+                </span>
+              </span>
             </Link>
           </li>
         ))}

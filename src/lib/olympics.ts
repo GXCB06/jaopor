@@ -168,3 +168,45 @@ export function provinceRank(
   const i = ranked.findIndex((r) => r.province === province);
   return i === -1 ? null : i + 1;
 }
+
+export type RegionStanding = {
+  region: Region;
+  total: number;
+  /** Provinces in the region with at least one number / all provinces in the region. */
+  provinces: number;
+  of: number;
+  startups: number;
+};
+
+/** Every region (all 6, even empty ones) with its summed total, biggest first then config order. */
+export function regionStandings(ranked: ProvinceRank[]): RegionStanding[] {
+  const order = (r: Region) => REGIONS.indexOf(r);
+  return REGIONS.map((region) => {
+    const rows = ranked.filter((r) => r.region === region);
+    return {
+      region,
+      total: rows.reduce((s, r) => s + r.total, 0),
+      provinces: rows.length,
+      of: PROVINCE_LIST.filter((p) => p.region === region).length,
+      startups: rows.reduce((s, r) => s + r.startups, 0),
+    };
+  }).sort(
+    (a, b) =>
+      b.total - a.total ||
+      b.provinces - a.provinces ||
+      order(a.region) - order(b.region),
+  );
+}
+
+/** Header numbers for a (possibly region-filtered) board. */
+export function boardSummary(ranked: ProvinceRank[]): {
+  provinces: number;
+  startups: number;
+  total: number;
+} {
+  return {
+    provinces: ranked.length,
+    startups: ranked.reduce((s, r) => s + r.startups, 0),
+    total: ranked.reduce((s, r) => s + r.total, 0),
+  };
+}

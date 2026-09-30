@@ -57,7 +57,7 @@ export function SiteFooter() {
             {CATEGORIES.slice(0, 8).map((c) => (
               <li key={c}>
                 <Link
-                  href={{ pathname: "/startups", query: { category: c } }}
+                  href={`/category/${c}`}
                   className={link}
                 >
                   {categoryName(c, locale)}

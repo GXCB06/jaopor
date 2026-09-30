@@ -652,7 +652,7 @@
     "title": "สำรวจหมวดหมู่",
     "subtitle": "สำรวจผลงานใน {n} หมวดหมู่",
     "breadcrumb": "หมวดหมู่",
-    "projects": "{count, plural, other {ผลงาน}}"
+    "projects": "{count, plural, other {# ผลงาน}}"
   },
   "Olympics": {
     "title": "โอลิมปิกจังหวัด",
@@ -668,11 +668,31 @@
     "allRegions": "ทั้งหมด",
     "startups": "{count, plural, other {# สตาร์ทอัพ}}",
     "rank": "อันดับ {rank}",
-    "share": "{pct}% ของจังหวัด",
-    "noneYet": "ยังไม่มีจังหวัดไหนมีตัวเลข {metric} ที่ยืนยันแล้ว เชื่อมต่อแหล่งข้อมูลแล้วพาจังหวัดคุณขึ้นอันดับ 1",
-    "emptyProvinces": "ยังไม่มีผลงานจาก {n} จังหวัด — เป็นคนแรกของจังหวัดคุณ",
+    "share": "แชร์อันดับ",
+    "emptyProvinces": "ยังว่างอีก {n} จังหวัด — เป็นคนแรกของจังหวัดคุณ",
     "footnote": "นับเฉพาะตัวเลขที่ยืนยันแล้ว · ไม่รวมโปรเจกต์ตัวอย่าง · ยอดเงินแสดงตามสกุลเงินที่คุณเลือก",
-    "teaser": "ดูโอลิมปิกจังหวัด"
+    "eyebrow": "JaoPor Olympics · ฤดูกาล {year}",
+    "statProvinces": "จังหวัดลงแข่ง",
+    "statProjects": "ผลงาน",
+    "statTotal": "{metric} รวม",
+    "ctaCompete": "ส่งผลงานแทนจังหวัดคุณ",
+    "linkCopied": "คัดลอกลิงก์แล้ว",
+    "shareText": "จังหวัดไหนสร้างผลงานด้วย AI ได้พีคที่สุด? ดูอันดับโอลิมปิกจังหวัดบน JaoPor",
+    "mapHint": "แตะภาคบนแผนที่เพื่อดูอันดับในภาค",
+    "regionEmpty": "ยังไม่มีผลงาน",
+    "podium": "3 อันดับแรก",
+    "podiumTitle": "ผู้นำ {metric} · {scope}",
+    "nationwide": "ทั้งประเทศ",
+    "openSpot": "ที่ว่าง",
+    "openSpotHint": "ส่งผลงานแทนจังหวัดคุณ",
+    "province": "จังหวัด",
+    "topProjects": "ผลงานเด่น",
+    "coverage": "{n}/{of} จังหวัด",
+    "regionsTitle": "ภาคไหนนำ",
+    "finderTitle": "จังหวัดของคุณอยู่อันดับไหน?",
+    "finderPlaceholder": "เลือกจังหวัด…",
+    "restTitle": "อันดับถัดไป",
+    "clearRegion": "ล้างตัวกรองภาค"
   },
   "Province": {
     "title": "สตาร์ทอัพจังหวัด{name}",
@@ -685,5 +705,12 @@
     "ogRank": "อันดับ #{rank} ในโอลิมปิกจังหวัด",
     "ogNoRank": "โอลิมปิกจังหวัด · JaoPor",
     "seeAll": "ดูทั้งหมด {n} ผลงาน →"
+  },
+  "Category": {
+    "title": "ผลงานหมวด {name}",
+    "subtitle": "{desc} พบ <b>{count}</b> ผลงานในหมวดนี้",
+    "empty": "ยังไม่มีผลงานในหมวด {name} — เพิ่มผลงานของคุณเป็นชิ้นแรก",
+    "seeAll": "ดูทั้งหมด {n} ผลงาน →",
+    "others": "หมวดหมู่อื่น"
   }
 }

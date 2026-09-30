@@ -37,7 +37,7 @@ export function SegmentedControl<T extends string | number>({
           aria-checked={value === o.value}
           onClick={() => onChange(o.value)}
           className={cn(
-            "flex-1 rounded-md border border-transparent px-2.5 py-1 text-caption transition-colors",
+            "flex-1 rounded-md border border-transparent px-2.5 py-1 text-caption whitespace-nowrap transition-colors",
             value === o.value
               ? "border-foreground/10 bg-secondary font-semibold text-foreground shadow-xs dark:bg-black"
               : "text-muted-foreground hover:text-foreground",
