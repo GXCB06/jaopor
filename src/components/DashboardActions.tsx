@@ -58,7 +58,10 @@ export function DashboardActions({
       const code = body.error ?? "server";
       toast.error(
         errors.has(code)
-          ? errors(code as "server", { source: refreshSource ?? "", detail: "" })
+          ? errors(code as "server", {
+              source: refreshSource ?? "",
+              detail: "",
+            })
           : errors("server"),
       );
     }

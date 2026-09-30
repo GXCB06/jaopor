@@ -40,7 +40,7 @@ export function SiteHeader() {
           <Link
             href="/new"
             aria-label={t("addStartup")}
-            className="inline-flex h-8 items-center gap-1 rounded-md bg-primary px-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 sm:px-3"
+            className="inline-flex h-8 items-center gap-1 rounded-md bg-primary px-2 text-xs font-semibold whitespace-nowrap text-primary-foreground transition-opacity hover:opacity-90 sm:px-3"
           >
             <PlusIcon className="size-3.5" aria-hidden="true" />
             <span className="hidden sm:inline">{t("addStartup")}</span>

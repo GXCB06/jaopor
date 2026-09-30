@@ -87,6 +87,19 @@ begin
   exception when insufficient_privilege then out := out || 'T16 A marks own project as demo: denied (good) | ';
   end;
 
+  begin
+    insert into public.pixel_visitors (startup_id, day, visitor_hash, net_hash)
+    values (sid, current_date, '\x01', '\x02');
+    out := out || 'T17 A writes pixel_visitors: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T17 A writes pixel_visitors: denied (good) | ';
+  end;
+
+  begin
+    update public.startups set build_stack = array['Faked'] where id = sid;
+    out := out || 'T18 A writes build_stack: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T18 A writes build_stack: denied (good) | ';
+  end;
+
   execute 'reset role';
   perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
   execute 'set local role authenticated';

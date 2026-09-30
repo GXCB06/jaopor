@@ -219,7 +219,11 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 - **ProjectLinks:** one link lists a project (website / App Store / Play / LINE OA / GitHub); outline `size="sm"` buttons with lucide `Globe`/`Smartphone`/`MessageCircle`/`Code`.
 - **LookingForBanner:** `rounded-xl border border-warning/30 bg-warning/5 p-3 text-xs` with `HandHelping` icon, asks as chips, primary "Try it" link.
 - **TractionTiles:** StatTile row "Verified traction": Visitors (30d) · Active users · Build proof (commits, % co-authored by Claude, first commit). Never convert users into revenue; self-typed numbers never appear.
-- **VerifyPanel:** three bordered groups (Revenue: Stripe | RevenueCat · Visitors: Plausible | Umami · Build proof: GitHub), segmented source switch, numbered how-to, one primary "Verify". One source per group.
+- **VerifyPanel:** three bordered groups (Revenue: Stripe | RevenueCat · Visitors: **JaoPor snippet** | Plausible | Umami | Cloudflare · Build proof: GitHub), segmented source switch, numbered how-to, one primary "Verify". One source per group.
+  - **JaoPor snippet** (no analytics account needed; listed first): a read-only code box (`rounded-lg border bg-card p-3 font-mono text-caption`) with the one-line `<script>` and a Copy button, then the install status: "รอการเข้าชมครั้งแรก" / "Waiting for the first visit" (muted, pulsing dot) → "นับตั้งแต่ {date}" / "Counting since {date}" (positive).
+  - **Cloudflare:** API token (Account Analytics: Read only) + account ID. Numbers are **visits** (sessions), labelled so.
+- **TractionTiles source captions:** "นับโดย JaoPor ตั้งแต่ {date}" / "Counted by JaoPor since {date}" for the snippet; "ยืนยันผ่าน Cloudflare · visits" for Cloudflare.
+- **Tech stack card (InsightsGrid):** the owner's list; if empty, the stack detected from the connected GitHub repo, captioned "ตรวจพบจาก GitHub" / "Detected from GitHub" (`text-2xs text-faint`). Detection never overwrites the owner's list.
 - **Dashboard startup card:** `rounded-xl border bg-card p-4`, status chip, 3 tiles, completeness bar (`bg-brand`), one primary action + `⋯` menu.
 - **InfoCard:** every profile field always renders; empty → owner dashed `+ Add` (`text-brand`) / visitor "Not added". Owner detection client-side so the profile stays ISR.
 

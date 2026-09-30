@@ -230,6 +230,7 @@ export function StartupEditForm({
         <h2 className="text-sm font-semibold">{st("title")}</h2>
         <VerifyPanel
           startupId={startup.id}
+          slug={startup.slug}
           connections={connections}
           websiteHost={websiteHost(startup.website_url)}
           githubLogin={githubLogin}
@@ -250,14 +251,21 @@ export function StartupEditForm({
             className={inputClass}
           />
         </Field>
-        <Field id="looking_for" label={t("lookingFor")} optional={common("optional")}>
+        <Field
+          id="looking_for"
+          label={t("lookingFor")}
+          optional={common("optional")}
+        >
           <ToggleChips
             options={LOOKING_FOR.map((x) => ({ value: x, label: lf(x) }))}
             value={f.lookingFor}
             onChange={set("lookingFor")}
           />
         </Field>
-        <fieldset id="links" className="grid scroll-mt-24 gap-4 sm:col-span-2 sm:grid-cols-2">
+        <fieldset
+          id="links"
+          className="grid scroll-mt-24 gap-4 sm:col-span-2 sm:grid-cols-2"
+        >
           <legend className="mb-2 text-xs font-medium">{t("links")}</legend>
           {LINK_KINDS.map((kind) => (
             <Field

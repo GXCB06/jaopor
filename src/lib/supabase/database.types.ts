@@ -16,6 +16,35 @@ export type Database = {
   };
   public: {
     Tables: {
+      pixel_visitors: {
+        Row: {
+          day: string;
+          net_hash: string;
+          startup_id: number;
+          visitor_hash: string;
+        };
+        Insert: {
+          day: string;
+          net_hash: string;
+          startup_id: number;
+          visitor_hash: string;
+        };
+        Update: {
+          day?: string;
+          net_hash?: string;
+          startup_id?: number;
+          visitor_hash?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "pixel_visitors_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;
@@ -139,6 +168,7 @@ export type Database = {
           build_commits: number | null;
           build_first_commit_at: string | null;
           build_stars: number | null;
+          build_stack: string[];
           build_story: string | null;
           build_synced_at: string | null;
           category: string;
@@ -194,6 +224,7 @@ export type Database = {
           build_commits?: number | null;
           build_first_commit_at?: string | null;
           build_stars?: number | null;
+          build_stack?: string[];
           build_story?: string | null;
           build_synced_at?: string | null;
           category?: string;
@@ -249,6 +280,7 @@ export type Database = {
           build_commits?: number | null;
           build_first_commit_at?: string | null;
           build_stars?: number | null;
+          build_stack?: string[];
           build_story?: string | null;
           build_synced_at?: string | null;
           category?: string;

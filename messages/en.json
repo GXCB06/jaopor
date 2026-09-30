@@ -228,7 +228,10 @@
     "trend": "Trend view",
     "moreStartups": "More startups",
     "demoNotice": "Demo project: all numbers are sample data to show how the site works, not a real business.",
-    "sampleShort": "Sample data"
+    "sampleShort": "Sample data",
+    "viaJaopor": "Counted by JaoPor (our snippet)",
+    "viaCloudflare": "Verified via Cloudflare · counted as visits",
+    "detectedStack": "Detected from GitHub"
   },
   "Verified": {
     "stamp": "Revenue is verified with <b>{provider}</b> API key.",
@@ -377,7 +380,7 @@
     "traffic": "Visitors",
     "build": "Build proof",
     "revenueHint": "Web SaaS → Stripe · Mobile apps → RevenueCat",
-    "trafficHint": "Real visitors from your site's analytics (must be the same domain as your website).",
+    "trafficHint": "Real visitors to your site: use the JaoPor snippet (no analytics account needed) or connect the analytics you already have. Must be the same domain as your website.",
     "buildHint": "Commits, first commit and the share co-authored with Claude, from a public repo.",
     "connect": "Verify",
     "verifying": "Checking…",
@@ -422,6 +425,22 @@
       "howTo2": "We ask for no permissions — we only read the repo's public data.",
       "repo": "GitHub repo link",
       "needGithub": "Sign in with GitHub first so we can confirm the repo is yours."
+    },
+    "jaopor": {
+      "howTo1": "Copy the one line below and paste it before </head> on every page of your site. Works on Vercel, Netlify, GitHub Pages or any host.",
+      "howTo2": "Press \"Start counting\", then open your site once. Counting starts with the first visit. No cookies, no stored IPs.",
+      "copy": "Copy code",
+      "copied": "Code copied",
+      "start": "Start counting",
+      "waiting": "Waiting for the first visit from your website…",
+      "since": "Counting since {date}"
+    },
+    "cloudflare": {
+      "howTo1": "Cloudflare → My Profile → API Tokens → Create Token → Custom token",
+      "howTo2": "Permissions: Account · Account Analytics · Read (nothing else; tokens that can do more are refused)",
+      "howTo3": "Paste the token and your Account ID (on the account's Overview page). The number shown is visits to your site.",
+      "accountId": "Account ID",
+      "key": "API token (Account Analytics: Read)"
     }
   },
   "Share": {

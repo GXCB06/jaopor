@@ -12,6 +12,44 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Visitors without Plausible: JaoPor snippet + Cloudflare; GitHub stack detection
+
+**Done:**
+
+- **JaoPor snippet** (visitors for any host: Vercel, Netlify, GitHub Pages…):
+  - `public/v.js` sends one `sendBeacon` per page load to `POST /api/collect`.
+  - A visit counts only if it comes from the project's own website (Origin/Referer must match the website domain) and isn't a bot.
+  - Visitors are stored as two day-scoped HMACs in `pixel_visitors`: no cookie, no IP. There's a cap of 20 visitors per network per project per day.
+  - The first accepted visit turns the connection from `pending` into `active` and records the "since" date.
+  - The daily cron (or Refresh) rolls the hashes up into `traffic_snapshots`, then deletes finished days.
+- **Cloudflare Web Analytics connector** (`src/lib/traffic/cloudflare.ts`):
+  - Needs a token with only _Account Analytics: Read_. It must be active, and its probes for zones, Workers and account settings must not succeed; unexpected answers fail closed.
+  - The GraphQL query is filtered to the project's host, which proves the numbers belong to the project.
+  - Numbers are labelled "visits".
+- **GitHub tech-stack detection:** `detectStack` reads languages + `package.json` and fills a new server-only `build_stack`. The profile's Tech stack card shows it as "Detected from GitHub" only when the owner's own list is empty.
+- **UI:**
+  - VerifyPanel Visitors group: JaoPor snippet (default; copy box + waiting/counting status) | Plausible | Umami | Cloudflare.
+  - Profile captions "Counted by JaoPor" / "Verified via Cloudflare · counted as visits".
+  - Cloudflare logo added to the provider strip.
+  - The header "+ Add Startup" no longer wraps.
+- **Migration `traffic_snippet_cloudflare_stack`:** new provider ids, `pending` status, one-traffic index, `build_stack`, `pixel_visitors` (RLS on, no client grants).
+
+**Files:** `supabase/migrations/20260930025711_traffic_snippet_cloudflare_stack.sql`, `supabase/tests/rls_smoke.sql`, `src/lib/traffic/{pixel,cloudflare,traffic-sources.test}.ts`, `src/lib/build/github.ts`, `src/lib/sources/{catalog,sync}.ts`, `src/app/api/collect/route.ts`, `public/v.js`, `src/components/wizard/VerifyPanel.tsx`, `src/components/{ProfileBlocks,ProviderStrip,SiteHeader}.tsx`, `src/components/profile/ProjectBlocks.tsx`, `src/lib/{brand-icons,data/connections}.ts`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- RLS smoke **18/18**: T17 founders can't write `pixel_visitors`; T18 can't write `build_stack`.
+- Advisors show INFO only (plus the known leaked-password WARN). Types updated.
+- `npm test` 124/124. New tests: bot filter, origin match, network prefix, day-scoped hashes, Cloudflare (accept analytics-only, reject zones/Workers access, fail closed, inactive token, host-filtered query, no data, permission error), `stackFrom`, rollup math.
+- `npm run typecheck` ✓ · `npm run lint` ✓ · `npm run build` ✓
+- Browser pane (local): the QA profile shows detected stack chips with "Detected from GitHub".
+- `/v.js` is served. `/api/collect` always answers 204.
+- **Not verified yet:**
+  - Recording a visit end-to-end. The local server has no secret keys (`/api/health` ok=false), so this can only be checked on production after deploy.
+  - A real Cloudflare token.
+  - The VerifyPanel while signed in.
+
+**Next:** production check of the snippet with the temporary QA project `qa-snippet-temp`, then delete it; the user tries the snippet on their own site
+
 ## 2026-09-30 — THB/USD switch, grid card rows, demo logos, login 404 diagnosis
 
 **Done:**

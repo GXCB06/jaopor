@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, ExternalLinkIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, ExternalLinkIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -14,11 +14,14 @@ import {
   type SourceId,
   type SourceKind,
 } from "@/lib/sources/catalog";
+import { publicEnv } from "@/lib/public-env";
 import { cn } from "@/lib/utils";
+import { copy } from "@/components/share/copy";
 import { Field, inputClass } from "./fields";
 
-// Design.md §5 VerifyPanel: revenue (Stripe | RevenueCat) · visitors (Plausible | Umami) ·
-// build proof (GitHub). Every credential is read-only; the server proves it before storing.
+// Design.md §5 VerifyPanel: revenue (Stripe | RevenueCat) · visitors (JaoPor snippet | Plausible |
+// Umami | Cloudflare) · build proof (GitHub). Every credential is read-only; the server proves it
+// before storing. The snippet needs no credential: a visit from the website activates it.
 
 export type ConnectionInfo = {
   source: SourceId;
@@ -27,6 +30,8 @@ export type ConnectionInfo = {
   lastError: string | null;
   /** Non-secret reminder: key hint, analytics domain, project id or repo. */
   label: string | null;
+  /** JaoPor snippet: day the first visit arrived (null while waiting). */
+  since: string | null;
 };
 
 const KINDS: SourceKind[] = ["revenue", "traffic", "build"];
@@ -58,6 +63,11 @@ const FIELDS: Record<SourceId, FieldSpec[]> = {
       placeholder: "https://cloud.umami.is/share/…",
     },
   ],
+  cloudflare: [
+    { name: "accountId", label: "accountId", placeholder: "0123456789abcdef…" },
+    { name: "key", label: "key", secret: true, placeholder: "••••••••" },
+  ],
+  jaopor: [],
   github: [
     { name: "repo", label: "repo", placeholder: "https://github.com/you/app" },
   ],
@@ -68,6 +78,8 @@ const HOW_TO: Record<SourceId, number> = {
   revenuecat: 3,
   plausible: 2,
   umami: 2,
+  cloudflare: 3,
+  jaopor: 2,
   github: 2,
 };
 
@@ -81,16 +93,19 @@ const SETTINGS_URL: Partial<Record<SourceId, { live: string; test?: string }>> =
     revenuecat: { live: "https://app.revenuecat.com/" },
     plausible: { live: "https://plausible.io/settings/api-keys" },
     umami: { live: "https://cloud.umami.is/" },
+    cloudflare: { live: "https://dash.cloudflare.com/profile/api-tokens" },
   };
 
 export function VerifyPanel({
   startupId,
+  slug,
   connections,
   websiteHost,
   githubLogin,
   onConnected,
 }: {
   startupId: number;
+  slug: string;
   connections: ConnectionInfo[];
   websiteHost: string | null;
   githubLogin: string | null;
@@ -105,6 +120,7 @@ export function VerifyPanel({
           key={kind}
           kind={kind}
           startupId={startupId}
+          slug={slug}
           connections={connections}
           websiteHost={websiteHost}
           githubLogin={githubLogin}
@@ -118,6 +134,7 @@ export function VerifyPanel({
 function SourceGroup({
   kind,
   startupId,
+  slug,
   connections,
   websiteHost,
   githubLogin,
@@ -125,6 +142,7 @@ function SourceGroup({
 }: {
   kind: SourceKind;
   startupId: number;
+  slug: string;
   connections: ConnectionInfo[];
   websiteHost: string | null;
   githubLogin: string | null;
@@ -146,7 +164,11 @@ function SourceGroup({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">{t(kind)}</h3>
         {sources.length > 1 && (
-          <div className="flex gap-1.5" role="group" aria-label={t(kind)}>
+          <div
+            className="flex flex-wrap gap-1.5"
+            role="group"
+            aria-label={t(kind)}
+          >
             {sources.map((s) => (
               <button
                 key={s}
@@ -175,12 +197,17 @@ function SourceGroup({
       <p className="text-xs text-muted-foreground">{t(`${kind}Hint`)}</p>
 
       {connection ? (
-        <ConnectedRow startupId={startupId} connection={connection} />
+        <ConnectedRow
+          startupId={startupId}
+          slug={slug}
+          connection={connection}
+        />
       ) : (
         <SourceForm
           key={selected}
           source={selected}
           startupId={startupId}
+          slug={slug}
           replaces={current?.source ?? null}
           websiteHost={websiteHost}
           githubLogin={githubLogin}
@@ -205,6 +232,7 @@ function useErrorText() {
 function SourceForm({
   source,
   startupId,
+  slug,
   replaces,
   websiteHost,
   githubLogin,
@@ -212,6 +240,7 @@ function SourceForm({
 }: {
   source: SourceId;
   startupId: number;
+  slug: string;
   replaces: SourceId | null;
   websiteHost: string | null;
   githubLogin: string | null;
@@ -292,6 +321,7 @@ function SourceForm({
         </p>
       ) : (
         <form onSubmit={submit} className="space-y-3">
+          {source === "jaopor" && <SnippetBox slug={slug} />}
           <div className="grid gap-3 sm:grid-cols-2">
             {FIELDS[source].map((f) => (
               <Field
@@ -331,7 +361,11 @@ function SourceForm({
             </p>
           )}
           <Button type="submit" size="sm" disabled={busy} className="px-4">
-            {busy ? t("verifying") : t("connect")}
+            {busy
+              ? t("verifying")
+              : source === "jaopor"
+                ? t("jaopor.start")
+                : t("connect")}
           </Button>
         </form>
       )}
@@ -339,11 +373,36 @@ function SourceForm({
   );
 }
 
+/** Design.md §5 VerifyPanel snippet: the one line founders paste before </head>. */
+function SnippetBox({ slug }: { slug: string }) {
+  const t = useTranslations("Sources");
+  const code = `<script defer src="${publicEnv.siteUrl}/v.js" data-project="${slug}"></script>`;
+  return (
+    <div className="space-y-2">
+      <pre className="overflow-x-auto rounded-lg border bg-card p-3 font-mono text-caption break-all whitespace-pre-wrap">
+        {code}
+      </pre>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="px-3"
+        onClick={() => copy(code, t("jaopor.copied"))}
+      >
+        <CopyIcon />
+        {t("jaopor.copy")}
+      </Button>
+    </div>
+  );
+}
+
 function ConnectedRow({
   startupId,
+  slug,
   connection,
 }: {
   startupId: number;
+  slug: string;
   connection: ConnectionInfo;
 }) {
   const t = useTranslations("Sources");
@@ -375,6 +434,60 @@ function ConnectedRow({
       toast.success(method === "PATCH" ? t("refreshed") : t("disconnected"));
       router.refresh();
     } else toast.error(errorText(body.error ?? "server", source, body.detail));
+  }
+
+  if (source === "jaopor") {
+    const waiting = connection.status === "pending";
+    return (
+      <div className="space-y-3 rounded-md bg-muted/40 p-3 text-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p
+            className={cn(
+              "flex items-center gap-2",
+              waiting ? "text-muted-foreground" : "text-positive",
+            )}
+          >
+            <span
+              aria-hidden="true"
+              className={cn(
+                "size-2 rounded-full",
+                waiting ? "animate-pulse bg-muted-foreground" : "bg-positive",
+              )}
+            />
+            {waiting
+              ? t("jaopor.waiting")
+              : t("jaopor.since", {
+                  date: connection.since
+                    ? format.dateTime(new Date(connection.since), {
+                        dateStyle: "medium",
+                      })
+                    : "—",
+                })}
+          </p>
+          <div className="flex gap-3 text-xs">
+            {!waiting && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => act("PATCH")}
+                className="font-medium text-muted-foreground hover:text-foreground"
+              >
+                {t("refresh")}
+              </button>
+            )}
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => act("DELETE")}
+              className="font-medium text-muted-foreground hover:text-destructive"
+            >
+              {t("disconnect")}
+            </button>
+          </div>
+        </div>
+        <SnippetBox slug={slug} />
+      </div>
+    );
   }
 
   return (

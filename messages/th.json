@@ -228,7 +228,10 @@
     "trend": "มุมมองแนวโน้ม",
     "moreStartups": "สตาร์ทอัพอื่น ๆ",
     "demoNotice": "โปรเจกต์ตัวอย่าง: ตัวเลขทั้งหมดเป็นข้อมูลสมมติเพื่อแสดงหน้าตาเว็บ ไม่ใช่ธุรกิจจริง",
-    "sampleShort": "ข้อมูลตัวอย่าง"
+    "sampleShort": "ข้อมูลตัวอย่าง",
+    "viaJaopor": "นับโดย JaoPor (สคริปต์ของเรา)",
+    "viaCloudflare": "ยืนยันผ่าน Cloudflare · นับเป็นการเข้าชม (visits)",
+    "detectedStack": "ตรวจพบจาก GitHub"
   },
   "Verified": {
     "stamp": "รายได้ยืนยันผ่าน API key ของ <b>{provider}</b>",
@@ -377,7 +380,7 @@
     "traffic": "ผู้เข้าชม",
     "build": "หลักฐานการสร้าง",
     "revenueHint": "เว็บ SaaS ใช้ Stripe · แอปมือถือใช้ RevenueCat",
-    "trafficHint": "ผู้เข้าชมจริงจาก analytics ของเว็บคุณ (ต้องเป็นโดเมนเดียวกับเว็บไซต์)",
+    "trafficHint": "ผู้เข้าชมจริงของเว็บคุณ: ใช้สคริปต์ JaoPor (ไม่ต้องมี analytics) หรือเชื่อม analytics ที่มีอยู่ ต้องเป็นโดเมนเดียวกับเว็บไซต์",
     "buildHint": "จำนวน commit, commit แรก และสัดส่วนที่ร่วมเขียนกับ Claude จาก repo สาธารณะ",
     "connect": "ยืนยัน",
     "verifying": "กำลังตรวจสอบ…",
@@ -422,6 +425,22 @@
       "howTo2": "เราไม่ขอสิทธิ์ใด ๆ — อ่านข้อมูลสาธารณะของ repo เท่านั้น",
       "repo": "ลิงก์ GitHub repo",
       "needGithub": "ต้องเข้าสู่ระบบด้วย GitHub ก่อน เพื่อยืนยันว่า repo เป็นของคุณ"
+    },
+    "jaopor": {
+      "howTo1": "คัดลอกโค้ดหนึ่งบรรทัดด้านล่าง แล้ววางไว้ก่อน </head> ของทุกหน้าในเว็บของคุณ ใช้ได้กับ Vercel, Netlify, GitHub Pages หรือโฮสต์ไหนก็ได้",
+      "howTo2": "กด \"เริ่มนับ\" แล้วเปิดเว็บของคุณหนึ่งครั้ง ระบบจะเริ่มนับเมื่อมีผู้เข้าชมครั้งแรก ไม่มีคุกกี้ และไม่เก็บ IP",
+      "copy": "คัดลอกโค้ด",
+      "copied": "คัดลอกโค้ดแล้ว",
+      "start": "เริ่มนับ",
+      "waiting": "รอการเข้าชมครั้งแรกจากเว็บของคุณ…",
+      "since": "กำลังนับตั้งแต่ {date}"
+    },
+    "cloudflare": {
+      "howTo1": "Cloudflare → My Profile → API Tokens → Create Token → Custom token",
+      "howTo2": "Permissions: Account · Account Analytics · Read (อย่าเพิ่มสิทธิ์อื่น เราจะปฏิเสธโทเคนที่ทำได้มากกว่านี้)",
+      "howTo3": "วางโทเคนและ Account ID (อยู่ในหน้า Overview ของบัญชี) ตัวเลขที่ได้คือจำนวนการเข้าชม (visits) ของเว็บคุณ",
+      "accountId": "Account ID",
+      "key": "API token (Account Analytics: Read)"
     }
   },
   "Share": {

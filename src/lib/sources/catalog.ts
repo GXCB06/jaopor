@@ -5,8 +5,10 @@
 export const SOURCES = [
   "stripe",
   "revenuecat",
+  "jaopor",
   "plausible",
   "umami",
+  "cloudflare",
   "github",
 ] as const;
 export type SourceId = (typeof SOURCES)[number];
@@ -16,16 +18,20 @@ export type SourceKind = "revenue" | "traffic" | "build";
 export const SOURCE_KIND: Record<SourceId, SourceKind> = {
   stripe: "revenue",
   revenuecat: "revenue",
+  jaopor: "traffic",
   plausible: "traffic",
   umami: "traffic",
+  cloudflare: "traffic",
   github: "build",
 };
 
 export const SOURCE_NAME: Record<SourceId, string> = {
   stripe: "Stripe",
   revenuecat: "RevenueCat",
+  jaopor: "JaoPor",
   plausible: "Plausible",
   umami: "Umami",
+  cloudflare: "Cloudflare",
   github: "GitHub",
 };
 
@@ -41,6 +47,7 @@ export function sourcesOfKind(kind: SourceKind): SourceId[] {
 export type ConnectInput = {
   key?: string;
   projectId?: string;
+  accountId?: string;
   siteId?: string;
   shareUrl?: string;
   repo?: string;

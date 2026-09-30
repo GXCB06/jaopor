@@ -2,6 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   assertRepoOwner,
+  detectStack,
   fetchBuildProof,
   parseRepo,
 } from "@/lib/build/github";
@@ -22,7 +23,18 @@ import {
   fetchPlausibleTraffic,
   validatePlausibleKey,
 } from "@/lib/traffic/plausible";
-import { domainMatches, type TrafficReading } from "@/lib/traffic/types";
+import { countByDay, summarizeSnapshots } from "@/lib/traffic/pixel";
+import {
+  fetchCloudflareTraffic,
+  validateCloudflareToken,
+} from "@/lib/traffic/cloudflare";
+import {
+  daysAgo,
+  domainMatches,
+  isoDay,
+  type TrafficProviderId,
+  type TrafficReading,
+} from "@/lib/traffic/types";
 import { fetchUmamiTraffic, parseUmamiShareUrl } from "@/lib/traffic/umami";
 import {
   SOURCE_KIND,
@@ -159,7 +171,7 @@ async function writeRevenueCat(
 async function writeTraffic(
   admin: Admin,
   startupId: number,
-  provider: "plausible" | "umami",
+  provider: TrafficProviderId,
   reading: TrafficReading,
 ) {
   const { error } = await admin
@@ -167,7 +179,7 @@ async function writeTraffic(
     .update({
       traffic_provider: provider,
       visitors_30d: reading.visitors30d,
-      visitors_prev_30d: reading.visitorsPrev30d,
+      visitors_prev_30d: reading.visitorsPrev30d || null,
       traffic_synced_at: new Date().toISOString(),
     })
     .eq("id", startupId);
@@ -187,7 +199,9 @@ async function writeTraffic(
 }
 
 async function writeBuild(admin: Admin, startupId: number, repo: string) {
-  const proof = await fetchBuildProof(repo, serverEnv.githubToken());
+  const token = serverEnv.githubToken();
+  const proof = await fetchBuildProof(repo, token);
+  const stack = await detectStack(proof.repo, token);
   const { error } = await admin
     .from("startups")
     .update({
@@ -196,6 +210,7 @@ async function writeBuild(admin: Admin, startupId: number, repo: string) {
       build_commits: proof.commits,
       build_ai_commits: proof.aiCommits,
       build_stars: proof.stars,
+      build_stack: stack,
       build_synced_at: new Date().toISOString(),
     })
     .eq("id", startupId);
@@ -204,12 +219,69 @@ async function writeBuild(admin: Admin, startupId: number, repo: string) {
 }
 
 async function readTraffic(
-  source: "plausible" | "umami",
+  source: "plausible" | "umami" | "cloudflare",
   stored: Stored,
 ): Promise<TrafficReading> {
+  if (source === "cloudflare")
+    return fetchCloudflareTraffic(
+      stored.secret ?? "",
+      stored.config.accountId ?? "",
+      stored.config.host ?? "",
+    );
   return source === "plausible"
     ? fetchPlausibleTraffic(stored.secret ?? "", stored.config.siteId ?? "")
     : fetchUmamiTraffic(stored.secret ?? "", fetchPublic);
+}
+
+/**
+ * JaoPor snippet rollup: daily unique hashes -> traffic_snapshots (today's partial count is
+ * rewritten on the next run), then hashes of finished days are deleted. Visitors (30d) is the
+ * sum of daily uniques; the previous period only counts once the snippet has run that long.
+ */
+async function rollupPixel(
+  admin: Admin,
+  startupId: number,
+  since: string | null,
+  now = new Date(),
+): Promise<TrafficReading> {
+  const today = isoDay(now);
+  const { data: rows, error } = await admin
+    .from("pixel_visitors")
+    .select("day")
+    .eq("startup_id", startupId)
+    .limit(50_000);
+  if (error) throw error;
+  const byDay = countByDay(rows ?? []);
+  if (byDay.size) {
+    const { error: upErr } = await admin.from("traffic_snapshots").upsert(
+      [...byDay].map(([day, visitors]) => ({
+        startup_id: startupId,
+        day,
+        visitors,
+      })),
+      { onConflict: "startup_id,day" },
+    );
+    if (upErr) throw upErr;
+  }
+  await admin
+    .from("pixel_visitors")
+    .delete()
+    .eq("startup_id", startupId)
+    .lt("day", today);
+
+  const from = isoDay(daysAgo(now, 59));
+  const { data: snaps, error: snapErr } = await admin
+    .from("traffic_snapshots")
+    .select("day, visitors")
+    .eq("startup_id", startupId)
+    .gte("day", from)
+    .order("day");
+  if (snapErr) throw snapErr;
+  return {
+    ...summarizeSnapshots(snaps ?? [], now, since),
+    daily: [],
+    domain: null,
+  };
 }
 
 /** Fetches + writes the numbers for one source. Returns a non-fatal note (e.g. skipped FX). */
@@ -229,8 +301,16 @@ async function pull(
         stored.secret ?? "",
         stored.config.projectId ?? "",
       );
+    case "jaopor":
+      return writeTraffic(
+        admin,
+        startupId,
+        "jaopor",
+        await rollupPixel(admin, startupId, stored.config.since ?? null),
+      );
     case "plausible":
     case "umami":
+    case "cloudflare":
       return writeTraffic(
         admin,
         startupId,
@@ -275,6 +355,8 @@ export async function syncSource(
     .maybeSingle();
   if (!conn || conn.status === "revoked")
     return { ok: false, code: "not_connected", message: "Not connected." };
+  // Snippet installed but no visit seen yet: nothing to sync.
+  if (conn.status === "pending") return { ok: true };
 
   try {
     const stored: Stored = {
@@ -410,6 +492,19 @@ async function prepare(
         hint: null,
       };
     }
+    case "cloudflare": {
+      const host = requireWebsite(ctx.website);
+      const accountId = input.accountId?.trim().toLowerCase() ?? "";
+      await validateCloudflareToken(key, accountId);
+      // Proves the token can read this site's analytics before we store anything.
+      await fetchCloudflareTraffic(key, accountId, host);
+      return { secret: key, config: { accountId, host }, hint: keyHint(key) };
+    }
+    case "jaopor": {
+      // No credential: the snippet proves itself when a visit arrives from the website.
+      requireWebsite(ctx.website);
+      return { secret: null, config: {}, hint: null };
+    }
     case "github": {
       const repo = parseRepo(input.repo ?? "");
       if (!repo)
@@ -456,6 +551,17 @@ export async function connectSource(
     .select("id");
   if (replaced?.length) await clearKind(admin, startup.id, kind);
 
+  // Re-connecting the snippet keeps a connection that is already counting.
+  if (input.source === "jaopor") {
+    const { data: existing } = await admin
+      .from("provider_connections")
+      .select("id")
+      .eq("startup_id", startup.id)
+      .eq("provider", "jaopor")
+      .maybeSingle();
+    if (existing) return { ok: true };
+  }
+
   const { error } = await admin.from("provider_connections").upsert(
     {
       startup_id: startup.id,
@@ -465,7 +571,7 @@ export async function connectSource(
         : null,
       key_hint: stored.hint,
       config: stored.config as Json,
-      status: "active",
+      status: input.source === "jaopor" ? "pending" : "active",
       last_error: null,
     },
     { onConflict: "startup_id,provider" },
@@ -508,6 +614,7 @@ async function clearKind(admin: Admin, startupId: number, kind: SourceKind) {
       })
       .eq("id", startupId);
     await admin.from("traffic_snapshots").delete().eq("startup_id", startupId);
+    await admin.from("pixel_visitors").delete().eq("startup_id", startupId);
   } else {
     await admin
       .from("startups")
@@ -517,6 +624,7 @@ async function clearKind(admin: Admin, startupId: number, kind: SourceKind) {
         build_commits: null,
         build_ai_commits: null,
         build_stars: null,
+        build_stack: [],
         build_synced_at: null,
       })
       .eq("id", startupId);

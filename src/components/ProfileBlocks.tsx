@@ -186,7 +186,15 @@ export async function InsightsGrid({ startup }: { startup: StartupRow }) {
           {para(startup.pricing)}
         </InsightCard>
         <InsightCard icon={Code2Icon} label={t("techStack")} field="tech_stack">
-          {chipList(startup.tech_stack)}
+          {startup.tech_stack.length ? (
+            chipList(startup.tech_stack)
+          ) : startup.build_stack.length ? (
+            // Design.md §5: detected from the connected GitHub repo, never saved over the owner's list.
+            <div className="space-y-2">
+              {chipList(startup.build_stack)}
+              <p className="text-2xs text-faint">{t("detectedStack")}</p>
+            </div>
+          ) : null}
         </InsightCard>
         <InsightCard icon={UserIcon} label={t("teamSize")} field="team_size">
           {startup.team_size

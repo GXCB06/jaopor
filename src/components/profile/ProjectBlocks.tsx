@@ -95,9 +95,13 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
   const via = (source: string | null) =>
     startup.is_demo
       ? t("sampleShort")
-      : source && isSource(source)
-        ? t("via", { source: SOURCE_NAME[source] })
-        : null;
+      : source === "jaopor"
+        ? t("viaJaopor")
+        : source === "cloudflare"
+          ? t("viaCloudflare")
+          : source && isSource(source)
+            ? t("via", { source: SOURCE_NAME[source] })
+            : null;
   const notVerified = (anchor: string) => (
     <EmptyValue field={anchor} visitorText={common("notVerified")} />
   );

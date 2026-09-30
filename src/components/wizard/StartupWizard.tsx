@@ -89,10 +89,7 @@ export function StartupWizard({
       const supabase = createClient();
       const logoPath = logo ? await uploadLogo(userId, logo) : null;
       // Auto slug; on a clash retry once with a short random suffix (no slug field to fill in).
-      for (const slug of [
-        base,
-        `${base.slice(0, 44)}-${randomSuffix()}`,
-      ]) {
+      for (const slug of [base, `${base.slice(0, 44)}-${randomSuffix()}`]) {
         const { data, error: dbErr } = await supabase
           .from("startups")
           .insert({
@@ -249,6 +246,7 @@ export function StartupWizard({
         <div className="space-y-5">
           <VerifyPanel
             startupId={saved.id}
+            slug={saved.slug}
             connections={[]}
             websiteHost={websiteHost(saved.website)}
             githubLogin={githubLogin}

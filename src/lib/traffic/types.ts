@@ -1,7 +1,8 @@
 // Verified website traffic (unique visitors). Read-only by construction:
-// Plausible Stats API keys cannot change sites; Umami share links are view-only tokens.
+// Plausible Stats API keys cannot change sites; Umami share links are view-only tokens;
+// Cloudflare tokens must be analytics-only; the JaoPor snippet needs no credential at all.
 
-export type TrafficProviderId = "plausible" | "umami";
+export type TrafficProviderId = "plausible" | "umami" | "cloudflare" | "jaopor";
 
 export type TrafficReading = {
   /** Unique visitors in the 30 whole UTC days before today. */

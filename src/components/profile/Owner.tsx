@@ -55,9 +55,7 @@ export function EmptyValue({
     );
   }
   return (
-    <p className="text-caption text-faint">
-      {visitorText ?? t("notAdded")}
-    </p>
+    <p className="text-caption text-faint">{visitorText ?? t("notAdded")}</p>
   );
 }
 

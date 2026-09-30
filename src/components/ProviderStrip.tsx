@@ -12,6 +12,7 @@ const LIVE: Item[] = [
   { id: "revenuecat", name: "RevenueCat" },
   { id: "plausible", name: "Plausible" },
   { id: "umami", name: "Umami" },
+  { id: "cloudflare", name: "Cloudflare" },
   { id: "github", name: "GitHub" },
 ];
 const UPCOMING: Item[] = [

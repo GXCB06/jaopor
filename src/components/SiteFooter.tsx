@@ -17,7 +17,9 @@ export function SiteFooter() {
           <p className="text-caption text-muted-foreground">{t("tagline")}</p>
         </div>
         <div>
-          <h3 className="mb-3 text-3xs font-semibold tracking-wider text-faint uppercase">{t("navigation")}</h3>
+          <h3 className="mb-3 text-3xs font-semibold tracking-wider text-faint uppercase">
+            {t("navigation")}
+          </h3>
           <ul className="space-y-2">
             <li>
               <Link href="/startups" className={link}>
@@ -37,7 +39,9 @@ export function SiteFooter() {
           </ul>
         </div>
         <div>
-          <h3 className="mb-3 text-3xs font-semibold tracking-wider text-faint uppercase">{t("browse")}</h3>
+          <h3 className="mb-3 text-3xs font-semibold tracking-wider text-faint uppercase">
+            {t("browse")}
+          </h3>
           <ul className="grid grid-cols-2 gap-2">
             {CATEGORIES.slice(0, 8).map((c) => (
               <li key={c}>
@@ -52,7 +56,9 @@ export function SiteFooter() {
           </ul>
         </div>
         <div>
-          <h3 className="mb-3 text-3xs font-semibold tracking-wider text-faint uppercase">{t("about")}</h3>
+          <h3 className="mb-3 text-3xs font-semibold tracking-wider text-faint uppercase">
+            {t("about")}
+          </h3>
           <ul className="space-y-2">
             <li>
               <Link href="/security" className={link}>

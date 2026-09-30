@@ -177,6 +177,117 @@ export async function fetchBuildProof(
   };
 }
 
+// ---------------------------------------------------------------------------
+// Tech stack detection (Design.md §5 InsightsGrid "Detected from GitHub")
+// ---------------------------------------------------------------------------
+
+/** npm dependency → display label. First match wins; order = display order. */
+const NPM_STACK: Array<[RegExp, string]> = [
+  [/^next$/, "Next.js"],
+  [/^nuxt$/, "Nuxt"],
+  [/^@remix-run\//, "Remix"],
+  [/^astro$/, "Astro"],
+  [/^@sveltejs\/kit$/, "SvelteKit"],
+  [/^expo$/, "Expo"],
+  [/^react-native$/, "React Native"],
+  [/^react$/, "React"],
+  [/^vue$/, "Vue"],
+  [/^svelte$/, "Svelte"],
+  [/^@angular\/core$/, "Angular"],
+  [/^electron$/, "Electron"],
+  [/^express$/, "Express"],
+  [/^hono$/, "Hono"],
+  [/^@nestjs\/core$/, "NestJS"],
+  [/^tailwindcss$/, "Tailwind CSS"],
+  [/^@supabase\/supabase-js$/, "Supabase"],
+  [/^firebase(-admin)?$/, "Firebase"],
+  [/^@prisma\/client$|^prisma$/, "Prisma"],
+  [/^drizzle-orm$/, "Drizzle"],
+  [/^mongoose$|^mongodb$/, "MongoDB"],
+  [/^@clerk\//, "Clerk"],
+  [/^stripe$|^@stripe\//, "Stripe"],
+  [/^@line\/bot-sdk$/, "LINE Messaging API"],
+  [/^@anthropic-ai\/sdk$/, "Claude API"],
+  [/^openai$/, "OpenAI API"],
+  [/^ai$/, "Vercel AI SDK"],
+];
+
+const MAX_STACK = 20;
+
+/** Pure: languages (bytes per language) + package.json text → stack labels. */
+export function stackFrom(
+  languages: Record<string, number>,
+  packageJson: string | null,
+): string[] {
+  const out: string[] = [];
+  const add = (label: string) => {
+    if (!out.includes(label) && out.length < MAX_STACK) out.push(label);
+  };
+  if (packageJson) {
+    try {
+      const pkg = JSON.parse(packageJson) as {
+        dependencies?: Record<string, string>;
+        devDependencies?: Record<string, string>;
+      };
+      const deps = Object.keys({
+        ...pkg.dependencies,
+        ...pkg.devDependencies,
+      });
+      for (const [re, label] of NPM_STACK)
+        if (deps.some((d) => re.test(d))) add(label);
+    } catch {
+      // Not valid JSON: languages only.
+    }
+  }
+  // Top languages by size (skip markup/styling noise), at most 4.
+  Object.entries(languages)
+    .filter(
+      ([lang]) =>
+        !["HTML", "CSS", "SCSS", "Shell", "Dockerfile", "Makefile"].includes(
+          lang,
+        ),
+    )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+    .forEach(([lang]) => add(lang));
+  return out;
+}
+
+/** Languages + root package.json of a public repo → stack labels (empty on any failure). */
+export async function detectStack(
+  repo: string,
+  token?: string,
+  fetchImpl: Fetch = fetch,
+): Promise<string[]> {
+  try {
+    const [langRes, pkgRes] = await Promise.all([
+      gh(fetchImpl, `/repos/${repo}/languages`, token),
+      gh(fetchImpl, `/repos/${repo}/contents/package.json`, token),
+    ]);
+    const languages = langRes.ok
+      ? ((await langRes.json()) as Record<string, number>)
+      : {};
+    let pkg: string | null = null;
+    if (pkgRes.ok) {
+      const body = (await pkgRes.json()) as {
+        content?: string;
+        encoding?: string;
+        size?: number;
+      };
+      if (
+        body.encoding === "base64" &&
+        body.content &&
+        (body.size ?? 0) < 200_000
+      )
+        pkg = Buffer.from(body.content, "base64").toString("utf8");
+    }
+    return stackFrom(languages, pkg);
+  } catch (err) {
+    if (err instanceof ProviderError && err.code === "rate_limited") throw err;
+    return [];
+  }
+}
+
 type CommitItem = {
   commit?: { author?: { date?: string }; committer?: { date?: string } };
 };

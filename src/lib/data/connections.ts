@@ -30,6 +30,7 @@ export async function getConnections(
         lastSyncedAt: c.last_synced_at,
         lastError: c.last_error,
         label: label || null,
+        since: config.since ?? null,
       },
     ];
   });

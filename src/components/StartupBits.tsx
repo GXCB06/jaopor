@@ -191,10 +191,7 @@ export function Money({
   return (
     <>
       <span className="cur-usd">{usd}</span>
-      <span
-        className="cur-thb"
-        title={`≈ 1 USD = ${thbPerUsd.toFixed(2)} THB`}
-      >
+      <span className="cur-thb" title={`≈ 1 USD = ${thbPerUsd.toFixed(2)} THB`}>
         {money(cents, { currency: "thb", thbPerUsd, full })}
       </span>
     </>
