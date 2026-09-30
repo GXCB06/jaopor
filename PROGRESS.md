@@ -53,7 +53,8 @@
   - Leaderboard medals show in light mode.
 - 375px: `scrollWidth` = 375 on `/th`, `/th/startups`, `/en/startups`, `/th/login`, `/th/dashboard` and both profiles.
 - The icons are served (`icon.svg`, `favicon.ico` 16/32/48, `apple-icon.png`). The OG image and badge render the new mark.
-- **Not verified:** owner-side `EmptyOwnerCard`s while signed in (login is still blocked on the Supabase URL config), and production OG URLs (need a deploy).
+- **Not verified:** owner-side `EmptyOwnerCard`s while signed in (login is still blocked on the Supabase URL config).
+- **Production after deploy:** `og:image` on `jaopor.vercel.app` now points at `https://jaopor.vercel.app/...` (was `mrr-mafia.vercel.app`); `/icon.svg` is served.
 
 **Next:** the user checks Phase 0, then Phase 1 (shared configs + migrations, SQL shown first)
 
