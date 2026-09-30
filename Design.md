@@ -39,6 +39,8 @@ Defined in `src/app/globals.css` (shadcn variables). Values measured from the Fi
 
 Chart pair validated with the dataviz validator (2026-09-29; dark re-run 2026-09-30 with `#6e6cf3`): all checks pass. Re-run it if they change.
 
+**Region colours** (spec 4.2, `--region-*`, 2026-09-30), from the dataviz reference palette: north blue `#3987e5`/`#2a78d6`, northeast orange `#d95926`/`#eb6834`, central aqua `#199e70`/`#1baf7a`, east violet `#9085e9`/`#4a3aa7`, west yellow `#c98500`/`#eda100`, south magenta `#d55181`/`#e87ba4` (dark/light). Six hues can't pass an all-pairs check, so they were validated for the **8 pairs of bordering regions** in both themes (all pass). Several light values are under 3:1 on white: a region colour is always paired with its name (legend or label), never colour alone.
+
 Spec 2.1 name map (2026-09-30): `bg`→`--background`, `surface`→`--card`, `surface-2`→`--surface-2`/`--popover`, `border`→`--border`, `border-strong`→`--border-strong`, `text`→`--foreground`, `text-muted`→`--muted-foreground`, `text-subtle`→`--faint`, `accent`→`--brand` (shadcn's `--accent` stays the hover fill), `paper`→`--primary`.
 
 Semantic tokens (never raw `emerald-*`/`red-*`/`amber-*`):

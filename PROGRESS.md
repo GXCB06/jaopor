@@ -12,6 +12,32 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-09-30 — Spec Phase 1 (part 1): shared configs + migration drafted, waiting for SQL approval
+
+**Done:**
+
+- **`src/lib/config/`:**
+  - `categories.ts`: 37 categories with Thai/English names, descriptions and lucide icons. The existing `mobile` slug is kept; the spec says `mobile-apps`.
+  - `provinces.ts`: 77 provinces and 6 regions with region colour tokens, plus `matchProvince()`.
+  - `stack.ts`: 6 stored groups plus built_with (= `AI_TOOLS`), `isValidTechStack()` and `matchStackLabel()`.
+  - `channels.ts`: 26 channels plus `custom:` entries.
+  - `localized.ts`.
+  - Brand logos use Simple Icons slugs, from the new `simple-icons` dependency (CC0). Missing brands (AWS, OpenAI, Lovable, LinkedIn, Omise, 2C2P, PromptPay, Pantip, Blockdit, Codex, Bolt) fall back to lucide icons.
+- **Migration file `20260930052136_spec_phase1_vocab.sql` (NOT applied):**
+  - Changes: categories to 37; `provinces` table with the `startups.province` slug FK; `tech_stack` to jsonb; channel slugs; structured pricing; `demo_video_url`/`founder_role`/`founder_message ≤ 600`; `startup_screenshots` + `screenshots` bucket; `fx_rates`; `pg_trgm` indexes.
+  - The value lists are generated from the config files. `config.test.ts` fails if they drift.
+- **Region colours:** `--region-*` tokens are in `globals.css` and Design.md, validated for every pair of bordering regions.
+- **Back-fill dry run** (read-only SQL on live data):
+  - Provinces: 6/6 matched.
+  - Stack labels: all mapped except `Prisma` and `LINE Messaging API` (demo rows).
+  - Channels: all mapped except `App Store optimization` → `custom:`.
+  - Pricing: `mrrmafia` "990" → ฿990/month.
+  - Postgres strips Thai tone marks when normalizing, so the TypeScript now does too.
+
+**Files:** `src/lib/config/*`, `supabase/migrations/20260930052136_spec_phase1_vocab.sql`, `src/app/globals.css`, `Design.md`, `package.json`
+**Verified:** `npm test` 143/143 (new: 77 provinces, region counts 9/20/22/7/5/14, unique slugs, Simple Icons slugs exist, matchers, migration ↔ config drift checks) · `npm run typecheck` ✓ · `npm run lint` ✓
+**Next:** user approves the SQL → apply via MCP, advisors, RLS smoke (+ screenshots/fx/provinces checks), regenerate types, then move the app to the new columns (form, profile, filters, footer from config)
+
 ## 2026-09-30 — Phase 0 follow-ups: Facebook preview, blue-tile logo everywhere, Supabase URLs
 
 **Done:**

@@ -103,6 +103,13 @@
   --surface-2: #ffffff;
   --border-strong: #d4d4d8;
   --brand-foreground: #ffffff;
+  /* Region colours (spec 4.2), validated for every pair of bordering regions; always labelled. */
+  --region-north: #2a78d6;
+  --region-northeast: #eb6834;
+  --region-central: #1baf7a;
+  --region-east: #4a3aa7;
+  --region-west: #eda100;
+  --region-south: #e87ba4;
   --positive: #047857;
   --negative: #b91c1c;
   --warning: #b45309;
@@ -149,6 +156,12 @@
   --surface-2: #1e1e20;
   --border-strong: #3a3a40;
   --brand-foreground: #09090b;
+  --region-north: #3987e5;
+  --region-northeast: #d95926;
+  --region-central: #199e70;
+  --region-east: #9085e9;
+  --region-west: #c98500;
+  --region-south: #d55181;
   --positive: #22c55e;
   --negative: #ef4444;
   --warning: #f59e0b;

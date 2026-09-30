@@ -1,0 +1,371 @@
+// Spec §4.1: the single list of categories. Filters, forms, footer, search and pages import it.
+// Slugs must match the `startups_category_check` constraint (config.test.ts checks the migration).
+// Names/descriptions live here (not messages/*.json) so the list stays one source of truth; read
+// them through `localized()`.
+import type { LucideIcon } from "lucide-react";
+import {
+  BarChart3,
+  Bitcoin,
+  Blocks,
+  Bot,
+  Building2,
+  Cloud,
+  Cpu,
+  Film,
+  Gamepad2,
+  GraduationCap,
+  Headphones,
+  HeartPulse,
+  House,
+  Leaf,
+  Megaphone,
+  MessageCircle,
+  Newspaper,
+  PenTool,
+  Plane,
+  Scale,
+  Shapes,
+  Share2,
+  ShieldCheck,
+  ShoppingBag,
+  Smartphone,
+  Sparkles,
+  Sprout,
+  SquareCheck,
+  Store,
+  Terminal,
+  TrendingUp,
+  Truck,
+  Users,
+  UtensilsCrossed,
+  Video,
+  Wallet,
+  Wrench,
+} from "lucide-react";
+
+export type CategoryDef = {
+  slug: string;
+  nameTh: string;
+  nameEn: string;
+  descTh: string;
+  descEn: string;
+  icon: LucideIcon;
+};
+
+// Order = display order. `mobile` keeps its existing slug (the spec table says `mobile-apps`).
+export const CATEGORY_LIST = [
+  {
+    slug: "ai",
+    nameTh: "AI / ปัญญาประดิษฐ์",
+    nameEn: "AI",
+    descTh: "เครื่องมือ AI, LLM, แชทบอท และระบบอัตโนมัติ",
+    descEn: "AI tools, LLM apps, chatbots and automation",
+    icon: Sparkles,
+  },
+  {
+    slug: "saas",
+    nameTh: "SaaS",
+    nameEn: "SaaS",
+    descTh: "ซอฟต์แวร์แบบสมัครสมาชิกสำหรับธุรกิจและคนทำงาน",
+    descEn: "Subscription software for businesses and teams",
+    icon: Cloud,
+  },
+  {
+    slug: "developer-tools",
+    nameTh: "เครื่องมือนักพัฒนา",
+    nameEn: "Developer tools",
+    descTh: "เครื่องมือช่วยเขียนโค้ด ทดสอบ และดีพลอย",
+    descEn: "Tools to write, test and ship code",
+    icon: Terminal,
+  },
+  {
+    slug: "fintech",
+    nameTh: "ฟินเทค",
+    nameEn: "Fintech",
+    descTh: "การเงิน บัญชี การชำระเงิน และการลงทุน",
+    descEn: "Finance, accounting, payments and investing",
+    icon: Wallet,
+  },
+  {
+    slug: "marketing",
+    nameTh: "การตลาด",
+    nameEn: "Marketing",
+    descTh: "เครื่องมือหาลูกค้า โฆษณา และวัดผลแคมเปญ",
+    descEn: "Customer acquisition, ads and campaign tools",
+    icon: Megaphone,
+  },
+  {
+    slug: "ecommerce",
+    nameTh: "อีคอมเมิร์ซ",
+    nameEn: "E-commerce",
+    descTh: "ร้านค้าออนไลน์ ระบบขาย และหลังร้าน",
+    descEn: "Online stores, point of sale and back office",
+    icon: ShoppingBag,
+  },
+  {
+    slug: "productivity",
+    nameTh: "เพิ่มประสิทธิภาพงาน",
+    nameEn: "Productivity",
+    descTh: "จัดการงาน โน้ต และเวิร์กโฟลว์ให้เร็วขึ้น",
+    descEn: "Tasks, notes and faster workflows",
+    icon: SquareCheck,
+  },
+  {
+    slug: "design",
+    nameTh: "ดีไซน์",
+    nameEn: "Design",
+    descTh: "เครื่องมือออกแบบ กราฟิก และ UI",
+    descEn: "Design, graphics and UI tools",
+    icon: PenTool,
+  },
+  {
+    slug: "no-code",
+    nameTh: "No-Code / Low-Code",
+    nameEn: "No-code / Low-code",
+    descTh: "สร้างแอปและระบบได้โดยไม่ต้องเขียนโค้ดมาก",
+    descEn: "Build apps and systems with little or no code",
+    icon: Blocks,
+  },
+  {
+    slug: "analytics",
+    nameTh: "วิเคราะห์ข้อมูล",
+    nameEn: "Analytics",
+    descTh: "แดชบอร์ด รายงาน และข้อมูลเชิงลึก",
+    descEn: "Dashboards, reports and insights",
+    icon: BarChart3,
+  },
+  {
+    slug: "education",
+    nameTh: "การศึกษา",
+    nameEn: "Education",
+    descTh: "เรียนออนไลน์ ติวเตอร์ และเครื่องมือสำหรับครู",
+    descEn: "Online learning, tutoring and tools for teachers",
+    icon: GraduationCap,
+  },
+  {
+    slug: "health",
+    nameTh: "สุขภาพและฟิตเนส",
+    nameEn: "Health & fitness",
+    descTh: "สุขภาพ อาหาร การออกกำลังกาย และคลินิก",
+    descEn: "Health, nutrition, fitness and clinics",
+    icon: HeartPulse,
+  },
+  {
+    slug: "community",
+    nameTh: "คอมมูนิตี้",
+    nameEn: "Community",
+    descTh: "กลุ่ม ฟอรัม และแพลตฟอร์มรวมคน",
+    descEn: "Groups, forums and community platforms",
+    icon: MessageCircle,
+  },
+  {
+    slug: "content",
+    nameTh: "คอนเทนต์ครีเอเตอร์",
+    nameEn: "Creator tools",
+    descTh: "เครื่องมือทำวิดีโอ เขียนบทความ และโพสต์โซเชียล",
+    descEn: "Video, writing and social posting tools",
+    icon: Video,
+  },
+  {
+    slug: "crypto",
+    nameTh: "คริปโตและ Web3",
+    nameEn: "Crypto & Web3",
+    descTh: "บล็อกเชน กระเป๋าเงิน และแอปคริปโต",
+    descEn: "Blockchain, wallets and crypto apps",
+    icon: Bitcoin,
+  },
+  {
+    slug: "support",
+    nameTh: "บริการลูกค้า",
+    nameEn: "Customer support",
+    descTh: "แชทซัพพอร์ต ระบบตั๋ว และ FAQ อัตโนมัติ",
+    descEn: "Support chat, ticketing and automated FAQs",
+    icon: Headphones,
+  },
+  {
+    slug: "entertainment",
+    nameTh: "บันเทิง",
+    nameEn: "Entertainment",
+    descTh: "เพลง หนัง สตรีมมิ่ง และความบันเทิง",
+    descEn: "Music, film, streaming and fun",
+    icon: Film,
+  },
+  {
+    slug: "games",
+    nameTh: "เกม",
+    nameEn: "Games",
+    descTh: "เกมและเครื่องมือสำหรับคนทำเกม",
+    descEn: "Games and tools for game makers",
+    icon: Gamepad2,
+  },
+  {
+    slug: "green-tech",
+    nameTh: "เทคโนโลยีสีเขียว",
+    nameEn: "Green tech",
+    descTh: "พลังงาน สิ่งแวดล้อม และความยั่งยืน",
+    descEn: "Energy, environment and sustainability",
+    icon: Leaf,
+  },
+  {
+    slug: "iot",
+    nameTh: "IoT และฮาร์ดแวร์",
+    nameEn: "IoT & hardware",
+    descTh: "อุปกรณ์เชื่อมต่อ เซนเซอร์ และฮาร์ดแวร์",
+    descEn: "Connected devices, sensors and hardware",
+    icon: Cpu,
+  },
+  {
+    slug: "legal",
+    nameTh: "กฎหมาย",
+    nameEn: "Legal",
+    descTh: "สัญญา เอกสาร และเครื่องมือด้านกฎหมาย",
+    descEn: "Contracts, documents and legal tools",
+    icon: Scale,
+  },
+  {
+    slug: "marketplace",
+    nameTh: "มาร์เก็ตเพลส",
+    nameEn: "Marketplace",
+    descTh: "แพลตฟอร์มจับคู่ผู้ซื้อกับผู้ขาย",
+    descEn: "Platforms that match buyers and sellers",
+    icon: Store,
+  },
+  {
+    slug: "mobile",
+    nameTh: "แอปมือถือ",
+    nameEn: "Mobile apps",
+    descTh: "แอป iOS และ Android",
+    descEn: "iOS and Android apps",
+    icon: Smartphone,
+  },
+  {
+    slug: "news",
+    nameTh: "ข่าวและสื่อ",
+    nameEn: "News & media",
+    descTh: "ข่าว บทความ และสื่อออนไลน์",
+    descEn: "News, articles and online media",
+    icon: Newspaper,
+  },
+  {
+    slug: "real-estate",
+    nameTh: "อสังหาริมทรัพย์",
+    nameEn: "Real estate",
+    descTh: "ซื้อขาย เช่า และบริหารอสังหา",
+    descEn: "Buying, renting and managing property",
+    icon: House,
+  },
+  {
+    slug: "hr",
+    nameTh: "จัดหางานและ HR",
+    nameEn: "Jobs & HR",
+    descTh: "หางาน สรรหาคน เงินเดือน และ HR",
+    descEn: "Hiring, recruiting, payroll and HR",
+    icon: Users,
+  },
+  {
+    slug: "sales",
+    nameTh: "การขาย",
+    nameEn: "Sales",
+    descTh: "CRM หาลูกค้า และปิดการขาย",
+    descEn: "CRM, lead generation and closing deals",
+    icon: TrendingUp,
+  },
+  {
+    slug: "security",
+    nameTh: "ความปลอดภัย",
+    nameEn: "Security",
+    descTh: "ความปลอดภัยไซเบอร์ รหัสผ่าน และความเป็นส่วนตัว",
+    descEn: "Cybersecurity, passwords and privacy",
+    icon: ShieldCheck,
+  },
+  {
+    slug: "social",
+    nameTh: "โซเชียลมีเดีย",
+    nameEn: "Social media",
+    descTh: "แอปโซเชียลและเครื่องมือจัดการเพจ",
+    descEn: "Social apps and page management tools",
+    icon: Share2,
+  },
+  {
+    slug: "travel",
+    nameTh: "ท่องเที่ยว",
+    nameEn: "Travel",
+    descTh: "ที่พัก ทริป และการเดินทาง",
+    descEn: "Stays, trips and getting around",
+    icon: Plane,
+  },
+  {
+    slug: "utilities",
+    nameTh: "เครื่องมือทั่วไป",
+    nameEn: "Utilities",
+    descTh: "เครื่องมือเล็ก ๆ ที่ช่วยงานประจำวัน",
+    descEn: "Small tools for everyday tasks",
+    icon: Wrench,
+  },
+  {
+    slug: "line-oa",
+    nameTh: "LINE OA และแชทบอท",
+    nameEn: "LINE OA & chatbots",
+    descTh: "บอทและระบบบน LINE Official Account",
+    descEn: "Bots and systems on LINE Official Accounts",
+    icon: Bot,
+  },
+  {
+    slug: "food",
+    nameTh: "อาหารและร้านอาหาร",
+    nameEn: "Food & restaurants",
+    descTh: "สั่งอาหาร ร้านอาหาร และคลาวด์คิทเช่น",
+    descEn: "Food ordering, restaurants and cloud kitchens",
+    icon: UtensilsCrossed,
+  },
+  {
+    slug: "agritech",
+    nameTh: "เกษตรเทค",
+    nameEn: "Agritech",
+    descTh: "เทคโนโลยีเพื่อเกษตรกรและฟาร์ม",
+    descEn: "Technology for farmers and farms",
+    icon: Sprout,
+  },
+  {
+    slug: "local-sme",
+    nameTh: "ธุรกิจท้องถิ่น / SME",
+    nameEn: "Local business / SME",
+    descTh: "ระบบสำหรับร้านค้าและธุรกิจท้องถิ่น",
+    descEn: "Systems for shops and local businesses",
+    icon: Building2,
+  },
+  {
+    slug: "logistics",
+    nameTh: "โลจิสติกส์และขนส่ง",
+    nameEn: "Logistics & delivery",
+    descTh: "ขนส่ง จัดส่ง และคลังสินค้า",
+    descEn: "Shipping, delivery and warehousing",
+    icon: Truck,
+  },
+  {
+    slug: "other",
+    nameTh: "อื่น ๆ",
+    nameEn: "Other",
+    descTh: "ผลงานที่ไม่เข้าหมวดไหน",
+    descEn: "Everything else",
+    icon: Shapes,
+  },
+] as const satisfies readonly CategoryDef[];
+
+export type Category = (typeof CATEGORY_LIST)[number]["slug"];
+
+export const CATEGORIES = CATEGORY_LIST.map(
+  (c) => c.slug,
+) as readonly Category[];
+
+const BY_SLUG = new Map<string, CategoryDef>(
+  CATEGORY_LIST.map((c) => [c.slug, c]),
+);
+
+export function isCategory(v: unknown): v is Category {
+  return typeof v === "string" && BY_SLUG.has(v);
+}
+
+export function getCategory(slug: string): CategoryDef | undefined {
+  return BY_SLUG.get(slug);
+}
