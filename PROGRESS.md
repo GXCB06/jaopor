@@ -43,12 +43,10 @@
 - `npm run typecheck` ✓ · `npm run lint` ✓ · `npm run build` ✓
 - Browser pane (local): the QA profile shows detected stack chips with "Detected from GitHub".
 - `/v.js` is served. `/api/collect` always answers 204.
-- **Not verified yet:**
-  - Recording a visit end-to-end. The local server has no secret keys (`/api/health` ok=false), so this can only be checked on production after deploy.
-  - A real Cloudflare token.
-  - The VerifyPanel while signed in.
+- **Production (jaopor.vercel.app), temporary QA project deleted afterwards:** beacons from the project origin recorded 20 visitors (all from one network, so capped at 20). Duplicates, a wrong origin and a bot user agent were ignored. The connection went pending → active with `since` set and `traffic_provider` = jaopor. Only 32-byte hashes are stored.
+- **Not verified yet:** the daily rollup into `visitors_30d` (needs the cron secret; runs with the next Vercel cron; the math is unit-tested), a real Cloudflare token, and the VerifyPanel while signed in.
 
-**Next:** production check of the snippet with the temporary QA project `qa-snippet-temp`, then delete it; the user tries the snippet on their own site
+**Next:** the user adds the snippet to a real site from the edit page and checks the Visitors tile after the next daily sync
 
 ## 2026-09-30 — THB/USD switch, grid card rows, demo logos, login 404 diagnosis
 
