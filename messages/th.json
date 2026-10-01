@@ -784,7 +784,7 @@
     "updated": "ปรับปรุงล่าสุด: 1 ตุลาคม 2026",
     "intro": "JaoPor (jaopor.vercel.app) เป็นเว็บรวมผลงานที่คนไทยสร้างด้วย AI พร้อมตัวเลขที่ยืนยันจากระบบต้นทาง หน้านี้อธิบายว่าเราเก็บข้อมูลอะไร เพื่ออะไร เก็บนานแค่ไหน และคุณควบคุมอะไรได้บ้าง",
     "contact": "ติดต่อเรื่องข้อมูลส่วนบุคคล:",
-    "email": "chawankornbouraphan@gmail.com",
+    "email": "jaopordev@gmail.com",
     "sections": [
       {
         "title": "1. บัญชีผู้ใช้",
@@ -889,7 +889,7 @@
             "t": "ลบผลงานได้เองจากแดชบอร์ด"
           },
           {
-            "t": "ขอลบบัญชี: ติดต่อ chawankornbouraphan@gmail.com เมื่อลบบัญชี ระบบจะลบโปรไฟล์ ทักษะ ประสบการณ์ การติดตาม คำขอคุย และสถานะสมาชิกในผลงานของคุณ (ปุ่มลบบัญชีด้วยตัวเองกำลังพัฒนา)"
+            "t": "ขอลบบัญชี: ติดต่อ jaopordev@gmail.com เมื่อลบบัญชี ระบบจะลบโปรไฟล์ ทักษะ ประสบการณ์ การติดตาม คำขอคุย และสถานะสมาชิกในผลงานของคุณ (ปุ่มลบบัญชีด้วยตัวเองกำลังพัฒนา)"
           }
         ]
       },
@@ -1168,5 +1168,156 @@
     },
     "back": "ย้อนกลับ",
     "next": "ถัดไป"
+  },
+  "Builder": {
+    "editProfile": "แก้ไขโปรไฟล์",
+    "errors": {
+      "signin": "เข้าสู่ระบบก่อน",
+      "self": "ทำกับโปรไฟล์ตัวเองไม่ได้",
+      "invalid": "ข้อมูลไม่ถูกต้อง",
+      "failed": "ไม่สำเร็จ ลองอีกครั้ง",
+      "empty": "พิมพ์ข้อความก่อนส่ง",
+      "pending": "มีคำขอที่รอตอบอยู่แล้ว",
+      "limit": "ส่งคำขอครบ 5 ครั้งในวันนี้แล้ว ลองพรุ่งนี้",
+      "blocked": "ส่งคำขอถึงคนนี้ไม่ได้"
+    },
+    "requestSent": "ส่งคำขอแล้ว เมื่ออีกฝ่ายกดยอมรับ คุณจะเห็น LINE / อีเมลของกันและกัน",
+    "contactState": {
+      "pending": "รอการตอบรับ",
+      "blocked": "ส่งคำขอไม่ได้",
+      "accepted": "ยอมรับแล้ว",
+      "declined": "อีกฝ่ายข้ามคำขอ"
+    },
+    "contact": "ติดต่อ",
+    "follow": "ติดตาม",
+    "followingBtn": "กำลังติดตาม",
+    "contactTitle": "ส่งคำขอคุยถึง {name}",
+    "contactHint": "บอกสั้น ๆ ว่าคุณเป็นใครและอยากคุยเรื่องอะไร ช่องทางติดต่อจะแสดงเมื่ออีกฝ่ายกดยอมรับ",
+    "topic": "หัวข้อ",
+    "topics": {
+      "cofounder": "หา Co-founder",
+      "job": "งาน",
+      "collab": "ร่วมงาน",
+      "other": "อื่น ๆ"
+    },
+    "message": "ข้อความ",
+    "messagePh": "สวัสดีครับ/ค่ะ ผม/ฉันกำลังทำ…",
+    "contactRules": "ส่งได้วันละ 5 คำขอ · คำขอที่รอตอบได้ครั้งละ 1 ต่อคน",
+    "send": "ส่งคำขอ",
+    "report": "รายงานผู้ใช้นี้",
+    "reportHint": "ทีม JaoPor จะตรวจสอบ คนที่ถูกรายงานจะไม่รู้ว่าใครรายงาน",
+    "reasons": {
+      "spam": "สแปม",
+      "fake": "ข้อมูลปลอม",
+      "harassment": "คุกคาม",
+      "impersonation": "แอบอ้างเป็นคนอื่น",
+      "other": "อื่น ๆ"
+    },
+    "reportNote": "รายละเอียดเพิ่มเติม (ไม่บังคับ)",
+    "reported": "ส่งรายงานแล้ว ขอบคุณ",
+    "sendReport": "ส่งรายงาน",
+    "status": {
+      "looking_cofounder": "กำลังหา Co-founder",
+      "open_to_work": "เปิดรับงาน",
+      "networking": "อยากรู้จักคนสร้างด้วยกัน",
+      "busy": "ยุ่งอยู่ ไม่รับงานตอนนี้"
+    },
+    "followers": "ผู้ติดตาม",
+    "following": "กำลังติดตาม",
+    "provinceRank": "อันดับ #{rank} {region}",
+    "askContacts": "ขอ LINE / อีเมล",
+    "social": {
+      "linkedin": "LinkedIn",
+      "github": "GitHub",
+      "facebook": "Facebook",
+      "youtube": "YouTube",
+      "tiktok": "TikTok"
+    },
+    "badgesTitle": "ตราเกียรติยศ",
+    "skillsTitle": "ทักษะเด่น",
+    "addSkills": "เพิ่มทักษะ",
+    "builtWith": "สร้างด้วย",
+    "sendRequest": "ส่งคำขอคุย",
+    "wants": "ต้องการ",
+    "offers": "สิ่งที่ฉันมีให้",
+    "deal": "ข้อตกลง",
+    "roles": {
+      "engineering": "วิศวกรรม",
+      "product": "โปรดักต์",
+      "design": "ดีไซน์",
+      "growth": "การตลาด / Growth",
+      "sales": "การขาย",
+      "ops": "ปฏิบัติการ / การเงิน",
+      "ai": "AI"
+    },
+    "deals": {
+      "equity": "หุ้น",
+      "salary": "เงินเดือน",
+      "equity_salary": "หุ้น + เงินเดือน",
+      "revenue_share": "แบ่งรายได้",
+      "tbd": "คุยกันได้"
+    },
+    "commitments": {
+      "full_time": "เต็มเวลา",
+      "part_time": "พาร์ทไทม์",
+      "weekends": "วันหยุด",
+      "flexible": "ยืดหยุ่น"
+    },
+    "locations": {
+      "remote": "ทำจากที่ไหนก็ได้",
+      "onsite": "เข้าออฟฟิศ",
+      "hybrid": "ผสม"
+    },
+    "statWorks": "ผลงาน",
+    "statMrr": "รายได้ยืนยันแล้ว",
+    "perMonth": "/เดือน",
+    "statBuilding": "สร้างมาแล้ว",
+    "months": "เดือน",
+    "pinnedTitle": "ผลงานที่ปักหมุด",
+    "roleLabel": {
+      "founder": "Founder",
+      "cofounder": "Co-founder",
+      "maker": "Maker",
+      "contributor": "Contributor"
+    },
+    "perMonthShort": "/ด",
+    "commits": "{n} commits",
+    "visitors": "{n} ผู้เข้าชม / 30 วัน",
+    "unverified": "ยังไม่ยืนยันตัวเลข",
+    "addWork": "เพิ่มผลงานแรก",
+    "activityTitle": "{n} กิจกรรมในปีที่ผ่านมา",
+    "year": "ปี",
+    "weekday": {
+      "0": "จ.",
+      "1": "อ.",
+      "2": "พ.",
+      "3": "พฤ.",
+      "4": "ศ.",
+      "5": "ส.",
+      "6": "อา."
+    },
+    "cellTitle": "{day}: {n} กิจกรรม",
+    "activitySource": "นับจาก GitHub commits และวันที่มีรายได้ที่ยืนยัน",
+    "less": "น้อย",
+    "more": "มาก",
+    "activityEmptyOwner": "เชื่อม GitHub กับผลงานของคุณ แล้วกราฟจะเริ่มเติมหลังซิงก์รอบถัดไป",
+    "experienceTitle": "ประสบการณ์",
+    "present": "ปัจจุบัน",
+    "addExperience": "เพิ่มประสบการณ์",
+    "recentTitle": "กิจกรรมล่าสุด",
+    "event": {
+      "commits": "{n} commits ใน 30 วันที่ผ่านมา",
+      "mrr": "แตะ ฿{amount} MRR รวมทุกผลงาน",
+      "launch": "เปิดตัว {name}"
+    },
+    "badge": {
+      "pioneer": "รุ่นบุกเบิก #{n}",
+      "verified": "Verified Builder",
+      "mrr": "MRR ฿{amount}",
+      "streak": "สร้างติด {n} วัน"
+    },
+    "ogWorks": "{n} ผลงาน",
+    "ogVerifiedMrr": "รายได้ยืนยันแล้ว / เดือน",
+    "ogNoNumbers": "ยังไม่มีตัวเลขที่ยืนยัน"
   }
 }

@@ -7,7 +7,7 @@ import { requireUserId } from "@/lib/auth";
 import { getMyProfile } from "@/lib/data/me";
 import type { Visibility } from "@/lib/profile";
 
-const CONTACT = "chawankornbouraphan@gmail.com";
+const CONTACT = "jaopordev@gmail.com";
 
 export async function generateMetadata({
   params,

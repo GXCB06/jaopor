@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { stackFrom } from "@/lib/build/github";
+import { commitDays, stackFrom } from "@/lib/build/github";
 import { matchStackLabel } from "@/lib/config/stack";
 import { ProviderError } from "@/lib/revenue/types";
 import { fetchCloudflareTraffic, validateCloudflareToken } from "./cloudflare";
@@ -493,5 +493,21 @@ describe("snippet rollup math", () => {
       visitors30d: 15,
       visitorsPrev30d: 7,
     });
+  });
+});
+
+describe("commitDays", () => {
+  it("turns weekly commit_activity into dated days with commits", () => {
+    // 2026-09-27 is a Sunday.
+    const sunday = Date.UTC(2026, 8, 27) / 1000;
+    expect(
+      commitDays([
+        { week: sunday, days: [0, 3, 0, 0, 0, 0, 1] },
+        { week: Number.NaN, days: [5] },
+      ]),
+    ).toEqual([
+      { day: "2026-09-28", commits: 3 },
+      { day: "2026-10-03", commits: 1 },
+    ]);
   });
 });

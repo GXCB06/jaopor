@@ -73,3 +73,30 @@ export async function ogCoverDataUri(
     return null;
   }
 }
+
+// OAuth avatars only: the profile row's avatar_url is user-influenced, so the OG renderer never
+// fetches any other host.
+const AVATAR_HOSTS = new Set([
+  "lh3.googleusercontent.com",
+  "avatars.githubusercontent.com",
+]);
+
+/** Builder avatar as a 256px PNG data URI (allowlisted OAuth hosts only). */
+export async function avatarDataUri(
+  url: string | null,
+): Promise<string | null> {
+  try {
+    if (!url) return null;
+    const u = new URL(url);
+    if (u.protocol !== "https:" || !AVATAR_HOSTS.has(u.hostname)) return null;
+    const bytes = await fetchBytes(u.toString());
+    if (!bytes) return null;
+    return await toDataUri(
+      bytes,
+      { width: 256, height: 256, fit: "cover" },
+      "png",
+    );
+  } catch {
+    return null;
+  }
+}

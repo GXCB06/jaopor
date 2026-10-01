@@ -17,14 +17,14 @@ import { createPublicClient } from "@/lib/supabase/public";
 
 export type Owner = Pick<
   Tables<"profiles">,
-  "handle" | "display_name" | "avatar_url" | "x_handle"
+  "handle" | "display_name" | "avatar_url" | "x_handle" | "headline"
 >;
 export type StartupRow = Tables<"startups"> & { owner: Owner | null };
 
 // Named FK: startup_members also links startups and profiles (many-to-many), so the plain embed
 // is ambiguous (PGRST201).
 const SELECT =
-  "*, owner:profiles!startups_owner_id_fkey(handle, display_name, avatar_url, x_handle)";
+  "*, owner:profiles!startups_owner_id_fkey(handle, display_name, avatar_url, x_handle, headline)";
 
 function db() {
   return createPublicClient();

@@ -26,6 +26,7 @@ import {
 } from "@/components/profile/ProjectBlocks";
 import {
   InsightsGrid,
+  FounderCard,
   StatCard,
   ChartStamp,
   FounderMessageCard,
@@ -318,7 +319,10 @@ export default async function StartupPage({ params }: Props) {
               />
             )}
             {ownerName && (
-              <StatCard
+              // Spec 9b: the founder card opens the founder's public profile. Subtext = the role on
+              // this project, else the founder's own headline, else their X handle.
+              <FounderCard
+                handle={owner?.handle ?? null}
                 label={t("founder")}
                 value={
                   <span className="flex items-center gap-2 text-base">
@@ -334,7 +338,11 @@ export default async function StartupPage({ params }: Props) {
                     <span className="truncate">{ownerName}</span>
                   </span>
                 }
-                caption={owner?.x_handle ? `@${owner.x_handle} · 𝕏` : undefined}
+                caption={
+                  startup.founder_role ??
+                  owner?.headline ??
+                  (owner?.x_handle ? `@${owner.x_handle} · 𝕏` : undefined)
+                }
               />
             )}
             {startup.founded_on || startup.country || startup.province ? (

@@ -12,6 +12,25 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-01 — Phase 9b: public builder profile, founder link, contact email
+
+**Done:**
+
+- **Founder card → profile (user request):** the startup page's Founder tile (`FounderCard`) and the founder-message name link to `/u/{handle}`. The subtext under the name is the project's `founder_role` (e.g. "Founder, CEO"), else the profile headline (e.g. "cu109"), else the 𝕏 handle.
+- **Contact email changed to jaopordev@gmail.com** (/privacy TH + EN, settings delete-account mail).
+- **`/u/[username]` + `/@username`** (proxy rewrite, `lib/at-path.ts`): sidebar (avatar + status dot, headline, bio, follow / contact / edit, followers, province + Olympics rank, current role, links, contacts once a request is accepted, else "ขอ LINE / อีเมล"), computed badges (pioneer, verified, MRR milestone, 7-day streak), skills + superpowers, built-with tools, report; main column: looking-for card, proof strip (verified numbers only), pinned works, a GitHub-style activity heatmap with year switcher, experience, recent activity. Owners see "+ เพิ่ม…" prompts where visitors would see nothing.
+- **Social actions** (`actions/social.ts`): follow / unfollow, contact request (topic + 500-char message; DB limits surface as "pending" / "5 a day" / "blocked"); report dialog. **Profile views** (`/api/profile-view`): one row per browser per day, stored as an HMAC under a daily key; no IP; the owner isn't counted.
+- **Activity data:** the sync now stores GitHub weekly commit activity per day in `build_activity`; the cron refreshes `refresh_activity` and prunes `live_pings`.
+- **Builder OG image** (anonymous view only; avatar fetched from Google/GitHub avatar hosts only).
+
+**Files:** `src/app/[locale]/u/[username]/{page,opengraph-image}.tsx`, `src/components/builder/*`, `src/app/actions/social.ts`, `src/app/api/profile-view/route.ts`, `src/lib/{builder,at-path}{,.test}.ts`, `src/lib/data/builder.ts`, `src/lib/og-images.ts`, `src/proxy.ts`, `src/components/ProfileBlocks.tsx`, `src/app/[locale]/startup/[slug]/page.tsx`, `src/lib/data/startups.ts`, `src/lib/build/github.ts`, `src/lib/sources/sync.ts`, `src/app/api/cron/sync/route.ts`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- `npm test` 207/207 (badges, streak, heatmap grid / month labels, /@ path parsing, commit-activity parsing) · typecheck ✓ · lint ✓ · build ✓ · every `Builder.*` key used by the page and dialogs exists in TH + EN (script check).
+- Local render isn't possible (no service-role key in the local env), so the page is checked on production after deploy (see below).
+
+**Next:** Phase 9c (`/builders` directory + QuickSearch "คน" group, enable the sidebar community links)
+
 ## 2026-10-01 — Phase 9d: dashboard, profile editor, requests, onboarding
 
 **Done:**

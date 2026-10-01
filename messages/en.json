@@ -784,7 +784,7 @@
     "updated": "Last updated: October 1, 2026",
     "intro": "JaoPor (jaopor.vercel.app) is a directory of things people build with AI, with numbers verified at the source. This page explains what we collect, why, how long we keep it, and what you control.",
     "contact": "Privacy contact:",
-    "email": "chawankornbouraphan@gmail.com",
+    "email": "jaopordev@gmail.com",
     "sections": [
       {
         "title": "1. Accounts",
@@ -889,7 +889,7 @@
             "t": "Delete a project yourself from the dashboard."
           },
           {
-            "t": "To delete your account, contact chawankornbouraphan@gmail.com. Deleting an account removes your profile, skills, experience, follows, contact requests and project memberships. (A self-service delete button is being built.)"
+            "t": "To delete your account, contact jaopordev@gmail.com. Deleting an account removes your profile, skills, experience, follows, contact requests and project memberships. (A self-service delete button is being built.)"
           }
         ]
       },
@@ -1168,5 +1168,156 @@
     },
     "back": "Back",
     "next": "Next"
+  },
+  "Builder": {
+    "editProfile": "Edit profile",
+    "errors": {
+      "signin": "Sign in first",
+      "self": "You can't do that on your own profile",
+      "invalid": "Invalid input",
+      "failed": "That didn't work. Try again",
+      "empty": "Write a message first",
+      "pending": "You already have a request waiting",
+      "limit": "You've sent 5 requests today. Try tomorrow",
+      "blocked": "You can't send requests to this person"
+    },
+    "requestSent": "Request sent. Once they accept, you'll both see each other's LINE / email",
+    "contactState": {
+      "pending": "Waiting for a reply",
+      "blocked": "Can't send requests",
+      "accepted": "Accepted",
+      "declined": "They skipped your request"
+    },
+    "contact": "Contact",
+    "follow": "Follow",
+    "followingBtn": "Following",
+    "contactTitle": "Send {name} a request",
+    "contactHint": "Say briefly who you are and what you'd like to talk about. Contacts show once they accept",
+    "topic": "Topic",
+    "topics": {
+      "cofounder": "Co-founder",
+      "job": "Job",
+      "collab": "Collaboration",
+      "other": "Other"
+    },
+    "message": "Message",
+    "messagePh": "Hi! I'm working on…",
+    "contactRules": "5 requests a day · 1 waiting request per person",
+    "send": "Send request",
+    "report": "Report this user",
+    "reportHint": "The JaoPor team will review it. The person won't see who reported them",
+    "reasons": {
+      "spam": "Spam",
+      "fake": "Fake information",
+      "harassment": "Harassment",
+      "impersonation": "Impersonation",
+      "other": "Other"
+    },
+    "reportNote": "Details (optional)",
+    "reported": "Report sent. Thank you",
+    "sendReport": "Send report",
+    "status": {
+      "looking_cofounder": "Looking for a co-founder",
+      "open_to_work": "Open to work",
+      "networking": "Here to meet builders",
+      "busy": "Busy, not taking work"
+    },
+    "followers": "followers",
+    "following": "following",
+    "provinceRank": "#{rank} in {region}",
+    "askContacts": "Ask for LINE / email",
+    "social": {
+      "linkedin": "LinkedIn",
+      "github": "GitHub",
+      "facebook": "Facebook",
+      "youtube": "YouTube",
+      "tiktok": "TikTok"
+    },
+    "badgesTitle": "Badges",
+    "skillsTitle": "Top skills",
+    "addSkills": "Add skills",
+    "builtWith": "Built with",
+    "sendRequest": "Send a request",
+    "wants": "Looking for",
+    "offers": "What I bring",
+    "deal": "Deal",
+    "roles": {
+      "engineering": "Engineering",
+      "product": "Product",
+      "design": "Design",
+      "growth": "Growth / Marketing",
+      "sales": "Sales",
+      "ops": "Ops / Finance",
+      "ai": "AI"
+    },
+    "deals": {
+      "equity": "Equity",
+      "salary": "Salary",
+      "equity_salary": "Equity + salary",
+      "revenue_share": "Revenue share",
+      "tbd": "Open to discuss"
+    },
+    "commitments": {
+      "full_time": "Full time",
+      "part_time": "Part time",
+      "weekends": "Weekends",
+      "flexible": "Flexible"
+    },
+    "locations": {
+      "remote": "Remote",
+      "onsite": "On-site",
+      "hybrid": "Hybrid"
+    },
+    "statWorks": "Works",
+    "statMrr": "Verified revenue",
+    "perMonth": "/month",
+    "statBuilding": "Building for",
+    "months": "months",
+    "pinnedTitle": "Pinned works",
+    "roleLabel": {
+      "founder": "Founder",
+      "cofounder": "Co-founder",
+      "maker": "Maker",
+      "contributor": "Contributor"
+    },
+    "perMonthShort": "/mo",
+    "commits": "{n} commits",
+    "visitors": "{n} visitors / 30 days",
+    "unverified": "Numbers not verified yet",
+    "addWork": "Add your first work",
+    "activityTitle": "{n} contributions in the last year",
+    "year": "Year",
+    "weekday": {
+      "0": "Mon",
+      "1": "Tue",
+      "2": "Wed",
+      "3": "Thu",
+      "4": "Fri",
+      "5": "Sat",
+      "6": "Sun"
+    },
+    "cellTitle": "{day}: {n} contributions",
+    "activitySource": "Counted from GitHub commits and days with verified revenue",
+    "less": "Less",
+    "more": "More",
+    "activityEmptyOwner": "Connect GitHub to your works and the graph fills in after the next sync",
+    "experienceTitle": "Experience",
+    "present": "Present",
+    "addExperience": "Add experience",
+    "recentTitle": "Recent activity",
+    "event": {
+      "commits": "{n} commits in the last 30 days",
+      "mrr": "Reached ฿{amount} MRR across all works",
+      "launch": "Launched {name}"
+    },
+    "badge": {
+      "pioneer": "Pioneer #{n}",
+      "verified": "Verified Builder",
+      "mrr": "MRR ฿{amount}",
+      "streak": "{n}-day streak"
+    },
+    "ogWorks": "{n} works",
+    "ogVerifiedMrr": "Verified revenue / month",
+    "ogNoNumbers": "No verified numbers yet"
   }
 }

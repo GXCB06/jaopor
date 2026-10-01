@@ -487,3 +487,48 @@ function commitDate(c: CommitItem | undefined): string | null {
   const d = c?.commit?.author?.date ?? c?.commit?.committer?.date;
   return d && !Number.isNaN(Date.parse(d)) ? new Date(d).toISOString() : null;
 }
+
+type CommitWeek = { week: number; days: number[] };
+
+/** Pure: GitHub's weekly commit_activity (Sunday-start UTC weeks) → days that had commits. */
+export function commitDays(
+  weeks: CommitWeek[],
+): { day: string; commits: number }[] {
+  const out: { day: string; commits: number }[] = [];
+  for (const w of weeks) {
+    if (!Number.isFinite(w.week) || !Array.isArray(w.days)) continue;
+    w.days.forEach((n, i) => {
+      if (Number.isInteger(n) && n > 0)
+        out.push({
+          day: new Date((w.week + i * 86_400) * 1000)
+            .toISOString()
+            .slice(0, 10),
+          commits: n,
+        });
+    });
+  }
+  return out;
+}
+
+/**
+ * Daily commits over the last 52 weeks (Phase 9 activity heatmap). GitHub answers 202 while it
+ * computes the stats; that (or any failure) returns [] and the next daily sync tries again.
+ */
+export async function fetchCommitActivity(
+  repo: string,
+  token?: string,
+  fetchImpl: Fetch = fetch,
+): Promise<{ day: string; commits: number }[]> {
+  try {
+    const res = await gh(
+      fetchImpl,
+      `/repos/${repo}/stats/commit_activity`,
+      token,
+    );
+    if (res.status !== 200) return [];
+    const weeks = (await res.json()) as CommitWeek[];
+    return Array.isArray(weeks) ? commitDays(weeks) : [];
+  } catch {
+    return [];
+  }
+}

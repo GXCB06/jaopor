@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   assertRepoOwner,
   detectStack,
+  fetchCommitActivity,
   fetchBuildProof,
   parseRepo,
 } from "@/lib/build/github";
@@ -215,6 +216,20 @@ async function writeBuild(admin: Admin, startupId: number, repo: string) {
     })
     .eq("id", startupId);
   if (error) throw error;
+
+  // Phase 9 heatmap: daily commits for the last 52 weeks (best effort; never fails the sync).
+  const days = await fetchCommitActivity(proof.repo, token);
+  if (days.length) {
+    const { error: actErr } = await admin.from("build_activity").upsert(
+      days.map((d) => ({
+        startup_id: startupId,
+        day: d.day,
+        commits: d.commits,
+      })),
+      { onConflict: "startup_id,day" },
+    );
+    if (actErr) console.error("[sync] build_activity:", actErr.code);
+  }
   return null;
 }
 

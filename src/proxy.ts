@@ -1,7 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import createIntlMiddleware from "next-intl/middleware";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
+import { atPathTarget } from "./lib/at-path";
 import { publicEnv } from "./lib/public-env";
 
 // Next.js 16 renamed Middleware to Proxy.
@@ -9,7 +10,11 @@ import { publicEnv } from "./lib/public-env";
 const intl = createIntlMiddleware(routing);
 
 export default async function proxy(request: NextRequest) {
-  const response = intl(request);
+  // /@handle → /{locale}/u/{handle} (Phase 9b short profile links).
+  const at = atPathTarget(request.nextUrl.pathname, routing.defaultLocale);
+  const response = at
+    ? NextResponse.rewrite(new URL(at, request.url))
+    : intl(request);
 
   const supabase = createServerClient(
     publicEnv.supabaseUrl,

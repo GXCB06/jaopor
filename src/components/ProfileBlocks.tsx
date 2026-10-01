@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { getCategory } from "@/lib/config/categories";
 import {
   aiToolChip,
@@ -59,6 +60,31 @@ export function StatCard({
         </div>
       )}
     </Card>
+  );
+}
+
+/**
+ * Design.md §5 FounderCard: the profile's "ผู้ก่อตั้ง" StatCard, linked to the founder's public
+ * profile (/u/{handle}) when they have a username. Hover = the interactive card treatment.
+ */
+export function FounderCard({
+  handle,
+  ...card
+}: React.ComponentProps<typeof StatCard> & { handle: string | null }) {
+  if (!handle) return <StatCard {...card} />;
+  return (
+    <Link
+      href={`/u/${handle}`}
+      className="group min-w-0 rounded-xl focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+    >
+      <StatCard
+        {...card}
+        className={cn(
+          "h-full transition-[border-color,transform] group-hover:-translate-y-px group-hover:border-border-strong [&_.truncate]:group-hover:underline",
+          card.className,
+        )}
+      />
+    </Link>
   );
 }
 
@@ -351,7 +377,16 @@ export async function FounderMessageCard({ startup }: { startup: StartupRow }) {
             {startup.founder_message}
           </blockquote>
           <figcaption className="text-sm">
-            <span className="font-bold">{name}</span>
+            {owner?.handle ? (
+              <Link
+                href={`/u/${owner.handle}`}
+                className="font-bold hover:underline"
+              >
+                {name}
+              </Link>
+            ) : (
+              <span className="font-bold">{name}</span>
+            )}
             {startup.founder_role && (
               <span className="text-muted-foreground">
                 {" "}

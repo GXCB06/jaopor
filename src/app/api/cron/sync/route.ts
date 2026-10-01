@@ -41,6 +41,12 @@ export async function GET(req: Request) {
     }
   }
   await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+  // Phase 9: per-user daily activity (profile heatmap) is a materialized view; refresh it once.
+  const refreshed = await admin.rpc("refresh_activity");
+  if (refreshed.error)
+    console.error("[cron] refresh_activity:", refreshed.error.code);
+  // Phase 8: drop stale live-visitor heartbeats.
+  await admin.rpc("prune_live_pings");
 
   return json(summary);
 }
