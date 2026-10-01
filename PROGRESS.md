@@ -12,6 +12,25 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-01 — Phase 9c: /builders directory + people in QuickSearch; startup owner-bar copy
+
+**Done:**
+
+- **Copy (user):** the startup page's owner bar now reads "นี่คือโปรไฟล์ Startup ของคุณ — …" and its button "แก้ไข Startup" (EN "This is your startup's profile", "Edit startup"), so it isn't confused with the builder profile.
+- **`/builders`** (spec 9c): hero with a people search, filter sidebar (skill · area = region or province · status · สร้างด้วย · verified only; same no-JS GET form and mobile toggle as /startups), BuilderCard grid (avatar, name, @handle, headline, status, top 3 skills with superpowers first, "n ผลงาน", verified ฿/month, province), ordered by verified revenue → verified works → works → newest, 24 per page.
+- **Privacy:** rows come from the anonymous view only. Only `show_in_directory` profiles are listed, and a province or skills set to members / hidden are dropped before filtering, so filters can't reveal them. Works = confirmed memberships of published startups; revenue = verified, non-demo.
+- **QuickSearch "คน" group** (up to 4, handle prefix first; a failure there can't break startup search); placeholder mentions people.
+- **Navigation:** header "คนสร้าง" (the home-anchor leaderboard link now shows from 1280px only, so 1024px still fits), mobile menu, footer; the dashboard sidebar's คนสร้าง / หา Co-founder links are live (no more "เร็ว ๆ นี้").
+- Shared **StatusPill** (tone by status); the profile page's pill was always green, now busy is neutral and networking is brand.
+
+**Files:** `src/app/[locale]/builders/page.tsx`, `src/components/builder/{BuilderCard,StatusPill}.tsx`, `src/lib/builders{,.test}.ts`, `src/lib/data/builder.ts` (`listBuilders`, OG card counts published works only), `src/app/api/search/route.ts`, `src/components/search/QuickSearch.tsx`, `src/components/{SiteHeader,MobileNav,SiteFooter}.tsx`, `src/components/dashboard/DashboardSidebar.tsx`, `src/app/[locale]/u/[username]/page.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- `npm test` 212/212 (filters per facet + combined, hidden province never matches, ordering, skill order, people search ranking) · typecheck ✓ · lint ✓ · build ✓
+- Production: /th/builders lists 3 builders; filters checked by URL (northeast + fullstack 3, north 0, verified 1, open_to_work 0, q=jaopor 1, claude-code 2); QuickSearch "chaw" shows the คน group with highlight and ↓ + Enter opens the profile; /en/builders at 375px has no horizontal scroll and the filter toggle opens the form; the header fits at 1024px.
+
+**Next:** owner review of Phase 9. Follow-up when the directory grows past a few hundred profiles: move filtering/search into SQL (an RPC over the anonymous view) instead of loading every directory profile per request.
+
 ## 2026-10-01 — Phase 9b: public builder profile, founder link, contact email
 
 **Done:**
