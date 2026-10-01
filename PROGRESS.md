@@ -12,6 +12,25 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-01 — Phase 9d: dashboard, profile editor, requests, onboarding
+
+**Done:**
+
+- **DashboardShell** (docs/design/dashboard.png): sidebar (ภาพรวม, ผลงานของฉัน + count, โปรไฟล์ของฉัน, คำขอคุย + unread badge, ที่บันทึกไว้, การเชื่อมต่อ, ตั้งค่า; คอมมูนิตี้: คนสร้าง / หา Co-founder marked "เร็ว ๆ นี้" until 9c), user card with theme / language / sign-out; a scroll row below `lg`. A user without a username is sent to /onboarding.
+- **Overview:** greeting + weekly visits, "ดูโปรไฟล์สาธารณะ ↗", "+ เพิ่มผลงาน"; setup checklist (6 items computed from data, next item highlighted, hidden when done); "ผลงานของฉัน" table (visitors 7 days, MRR rank, MRR, edit / copy link / view) with the amber "เชื่อมต่อเพื่อขึ้นกระดาน…" banner on unverified rows; add / claim tiles (claim = "เร็ว ๆ นี้"); requests preview (accept / skip) + profile 7-day stats (views, requests; no search-impressions stat).
+- **Profile editor** (/dashboard/profile): basics with live username check, status + looking-for, SkillPicker (≤ 20, ≤ 3 superpowers), experience, pinned works (≤ 6), social links (https only), private contacts; ↑/↓ reordering instead of drag; one sticky save bar.
+- **Requests inbox** (accept / skip / block, withdraw sent, contacts revealed after accept, marks notifications read), **Connections** (followers / following), **Settings** (per-field visibility, directory opt-out, delete-account by email), **Saved** (honest placeholder: no bookmarks table yet), **Onboarding** (username → headline + province → status → skills, skippable).
+- Server actions validate input against the same vocabularies as the DB trigger (`lib/profile.ts`, `lib/config/skills.ts`) and write through the user's own RLS client; the owner's full profile row is read with the service role filtered by the session's user id. The old startup cards moved to /dashboard/startups.
+
+**Files:** `src/app/[locale]/dashboard/{layout,page}.tsx`, `src/app/[locale]/dashboard/{startups,profile,requests,saved,connections,settings}/page.tsx`, `src/app/[locale]/onboarding/page.tsx`, `src/components/dashboard/*`, `src/components/profile-edit/*`, `src/app/actions/profile.ts`, `src/lib/data/me.ts`, `src/lib/profile{,.test}.ts`, `src/lib/config/{skills.ts,config.test.ts}`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- `npm test` 200/200 (skills / reserved handles / looking-for vocabularies match the migration; handle rules, social link normalising, looking-for cleaning, checklist) · typecheck ✓ · lint ✓ · build ✓
+- Production (owner's session, read-only): /th/dashboard redirects to /th/onboarding; the username step suggests "chawankorn_bouraphan" and the live check says it's available. Signed out, /th/dashboard → /th/login?next=…
+- **Not verified:** the dashboard pages after onboarding, the editor's saves, the requests flow in the UI (local sign-in isn't possible here; the owner completes onboarding first). The DB side of every write is covered by RLS smoke 63/63.
+
+**Next:** owner completes onboarding and tries the dashboard; then Phase 9b (public profile /u/[username] + /@username rewrite, profile views, follow, contact modal, report)
+
 ## 2026-10-01 — /privacy published, live visitors on in production, notifications + heartbeat applied
 
 **Done:**
