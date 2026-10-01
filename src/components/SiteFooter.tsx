@@ -33,6 +33,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/builders" className={link}>
+                {nav("builders")}
+              </Link>
+            </li>
+            <li>
               <Link href="/olympics" className={link}>
                 {t("olympics")}
               </Link>

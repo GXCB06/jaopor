@@ -4,6 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { Tables } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 import type { LookingFor } from "@/lib/profile";
+import { orderSkills, type DirectoryBuilder } from "@/lib/builders";
+import { isProvince } from "@/lib/config/provinces";
 
 // Phase 9b public builder profile. Visibility-controlled fields come from get_profile (server-only,
 // masked for this viewer); skills and positions are read with the viewer's own client so RLS
@@ -168,16 +170,73 @@ export const getProfileCard = cache(async (handle: string) => {
   if (!profile) return null;
   const { data: members } = await admin
     .from("startup_members")
-    .select("startup:startups(mrr_cents, verification_status, is_demo)")
+    .select("startup:startups(mrr_cents, verification_status, is_demo, status)")
     .eq("user_id", profile.id)
     .eq("status", "confirmed");
-  const verified = (members ?? [])
+  const published = (members ?? [])
     .map((m) => m.startup)
-    .filter((s) => s && s.verification_status === "verified" && !s.is_demo);
+    .filter((s) => s?.status === "published");
+  const verified = published.filter(
+    (s) => s!.verification_status === "verified" && !s!.is_demo,
+  );
   return {
     profile,
-    works: members?.length ?? 0,
+    works: published.length,
     verifiedWorks: verified.length,
     mrrCents: verified.reduce((s, w) => s + (w!.mrr_cents ?? 0), 0),
   };
+});
+
+/** Fields an anonymous visitor may see (field_visibility missing = public). */
+const isPublic = (fv: unknown, field: string) =>
+  ((fv as Record<string, string> | null)?.[field] ?? "public") === "public";
+
+/**
+ * Phase 9c directory rows: every profile with a handle and show_in_directory, built from the
+ * anonymous view (a province or skills set to "members" / "hidden" are left out, so filters can't
+ * reveal them). Works = confirmed memberships of published startups; revenue = verified, non-demo.
+ * Filtering happens in TypeScript (lib/builders.ts); fine while the directory is small.
+ */
+export const listBuilders = cache(async (): Promise<DirectoryBuilder[]> => {
+  const { data, error } = await createAdminClient()
+    .from("profiles")
+    .select(
+      `id, handle, display_name, avatar_url, headline, status, province, field_visibility, created_at,
+       profile_skills(skill_slug, is_superpower, position),
+       startup_members!startup_members_user_id_fkey(status, startup:startups(status, verification_status, is_demo, mrr_cents, ai_tools))`,
+    )
+    .eq("show_in_directory", true)
+    .not("handle", "is", null)
+    .limit(2000);
+  if (error) throw new Error(`listBuilders: ${error.message}`);
+  return (data ?? []).map((p) => {
+    const works = p.startup_members
+      .filter(
+        (m) => m.status === "confirmed" && m.startup?.status === "published",
+      )
+      .map((m) => m.startup!);
+    const verified = works.filter(
+      (w) => w.verification_status === "verified" && !w.is_demo,
+    );
+    return {
+      id: p.id,
+      handle: p.handle!,
+      name: p.display_name ?? p.handle!,
+      avatarUrl: p.avatar_url,
+      headline: p.headline,
+      status: p.status,
+      province:
+        isPublic(p.field_visibility, "province") && isProvince(p.province)
+          ? p.province
+          : null,
+      skills: isPublic(p.field_visibility, "skills")
+        ? orderSkills(p.profile_skills)
+        : [],
+      tools: [...new Set(works.flatMap((w) => w.ai_tools))],
+      works: works.length,
+      verifiedWorks: verified.length,
+      mrrCents: verified.reduce((s, w) => s + (w.mrr_cents ?? 0), 0),
+      createdAt: p.created_at,
+    };
+  });
 });

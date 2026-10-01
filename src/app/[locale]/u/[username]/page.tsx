@@ -19,6 +19,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ProfileActions } from "@/components/builder/ProfileActions";
 import { ProfileViewBeacon } from "@/components/builder/ProfileViewBeacon";
+import { StatusPill } from "@/components/builder/StatusPill";
 import { ReportDialog } from "@/components/builder/ReportDialog";
 import { Card } from "@/components/core/Card";
 import { GrowthValue, Money, StartupLogo } from "@/components/StartupBits";
@@ -246,16 +247,7 @@ export default async function BuilderProfilePage({
           {profile.headline && (
             <p className="text-sm text-muted-foreground">{profile.headline}</p>
           )}
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-positive/30 bg-positive/10 px-2.5 py-0.5 text-2xs font-semibold text-positive">
-            <span
-              aria-hidden="true"
-              className={cn(
-                "size-1.5 rounded-full",
-                STATUS_DOT[profile.status],
-              )}
-            />
-            {t(`status.${profile.status}`)}
-          </span>
+          <StatusPill status={profile.status} />
           {profile.bio && (
             <p className="pt-1 text-body leading-relaxed">{profile.bio}</p>
           )}
@@ -463,7 +455,7 @@ export default async function BuilderProfilePage({
                   </Link>
                 )}
               </div>
-              <div className="grid gap-3 md:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 {(lf.roles?.length || lf.industries?.length) && (
                   <div className="rounded-lg border bg-background/40 p-3">
                     <p className="mb-2 text-2xs text-faint">{t("wants")}</p>

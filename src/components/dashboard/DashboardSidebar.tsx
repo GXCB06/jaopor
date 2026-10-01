@@ -75,12 +75,11 @@ export function DashboardSidebar({
     },
   ];
   const community: Item[] = [
-    { href: "/builders", key: "builders", icon: UsersIcon, soon: true },
+    { href: "/builders", key: "builders", icon: UsersIcon },
     {
       href: "/builders?status=looking_cofounder",
       key: "cofounder",
       icon: UserPlusIcon,
-      soon: true,
     },
   ];
 

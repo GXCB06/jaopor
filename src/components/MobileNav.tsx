@@ -10,6 +10,7 @@ import {
   SunIcon,
   TrophyIcon,
   UserIcon,
+  UsersIcon,
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -55,6 +56,12 @@ export function MobileNav() {
           <Link href="/categories">
             <LayoutGridIcon aria-hidden="true" />
             {t("categories")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/builders">
+            <UsersIcon aria-hidden="true" />
+            {t("builders")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

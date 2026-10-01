@@ -361,6 +361,16 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - **Report dialog:** reason radio list + optional note → "ส่งรายงาน"; success one-liner.
 - A `ProfileViewBeacon` counts one view per browser per day (HMAC under a daily key, no IP).
 
+### Builders directory (`/builders`, Phase 9c)
+
+- Same frame as `/startups`: centered hero (BrandPill, H1 "คนสร้าง", subline, a people search box = GET form `q`, and "สร้างโปรไฟล์ของคุณ" for visitors without a profile) → `lg:grid-cols-[15rem_minmax(0,1fr)]` filter sidebar (CSS-only toggle below `lg`) + results.
+- **Filters** (one GET form, "ใช้ตัวกรอง" / "ล้าง"): ทักษะ (select, optgroups by skill group) · พื้นที่ (one select: a region, or a province grouped by region; param `area`) · สถานะ · สร้างด้วย (AI tool) · "เฉพาะคนที่มีตัวเลขยืนยันแล้ว" checkbox. Only what an anonymous visitor may see is filterable: a hidden province or hidden skills never match.
+- **Order:** verified revenue → verified works → works → newest. 24 per page, the same prev / next pager.
+- **BuilderCard** (`grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3`): `rounded-xl border bg-card p-4` + hover lift (`hover:-translate-y-0.5 hover:border-foreground/20`), whole card links to `/u/{handle}`. Row: avatar 48 round (initials fallback) · name `font-semibold truncate` + `@handle text-2xs text-faint`. Headline `text-caption text-muted-foreground line-clamp-2`. StatusPill. Up to 3 skill chips (superpowers `border-brand/40 text-brand-text`, others `bg-secondary`). Footer `border-t pt-3 text-caption tabular-nums`: "n ผลงาน" · "฿X/เดือน" with a positive ✓ only when there is verified revenue; province (MapPin) right-aligned when public.
+- **StatusPill** (shared by the profile page and cards): `rounded-full border px-2.5 py-0.5 text-2xs font-semibold` + 6px dot; looking for co-founder / open to work = `positive` tint, networking = `brand` tint, busy = neutral `bg-secondary text-muted-foreground`.
+- Empty: dashed one-liner + "ล้างตัวกรอง". The dashboard sidebar's คนสร้าง / หา Co-founder link here (`/builders`, `/builders?status=looking_cofounder`); header nav gets "คนสร้าง" (the home-anchor "กระดานผู้นำ" link moves to `xl` only so `lg` still fits).
+- **QuickSearch "คน" group** (spec 9c): up to 4 people (avatar 28 round, name with highlight, @handle · headline), after startups; handle-prefix matches first.
+
 ### Privacy page (`/[locale]/privacy`, 2026-10-01)
 
 - `main max-w-3xl`: H1 `text-2xl md:text-3xl font-bold` · "ปรับปรุงล่าสุด" `text-caption text-faint` · intro `text-body text-muted-foreground` · contact line with a `text-brand-text` mailto link.
@@ -424,6 +434,7 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 | `/startups`        | Header · Hero · FilterSidebar + results header + large card grid + pagination                                                                                                                                                                                                       |
 | `/startup/[slug]`  | Breadcrumb · Profile header (logo, name, description, Share, Visit) · links + LookingFor · StatCards (data only) · RevenueChartCard (Stripe) · VerifiedStamp · TractionTiles · InsightsGrid · More startups                                                                         |
 | `/u/[username]`    | Sidebar (who, actions, info, badges, skills, tools) · looking-for · proof strip · pinned works · heatmap · experience \| recent activity                                                                                                                                            |
+| `/builders`        | Hero (people search) · filter sidebar (skill, area, status, built with, verified) + BuilderCard grid + pager                                                                                                                                                                        |
 | `/dashboard`       | Title + "+ Add Startup" · Dashboard startup cards                                                                                                                                                                                                                                   |
 | Add-startup wizard | 2 steps: 1) name · project link (auto-detected) · category · built with · looking for · logo → 2) VerifyPanel or skip                                                                                                                                                               |
 | `/acquire`         | Phase 2: Directory layout + price/multiple filters and FOR SALE tags                                                                                                                                                                                                                |

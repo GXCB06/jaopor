@@ -26,16 +26,23 @@ type StartupHit = {
   source: string | null;
 };
 type VocabHit = { slug: string; label: string; sub?: string };
+type PersonHit = {
+  handle: string;
+  name: string;
+  headline: string | null;
+  avatar: string | null;
+};
 type Results = {
   q: string;
   startups: StartupHit[];
+  people: PersonHit[];
   categories: VocabHit[];
   provinces: VocabHit[];
 };
 type Option = {
   key: string;
   href: string;
-  group: "startups" | "categories" | "provinces" | "all";
+  group: "startups" | "people" | "categories" | "provinces" | "all";
 };
 
 const TOP_CATEGORIES = CATEGORY_LIST.slice(0, 8);
@@ -149,6 +156,12 @@ export function QuickSearch({
         href: `/startup/${s.slug}`,
         group: "startups",
       });
+    for (const p of results.people ?? [])
+      options.push({
+        key: `u-${p.handle}`,
+        href: `/u/${p.handle}`,
+        group: "people",
+      });
     for (const c of results.categories)
       options.push({
         key: `c-${c.slug}`,
@@ -185,6 +198,7 @@ export function QuickSearch({
   const hasAny =
     showResults &&
     (results.startups.length > 0 ||
+      (results.people?.length ?? 0) > 0 ||
       results.categories.length > 0 ||
       results.provinces.length > 0);
 
@@ -312,6 +326,36 @@ export function QuickSearch({
                 </span>
               </>,
               `/startup/${s.slug}`,
+            ),
+          )}
+          {(results.people?.length ?? 0) > 0 && header(t("groupPeople"))}
+          {(results.people ?? []).map((p) =>
+            row(
+              "people",
+              <>
+                <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-secondary text-3xs font-bold text-muted-foreground uppercase">
+                  {p.avatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- OAuth avatar
+                    <img
+                      src={p.avatar}
+                      alt=""
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    p.name.slice(0, 2)
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-xs font-semibold">
+                    <Highlight text={p.name} q={query} />
+                  </span>
+                  <span className="block truncate text-2xs text-muted-foreground">
+                    @<Highlight text={p.handle} q={query.replace(/^@/, "")} />
+                    {p.headline && ` · ${p.headline}`}
+                  </span>
+                </span>
+              </>,
+              `/u/${p.handle}`,
             ),
           )}
           {results.categories.length > 0 && header(t("groupCategories"))}
