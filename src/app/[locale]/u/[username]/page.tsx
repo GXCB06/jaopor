@@ -214,7 +214,7 @@ export default async function BuilderProfilePage({
     : { pathname: "/login", query: { next: `/u/${profile.handle}` } };
 
   return (
-    <main className="mx-auto grid w-full max-w-6xl gap-8 px-4 pt-8 pb-16 lg:grid-cols-[296px_minmax(0,1fr)]">
+    <main className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 px-4 pt-8 pb-16 lg:grid-cols-[296px_minmax(0,1fr)]">
       <ProfileViewBeacon profileId={profile.id} />
 
       {/* Sidebar */}
@@ -584,7 +584,7 @@ export default async function BuilderProfilePage({
         {shown.length > 0 ? (
           <section className="space-y-3">
             <h2 className="text-base font-bold">{t("pinnedTitle")}</h2>
-            <ul className="grid gap-3 md:grid-cols-2">
+            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {shown.map((w) => {
                 // The ✓ names the revenue provider, so it only shows with a verified revenue number.
                 const source =
@@ -803,7 +803,7 @@ export default async function BuilderProfilePage({
         ) : null}
 
         {/* Experience | recent activity */}
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {page.positions.length > 0 ? (
             <Card className="p-5">
               <h2 className="mb-4 text-base font-bold">
