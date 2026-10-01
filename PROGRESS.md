@@ -25,6 +25,7 @@
 
 - `npm test` 244/244 (new: 30-day window with today partial, 7 days without today, growth on complete days only, nulls before the first data, 12-month buckets, nice axis max, works label) · typecheck ✓ · lint ✓ · build ✓ · all new keys in th and en.
 - Temporary preview with sample data (deleted): 900px (tooltip, legend, partial ring, axis, footer), 12 เดือน, 375px (no horizontal scroll; x labels first / middle / "วันนี้" only after a label collision was found and fixed), owner empty state (en), chat "You blocked this chat · Unblock".
+- Production: @gxcb06 (JaoPor, Stripe-verified, ฿0) shows the tabs, ranges, legend, partial month and footer. Fix found there: with all-zero revenue the y axis read "฿1 / ฿1 / ฿0"; it now shows only "฿0".
 - **Not verified yet:** unblocking on production with the owner's accounts.
 
 **Next:** owner unblocks the test chat (jaopor_dev → chawankorn_bouraphan) and checks the profile dashboard on a profile with verified, non-demo revenue.

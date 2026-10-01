@@ -184,8 +184,9 @@ export function ProfileRevenueChart({
           aria-hidden="true"
           className="flex h-[200px] flex-col justify-between text-right text-3xs text-faint tabular-nums"
         >
-          <span>{axis(top)}</span>
-          <span>{axis(top / 2)}</span>
+          {/* All zero: only the baseline label (a "฿1" scale would be made up). */}
+          <span>{w.max > 0 ? axis(top) : ""}</span>
+          <span>{w.max > 0 ? axis(top / 2) : ""}</span>
           <span>{axis(0)}</span>
         </div>
         <div
