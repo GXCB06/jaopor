@@ -242,7 +242,9 @@
     "closeShot": "Close",
     "playDemo": "Watch the demo",
     "demoVideo": "{name} demo video",
-    "provinceRank": "{province} · #{rank} in the Olympics"
+    "provinceRank": "{province} · #{rank} in the Olympics",
+    "latestUpdates": "Latest updates",
+    "seeFeed": "See the whole feed"
   },
   "Verified": {
     "stamp": "Revenue is verified with <b>{provider}</b> API key.",
@@ -1320,7 +1322,7 @@
       "6": "Sun"
     },
     "cellTitle": "{day}: {n} contributions",
-    "activitySource": "Counted from GitHub commits and days with verified revenue",
+    "activitySource": "Counted from GitHub commits, days with verified revenue and product updates",
     "less": "Less",
     "more": "More",
     "activityEmptyOwner": "Connect GitHub to your works and the graph fills in after the next sync",
@@ -1347,7 +1349,28 @@
       "user": "Report this user",
       "post": "Report this post",
       "comment": "Report this comment"
-    }
+    },
+    "breadcrumb": "Breadcrumb",
+    "breadcrumbBuilders": "Builders",
+    "proofWorks": "{n, plural, one {# work} other {# works}}",
+    "proofVerified": "{n, number} verified",
+    "proofMonths": "building for {n, plural, one {# month} other {# months}}",
+    "followersGrowth": " +{n, number}",
+    "edit": "Edit",
+    "statMrrTotal": "Total MRR",
+    "statMrrNote": "from {n, plural, one {# verified work} other {# verified works}}",
+    "statRevenueTotal": "All-time revenue",
+    "statRevenueNote": "since the first sale",
+    "statPosts": "Product updates",
+    "statPostsNote": "posts in 6 months",
+    "tabRevenue": "Revenue",
+    "tabActivity": "Build activity",
+    "tabsLabel": "View",
+    "chartStamp": "Verified via {sources} · all verified works combined, unverified works left out",
+    "seeAllWorks": "See all {n, number}",
+    "updatesTitle": "Product updates",
+    "seeFeed": "See the whole feed",
+    "firstPost": "Post your first product update"
   },
   "Builders": {
     "title": "Builders",
@@ -1459,7 +1482,8 @@
       "mrr": "{name} hit ฿{amount} MRR",
       "revenue": "{name} passed ฿{amount} in total revenue",
       "stars": "{name} reached ★{amount} on GitHub"
-    }
+    },
+    "imageCount": "{n, plural, one {# image} other {# images}}"
   },
   "Feed": {
     "title": "Feed",
@@ -1495,7 +1519,8 @@
     "waitingBodySignedOut": "{n, plural, one {# post has} other {# posts have}} no replies yet. Help a fellow builder.",
     "waitingCta": "See posts waiting for replies",
     "loadMore": "Load more",
-    "loadFailed": "Couldn't load more. Try again."
+    "loadFailed": "Couldn't load more. Try again.",
+    "lookingCofounder": "Looking for a co-founder"
   },
   "Notify": {
     "label": "Notifications",

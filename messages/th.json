@@ -242,7 +242,9 @@
     "closeShot": "ปิด",
     "playDemo": "ดูวิดีโอเดโม",
     "demoVideo": "วิดีโอเดโม {name}",
-    "provinceRank": "{province} · อันดับ #{rank} ในโอลิมปิก"
+    "provinceRank": "{province} · อันดับ #{rank} ในโอลิมปิก",
+    "latestUpdates": "อัปเดตล่าสุด",
+    "seeFeed": "ดูฟีดทั้งหมด"
   },
   "Verified": {
     "stamp": "รายได้ยืนยันผ่าน API key ของ <b>{provider}</b>",
@@ -1320,7 +1322,7 @@
       "6": "อา."
     },
     "cellTitle": "{day}: {n} กิจกรรม",
-    "activitySource": "นับจาก GitHub commits และวันที่มีรายได้ที่ยืนยัน",
+    "activitySource": "นับจาก GitHub commits วันที่มีรายได้ยืนยัน และโพสต์อัปเดตผลงาน",
     "less": "น้อย",
     "more": "มาก",
     "activityEmptyOwner": "เชื่อม GitHub กับผลงานของคุณ แล้วกราฟจะเริ่มเติมหลังซิงก์รอบถัดไป",
@@ -1347,7 +1349,28 @@
       "user": "รายงานผู้ใช้นี้",
       "post": "รายงานโพสต์นี้",
       "comment": "รายงานความคิดเห็นนี้"
-    }
+    },
+    "breadcrumb": "เส้นทาง",
+    "breadcrumbBuilders": "คนสร้าง",
+    "proofWorks": "{n, number} ผลงาน",
+    "proofVerified": "{n, number} ยืนยันแล้ว",
+    "proofMonths": "สร้างมา {n, number} เดือน",
+    "followersGrowth": " +{n, number}",
+    "edit": "แก้ไข",
+    "statMrrTotal": "MRR รวม",
+    "statMrrNote": "จาก {n, number} ผลงานที่ยืนยัน",
+    "statRevenueTotal": "รายได้ทั้งหมด",
+    "statRevenueNote": "ตั้งแต่เริ่มขาย",
+    "statPosts": "อัปเดตผลงาน",
+    "statPostsNote": "โพสต์ใน 6 เดือน",
+    "tabRevenue": "รายได้รวม",
+    "tabActivity": "กิจกรรมการสร้าง",
+    "tabsLabel": "มุมมอง",
+    "chartStamp": "ยืนยันผ่าน {sources} · รวมทุกผลงานที่ยืนยันแล้ว ไม่รวมผลงานที่ยังไม่ยืนยัน",
+    "seeAllWorks": "ดูทั้งหมด {n, number}",
+    "updatesTitle": "อัปเดตผลงาน",
+    "seeFeed": "ดูฟีดทั้งหมด",
+    "firstPost": "โพสต์อัปเดตผลงานแรกของคุณ"
   },
   "Builders": {
     "title": "คนสร้าง",
@@ -1459,7 +1482,8 @@
       "mrr": "{name} แตะ ฿{amount} MRR",
       "revenue": "{name} มีรายได้รวมทะลุ ฿{amount}",
       "stars": "{name} ได้ ★{amount} บน GitHub"
-    }
+    },
+    "imageCount": "{n, number} รูป"
   },
   "Feed": {
     "title": "ฟีด",
@@ -1495,7 +1519,8 @@
     "waitingBodySignedOut": "{n, number} โพสต์ยังไม่มีใครตอบ ช่วยคนสร้างด้วยกันสักนิด",
     "waitingCta": "ดูโพสต์ที่รอคำตอบ",
     "loadMore": "โหลดเพิ่ม",
-    "loadFailed": "โหลดไม่สำเร็จ ลองอีกครั้ง"
+    "loadFailed": "โหลดไม่สำเร็จ ลองอีกครั้ง",
+    "lookingCofounder": "หา Co-founder"
   },
   "Notify": {
     "label": "การแจ้งเตือน",

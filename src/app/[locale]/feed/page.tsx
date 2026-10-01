@@ -2,7 +2,6 @@ import { SlidersHorizontalIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { FollowButton } from "@/components/builder/FollowButton";
-import { StatusPill } from "@/components/builder/StatusPill";
 import { Avatar } from "@/components/posts/bits";
 import { Composer } from "@/components/posts/Composer";
 import { FeedList } from "@/components/posts/FeedList";
@@ -313,11 +312,17 @@ export default async function FeedPage({
                           .filter(Boolean)
                           .join(" · ")}
                       </span>
+                      {/* The rail is ~240px wide: a one-line dot + label instead of the pill. */}
                       {b.status === "looking_cofounder" && (
-                        <StatusPill
-                          status={b.status}
-                          className="mt-1 px-2 py-0"
-                        />
+                        <span className="mt-0.5 flex items-center gap-1 truncate text-2xs font-semibold text-positive">
+                          <span
+                            aria-hidden="true"
+                            className="size-1.5 shrink-0 rounded-full bg-positive"
+                          />
+                          <span className="truncate">
+                            {t("lookingCofounder")}
+                          </span>
+                        </span>
                       )}
                     </span>
                     {b.id !== viewer && (

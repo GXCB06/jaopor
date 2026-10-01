@@ -5,6 +5,8 @@ import type { Tables } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 import type { LookingFor } from "@/lib/profile";
 import { orderSkills, type DirectoryBuilder } from "@/lib/builders";
+import { sumSeries } from "@/lib/builder";
+import { getChartSeries } from "@/lib/data/startups";
 import { isProvince } from "@/lib/config/provinces";
 
 // Phase 9b public builder profile. Visibility-controlled fields come from get_profile (server-only,
@@ -240,3 +242,41 @@ export const listBuilders = cache(async (): Promise<DirectoryBuilder[]> => {
     };
   });
 });
+
+/**
+ * Profile v2 revenue card: daily verified revenue / MRR summed over the builder's verified,
+ * non-demo works (USD cents; the chart converts to ฿). Null when none has verified revenue.
+ */
+export async function getBuilderChart(works: BuilderWork[]) {
+  const verified = works.filter(
+    (w) => w.verification_status === "verified" && !w.is_demo,
+  );
+  if (!verified.length) return null;
+  const series = await Promise.all(
+    verified.map((w) => getChartSeries({ ...w, owner: null })),
+  );
+  const sum = sumSeries(series);
+  return sum && (sum.revenue || sum.mrr) ? sum : null;
+}
+
+/** "+12": followers gained in the last 30 days, and posts in the last 6 months. */
+export async function getBuilderCounts(profileId: string) {
+  const supabase = await createClient();
+  const since = (days: number) =>
+    new Date(Date.now() - days * 86_400_000).toISOString();
+  const [followers, posts] = await Promise.all([
+    supabase
+      .from("follows")
+      .select("follower_id", { count: "exact", head: true })
+      .eq("following_id", profileId)
+      .gte("created_at", since(30)),
+    supabase
+      .from("posts")
+      .select("id", { count: "exact", head: true })
+      .eq("author_id", profileId)
+      .eq("is_auto", false)
+      .is("hidden_at", null)
+      .gte("created_at", since(182)),
+  ]);
+  return { newFollowers: followers.count ?? 0, posts6m: posts.count ?? 0 };
+}

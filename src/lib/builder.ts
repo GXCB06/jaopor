@@ -138,3 +138,42 @@ export function recentScore(
     .filter((a) => a.day >= since)
     .reduce((s, a) => s + a.score, 0);
 }
+
+/**
+ * Profile v2 revenue card: the daily series of several works added together (same `start` and
+ * length, from getChartSeries). A day is null only when every work is null on it (no data yet);
+ * MRR and revenue stay null when no work has them. Visitors aren't combined (not money).
+ */
+export function sumSeries<
+  S extends {
+    start: string;
+    revenue: (number | null)[] | null;
+    mrr: (number | null)[] | null;
+  },
+>(
+  list: S[],
+): {
+  start: string;
+  revenue: (number | null)[] | null;
+  mrr: (number | null)[] | null;
+  visitors: null;
+} | null {
+  if (!list.length) return null;
+  const add = (key: "revenue" | "mrr") => {
+    const arrays = list
+      .map((s) => s[key])
+      .filter((a): a is (number | null)[] => a !== null);
+    if (!arrays.length) return null;
+    return arrays[0].map((_, i) =>
+      arrays.some((a) => a[i] !== null)
+        ? arrays.reduce((s, a) => s + (a[i] ?? 0), 0)
+        : null,
+    );
+  };
+  return {
+    start: list[0].start,
+    revenue: add("revenue"),
+    mrr: add("mrr"),
+    visitors: null,
+  };
+}

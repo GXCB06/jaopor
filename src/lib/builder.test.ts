@@ -72,3 +72,25 @@ describe("misc", () => {
     ).toBe("Founder");
   });
 });
+
+describe("sumSeries", () => {
+  it("adds works day by day and keeps 'no data yet' as null", async () => {
+    const { sumSeries } = await import("./builder");
+    const a = { start: "2026-09-01", revenue: [null, 100, 200], mrr: null };
+    const b = {
+      start: "2026-09-01",
+      revenue: [null, null, 50],
+      mrr: [10, 10, 20],
+    };
+    expect(sumSeries([a, b])).toEqual({
+      start: "2026-09-01",
+      revenue: [null, 100, 250],
+      mrr: [10, 10, 20],
+      visitors: null,
+    });
+    expect(sumSeries([])).toBeNull();
+    expect(
+      sumSeries([{ start: "x", revenue: null, mrr: null }])?.revenue,
+    ).toBeNull();
+  });
+});

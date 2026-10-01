@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import type { LinkPreview } from "@/lib/og-parse";
 import type { PostType } from "@/lib/posts";
-import { logoUrl } from "@/lib/supabase/public";
+import { createPublicClient, logoUrl } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 
 // Phase 10 reads. The viewer's own client, so RLS decides visibility (hidden posts and posts on
@@ -188,6 +188,27 @@ export async function listPosts(opts: {
   const liked = await myLikes(rows.map((r) => r.id));
   return rows
     .map((r) => toView(r, liked))
+    .filter((p): p is PostView => p !== null);
+}
+
+/**
+ * Latest posts of a startup for ISR pages (cookie-free anon client, so the page stays cached).
+ * Likes are not personalised here; the startup page shows compact previews linking to the post.
+ */
+export async function listStartupPostsPublic(
+  startupId: number,
+  limit = 3,
+): Promise<PostView[]> {
+  const { data, error } = await createPublicClient()
+    .from("posts")
+    .select(POST_SELECT)
+    .eq("startup_id", startupId)
+    .is("hidden_at", null)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(`listStartupPostsPublic: ${error.message}`);
+  return ((data ?? []) as unknown as Row[])
+    .map((r) => toView(r, new Set()))
     .filter((p): p is PostView => p !== null);
 }
 

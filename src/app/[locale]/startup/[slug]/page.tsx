@@ -39,6 +39,9 @@ import { FoundingBadge, Money, StartupLogo } from "@/components/StartupBits";
 import { QuickSearchSection } from "@/components/search/QuickSearchSection";
 import { StartupCard } from "@/components/StartupCard";
 import { Link } from "@/i18n/navigation";
+import { PostPreview } from "@/components/posts/PostPreview";
+import { listStartupPostsPublic } from "@/lib/data/posts";
+import { renderNow } from "@/lib/posts";
 import { getThbPerUsd } from "@/lib/data/fx";
 import {
   getMoreStartups,
@@ -130,6 +133,7 @@ export default async function StartupPage({ params }: Props) {
     more,
     thbPerUsd,
     olympics,
+    updates,
   ] = await Promise.all([
     getTranslations("Profile"),
     getTranslations("Common"),
@@ -144,7 +148,10 @@ export default async function StartupPage({ params }: Props) {
     startup.province
       ? getProvinceLeaderboard(DEFAULT_METRIC)
       : Promise.resolve([]),
+    // Phase 10e: latest product updates (cookie-free, so the page stays cached).
+    listStartupPostsPublic(startup.id, 3).catch(() => []),
   ]);
+  const now = renderNow();
   // Spec 6.4 step 2: "📍 จังหวัด · อันดับ #X ในโอลิมปิก" → the province page.
   const provinceNameText = provinceName(startup.province, locale);
   const provinceRankNo = provinceRank(olympics, startup.province);
@@ -421,6 +428,27 @@ export default async function StartupPage({ params }: Props) {
         <div className="pt-3">
           <InsightsGrid startup={startup} />
         </div>
+
+        {updates.length > 0 && (
+          <section className="pt-3">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-bold">{t("latestUpdates")}</h2>
+              <Link
+                href="/feed"
+                className="text-caption text-faint hover:text-foreground"
+              >
+                {t("seeFeed")} →
+              </Link>
+            </div>
+            <ul className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              {updates.map((p) => (
+                <li key={p.id}>
+                  <PostPreview post={p} now={now} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {more.length > 0 && (
           <section className="pt-3">
