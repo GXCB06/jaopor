@@ -349,6 +349,31 @@ begin
   j := public.get_profile('rls_tester_a', a);
   out := out || format('T57 server get_profile as owner: bio=%s (expect secret bio) | ', j ->> 'bio');
 
+  -- notifications_live_pings ------------------------------------------------------------
+  execute 'reset role';
+  select count(*) into n from public.notifications where user_id = a and kind = 'request_received';
+  out := out || format('T58 recipient notified of the request: %s (expect 1) | ', n);
+  select count(*) into n from public.notifications where kind = 'request_accepted' and user_id in (a, b);
+  out := out || format('T59 both sides notified on accept: %s (expect 2) | ', n);
+
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  select count(*) into n from public.notifications where user_id = a;
+  out := out || format('T60 B reads A notifications: %s (expect 0) | ', n);
+  update public.notifications set read_at = now() where user_id = b;
+  get diagnostics n = row_count;
+  out := out || format('T61 B marks own notifications read: %s (expect >= 1) | ', n);
+  begin
+    update public.notifications set kind = 'request_received' where user_id = b;
+    out := out || 'T62 B rewrites notification kind: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T62 B rewrites notification kind: denied (good) | ';
+  end;
+  begin
+    perform 1 from public.live_pings;
+    out := out || 'T63 authenticated reads live_pings: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T63 authenticated reads live_pings: denied (good) | ';
+  end;
+
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;
 end $$;

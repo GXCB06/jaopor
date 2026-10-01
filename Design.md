@@ -319,6 +319,13 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - Footer `border-t text-2xs`: "คุณแสดงเป็น “{ชื่อ}” · ไม่แสดงตัวฉัน" (opt-out; then "คุณไม่ได้แสดงตัว · แสดงตัวอีกครั้ง") + "ไม่ระบุตัวตน · ตำแหน่งระดับจังหวัด/ประเทศ".
 - Names only from the fixed word lists (EN "Color Animal", TH "สัตว์สี"); every received payload is validated. Production waits for the approved /privacy page (`LIVE_ENABLED`).
 
+### Privacy page (`/[locale]/privacy`, 2026-10-01)
+
+- `main max-w-3xl`: H1 `text-2xl md:text-3xl font-bold` · "ปรับปรุงล่าสุด" `text-caption text-faint` · intro `text-body text-muted-foreground` · contact line with a `text-brand-text` mailto link.
+- Sections `space-y-8`: H2 `text-base font-bold`, paragraphs `text-body leading-relaxed text-muted-foreground`, bullet lists (`list-disc pl-5`, faint markers) whose lead phrase is `font-semibold text-foreground`.
+- §5 (`#live`) ends with **LiveOptOutControl**: `rounded-lg border bg-card px-4 py-3` row, Eye (positive) / EyeOff (faint) icon, status text, outline `sm` button ("ไม่แสดงตัวฉัน" / "แสดงตัวอีกครั้ง").
+- Wording is owner-approved (docs/privacy-draft.md); change it only with the owner, and update "ปรับปรุงล่าสุด".
+
 ### LiveViewersPill (startup page)
 
 - `rounded-full border-positive/30 bg-positive/10 text-positive text-2xs` + Eye: "{n} คนกำลังดูผลงานนี้", only when n ≥ 2 people are on the same project (any language).

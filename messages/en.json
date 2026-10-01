@@ -777,5 +777,130 @@
     "optedOut": "You're hidden from this map",
     "optIn": "Show me again",
     "anonymousNote": "Anonymous · province/country-level location"
+  },
+  "Privacy": {
+    "metaTitle": "Privacy policy",
+    "title": "JaoPor privacy policy",
+    "updated": "Last updated: October 1, 2026",
+    "intro": "JaoPor (jaopor.vercel.app) is a directory of things people build with AI, with numbers verified at the source. This page explains what we collect, why, how long we keep it, and what you control.",
+    "contact": "Privacy contact:",
+    "email": "chawankornbouraphan@gmail.com",
+    "sections": [
+      {
+        "title": "1. Accounts",
+        "items": [
+          {
+            "t": "You sign in with Google or GitHub. We receive your name, email and profile picture from that provider and use them to create your account and show your name/picture on your projects and profile."
+          },
+          {
+            "t": "We never see or store your Google or GitHub password."
+          },
+          {
+            "t": "Account data is stored in a Supabase database (Singapore region)."
+          }
+        ]
+      },
+      {
+        "title": "2. Project and profile information you enter",
+        "items": [
+          {
+            "t": "Project details (name, description, links, screenshots, etc.) are public once you publish."
+          },
+          {
+            "t": "Builder profiles: you choose per field (e.g. province, social links, experience, skills) whether it's shown to everyone, signed-in members only, or hidden, and you can leave the builders directory."
+          },
+          {
+            "t": "The LINE ID and contact email you add are shown only to people whose contact request you accept."
+          }
+        ]
+      },
+      {
+        "title": "3. Verified numbers (revenue, visitors, GitHub activity)",
+        "items": [
+          {
+            "t": "API keys you connect (e.g. Stripe) must be read-only. We encrypt them before storing and decrypt them only on our server when fetching numbers."
+          },
+          {
+            "t": "We store aggregate numbers only (e.g. 30-day revenue, MRR, visitor counts), never your customers' data."
+          }
+        ]
+      },
+      {
+        "title": "4. The JaoPor visitor counter (the snippet founders add to their own sites)",
+        "items": [
+          {
+            "t": "Each page view on a site using the snippet sends one beacon. No cookies."
+          },
+          {
+            "t": "Our server computes a keyed hash (HMAC) of the IP address and user agent with a key that changes daily, to count unique visitors per day. The IP address is not stored."
+          },
+          {
+            "t": "Hashes from previous days are deleted once they are rolled up into a daily total; only the daily visitor count remains."
+          }
+        ]
+      },
+      {
+        "id": "live",
+        "title": "5. \"Who's here right now\" (the live visitor map)",
+        "body": "This section shows, anonymously, how many people have JaoPor open.",
+        "items": [
+          {
+            "b": "Anonymous identity:",
+            "t": "your browser generates a random ID stored on your device (localStorage), a made-up name from a fixed word list we control (e.g. \"Blue Elephant\") and a cartoon avatar drawn from that ID. It is not linked to your account."
+          },
+          {
+            "b": "Approximate location:",
+            "t": "our host (Vercel) estimates location from your IP address. We use only the country, the nearest province (in Thailand), and coordinates rounded to about 11 km plus a small random offset. Your IP address is not stored and is never shared with other visitors."
+          },
+          {
+            "b": "What other visitors see while you're online:",
+            "t": "your made-up name and avatar, the type of page you're on (e.g. \"a project page\"), device type (mobile/desktop), country or province, and the approximate point on the world map."
+          },
+          {
+            "b": "Connection:",
+            "t": "only while a JaoPor tab is visible on your screen; it disconnects when you switch tabs. This runs on Supabase Realtime and is not stored permanently; it disappears when you leave."
+          },
+          {
+            "b": "Backup heartbeat:",
+            "t": "while a page is open, your browser sends a signal about once a minute so the count works even if the live connection fails. We store: a hash of your anonymous ID (daily-changing key), the page path, country/province, device type and last-seen time. Entries older than 10 minutes are deleted automatically."
+          },
+          {
+            "b": "Opting out:",
+            "t": "press \"Don't show me\" under the map (or the button below); this browser then stops sending both (you can still watch). Press × to hide the section from the home page."
+          },
+          {
+            "b": "World map:",
+            "t": "when you press \"World\", your browser loads map images directly from OpenFreeMap, which, like any website you load, sees your IP address."
+          }
+        ]
+      },
+      {
+        "title": "6. What's stored in your browser",
+        "body": "No advertising or cross-site tracking cookies. Stored on your device: the sign-in cookie (signed-in users only), theme, currency, the province you picked in the Olympics, the live map's anonymous ID, and your hide/opt-out choices. You can clear them in your browser settings."
+      },
+      {
+        "title": "7. Services we use",
+        "body": "Vercel (hosting), Supabase (database, sign-in, realtime), Google and GitHub (sign-in), OpenFreeMap (world map images, only when you open it), Google Gemini (when a project owner presses \"Fill from website\", public text from that project's website is sent for a summary), Frankfurter (exchange rates, server-side, no user data)."
+      },
+      {
+        "title": "8. Deleting your data",
+        "items": [
+          {
+            "t": "Delete a project yourself from the dashboard."
+          },
+          {
+            "t": "To delete your account, contact chawankornbouraphan@gmail.com. Deleting an account removes your profile, skills, experience, follows, contact requests and project memberships. (A self-service delete button is being built.)"
+          }
+        ]
+      },
+      {
+        "title": "9. Changes",
+        "body": "When we change how we collect or use data, we update this page and the date above."
+      }
+    ],
+    "liveShown": "This browser appears on the live map",
+    "liveHidden": "This browser is hidden from the live map",
+    "optOut": "Don't show me",
+    "optIn": "Show me again"
   }
 }

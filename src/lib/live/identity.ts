@@ -163,10 +163,7 @@ export function parseVisitor(raw: unknown): LiveVisitor | null {
 }
 
 /**
- * Phase 8 is live in development; in production it waits for the approved /privacy wording
- * (user decision 2026-10-01). Flip by setting NEXT_PUBLIC_LIVE_VISITORS=1 or by changing this
- * default once the privacy page ships.
+ * Phase 8 kill switch. On since the /privacy wording was approved (2026-10-01); set
+ * NEXT_PUBLIC_LIVE_VISITORS=0 in Vercel to turn the live map off without a code change.
  */
-export const LIVE_ENABLED =
-  process.env.NODE_ENV !== "production" ||
-  process.env.NEXT_PUBLIC_LIVE_VISITORS === "1";
+export const LIVE_ENABLED = process.env.NEXT_PUBLIC_LIVE_VISITORS !== "0";

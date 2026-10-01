@@ -15,6 +15,7 @@ import {
   type LiveVisitor,
   type PageSection,
 } from "@/lib/live/identity";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { setLiveOptOut, useLive } from "./LivePresence";
 
@@ -330,7 +331,12 @@ export function LiveVisitorsSection() {
             </button>
           </>
         ) : null}
-        <span className="ml-auto text-faint">{t("anonymousNote")}</span>
+        <Link
+          href={{ pathname: "/privacy", hash: "live" }}
+          className="ml-auto text-faint underline-offset-2 hover:text-foreground hover:underline"
+        >
+          {t("anonymousNote")}
+        </Link>
       </p>
     </section>
   );

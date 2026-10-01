@@ -12,6 +12,24 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-01 — /privacy published, live visitors on in production, notifications + heartbeat applied
+
+**Done:**
+
+- **/privacy (owner approved the wording, contact chawankornbouraphan@gmail.com, dated October 1, 2026):** TH + EN from `docs/privacy-draft.md`, content in `messages/*.json` (Privacy.sections), §5 carries the live-map opt-out switch; the home map's "ไม่ระบุตัวตน" note links to `/privacy#live`. Footer "นโยบายความเป็นส่วนตัว" no longer 404s.
+- **Phase 8 switched on in production:** `LIVE_ENABLED` now defaults to on; `NEXT_PUBLIC_LIVE_VISITORS=0` in Vercel turns it off without a deploy.
+- **Applied (user: "apply"):** `notifications_live_pings`: in-app notifications written by contact-request triggers (received → recipient; accepted → both), owner-only RLS (mark read / delete); `live_pings` heartbeat table, server-only, pruned after 10 minutes. Types regenerated.
+- **BizModel.md** (owner's business model) committed; its pre-launch checklist added to Project.md §7.
+
+**Files:** `src/app/[locale]/privacy/page.tsx`, `src/components/live/{LiveOptOutControl,LiveVisitorsSection}.tsx`, `src/lib/live/identity.ts`, `messages/*.json`, `supabase/migrations/20261001024252_notifications_live_pings.sql`, `supabase/tests/rls_smoke.sql` (T58–T63), `src/lib/supabase/database.types.ts`, `Design.md`, `Project.md`, `BizModel.md`
+**Verified:**
+
+- RLS smoke **63/63** (new: recipient notified on request, both sides on accept, B can't read A's notifications, B marks own read, B can't change a notification's kind, clients can't read live_pings). Advisors: nothing new.
+- Browser: /th/privacy (9 sections, mailto link) at desktop; /en/privacy#live at 375 (no horizontal scroll), opt-out switch toggles both ways.
+- typecheck ✓ · lint ✓ · tests ✓ · build ✓ (see the deploy check below for production).
+
+**Next:** Phase 9d (dashboard, profile editor, onboarding)
+
 ## 2026-10-01 — Phase 9a applied; production outage fixed; Olympics v3 (Claude Design); Phase 8 live visitors (off in prod)
 
 **Done:**

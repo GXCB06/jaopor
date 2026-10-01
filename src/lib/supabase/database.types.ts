@@ -167,35 +167,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      pixel_visitors: {
-        Row: {
-          day: string;
-          net_hash: string;
-          startup_id: number;
-          visitor_hash: string;
-        };
-        Insert: {
-          day: string;
-          net_hash: string;
-          startup_id: number;
-          visitor_hash: string;
-        };
-        Update: {
-          day?: string;
-          net_hash?: string;
-          startup_id?: number;
-          visitor_hash?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "pixel_visitors_startup_id_fkey";
-            columns: ["startup_id"];
-            isOneToOne: false;
-            referencedRelation: "startups";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       live_pings: {
         Row: {
           country: string | null;
@@ -262,7 +233,58 @@ export type Database = {
           request_id?: number | null;
           user_id?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_request_id_fkey";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "contact_requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      pixel_visitors: {
+        Row: {
+          day: string;
+          net_hash: string;
+          startup_id: number;
+          visitor_hash: string;
+        };
+        Insert: {
+          day: string;
+          net_hash: string;
+          startup_id: number;
+          visitor_hash: string;
+        };
+        Update: {
+          day?: string;
+          net_hash?: string;
+          startup_id?: number;
+          visitor_hash?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "pixel_visitors_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       positions: {
         Row: {
@@ -954,7 +976,6 @@ export type Database = {
           score: number;
         }[];
       };
-      prune_live_pings: { Args: never; Returns: number };
       province_leaderboard: {
         Args: { metric?: string; region?: string };
         Returns: {
@@ -965,6 +986,7 @@ export type Database = {
           total: number;
         }[];
       };
+      prune_live_pings: { Args: never; Returns: number };
       refresh_activity: { Args: never; Returns: undefined };
       search_startups: {
         Args: { max_rows?: number; q: string };

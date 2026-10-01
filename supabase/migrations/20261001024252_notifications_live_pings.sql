@@ -1,4 +1,4 @@
--- DRAFT — shown to the user before applying.
+-- Applied 2026-10-01 (user: "apply").
 -- 1) In-app notifications (Phase 9, user decision 2026-10-01: in-app first, Resend later).
 -- 2) Live-visitor heartbeat fallback (Phase 8, user decision: keep counting when Realtime is
 --    unavailable or at its connection limit; automatic cleanup).
