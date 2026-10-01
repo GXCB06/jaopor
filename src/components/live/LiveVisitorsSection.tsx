@@ -67,7 +67,7 @@ export function LiveVisitorsSection() {
   const t = useTranslations("Live");
   const locale = useLocale();
   const { status, optedOut, me, visitors, events, fallbackCount } = useLive();
-  const hidden = useSyncExternalStore(subscribeHidden, readHidden, () => true);
+  const hidden = useSyncExternalStore(subscribeHidden, readHidden, () => false);
   const [world, setWorld] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const ref = useRef<HTMLElement>(null);
