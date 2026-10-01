@@ -1,5 +1,3 @@
-// Generated from the `mrrmafia` Supabase project (Supabase MCP `generate_typescript_types`).
-// Do not edit by hand — regenerate after every migration.
 export type Json =
   | string
   | number
@@ -14,8 +12,140 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
+      build_activity: {
+        Row: {
+          commits: number;
+          day: string;
+          startup_id: number;
+        };
+        Insert: {
+          commits: number;
+          day: string;
+          startup_id: number;
+        };
+        Update: {
+          commits?: number;
+          day?: string;
+          startup_id?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "build_activity_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      contact_requests: {
+        Row: {
+          created_at: string;
+          from_id: string;
+          id: number;
+          message: string;
+          responded_at: string | null;
+          status: string;
+          to_id: string;
+          topic: string;
+        };
+        Insert: {
+          created_at?: string;
+          from_id: string;
+          id?: never;
+          message: string;
+          responded_at?: string | null;
+          status?: string;
+          to_id: string;
+          topic: string;
+        };
+        Update: {
+          created_at?: string;
+          from_id?: string;
+          id?: never;
+          message?: string;
+          responded_at?: string | null;
+          status?: string;
+          to_id?: string;
+          topic?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "contact_requests_from_id_fkey";
+            columns: ["from_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contact_requests_to_id_fkey";
+            columns: ["to_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      follows: {
+        Row: {
+          created_at: string;
+          follower_id: string;
+          following_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          follower_id: string;
+          following_id: string;
+        };
+        Update: {
+          created_at?: string;
+          follower_id?: string;
+          following_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey";
+            columns: ["follower_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey";
+            columns: ["following_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       fx_rates: {
         Row: {
           day: string;
@@ -66,35 +196,195 @@ export type Database = {
           },
         ];
       };
+      positions: {
+        Row: {
+          company: string | null;
+          created_at: string;
+          description: string | null;
+          end_date: string | null;
+          id: number;
+          position: number;
+          start_date: string;
+          title: string;
+          user_id: string;
+        };
+        Insert: {
+          company?: string | null;
+          created_at?: string;
+          description?: string | null;
+          end_date?: string | null;
+          id?: never;
+          position?: number;
+          start_date: string;
+          title: string;
+          user_id: string;
+        };
+        Update: {
+          company?: string | null;
+          created_at?: string;
+          description?: string | null;
+          end_date?: string | null;
+          id?: never;
+          position?: number;
+          start_date?: string;
+          title?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "positions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      private_contacts: {
+        Row: {
+          email: string | null;
+          line_id: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          email?: string | null;
+          line_id?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          email?: string | null;
+          line_id?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "private_contacts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      profile_skills: {
+        Row: {
+          is_superpower: boolean;
+          position: number;
+          skill_slug: string;
+          user_id: string;
+        };
+        Insert: {
+          is_superpower?: boolean;
+          position?: number;
+          skill_slug: string;
+          user_id: string;
+        };
+        Update: {
+          is_superpower?: boolean;
+          position?: number;
+          skill_slug?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "profile_skills_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      profile_views: {
+        Row: {
+          day: string;
+          profile_id: string;
+          viewer_hash: string;
+        };
+        Insert: {
+          day: string;
+          profile_id: string;
+          viewer_hash: string;
+        };
+        Update: {
+          day?: string;
+          profile_id?: string;
+          viewer_hash?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "profile_views_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;
+          bio: string | null;
           created_at: string;
           display_name: string | null;
+          field_visibility: Json;
           handle: string | null;
+          headline: string | null;
           id: string;
+          looking_for: Json;
+          province: string | null;
+          show_in_directory: boolean;
+          social_links: Json;
+          status: string;
           updated_at: string;
           x_handle: string | null;
         };
         Insert: {
           avatar_url?: string | null;
+          bio?: string | null;
           created_at?: string;
           display_name?: string | null;
+          field_visibility?: Json;
           handle?: string | null;
+          headline?: string | null;
           id: string;
+          looking_for?: Json;
+          province?: string | null;
+          show_in_directory?: boolean;
+          social_links?: Json;
+          status?: string;
           updated_at?: string;
           x_handle?: string | null;
         };
         Update: {
           avatar_url?: string | null;
+          bio?: string | null;
           created_at?: string;
           display_name?: string | null;
+          field_visibility?: Json;
           handle?: string | null;
+          headline?: string | null;
           id?: string;
+          looking_for?: Json;
+          province?: string | null;
+          show_in_directory?: boolean;
+          social_links?: Json;
+          status?: string;
           updated_at?: string;
           x_handle?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "profiles_province_fkey";
+            columns: ["province"];
+            isOneToOne: false;
+            referencedRelation: "provinces";
+            referencedColumns: ["slug"];
+          },
+        ];
       };
       provider_connections: {
         Row: {
@@ -199,6 +489,61 @@ export type Database = {
           },
         ];
       };
+      startup_members: {
+        Row: {
+          created_at: string;
+          invited_by: string;
+          pinned_position: number | null;
+          role: string;
+          startup_id: number;
+          status: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          invited_by: string;
+          pinned_position?: number | null;
+          role: string;
+          startup_id: number;
+          status?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          invited_by?: string;
+          pinned_position?: number | null;
+          role?: string;
+          startup_id?: number;
+          status?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "startup_members_invited_by_fkey";
+            columns: ["invited_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "startup_members_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "startup_members_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       startup_screenshots: {
         Row: {
           caption: string | null;
@@ -253,8 +598,8 @@ export type Database = {
           build_ai_commits: number | null;
           build_commits: number | null;
           build_first_commit_at: string | null;
-          build_stars: number | null;
           build_stack: string[];
+          build_stars: number | null;
           build_story: string | null;
           build_synced_at: string | null;
           category: string;
@@ -314,8 +659,8 @@ export type Database = {
           build_ai_commits?: number | null;
           build_commits?: number | null;
           build_first_commit_at?: string | null;
-          build_stars?: number | null;
           build_stack?: string[];
+          build_stars?: number | null;
           build_story?: string | null;
           build_synced_at?: string | null;
           category?: string;
@@ -375,8 +720,8 @@ export type Database = {
           build_ai_commits?: number | null;
           build_commits?: number | null;
           build_first_commit_at?: string | null;
-          build_stars?: number | null;
           build_stack?: string[];
+          build_stars?: number | null;
           build_story?: string | null;
           build_synced_at?: string | null;
           category?: string;
@@ -470,6 +815,48 @@ export type Database = {
           },
         ];
       };
+      user_reports: {
+        Row: {
+          created_at: string;
+          id: number;
+          note: string | null;
+          reason: string;
+          reported_id: string;
+          reporter_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: never;
+          note?: string | null;
+          reason: string;
+          reported_id: string;
+          reporter_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: never;
+          note?: string | null;
+          reason?: string;
+          reported_id?: string;
+          reporter_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_reports_reported_id_fkey";
+            columns: ["reported_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_reports_reporter_id_fkey";
+            columns: ["reporter_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -482,6 +869,23 @@ export type Database = {
           startups: number;
         }[];
       };
+      get_profile: {
+        Args: { p_handle: string; p_viewer?: string };
+        Returns: Json;
+      };
+      handle_available: { Args: { p_handle: string }; Returns: boolean };
+      profile_activity: {
+        Args: {
+          p_from: string;
+          p_to: string;
+          p_user: string;
+          p_viewer?: string;
+        };
+        Returns: {
+          day: string;
+          score: number;
+        }[];
+      };
       province_leaderboard: {
         Args: { metric?: string; region?: string };
         Returns: {
@@ -492,6 +896,7 @@ export type Database = {
           total: number;
         }[];
       };
+      refresh_activity: { Args: never; Returns: undefined };
       search_startups: {
         Args: { max_rows?: number; q: string };
         Returns: {
@@ -635,6 +1040,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

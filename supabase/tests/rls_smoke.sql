@@ -10,6 +10,9 @@ declare
   sid bigint;
   sid2 bigint;
   n int;
+  j jsonb;
+  c uuid;
+  cs uuid[];
   fnum int;
   out text := '';
 begin
@@ -221,9 +224,130 @@ begin
   out := out || format('T38 anon calls province_leaderboard: ok (%s provinces) | ', n);
   begin
     insert into public.startups (owner_id, slug, name, website_url) values (a, 'rls-anon', 'Anon', 'https://x.test');
-    out := out || 'T10 anon inserts: ALLOWED (BAD)';
-  exception when insufficient_privilege then out := out || 'T10 anon inserts: denied (good)';
+    out := out || 'T10 anon inserts: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T10 anon inserts: denied (good) | ';
   end;
+
+  -- builder_profiles (Phase 9a) ---------------------------------------------------------
+  execute 'reset role';
+  update public.profiles set handle = 'rls_tester_a' where id = a;
+  update public.profiles set handle = 'rls_tester_b' where id = b;
+  select count(*) into n from public.startup_members
+  where startup_id = sid and user_id = a and role = 'founder' and status = 'confirmed';
+  out := out || format('T39 owner auto-added as confirmed founder: %s (expect 1) | ', n);
+
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  update public.profiles
+  set headline = 'Builder A', bio = 'secret bio', status = 'looking_cofounder',
+      field_visibility = '{"bio": "hidden", "skills": "members"}'
+  where id = a;
+  insert into public.private_contacts (user_id, line_id, email) values (a, 'tester_a', 'a@test.local');
+  insert into public.profile_skills (user_id, skill_slug, is_superpower) values
+    (a, 'frontend', true), (a, 'backend', true), (a, 'seo', true);
+  begin
+    insert into public.profile_skills (user_id, skill_slug, is_superpower) values (a, 'ai-agents', true);
+    out := out || 'T40 4th superpower: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T40 4th superpower: denied (good) | ';
+  end;
+  begin
+    update public.profiles set social_links = '{"website": "javascript:alert(1)"}' where id = a;
+    out := out || 'T41 bad social link: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T41 bad social link: denied (good) | ';
+  end;
+
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  begin
+    perform p.bio from public.profiles p where p.id = a;
+    out := out || 'T42 B selects A bio column: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T42 B selects A bio column: denied (good) | ';
+  end;
+  update public.profiles set headline = 'hacked' where id = a;
+  get diagnostics n = row_count;
+  out := out || format('T43 B edits A profile: %s rows (expect 0) | ', n);
+  select count(*) into n from public.private_contacts where user_id = a;
+  out := out || format('T44 B reads A contacts before accept: %s (expect 0) | ', n);
+  select count(*) into n from public.profile_skills where user_id = a;
+  out := out || format('T45 signed-in B sees A members-only skills: %s (expect 3) | ', n);
+
+  insert into public.contact_requests (from_id, to_id, topic, message) values (b, a, 'cofounder', 'hi');
+  begin
+    insert into public.contact_requests (from_id, to_id, topic, message) values (b, a, 'job', 'again');
+    out := out || 'T46 2nd pending request same pair: ALLOWED (BAD) | ';
+  exception when unique_violation then out := out || 'T46 2nd pending request same pair: denied (good) | ';
+  end;
+  update public.contact_requests set status = 'accepted' where from_id = b and to_id = a;
+  get diagnostics n = row_count;
+  out := out || format('T47 sender accepts own request: %s rows (expect 0) | ', n);
+
+  -- B asks to join A's startup; B can't confirm it, A can.
+  insert into public.startup_members (startup_id, user_id, role, invited_by) values (sid, b, 'maker', b);
+  begin
+    update public.startup_members set status = 'confirmed' where startup_id = sid and user_id = b;
+    out := out || 'T48 member confirms own request: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T48 member confirms own request: denied (good) | ';
+  end;
+
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  update public.contact_requests set status = 'accepted' where from_id = b and to_id = a;
+  get diagnostics n = row_count;
+  out := out || format('T49 recipient accepts: %s row (expect 1) | ', n);
+  update public.startup_members set status = 'confirmed' where startup_id = sid and user_id = b;
+  get diagnostics n = row_count;
+  out := out || format('T50 owner approves member: %s row (expect 1) | ', n);
+  begin
+    delete from public.startup_members where startup_id = sid and user_id = a;
+    out := out || 'T51 owner removes own founder row: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T51 owner removes own founder row: denied (good) | ';
+  end;
+
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  select count(*) into n from public.private_contacts where user_id = a;
+  out := out || format('T52 B reads A contacts after accept: %s (expect 1) | ', n);
+
+  -- Rate limit: B already sent 1 today; 4 more to new users are fine, the 6th is refused.
+  execute 'reset role';
+  for i in 1..5 loop
+    insert into auth.users (id, email, aud, role)
+    values (gen_random_uuid(), format('rls-c%s@test.local', i), 'authenticated', 'authenticated');
+  end loop;
+  select array_agg(u.id order by u.email) into cs from auth.users u where u.email like 'rls-c%@test.local';
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  n := 0;
+  begin
+    foreach c in array cs loop
+      insert into public.contact_requests (from_id, to_id, topic, message) values (b, c, 'collab', 'hey');
+      n := n + 1;
+    end loop;
+    out := out || 'T53 6th request in a day: ALLOWED (BAD) | ';
+  exception when program_limit_exceeded then
+    out := out || format('T53 6th request in a day: denied after %s (expect 4) | ', n);
+  end;
+
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  execute 'set local role anon';
+  select count(*) into n from public.profile_skills where user_id = a;
+  out := out || format('T54 anon sees A members-only skills: %s (expect 0) | ', n);
+  begin
+    perform public.get_profile('rls_tester_a', null);
+    out := out || 'T55 anon calls get_profile: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T55 anon calls get_profile: denied (good) | ';
+  end;
+
+  execute 'reset role';
+  j := public.get_profile('rls_tester_a', null);
+  out := out || format('T56 server get_profile, signed out: bio=%s headline=%s (expect null, Builder A) | ',
+    coalesce(j ->> 'bio', 'null'), j ->> 'headline');
+  j := public.get_profile('rls_tester_a', a);
+  out := out || format('T57 server get_profile as owner: bio=%s (expect secret bio) | ', j ->> 'bio');
 
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;

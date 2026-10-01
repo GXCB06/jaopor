@@ -41,13 +41,15 @@ as $$
 declare
   k text;
   v jsonb;
+  ok boolean;
 begin
   -- looking_for {roles[], offer, commitment, deal, location, industries[]}
   if jsonb_typeof(new.looking_for) <> 'object' then
     raise exception 'looking_for must be an object' using errcode = '23514';
   end if;
   for k, v in select key, value from jsonb_each(new.looking_for) loop
-    if not case k
+    -- (assigned first: inside IF, PL/pgSQL would end the condition at the CASE's first THEN)
+    ok := case k
       when 'roles' then jsonb_typeof(v) = 'array' and jsonb_array_length(v) <= 7
         and not exists (select 1 from jsonb_array_elements_text(v) e
           where e <> all (array['engineering', 'product', 'design', 'growth', 'sales', 'ops', 'ai']))
@@ -59,7 +61,8 @@ begin
         and not exists (select 1 from jsonb_array_elements_text(v) e
           where e <> all (array['ai', 'saas', 'developer-tools', 'fintech', 'marketing', 'ecommerce', 'productivity', 'design', 'no-code', 'analytics', 'education', 'health', 'community', 'content', 'crypto', 'support', 'entertainment', 'games', 'green-tech', 'iot', 'legal', 'marketplace', 'mobile', 'news', 'real-estate', 'hr', 'sales', 'security', 'social', 'travel', 'utilities', 'line-oa', 'food', 'agritech', 'local-sme', 'logistics', 'other']))
       else false
-    end then
+    end;
+    if not coalesce(ok, false) then
       raise exception 'invalid looking_for.%', k using errcode = '23514';
     end if;
   end loop;
