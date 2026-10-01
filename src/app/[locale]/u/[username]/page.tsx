@@ -586,9 +586,11 @@ export default async function BuilderProfilePage({
             <h2 className="text-base font-bold">{t("pinnedTitle")}</h2>
             <ul className="grid gap-3 md:grid-cols-2">
               {shown.map((w) => {
-                const source = isSource(w.verified_provider)
-                  ? SOURCE_NAME[w.verified_provider]
-                  : null;
+                // The ✓ names the revenue provider, so it only shows with a verified revenue number.
+                const source =
+                  isVerified(w) && isSource(w.verified_provider)
+                    ? SOURCE_NAME[w.verified_provider]
+                    : null;
                 return (
                   <li key={w.id}>
                     <Link
@@ -608,6 +610,11 @@ export default async function BuilderProfilePage({
                           <span className="min-w-0 flex-1 truncate font-semibold group-hover:underline">
                             {w.name}
                           </span>
+                          {w.is_demo && (
+                            <span className="shrink-0 rounded-sm border bg-secondary px-1.5 py-0.5 text-2xs text-muted-foreground">
+                              {t("demo")}
+                            </span>
+                          )}
                           <span className="shrink-0 rounded-full border px-2 py-0.5 text-2xs">
                             {t(`roleLabel.${w.role}`)}
                           </span>

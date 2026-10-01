@@ -1281,8 +1281,8 @@
       "contributor": "Contributor"
     },
     "perMonthShort": "/mo",
-    "commits": "{n} commits",
-    "visitors": "{n} visitors / 30 days",
+    "commits": "{n, number} commits",
+    "visitors": "{n, number} visitors / 30 days",
     "unverified": "Numbers not verified yet",
     "addWork": "Add your first work",
     "activityTitle": "{n} contributions in the last year",
@@ -1306,7 +1306,7 @@
     "addExperience": "Add experience",
     "recentTitle": "Recent activity",
     "event": {
-      "commits": "{n} commits in the last 30 days",
+      "commits": "{n, number} commits in the last 30 days",
       "mrr": "Reached ฿{amount} MRR across all works",
       "launch": "Launched {name}"
     },
@@ -1316,8 +1316,9 @@
       "mrr": "MRR ฿{amount}",
       "streak": "{n}-day streak"
     },
-    "ogWorks": "{n} works",
+    "ogWorks": "{n, number} works",
     "ogVerifiedMrr": "Verified revenue / month",
-    "ogNoNumbers": "No verified numbers yet"
+    "ogNoNumbers": "No verified numbers yet",
+    "demo": "Demo"
   }
 }

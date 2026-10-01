@@ -1281,8 +1281,8 @@
       "contributor": "Contributor"
     },
     "perMonthShort": "/ด",
-    "commits": "{n} commits",
-    "visitors": "{n} ผู้เข้าชม / 30 วัน",
+    "commits": "{n, number} commits",
+    "visitors": "{n, number} ผู้เข้าชม / 30 วัน",
     "unverified": "ยังไม่ยืนยันตัวเลข",
     "addWork": "เพิ่มผลงานแรก",
     "activityTitle": "{n} กิจกรรมในปีที่ผ่านมา",
@@ -1306,7 +1306,7 @@
     "addExperience": "เพิ่มประสบการณ์",
     "recentTitle": "กิจกรรมล่าสุด",
     "event": {
-      "commits": "{n} commits ใน 30 วันที่ผ่านมา",
+      "commits": "{n, number} commits ใน 30 วันที่ผ่านมา",
       "mrr": "แตะ ฿{amount} MRR รวมทุกผลงาน",
       "launch": "เปิดตัว {name}"
     },
@@ -1316,8 +1316,9 @@
       "mrr": "MRR ฿{amount}",
       "streak": "สร้างติด {n} วัน"
     },
-    "ogWorks": "{n} ผลงาน",
+    "ogWorks": "{n, number} ผลงาน",
     "ogVerifiedMrr": "รายได้ยืนยันแล้ว / เดือน",
-    "ogNoNumbers": "ยังไม่มีตัวเลขที่ยืนยัน"
+    "ogNoNumbers": "ยังไม่มีตัวเลขที่ยืนยัน",
+    "demo": "ตัวอย่าง"
   }
 }

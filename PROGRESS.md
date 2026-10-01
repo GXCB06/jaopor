@@ -27,7 +27,7 @@
 **Verified:**
 
 - `npm test` 207/207 (badges, streak, heatmap grid / month labels, /@ path parsing, commit-activity parsing) · typecheck ✓ · lint ✓ · build ✓ · every `Builder.*` key used by the page and dialogs exists in TH + EN (script check).
-- Local render isn't possible (no service-role key in the local env), so the page is checked on production after deploy (see below).
+- Local render isn't possible (no service-role key in the local env), so it was checked on production: `/@chawankorn_bouraphan` rewrites to `/th/u/…` (200, owner view: edit button, pioneer #1 badge, skills, built-with, proof strip 5 works / 54 stars / 11 months, pinned works, empty heatmap with the owner hint, recent launches). The demo project's Founder tile links to the profile and shows the headline as subtext. Fixed after that check: thousands separators in work stats, a "ตัวอย่าง" tag on demo works, and the ✓ provider only next to a verified revenue number. The heatmap fills after the next daily sync writes `build_activity`.
 
 **Next:** Phase 9c (`/builders` directory + QuickSearch "คน" group, enable the sidebar community links)
 
