@@ -45,11 +45,12 @@ Spec 2.1 name map (2026-09-30): `bg`→`--background`, `surface`→`--card`, `su
 
 Semantic tokens (never raw `emerald-*`/`red-*`/`amber-*`):
 
-| Token        | Dark      | Light     | Use                                                                                    |
-| ------------ | --------- | --------- | -------------------------------------------------------------------------------------- |
-| `--positive` | `#22c55e` | `#047857` | Growth up. Growth pill: `border-positive/30 bg-positive/10 text-positive rounded-full` |
-| `--negative` | `#ef4444` | `#b91c1c` | Growth down                                                                            |
-| `--warning`  | `#f59e0b` | `#b45309` | Corner tag (`border-warning/30 bg-warning/10 text-warning`), sync pending              |
+| Token        | Dark      | Light     | Use                                                                                                                                      |
+| ------------ | --------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `--positive` | `#22c55e` | `#047857` | Growth up. Growth pill: `border-positive/30 bg-positive/10 text-positive rounded-full`                                                   |
+| `--negative` | `#ef4444` | `#b91c1c` | Growth down                                                                                                                              |
+| `--warning`  | `#f59e0b` | `#b45309` | Corner tag (`border-warning/30 bg-warning/10 text-warning`), sync pending                                                                |
+| `--info`     | `#2dd4bf` | `#0f766e` | Feedback posts (teal, Phase 10): type chip, "ให้ Feedback" button, the feed's "รอ Feedback" card (`border-info/40 bg-info/10 text-info`) |
 
 ★ The Figma accent is indigo; JaoPor adopted it on 2026-09-29 (was crimson). Change it only in `globals.css`.
 
@@ -374,6 +375,26 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - **StatusPill** (shared by the profile page and cards): `rounded-full border px-2.5 py-0.5 text-2xs font-semibold` + 6px dot; looking for co-founder / open to work = `positive` tint, networking = `brand` tint, busy = neutral `bg-secondary text-muted-foreground`.
 - Empty: dashed one-liner + "ล้างตัวกรอง". The dashboard sidebar's คนสร้าง / หา Co-founder link here (`/builders`, `/builders?status=looking_cofounder`); header nav gets "คนสร้าง" (the home-anchor "กระดานผู้นำ" link moves to `xl` only so `lg` still fits).
 - **QuickSearch "คน" group** (spec 9c): up to 4 people (avatar 28 round, name with highlight, @handle · headline), after startups; handle-prefix matches first.
+
+### PostCard (Phase 10b, Figma "Feed Ux/ui" 160-555)
+
+- `article rounded-xl border bg-card p-5 space-y-3`. Header row: avatar 36 round (links to `/u/{handle}`) · "**{name}** บน **{startup}**" (both links) over "{time ago} · {province}" (`text-caption text-faint`) · type chip on the right (`rounded-full px-2 py-0.5 text-2xs font-bold`).
+- **Type colours:** ฟีเจอร์ใหม่ = brand (`bg-brand/15 text-brand-text`), เปิดตัว = positive, บทเรียน = neutral (`bg-secondary text-muted-foreground`), ขอ Feedback = info, Milestone = warning. A milestone post is a **gold card** (`border-warning/40 bg-warning/5`), a round ฿/★ badge instead of the avatar, the body as a bold headline, and "✓ ยืนยันผ่าน {source}" in positive.
+- Body `text-sm leading-relaxed whitespace-pre-line` (links not auto-linked). Link: preview card (`rounded-lg border`, image on top when the site has one, title, description 2 lines, domain `text-faint`), or the bare domain link while the preview loads/fails. Images: 1 = full width (max-h 420, `object-contain bg-secondary`), 2–4 = 2-column grid of square crops, each opens the full image in a new tab.
+- Footer (`text-caption text-muted-foreground`): ♥ count (filled `text-negative` when I liked it; signed-out click → login), 💬 count (link to `/post/{id}#comments`), spacer, "แชร์ไป LINE" outline button + 𝕏 icon button, `⋯` menu (edit within 15 min / delete for the author; report for others).
+- Feedback posts: a teal "ให้ Feedback" outline button (opens the post's comment box) and the first top-level comment in a `rounded-lg bg-secondary p-3` box.
+- On a profile, the header shows the startup (logo 22 + name) instead of the person.
+
+### Composer (Phase 10b)
+
+- Card `p-4 space-y-3`: avatar + textarea (`rows 3`, placeholder "อัปเดตอะไรในผลงานของคุณวันนี้?"). Row below: startup select (only my confirmed works), type select (ฟีเจอร์ใหม่ / เปิดตัว / บทเรียน / ขอ Feedback; never Milestone), image button (≤ 4, WebP in the browser like screenshots), link button (reveals an https input), counter "n / 500" (`text-warning` past 450), "โพสต์" primary. Thumbnails of picked images with × under the textarea.
+- Signed out: one line + "เข้าสู่ระบบเพื่อโพสต์". No confirmed work: "เพิ่มผลงานก่อนจึงจะโพสต์ได้" + link to /new. Errors inline: "โพสต์ได้วันละ 5 ครั้ง", "เฉพาะทีมของผลงานนี้".
+- Lives on the dashboard overview in 10b and at the top of /feed in 10c.
+
+### Post page (`/post/[id]`) and comments
+
+- `max-w-2xl`: breadcrumb (JaoPor › ฟีด › {startup}), the PostCard, then "ความคิดเห็น (n)": composer textarea (500, signed-in) + list. Top-level comments with replies indented one level (`ml-11 border-l pl-4`); each: avatar 28, name, time, body, "ตอบกลับ" (top-level only), `⋯` (delete own / report others). Deleted → "ความคิดเห็นถูกลบ" in `text-faint italic`, kept for its replies.
+- Hidden or missing post → 404. OG image: author, startup, type chip, the first 160 characters, counts.
 
 ### Privacy page (`/[locale]/privacy`, 2026-10-01)
 

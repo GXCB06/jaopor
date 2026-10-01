@@ -287,34 +287,9 @@ export async function markNotificationsRead(): Promise<void> {
     .from("notifications")
     .update({ read_at: new Date().toISOString() })
     .eq("user_id", user.id)
+    .in("kind", ["request_received", "request_accepted"])
     .is("read_at", null);
   refresh();
-}
-
-export async function reportUser(
-  reportedId: string,
-  reason: string,
-  note?: string,
-): Promise<ActionResult> {
-  const { supabase, user } = await me();
-  if (!user) return { ok: false, error: "unauthorized" };
-  if (
-    !["spam", "fake", "harassment", "impersonation", "other"].includes(reason)
-  )
-    return { ok: false, error: "invalid" };
-  if (!/^[0-9a-f-]{36}$/.test(reportedId))
-    return { ok: false, error: "invalid" };
-  // One reports table for users, posts and comments since feed_posts (Phase 10a).
-  const { error } = await supabase.from("reports").insert({
-    reporter_id: user.id,
-    target_type: "user",
-    target_id: reportedId,
-    reason,
-    note: note?.trim().slice(0, 500) || null,
-  });
-  if (error && error.code !== "23505")
-    return { ok: false, error: "save_failed" };
-  return { ok: true };
 }
 
 /** Pin up to 6 of my confirmed works, in this order (others unpinned). */

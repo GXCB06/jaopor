@@ -12,10 +12,12 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Card } from "@/components/core/Card";
 import { CopyWorkLink } from "@/components/dashboard/CopyWorkLink";
 import { RequestActions } from "@/components/dashboard/RequestActions";
+import { Composer } from "@/components/posts/Composer";
 import { Money, StartupLogo } from "@/components/StartupBits";
 import { Link } from "@/i18n/navigation";
 import { requireUserId } from "@/lib/auth";
 import { getThbPerUsd } from "@/lib/data/fx";
+import { myPostableStartups } from "@/lib/data/posts";
 import {
   getDashboard,
   getMyProfile,
@@ -55,14 +57,16 @@ export default async function DashboardPage({
   setRequestLocale(locale);
   const userId = await requireUserId(locale, "/dashboard");
 
-  const [t, profile, dash, skills, requests, thbPerUsd] = await Promise.all([
-    getTranslations("Me"),
-    getMyProfile(userId),
-    getDashboard(userId),
-    getMySkills(userId),
-    getMyRequests(userId),
-    getThbPerUsd(),
-  ]);
+  const [t, profile, dash, skills, requests, thbPerUsd, postable] =
+    await Promise.all([
+      getTranslations("Me"),
+      getMyProfile(userId),
+      getDashboard(userId),
+      getMySkills(userId),
+      getMyRequests(userId),
+      getThbPerUsd(),
+      myPostableStartups(),
+    ]);
   const first = dash.startups[0];
   const owned = dash.startups.filter((s) => s.owner_id === userId);
   const done = setupChecklist({
@@ -118,6 +122,16 @@ export default async function DashboardPage({
           </Link>
         </div>
       </header>
+
+      {/* Phase 10b: post a product update (also on /feed from 10c). */}
+      <Composer
+        me={{
+          name: profile?.display_name ?? profile?.handle ?? "",
+          avatarUrl: profile?.avatar_url ?? null,
+        }}
+        startups={postable}
+        loginHref="/login"
+      />
 
       {/* Setup checklist */}
       {doneCount < SETUP_STEPS.length && (

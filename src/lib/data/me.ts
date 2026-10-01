@@ -117,6 +117,8 @@ export async function unreadNotifications(): Promise<number> {
   const { count } = await supabase
     .from("notifications")
     .select("id", { count: "exact", head: true })
+    // The "คำขอคุย" badge counts request notifications only; likes / comments get the bell (10c).
+    .in("kind", ["request_received", "request_accepted"])
     .is("read_at", null);
   return count ?? 0;
 }

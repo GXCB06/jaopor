@@ -429,7 +429,9 @@ export default async function BuilderProfilePage({
           ) : null;
         })()}
 
-        {page.viewer && !isOwner && <ReportDialog profileId={profile.id} />}
+        {page.viewer && !isOwner && (
+          <ReportDialog targetType="user" targetId={profile.id} />
+        )}
       </aside>
 
       {/* Main */}

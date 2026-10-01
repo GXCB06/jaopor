@@ -129,7 +129,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 ### Phase 10 — Product updates feed (docs/SPEC.md §12; Figma 160-2 profile v2, 160-555 feed)
 
 - [x] 10a · Migration `feed_posts` applied 2026-10-01 after two owner reviews (posts, milestones ledger, post_images + bucket + storage_cleanup queue, likes, comments with tombstones, reports, notification kinds, rate_events, heatmap counts posts) — RLS smoke 90/90
-- [ ] 10b · Posting: server actions (create / edit 15 min / delete, like, comment + reply, report), link previews (SSRF guard, 3 s, size cap, cache), image upload (reuse the screenshot uploader), PostCard, composer, `/post/[id]` + OG image
+- [x] 10b · (2026-10-01; production posting check by the owner pending) Posting: server actions (create / edit 15 min / delete, like, comment + reply, report), link previews (SSRF guard, 3 s, size cap, cache), image upload (reuse the screenshot uploader), PostCard, composer, `/post/[id]` + OG image
 - [ ] 10c · `/feed` (ล่าสุด / กำลังติดตาม / ยอดนิยมสัปดาห์นี้, type / province / category filters in the URL, cursor pagination, right rail) + header "ฟีด" + notification bell
 - [ ] 10d · Auto milestones in the daily cron (verified data only, idempotent keys, highest level only on the first run)
 - [ ] 10e · Profile v2 (proof line, revenue / activity tabbed card, "อัปเดตผลงาน", experience at the bottom) + startup page "อัปเดตล่าสุด"

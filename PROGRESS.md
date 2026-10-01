@@ -12,6 +12,26 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-01 — Phase 10b: posting (composer, PostCard, post page, comments, reports, link previews, image cleanup)
+
+**Done:**
+
+- **Server actions** (`actions/posts.ts`, all writes through the user's own RLS client): create / edit (15 min) / delete post, like / unlike, comment + reply, soft-delete comment, report a post / comment / user (`reportTarget`, which replaces `reportUser`). Database errors map to friendly messages (daily limit, not a team member / edit window closed, invalid).
+- **Link previews** (`lib/net/link-preview.ts` + pure `lib/og-parse.ts`): server-side only, same SSRF guard as provider URLs re-checked on every redirect (max 3), 3 s timeout, 512 KB cap, https images only, kept on the post (service role writes `link_preview`, only if the link didn't change meanwhile) and memoised for a day.
+- **Images**: the browser converts to WebP and drops EXIF (shared `lib/webp.ts`, screenshots use it too), uploads into `post-images/{post_id}/`, then records the row; a file whose row fails is removed (`cleanupPostUpload`). **Storage cleanup worker** (`lib/storage-cleanup.ts`): deletes queued files right after deleting a post and in the daily cron for the rest.
+- **UI** (Design.md §5 PostCard / Composer / Post page): PostCard (type chips incl. the new `--info` teal token, gold milestone card, link card, image grid, ♥ with optimistic count, comments link, LINE / X share, ⋯ edit / delete / report; feedback posts show their first comment and "ให้ Feedback"), Composer on the dashboard overview (startup + type pickers, ≤ 4 images, link, counter, rules line), `/post/[id]` with the comment thread (one level of replies, tombstones, delete own, report others) and an OG image.
+- The "คำขอคุย" badge and "mark read" now only count request notifications (likes / comments get the bell in 10c).
+
+**Files:** `src/app/actions/posts.ts`, `src/lib/{posts,og-parse,storage-cleanup,webp}.ts` (+ tests), `src/lib/net/link-preview.ts`, `src/lib/data/posts.ts`, `src/components/posts/*`, `src/components/builder/ReportDialog.tsx`, `src/app/[locale]/post/[id]/{page,opengraph-image}.tsx`, `src/app/[locale]/dashboard/page.tsx`, `src/app/api/cron/sync/route.ts`, `src/lib/data/me.ts`, `src/app/actions/profile.ts`, `src/app/globals.css`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- `npm test` 221/221 (new: post helpers, Open Graph parser) · typecheck ✓ · lint ✓ · build ✓
+- Embeds checked against the live REST API (posts → author / startup / images, comments → author, members → startup: all 200). `/th/post/999999` and `/th/post/abc` → 404.
+- Browser (local, sample data on a temporary dev-only page, deleted afterwards): composer, milestone / feature / feedback / lesson cards, link card, liked state, comment thread with reply and tombstone; 375px: no horizontal scroll, every card footer on one line after moving "ให้ Feedback" to its own row and shortening "แชร์ไป LINE" to "LINE" on phones.
+- **Not verified yet (needs the owner's session on production):** posting with an image and a link, likes, comments, delete, report.
+
+**Next:** owner tests posting on production; then Phase 10c (`/feed`, header "ฟีด", notification bell).
+
 ## 2026-10-01 — Phase 10a: feed_posts migration applied (after two review rounds)
 
 **Done:**

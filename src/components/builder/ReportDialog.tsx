@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { reportUser } from "@/app/actions/profile";
+import { reportTarget } from "@/app/actions/posts";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,26 +25,44 @@ const REASONS = [
   "other",
 ] as const;
 
-/** "รายงานผู้ใช้นี้": reason + optional note → reports (target_type user; one per reporter per user). */
-export function ReportDialog({ profileId }: { profileId: string }) {
+/**
+ * Report a user, post or comment: reason + optional note → reports (one per reporter per target).
+ * With `open` / `onOpenChange` it is controlled (opened from a menu) and renders no trigger.
+ */
+export function ReportDialog({
+  targetType,
+  targetId,
+  open: controlledOpen,
+  onOpenChange,
+}: {
+  targetType: "user" | "post" | "comment";
+  targetId: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const t = useTranslations("Builder");
-  const [open, setOpen] = useState(false);
+  const [ownOpen, setOwnOpen] = useState(false);
+  const open = controlledOpen ?? ownOpen;
+  const setOpen = onOpenChange ?? setOwnOpen;
   const [reason, setReason] = useState<string>("spam");
   const [note, setNote] = useState("");
   const [busy, start] = useTransition();
+  const title = t(`reportTitle.${targetType}`);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="text-2xs text-faint hover:text-foreground hover:underline">
-        {t("report")}
-      </DialogTrigger>
+      {controlledOpen === undefined && (
+        <DialogTrigger className="text-2xs text-faint hover:text-foreground hover:underline">
+          {title}
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("report")}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{t("reportHint")}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <Select
-            id="report-reason"
+            id={`report-reason-${targetType}-${targetId}`}
             value={reason}
             onChange={setReason}
             options={REASONS.map((r) => ({
@@ -57,6 +75,7 @@ export function ReportDialog({ profileId }: { profileId: string }) {
             maxLength={500}
             rows={3}
             placeholder={t("reportNote")}
+            aria-label={t("reportNote")}
             onChange={(e) => setNote(e.target.value)}
             className={cn(inputClass, "h-auto py-2")}
           />
@@ -68,7 +87,12 @@ export function ReportDialog({ profileId }: { profileId: string }) {
             disabled={busy}
             onClick={() =>
               start(async () => {
-                const res = await reportUser(profileId, reason, note);
+                const res = await reportTarget({
+                  type: targetType,
+                  id: targetId,
+                  reason,
+                  note,
+                });
                 if (res.ok) {
                   toast.success(t("reported"));
                   setOpen(false);
