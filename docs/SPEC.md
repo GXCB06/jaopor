@@ -529,3 +529,87 @@ BUILD ORDER (stop after each)
 profile → 9c directory.
 Done = lint/typecheck/build pass, RLS tested (another user can't read
 private_contacts or edit someone's profile), and pages work at 375px.
+
+---
+
+## 12. Phase 10: Product updates feed
+
+Figma: profile v2 "Founder Prfile 2nd" (node 160-2) and "Feed Ux/ui" (node 160-555) in
+https://www.figma.com/design/l5Pwv6xqIoPVDpoieNuf5G/JaoPor. Export them to `docs/design/profile-v2.png`
+and `docs/design/feed.png` when possible.
+
+GOAL
+Builders post short "build in public" updates tied to a startup.
+Updates appear on the profile, the startup page and a global /feed,
+mixed with automatic milestone posts from verified data.
+
+DATA (migrations, RLS on every table, show SQL first)
+
+- posts: id, author_id, startup_id (author must be a CONFIRMED member
+  of that startup), type enum feature|launch|lesson|feedback|milestone,
+  body (≤500 chars), link_url, link_preview jsonb {title, description,
+  image, domain}, is_auto bool, milestone_key text UNIQUE (for auto
+  posts), province + category (copied from the startup for fast
+  filtering), created_at, edited_at, hidden_at.
+- post_images: post_id, url, width, height, position (max 4 per post).
+  Storage bucket "post-images" at {post_id}/{uuid}.webp. Reuse the
+  screenshot uploader (compress to WebP, strip EXIF).
+- post_likes: (post_id, user_id) primary key.
+- post_comments: id, post_id, author_id, parent_id (nullable, max 1
+  level of replies), body ≤500, created_at, deleted_at.
+- reports: target_type (post|comment|user), target_id, reporter_id,
+  reason, status.
+- Counters likes_count / comments_count kept on posts with triggers.
+
+AUTO MILESTONES
+A scheduled job (Supabase cron or Vercel cron) checks verified
+metrics and creates is_auto posts, idempotent via milestone_key
+(e.g. "mrr_10k:{startup_id}"):
+first verification, MRR ฿1k / ฿10k / ฿100k, total revenue ฿100k / ฿1M,
+GitHub ★100 / ★1k, Olympics podium entry. Never create milestones from
+unverified data.
+
+RULES
+
+- Logged-in users only; max 5 posts per day and 30 comments per day.
+- Author can edit for 15 minutes, delete anytime. Admin can hide.
+- Link previews: fetch Open Graph server-side with a 3s timeout and
+  max size, block private/internal IPs (SSRF), cache results.
+- Notify the post author in-app (bell badge) on likes and comments.
+
+PAGES & COMPONENTS (match the designs)
+
+- <PostCard>: avatar, name, "บน {startup}", time, province, type chip
+  (colors: feature=indigo, launch=green, milestone=gold card,
+  lesson=gray, feedback=teal), body, link, image grid, like / comment
+  buttons, "แชร์ไป LINE"
+  (https://social-plugins.line.me/lineit/share?url=...) and X intent.
+  Feedback posts show a teal "ให้ Feedback" button and the top comment.
+- /[locale]/feed: left filters (ล่าสุด | กำลังติดตาม | ยอดนิยมสัปดาห์นี้,
+  type chips, province, category, all kept in the URL), center composer
+  - posts with cursor pagination ("โหลดเพิ่ม"), right rail (who to
+    follow, most active startups this week, feedback posts with 0
+    replies). "ยอดนิยม" score = likes + 2×comments, decayed by age.
+- /[locale]/post/[id]: single post + full comment thread + OG image.
+- Profile: "อัปเดตผลงาน" section, latest 4 in 2 columns + "ดูฟีดทั้งหมด".
+  Startup detail page: "อัปเดตล่าสุด" section with the latest 3 posts.
+- Composer: textarea with live counter, startup picker (only my
+  confirmed startups), type picker, image/link attach.
+
+PROFILE REVENUE / ACTIVITY CARD
+
+- One card with tabs "รายได้รวม | กิจกรรมการสร้าง".
+- Revenue tab: daily verified revenue summed across the user's
+  confirmed startups, converted to THB; periods 7 / 30 days / 12
+  months; dashed "previous period" line; today's point drawn dashed
+  and labeled "วันนี้ (ยังไม่ครบวัน)". Hide this tab if there's no
+  verified revenue.
+- Activity heatmap now also counts posts.
+- Add the proof line under the name:
+  "{n} ผลงาน · {v} ยืนยันแล้ว · สร้างมา {m} เดือน".
+
+DONE WHEN
+lint/typecheck/build pass; RLS tested (you can't post for a startup
+you're not a confirmed member of; you can't edit others' posts);
+milestone job is idempotent (running it twice creates no duplicates);
+works at 375px.

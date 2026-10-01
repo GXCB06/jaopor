@@ -122,6 +122,14 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [ ] G · Production deploy + seed 5–10 real startups
 - [ ] H · Launch post in Claude Thailand at the first 19:30–21:00 ICT slot after the launch gate passes
 
+### Phase 10 — Product updates feed (docs/SPEC.md §12; Figma 160-2 profile v2, 160-555 feed)
+
+- [ ] 10a · Migration `feed_posts` (posts, post_images + bucket, likes, comments, reports, notifications kinds, heatmap counts posts) — **SQL drafted 2026-10-01, waiting for "apply"** + RLS smoke tests
+- [ ] 10b · Posting: server actions (create / edit 15 min / delete, like, comment + reply, report), link previews (SSRF guard, 3 s, size cap, cache), image upload (reuse the screenshot uploader), PostCard, composer, `/post/[id]` + OG image
+- [ ] 10c · `/feed` (ล่าสุด / กำลังติดตาม / ยอดนิยมสัปดาห์นี้, type / province / category filters in the URL, cursor pagination, right rail) + header "ฟีด" + notification bell
+- [ ] 10d · Auto milestones in the daily cron (verified data only, idempotent keys, highest level only on the first run)
+- [ ] 10e · Profile v2 (proof line, revenue / activity tabbed card, "อัปเดตผลงาน", experience at the bottom) + startup page "อัปเดตล่าสุด"
+
 ### Phase 1b — v1.x hardening (weeks 1–4 after launch)
 
 - [ ] Metrics engine unit tests (Vitest) + Playwright happy path
@@ -299,6 +307,7 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 - [ ] Spec §7 content cleanup (user): delete "MRRMafiass", rewrite the MRRMafia copy, pricing ฿990/เดือน, verify a real metric, add stack/province/screenshots/founder message.
 - [ ] **BizModel.md pre-launch checklist (owner, 2026-10-01)** not yet covered elsewhere: LINE OA verification (follower counts via LINE's API); the founder on JaoPor's own listing (build in public); a security / key-handling page linked from the add-startup flow; the Thai launch post for Claude Thailand Community. Growth ideas to schedule: "Built with Claude" tag + community leaderboard, "JaoPor of the Month", one-click import from a Ploykhong / SaaSThai link (user-pasted link only), JaoPor Verified badge on other platforms.
 - [ ] Bookmarks ("ที่บันทึกไว้") need a saves table; the page is a placeholder. The "อ้างสิทธิ์ผลงาน" claim flow is not built (tile shows เร็ว ๆ นี้).
+- [ ] **Owner decisions pending (2026-10-01):** (1) profile editor UX: one-section-at-a-time like the startup editor, per-field visibility, or edit-in-place on the public profile; (2) in-app chat after an accepted request: build it, and before or after Phase 10?; (3) verified audience (follower counts): which platforms first. LINE OA needs a Messaging API channel token, which can also send messages, so it breaks the "read-only keys only" rule unless the owner makes an exception; (4) Phase 10 details: what "Olympics podium entry" means for a startup milestone, and whether the feed's pricing-options card is a poll (v1 treats it as an image).
 - [ ] Builders directory loads every directory profile per request and filters in TypeScript (`listBuilders`); move it into an SQL RPC over the anonymous view once there are a few hundred profiles.
 - [ ] Rank history table (for "แชมป์ N เดือนติด" streaks): not built; the Olympics shows movement vs the previous 30 days only.
 - [x] Phase 9 (builder profiles): make the profile's founder name/avatar card link to `/u/{handle}` (user request 2026-09-30; done in 9b, 2026-10-01).
