@@ -302,9 +302,13 @@ export async function reportUser(
     !["spam", "fake", "harassment", "impersonation", "other"].includes(reason)
   )
     return { ok: false, error: "invalid" };
-  const { error } = await supabase.from("user_reports").insert({
+  if (!/^[0-9a-f-]{36}$/.test(reportedId))
+    return { ok: false, error: "invalid" };
+  // One reports table for users, posts and comments since feed_posts (Phase 10a).
+  const { error } = await supabase.from("reports").insert({
     reporter_id: user.id,
-    reported_id: reportedId,
+    target_type: "user",
+    target_id: reportedId,
     reason,
     note: note?.trim().slice(0, 500) || null,
   });

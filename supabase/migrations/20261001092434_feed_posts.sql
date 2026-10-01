@@ -1,19 +1,64 @@
--- DRAFT, not applied. Phase 10 (docs/SPEC.md §12): product updates feed.
---  1. posts            build-in-public updates tied to a startup (+ auto milestone posts)
---  2. post_images      up to 4 WebP images per post (bucket "post-images", {post_id}/{uuid}.webp)
---  3. post_likes       one like per user per post; likes_count kept by trigger
---  4. post_comments    one level of replies, soft delete; comments_count kept by trigger
---  5. reports          one table for post / comment / user reports (copies user_reports rows)
---  6. notifications    + post_like / post_comment kinds
---  7. activity heatmap counts posts
+-- Applied 2026-10-01 (owner: "apply"). Phase 10a (docs/SPEC.md §12): product updates feed.
+-- Replaces the unapplied draft 20261001084406_feed_posts.sql after the 2026-10-01 review.
+--  0. rate_events       daily limits that deleting or hiding rows can't reset (advisory lock per user)
+--  1. posts             build-in-public updates tied to a startup (+ auto milestone posts)
+--  2. milestones        ledger of milestones already posted (the job never re-posts one)
+--  3. post_images       up to 4 WebP images per post (bucket "post-images", {post_id}/{uuid}.webp)
+--  4. storage_cleanup   queue of storage files to delete (deleted / hidden posts, deleted accounts)
+--  5. post_likes        one like per user per post; likes_count kept by trigger
+--  6. post_comments     one level of replies, soft delete; comments_count kept by trigger
+--  7. reports           one table for post / comment / user reports (copies user_reports rows)
+--  8. notifications     + post_like / post_comment kinds
+--  9. activity heatmap  counts posts on published, non-demo startups
 --
 -- Security model (same as Phase 9):
 --  * Guard triggers are SECURITY INVOKER and only check client roles (anon / authenticated);
---    server code (service role) and definer triggers bypass them.
+--    server code (service role), FK actions and definer triggers bypass them.
 --  * Clients can't write link_preview, is_auto, milestone_key, hidden_at or the counters
 --    (column grants). The server fetches link previews (SSRF-guarded) and writes them with the
 --    service role; the milestone job inserts auto posts with the service role.
---  * Milestone posts are never created by clients (type 'milestone' requires is_auto).
+--  * Post authors see who liked their posts (through post_like notifications); everyone else
+--    sees only likes_count.
+--  * The bucket is public, so a file stays reachable by URL until it is deleted. Every way an
+--    image row disappears (removed image, deleted or hidden post, deleted account) queues its
+--    file in storage_cleanup; server code deletes queued files through the Storage API
+--    (immediately after its own actions, and in the daily cron for everything else).
+
+-- ---------------------------------------------------------------------------------------------
+-- 0. rate_events: one row per action, counted over the last 24 hours. Rows are never removed by
+--    deleting the post or comment, and a per-user advisory lock serializes concurrent requests.
+-- ---------------------------------------------------------------------------------------------
+create table private.rate_events (
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  kind text not null check (kind in ('post', 'comment')),
+  created_at timestamptz not null default now()
+);
+create index rate_events_user_kind_idx on private.rate_events (user_id, kind, created_at);
+alter table private.rate_events enable row level security;
+
+create or replace function private.take_rate(p_kind text, p_limit integer)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  me uuid := (select auth.uid());
+begin
+  if me is null then
+    raise exception 'sign in first' using errcode = '42501';
+  end if;
+  perform pg_advisory_xact_lock(hashtextextended(me::text || ':' || p_kind, 0));
+  delete from private.rate_events
+  where user_id = me and kind = p_kind and created_at < now() - interval '1 day';
+  if (select count(*) from private.rate_events where user_id = me and kind = p_kind) >= p_limit then
+    raise exception 'daily % limit reached', p_kind using errcode = '54000';
+  end if;
+  insert into private.rate_events (user_id, kind) values (me, p_kind);
+end;
+$$;
+revoke execute on function private.take_rate(text, integer) from public;
+grant execute on function private.take_rate(text, integer) to authenticated;
 
 -- ---------------------------------------------------------------------------------------------
 -- 1. posts
@@ -24,7 +69,7 @@ create table public.posts (
   startup_id bigint not null references public.startups (id) on delete cascade,
   type text not null check (type in ('feature', 'launch', 'lesson', 'feedback', 'milestone')),
   body text not null check (char_length(body) between 1 and 500),
-  link_url text check (link_url ~ '^https?://' and char_length(link_url) <= 500),
+  link_url text check (link_url ~* '^https?://' and char_length(link_url) <= 500),
   link_preview jsonb check (link_preview is null or jsonb_typeof(link_preview) = 'object'),
   is_auto boolean not null default false,
   milestone_key text unique check (char_length(milestone_key) <= 80),
@@ -47,7 +92,8 @@ create index posts_province_idx on public.posts (province, created_at desc) wher
 create index posts_category_idx on public.posts (category, created_at desc);
 create index posts_type_idx on public.posts (type, created_at desc);
 
--- Is `p_user` a confirmed member of `p_startup`? (definer: members of draft startups too)
+-- Is `p_user` a confirmed member of `p_startup`? (definer: members of draft startups too;
+-- their posts stay invisible until the startup is published)
 create or replace function private.is_confirmed_member(p_startup bigint, p_user uuid)
 returns boolean
 language sql
@@ -99,7 +145,7 @@ create trigger startups_sync_posts after update of province, category on public.
                      or old.category is distinct from new.category)
   execute function private.startups_sync_posts();
 
--- Client rules: author = me, confirmed member, 5 posts a day, edits within 15 minutes.
+-- Client rules: author = me, confirmed member, 5 posts a day, text edits within 15 minutes.
 create or replace function private.posts_guard()
 returns trigger
 language plpgsql
@@ -116,11 +162,7 @@ begin
        or not private.is_confirmed_member(new.startup_id, me) then
       raise exception 'not a confirmed member of this startup' using errcode = '42501';
     end if;
-    if (select count(*) from public.posts p
-        where p.author_id = me and not p.is_auto
-          and p.created_at > now() - interval '1 day') >= 5 then
-      raise exception 'daily post limit reached' using errcode = '54000';
-    end if;
+    perform private.take_rate('post', 5);
     new.created_at := now();
     new.edited_at := null;
     return new;
@@ -171,12 +213,32 @@ create policy "posts: author edits" on public.posts
   for update to authenticated
   using (author_id = (select auth.uid()))
   with check (author_id = (select auth.uid()));
+-- Authors may delete any of their posts, auto milestone posts included: the milestones ledger
+-- (below) keeps a deleted milestone from being posted again.
 create policy "posts: author deletes" on public.posts
   for delete to authenticated
   using (author_id = (select auth.uid()));
 
 -- ---------------------------------------------------------------------------------------------
--- 2. post_images + storage bucket "post-images"
+-- 2. milestones: what the job has already posted, independent of the post row. The job inserts
+--    here first (on conflict do nothing) and creates a post only for keys it just inserted.
+-- ---------------------------------------------------------------------------------------------
+create table public.milestones (
+  key text primary key check (char_length(key) <= 80),
+  startup_id bigint not null references public.startups (id) on delete cascade,
+  reached_at timestamptz not null default now(),
+  post_id bigint references public.posts (id) on delete set null
+);
+create index milestones_startup_idx on public.milestones (startup_id);
+create index milestones_post_idx on public.milestones (post_id);
+
+alter table public.milestones enable row level security;
+revoke all on public.milestones from anon, authenticated;
+grant select, insert, update, delete on public.milestones to service_role;
+
+-- ---------------------------------------------------------------------------------------------
+-- 3. post_images + storage bucket "post-images". unique (post_id, position) with position 0–3
+--    caps a post at 4 images.
 -- ---------------------------------------------------------------------------------------------
 create table public.post_images (
   id bigint generated always as identity primary key,
@@ -189,22 +251,6 @@ create table public.post_images (
   unique (post_id, position)
 );
 
-create or replace function private.post_images_limit()
-returns trigger
-language plpgsql
-set search_path = ''
-as $$
-begin
-  if (select count(*) from public.post_images where post_id = new.post_id) >= 4 then
-    raise exception 'max 4 images per post' using errcode = '23514';
-  end if;
-  return new;
-end;
-$$;
-revoke execute on function private.post_images_limit() from public, anon, authenticated;
-create trigger post_images_limit before insert on public.post_images
-  for each row execute function private.post_images_limit();
-
 alter table public.post_images enable row level security;
 revoke all on public.post_images from anon, authenticated;
 grant select on public.post_images to anon, authenticated;
@@ -215,6 +261,7 @@ grant select, insert, update, delete on public.post_images to service_role;
 create policy "post_images: visible with the post" on public.post_images
   for select to anon, authenticated
   using (exists (select 1 from public.posts p where p.id = post_id));
+-- New images only while the post is editable; removing an image is allowed any time.
 create policy "post_images: author adds while editable" on public.post_images
   for insert to authenticated
   with check (exists (
@@ -232,8 +279,9 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 values ('post-images', 'post-images', true, 3145728, array['image/webp'])
 on conflict (id) do nothing;
 
--- Objects live at {post_id}/{uuid}.webp; only the post's author writes there (objects.name is
--- qualified on purpose, see 20260930085756_fix_screenshot_storage_policies).
+-- Objects live at {post_id}/{uuid}.webp; only the post's author uploads there while the post is
+-- editable (objects.name is qualified on purpose, see 20260930085756_fix_screenshot_storage_
+-- policies). Deletion of files is done by the server from storage_cleanup, not by clients.
 create policy "post authors upload images" on storage.objects
   for insert to authenticated
   with check (
@@ -245,19 +293,59 @@ create policy "post authors upload images" on storage.objects
         and p.created_at > now() - interval '15 minutes'
     )
   );
-create policy "post authors delete images" on storage.objects
-  for delete to authenticated
-  using (
-    bucket_id = 'post-images'
-    and exists (
-      select 1 from public.posts p
-      where p.id::text = (storage.foldername(objects.name))[1]
-        and p.author_id = (select auth.uid())
-    )
-  );
 
 -- ---------------------------------------------------------------------------------------------
--- 3. post_likes
+-- 4. storage_cleanup: files to delete through the Storage API (server only). Filled whenever a
+--    post_images row goes away: an image removed, a post deleted (cascade), an account deleted
+--    (cascade through posts), or a post hidden (its image rows are removed, see below).
+-- ---------------------------------------------------------------------------------------------
+create table public.storage_cleanup (
+  id bigint generated always as identity primary key,
+  bucket text not null,
+  path text not null,
+  queued_at timestamptz not null default now(),
+  unique (bucket, path)
+);
+
+alter table public.storage_cleanup enable row level security;
+revoke all on public.storage_cleanup from anon, authenticated;
+grant select, insert, update, delete on public.storage_cleanup to service_role;
+
+create or replace function private.post_images_queue_cleanup()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into public.storage_cleanup (bucket, path) values ('post-images', old.path)
+  on conflict do nothing;
+  return null;
+end;
+$$;
+revoke execute on function private.post_images_queue_cleanup() from public, anon, authenticated;
+create trigger post_images_queue_cleanup after delete on public.post_images
+  for each row execute function private.post_images_queue_cleanup();
+
+-- Hiding a post (moderation) removes its images for good, so they stop being reachable by URL.
+create or replace function private.posts_hidden_drop_images()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  delete from public.post_images where post_id = new.id;
+  return null;
+end;
+$$;
+revoke execute on function private.posts_hidden_drop_images() from public, anon, authenticated;
+create trigger posts_hidden_drop_images after update of hidden_at on public.posts
+  for each row when (old.hidden_at is null and new.hidden_at is not null)
+  execute function private.posts_hidden_drop_images();
+
+-- ---------------------------------------------------------------------------------------------
+-- 5. post_likes
 -- ---------------------------------------------------------------------------------------------
 create table public.post_likes (
   post_id bigint not null references public.posts (id) on delete cascade,
@@ -273,30 +361,45 @@ grant select, delete on public.post_likes to authenticated;
 grant insert (post_id, user_id) on public.post_likes to authenticated;
 grant select, insert, update, delete on public.post_likes to service_role;
 
--- Who liked what stays private; the public sees likes_count. I see my own likes.
+-- The public sees likes_count only; I see my own likes; post authors learn who liked their
+-- posts from notifications.
 create policy "post_likes: own rows" on public.post_likes
   for select to authenticated using (user_id = (select auth.uid()));
+-- Only publicly visible posts (not hidden, startup published) can be liked. Spelled out here
+-- rather than relying on the posts SELECT policy, which also lets authors see their own hidden
+-- posts and posts on draft startups.
 create policy "post_likes: like a visible post" on public.post_likes
   for insert to authenticated
-  with check (user_id = (select auth.uid())
-              and exists (select 1 from public.posts p where p.id = post_id));
+  with check (
+    user_id = (select auth.uid())
+    and exists (
+      select 1
+      from public.posts p
+      join public.startups s on s.id = p.startup_id
+      where p.id = post_id
+        and p.hidden_at is null
+        and s.status = 'published'
+    )
+  );
 create policy "post_likes: unlike" on public.post_likes
   for delete to authenticated using (user_id = (select auth.uid()));
 
 -- ---------------------------------------------------------------------------------------------
--- 4. post_comments
+-- 6. post_comments. Deleting an account doesn't delete other people's replies: the author is
+--    set to null and the comment becomes a tombstone ("ความคิดเห็นถูกลบ"), like a soft delete.
 -- ---------------------------------------------------------------------------------------------
 create table public.post_comments (
   id bigint generated always as identity primary key,
   post_id bigint not null references public.posts (id) on delete cascade,
-  author_id uuid not null references public.profiles (id) on delete cascade,
+  author_id uuid references public.profiles (id) on delete set null,
   parent_id bigint references public.post_comments (id) on delete cascade,
   body text not null,
   created_at timestamptz not null default now(),
   deleted_at timestamptz,
-  -- A deleted comment keeps its place in the thread ("ความคิดเห็นถูกลบ") but loses its text.
+  -- A deleted comment keeps its place in the thread but loses its text.
   check ((deleted_at is null and char_length(body) between 1 and 500)
-         or (deleted_at is not null and body = ''))
+         or (deleted_at is not null and body = '')),
+  check (author_id is not null or deleted_at is not null)
 );
 create index post_comments_post_idx on public.post_comments (post_id, created_at);
 create index post_comments_parent_idx on public.post_comments (parent_id);
@@ -314,31 +417,33 @@ begin
   if tg_op = 'INSERT' then
     if new.parent_id is not null then
       select * into parent from public.post_comments c where c.id = new.parent_id;
-      -- One level of replies: a reply's parent is a top-level comment of the same post.
-      if parent.id is null or parent.post_id <> new.post_id or parent.parent_id is not null then
-        raise exception 'replies go one level deep' using errcode = '23514';
+      -- One level of replies: a reply's parent is a live top-level comment of the same post.
+      if parent.id is null or parent.post_id <> new.post_id or parent.parent_id is not null
+         or parent.deleted_at is not null then
+        raise exception 'invalid reply' using errcode = '23514';
       end if;
     end if;
     if current_user in ('anon', 'authenticated') then
-      if me is null or new.author_id <> me then
+      if me is null or new.author_id is distinct from me then
         raise exception 'invalid comment' using errcode = '42501';
       end if;
-      if (select count(*) from public.post_comments c
-          where c.author_id = me and c.created_at > now() - interval '1 day') >= 30 then
-        raise exception 'daily comment limit reached' using errcode = '54000';
-      end if;
+      perform private.take_rate('comment', 30);
       new.created_at := now();
       new.deleted_at := null;
     end if;
     return new;
   end if;
-  -- UPDATE (column grant: deleted_at only) = soft delete by the author, one way.
+  -- UPDATE by a client (column grant: deleted_at only) = soft delete by the author, one way.
   if current_user in ('anon', 'authenticated') then
-    if me is null or old.author_id <> me or old.deleted_at is not null
+    if me is null or old.author_id is distinct from me or old.deleted_at is not null
        or new.deleted_at is null then
       raise exception 'only the author deletes a comment' using errcode = '42501';
     end if;
     new.deleted_at := now();
+  end if;
+  -- Account deleted (FK sets author_id to null): turn the comment into a tombstone.
+  if new.author_id is null and old.author_id is not null then
+    new.deleted_at := coalesce(old.deleted_at, now());
   end if;
   if new.deleted_at is not null then
     new.body := '';
@@ -360,10 +465,21 @@ grant select, insert, update, delete on public.post_comments to service_role;
 create policy "post_comments: visible with the post" on public.post_comments
   for select to anon, authenticated
   using (exists (select 1 from public.posts p where p.id = post_id));
+-- Only publicly visible posts (not hidden, startup published) can be commented on; same
+-- explicit rule as post_likes.
 create policy "post_comments: signed-in users comment" on public.post_comments
   for insert to authenticated
-  with check (author_id = (select auth.uid())
-              and exists (select 1 from public.posts p where p.id = post_id));
+  with check (
+    author_id = (select auth.uid())
+    and exists (
+      select 1
+      from public.posts p
+      join public.startups s on s.id = p.startup_id
+      where p.id = post_id
+        and p.hidden_at is null
+        and s.status = 'published'
+    )
+  );
 create policy "post_comments: author soft-deletes" on public.post_comments
   for update to authenticated
   using (author_id = (select auth.uid()))
@@ -391,7 +507,9 @@ revoke execute on function private.post_likes_count() from public, anon, authent
 create trigger post_likes_count after insert or delete on public.post_likes
   for each row execute function private.post_likes_count();
 
--- comments_count = live (not deleted) comments, replies included.
+-- comments_count = live (not deleted) comments, replies included. Fires on every update, not
+-- "update of deleted_at": a tombstone made by the FK action changes deleted_at only inside the
+-- BEFORE trigger, which a column-list trigger wouldn't see.
 create or replace function private.post_comments_count()
 returns trigger
 language plpgsql
@@ -400,7 +518,9 @@ set search_path = ''
 as $$
 begin
   if tg_op = 'INSERT' then
-    update public.posts set comments_count = comments_count + 1 where id = new.post_id;
+    if new.deleted_at is null then
+      update public.posts set comments_count = comments_count + 1 where id = new.post_id;
+    end if;
   elsif tg_op = 'UPDATE' then
     if old.deleted_at is null and new.deleted_at is not null then
       update public.posts set comments_count = greatest(comments_count - 1, 0)
@@ -414,13 +534,14 @@ begin
 end;
 $$;
 revoke execute on function private.post_comments_count() from public, anon, authenticated;
-create trigger post_comments_count after insert or update of deleted_at or delete
-  on public.post_comments
+create trigger post_comments_count after insert or update or delete on public.post_comments
   for each row execute function private.post_comments_count();
 
 -- ---------------------------------------------------------------------------------------------
--- 5. reports (post / comment / user). user_reports rows are copied; the app switches to this
---    table in the same deploy, and user_reports is dropped in a later migration.
+-- 7. reports (post / comment / user). user_reports has no status column and the same five
+--    reasons, so rows copy as 'open' with no CHECK risk. The app switches to this table in the
+--    10a deploy; reports filed between applying this and that deploy land in user_reports, so
+--    the later migration that drops user_reports repeats this copy first.
 -- ---------------------------------------------------------------------------------------------
 create table public.reports (
   id bigint generated always as identity primary key,
@@ -448,10 +569,11 @@ create policy "reports: file as myself" on public.reports
 insert into public.reports (reporter_id, target_type, target_id, reason, note, created_at)
 select r.reporter_id, 'user', r.reported_id::text, r.reason, r.note, r.created_at
 from public.user_reports r
-on conflict do nothing;
+on conflict (reporter_id, target_type, target_id) do nothing;
 
 -- ---------------------------------------------------------------------------------------------
--- 6. notifications: likes and comments on my posts (never for my own actions)
+-- 8. notifications: likes and comments on my posts (never for my own actions). Clients still
+--    can't insert notifications (no insert grant or policy since notifications_live_pings).
 -- ---------------------------------------------------------------------------------------------
 alter table public.notifications drop constraint notifications_kind_check;
 alter table public.notifications add constraint notifications_kind_check
@@ -459,6 +581,9 @@ alter table public.notifications add constraint notifications_kind_check
 alter table public.notifications
   add column post_id bigint references public.posts (id) on delete cascade,
   add column comment_id bigint references public.post_comments (id) on delete cascade;
+alter table public.notifications add constraint notifications_post_kinds_ref
+  check ((kind not in ('post_like', 'post_comment') or post_id is not null)
+         and (kind <> 'post_comment' or comment_id is not null));
 create index notifications_post_idx on public.notifications (post_id);
 create index notifications_comment_idx on public.notifications (comment_id);
 -- Like → unlike → like again notifies once.
@@ -499,13 +624,13 @@ declare
   parent_author uuid;
 begin
   select p.author_id into post_author from public.posts p where p.id = new.post_id;
-  if post_author is not null and post_author <> new.author_id then
+  if post_author is not null and post_author is distinct from new.author_id then
     insert into public.notifications (user_id, kind, actor_id, post_id, comment_id)
     values (post_author, 'post_comment', new.author_id, new.post_id, new.id);
   end if;
   if new.parent_id is not null then
     select c.author_id into parent_author from public.post_comments c where c.id = new.parent_id;
-    if parent_author is not null and parent_author <> new.author_id
+    if parent_author is not null and parent_author is distinct from new.author_id
        and parent_author is distinct from post_author then
       insert into public.notifications (user_id, kind, actor_id, post_id, comment_id)
       values (parent_author, 'post_comment', new.author_id, new.post_id, new.id);
@@ -519,8 +644,11 @@ create trigger post_comments_notify after insert on public.post_comments
   for each row execute function private.post_comments_notify();
 
 -- ---------------------------------------------------------------------------------------------
--- 7. Activity heatmap: posts count as activity (1 per post, UTC days like the other sources,
---    auto milestones excluded)
+-- 9. Activity heatmap: posts count as activity (1 per post, UTC days like the other sources;
+--    auto milestones, hidden posts and posts on unpublished or demo startups excluded).
+--    Checked live 2026-10-01: nothing depends on this view (no views, no BEGIN ATOMIC
+--    functions; refresh_activity / profile_activity use plain SQL bodies) and it has no grants
+--    (owner only), so dropping and recreating it loses nothing.
 -- ---------------------------------------------------------------------------------------------
 drop materialized view private.user_activity_days;
 create materialized view private.user_activity_days as
@@ -538,6 +666,7 @@ from (
   union all
   select p.author_id, (p.created_at at time zone 'UTC')::date, 1
   from public.posts p
+  join public.startups s on s.id = p.startup_id and s.status = 'published' and not s.is_demo
   where not p.is_auto and p.hidden_at is null
 ) x
 group by x.user_id, x.day;

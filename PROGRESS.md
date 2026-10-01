@@ -12,6 +12,24 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-01 — Phase 10a: feed_posts migration applied (after two review rounds)
+
+**Done:**
+
+- **Applied (owner: "apply") `20261001092434_feed_posts`**, which replaced the unapplied draft `20261001084406` after the owner's review: posts (confirmed members only, 5/day, text edits for 15 minutes, province / category copied from the startup), `milestones` ledger (a milestone is never posted twice, even after its post is deleted), post_images + public `post-images` bucket, `storage_cleanup` queue (every removed / cascaded / hidden-post image queues its file for server deletion), likes and comments (one level of replies, soft delete; deleting an account turns that person's comments into tombstones so other people's replies stay), counters, `reports` for users / posts / comments (copies `user_reports`), post_like / post_comment notifications, and posts in the activity heatmap (published, non-demo startups only).
+- **Review fixes before applying:** daily limits kept in `private.rate_events` with a per-user advisory lock (deleting or hiding no longer resets them, concurrent requests can't slip past); likes and comments only on publicly visible posts (explicit hidden / published check); replies to deleted comments blocked; case-insensitive link check; notification kind ↔ post / comment reference check; redundant 4-image trigger and the feedback index dropped.
+- `reportUser` now writes to `reports` (target_type user). Types regenerated.
+
+**Files:** `supabase/migrations/20261001092434_feed_posts.sql` (old draft removed), `supabase/tests/rls_smoke.sql` (T64–T90), `src/lib/supabase/database.types.ts`, `src/app/actions/profile.ts`, `src/components/builder/ReportDialog.tsx`
+**Verified:**
+
+- Live checks before applying: no preview branches, migration not applied anywhere, the activity view had no dependents or grants, `user_reports` empty with the same reasons and no status column, clients can't insert notifications.
+- RLS smoke **90/90** (new: member posts and the province is copied; non-member, milestone and link_preview writes refused; 6th post refused and still refused after deleting 4; author edits; image upload while editable; milestones / storage_cleanup / rate_events unreadable; others can't edit or delete a post or delete a comment; like → unlike → like notifies once; comment notifies the author; reply to a reply refused; likers private; forged notification refused; report filed but unreadable; deleted account tombstones the comment, keeps the reply and fixes the count; heatmap counts posts; hiding drops images and queues the file; hidden post invisible, can't be liked or commented on, still visible to its author). The first run showed a test bug (the 4 posts were inside the exception block that rolled them back); fixed and re-run.
+- Advisors: no new WARN (INFO only: the server-only tables have no client policies by design; new indexes unused yet).
+- typecheck ✓ · lint ✓ · `npm test` 212/212 · build ✓
+
+**Next:** Phase 10b (posting: server actions, link previews, image upload, PostCard, composer, `/post/[id]`, reports for posts and comments, storage cleanup worker). Later migration: copy any new `user_reports` rows into `reports`, then drop `user_reports`.
+
 ## 2026-10-01 — Profile editor fix (one section at a time + per-field visibility), footer tagline, decisions
 
 **Done:**

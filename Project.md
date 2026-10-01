@@ -128,7 +128,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 
 ### Phase 10 — Product updates feed (docs/SPEC.md §12; Figma 160-2 profile v2, 160-555 feed)
 
-- [ ] 10a · Migration `feed_posts` (posts, post_images + bucket, likes, comments, reports, notifications kinds, heatmap counts posts) — **SQL drafted 2026-10-01, waiting for "apply"** + RLS smoke tests
+- [x] 10a · Migration `feed_posts` applied 2026-10-01 after two owner reviews (posts, milestones ledger, post_images + bucket + storage_cleanup queue, likes, comments with tombstones, reports, notification kinds, rate_events, heatmap counts posts) — RLS smoke 90/90
 - [ ] 10b · Posting: server actions (create / edit 15 min / delete, like, comment + reply, report), link previews (SSRF guard, 3 s, size cap, cache), image upload (reuse the screenshot uploader), PostCard, composer, `/post/[id]` + OG image
 - [ ] 10c · `/feed` (ล่าสุด / กำลังติดตาม / ยอดนิยมสัปดาห์นี้, type / province / category filters in the URL, cursor pagination, right rail) + header "ฟีด" + notification bell
 - [ ] 10d · Auto milestones in the daily cron (verified data only, idempotent keys, highest level only on the first run)
@@ -323,6 +323,7 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 - [ ] **BizModel.md pre-launch checklist (owner, 2026-10-01)** not yet covered elsewhere: LINE OA verification (follower counts via LINE's API); the founder on JaoPor's own listing (build in public); a security / key-handling page linked from the add-startup flow; the Thai launch post for Claude Thailand Community. Growth ideas to schedule: "Built with Claude" tag + community leaderboard, "JaoPor of the Month", one-click import from a Ploykhong / SaaSThai link (user-pasted link only), JaoPor Verified badge on other platforms.
 - [ ] Bookmarks ("ที่บันทึกไว้") need a saves table; the page is a placeholder. The "อ้างสิทธิ์ผลงาน" claim flow is not built (tile shows เร็ว ๆ นี้).
 - [x] ~~Owner decisions pending (2026-10-01)~~ → decided 2026-10-01, see §6 (editor A+B → Phase 10 → chat; GitHub + YouTube audience first, no LINE OA; no podium milestone; pricing card = image).
+- [ ] Drop `user_reports` in a later migration, after copying any rows filed between the feed_posts migration and the deploy that switched `reportUser` to `reports`.
 - [ ] Builders directory loads every directory profile per request and filters in TypeScript (`listBuilders`); move it into an SQL RPC over the anonymous view once there are a few hundred profiles.
 - [ ] Rank history table (for "แชมป์ N เดือนติด" streaks): not built; the Olympics shows movement vs the previous 30 days only.
 - [x] Phase 9 (builder profiles): make the profile's founder name/avatar card link to `/u/{handle}` (user request 2026-09-30; done in 9b, 2026-10-01).

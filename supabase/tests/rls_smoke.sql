@@ -14,6 +14,11 @@ declare
   c uuid;
   cs uuid[];
   fnum int;
+  pid bigint;
+  cid bigint;
+  cid2 bigint;
+  cid3 bigint;
+  k int;
   out text := '';
 begin
   insert into auth.users (id, email, raw_user_meta_data, aud, role)
@@ -373,6 +378,167 @@ begin
     out := out || 'T63 authenticated reads live_pings: ALLOWED (BAD) | ';
   exception when insufficient_privilege then out := out || 'T63 authenticated reads live_pings: denied (good) | ';
   end;
+
+  -- feed_posts (Phase 10a) ---------------------------------------------------------------
+  -- State: A owns sid (published) and sid2; B is a confirmed maker of sid; cs = 5 extra users.
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  insert into public.posts (author_id, startup_id, type, body) values (b, sid, 'feature', 'first post')
+  returning id into pid;
+  out := out || format('T64 confirmed member posts: ok (province copied: %s) | ',
+    coalesce((select province from public.posts where id = pid), 'null'));
+  begin
+    insert into public.posts (author_id, startup_id, type, body) values (b, sid2, 'feature', 'not mine');
+    out := out || 'T65 non-member posts on A startup: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T65 non-member posts on A startup: denied (good) | ';
+  end;
+  begin
+    insert into public.posts (author_id, startup_id, type, body) values (b, sid, 'milestone', 'fake ฿1M');
+    out := out || 'T66 client posts a milestone: ALLOWED (BAD) | ';
+  exception when insufficient_privilege or check_violation then
+    out := out || 'T66 client posts a milestone: denied (good) | ';
+  end;
+  begin
+    insert into public.posts (author_id, startup_id, type, body, link_preview)
+    values (b, sid, 'feature', 'x', '{"title": "spoofed"}');
+    out := out || 'T67 client writes link_preview: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T67 client writes link_preview: denied (good) | ';
+  end;
+  -- 5 posts a day: pid + 4 more succeed, the 6th is refused. (The 4 are inserted outside the
+  -- exception block: a caught exception rolls back everything done inside its block.)
+  for k in 1..4 loop
+    insert into public.posts (author_id, startup_id, type, body) values (b, sid, 'lesson', 'post ' || k);
+  end loop;
+  begin
+    insert into public.posts (author_id, startup_id, type, body) values (b, sid, 'lesson', 'sixth');
+    out := out || 'T68 6th post in a day: ALLOWED (BAD) | ';
+  exception when program_limit_exceeded then out := out || 'T68 6th post in a day: denied (good) | ';
+  end;
+  -- Deleting posts doesn't give the quota back.
+  delete from public.posts where author_id = b and id <> pid;
+  get diagnostics n = row_count;
+  begin
+    insert into public.posts (author_id, startup_id, type, body) values (b, sid, 'lesson', 'after delete');
+    out := out || format('T69 post after deleting %s: ALLOWED (BAD) | ', n);
+  exception when program_limit_exceeded then
+    out := out || format('T69 post after deleting %s (expect 4): still denied (good) | ', n);
+  end;
+  update public.posts set body = 'first post (edited)' where id = pid;
+  get diagnostics n = row_count;
+  out := out || format('T70 author edits within 15 min: %s row, edited_at set: %s | ', n,
+    (select edited_at is not null from public.posts where id = pid));
+  insert into public.post_images (post_id, path, width, height, position)
+  values (pid, pid || '/' || gen_random_uuid() || '.webp', 10, 10, 0);
+  out := out || 'T71 author adds image while editable: ok | ';
+  begin
+    perform 1 from public.milestones;
+    out := out || 'T72 client reads milestones: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T72 client reads milestones: denied (good) | ';
+  end;
+  begin
+    perform 1 from public.storage_cleanup;
+    out := out || 'T73 client reads storage_cleanup: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T73 client reads storage_cleanup: denied (good) | ';
+  end;
+  begin
+    perform 1 from private.rate_events;
+    out := out || 'T74 client reads rate_events: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T74 client reads rate_events: denied (good) | ';
+  end;
+
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  update public.posts set body = 'hacked' where id = pid;
+  get diagnostics n = row_count;
+  out := out || format('T75 A edits B post: %s rows (expect 0) | ', n);
+  delete from public.posts where id = pid;
+  get diagnostics n = row_count;
+  out := out || format('T76 A deletes B post: %s rows (expect 0) | ', n);
+  insert into public.post_likes (post_id, user_id) values (pid, a);
+  delete from public.post_likes where post_id = pid and user_id = a;
+  insert into public.post_likes (post_id, user_id) values (pid, a);
+  insert into public.post_comments (post_id, author_id, body) values (pid, a, 'nice!') returning id into cid;
+  execute 'reset role';
+  select count(*) into n from public.notifications where user_id = b and kind = 'post_like' and post_id = pid;
+  out := out || format('T77 like → unlike → like notifies once: %s (expect 1), likes_count=%s (expect 1) | ',
+    n, (select likes_count from public.posts where id = pid));
+  select count(*) into n from public.notifications where user_id = b and kind = 'post_comment' and comment_id = cid;
+  out := out || format('T78 post author notified of comment: %s (expect 1) | ', n);
+
+  -- A third user comments, B replies to it, then that user deletes their account.
+  perform set_config('request.jwt.claims', json_build_object('sub', cs[1], 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  insert into public.post_comments (post_id, author_id, body) values (pid, cs[1], 'from C1') returning id into cid2;
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  insert into public.post_comments (post_id, author_id, parent_id, body) values (pid, b, cid2, 'reply to C1')
+  returning id into cid3;
+  begin
+    insert into public.post_comments (post_id, author_id, parent_id, body) values (pid, b, cid3, 'reply to reply');
+    out := out || 'T79 reply to a reply: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T79 reply to a reply: denied (good) | ';
+  end;
+  update public.post_comments set deleted_at = now() where id = cid;
+  get diagnostics n = row_count;
+  out := out || format('T80 B deletes A comment: %s rows (expect 0) | ', n);
+  select count(*) into n from public.post_likes where user_id = a;
+  out := out || format('T81 B sees who else liked: %s (expect 0) | ', n);
+  begin
+    insert into public.notifications (user_id, kind, actor_id, post_id) values (a, 'post_like', b, pid);
+    out := out || 'T82 client forges a notification: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T82 client forges a notification: denied (good) | ';
+  end;
+  insert into public.reports (reporter_id, target_type, target_id, reason) values (b, 'comment', cid::text, 'spam');
+  begin
+    perform 1 from public.reports;
+    out := out || 'T83 reporter reads reports: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T83 files a report, can''t read reports: good | ';
+  end;
+
+  execute 'reset role';
+  n := (select comments_count from public.posts where id = pid);
+  delete from auth.users where id = cs[1];
+  out := out || format('T84 deleted account: comment tombstoned=%s, reply kept=%s, comments_count %s→%s (expect true, true, 3→2) | ',
+    (select deleted_at is not null and body = '' and author_id is null from public.post_comments where id = cid2),
+    (select count(*) = 1 from public.post_comments where id = cid3),
+    n, (select comments_count from public.posts where id = pid));
+
+  perform public.refresh_activity();
+  select coalesce(sum(score), 0) into n from private.user_activity_days
+  where user_id = b and day = (now() at time zone 'UTC')::date;
+  out := out || format('T85 heatmap counts B posts today: %s (expect >= 1) | ', n);
+
+  -- Moderation: hiding drops the images and queues their files.
+  update public.posts set hidden_at = now() where id = pid;
+  out := out || format('T86 hide: image rows=%s (expect 0), files queued=%s (expect 1) | ',
+    (select count(*) from public.post_images where post_id = pid),
+    (select count(*) from public.storage_cleanup where path like pid || '/%'));
+
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  execute 'set local role anon';
+  select count(*) into n from public.posts where id = pid;
+  out := out || format('T87 anon sees hidden post: %s (expect 0) | ', n);
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  begin
+    insert into public.post_comments (post_id, author_id, body) values (pid, a, 'on hidden');
+    out := out || 'T88 comment on hidden post: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T88 comment on hidden post: denied (good) | ';
+  end;
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  begin
+    insert into public.post_likes (post_id, user_id) values (pid, b);
+    out := out || 'T89 author likes own hidden post: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T89 author likes own hidden post: denied (good) | ';
+  end;
+  select count(*) into n from public.posts where id = pid;
+  out := out || format('T90 author still sees own hidden post: %s (expect 1) | ', n);
 
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;

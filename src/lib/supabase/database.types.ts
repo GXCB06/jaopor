@@ -202,33 +202,75 @@ export type Database = {
           },
         ];
       };
+      milestones: {
+        Row: {
+          key: string;
+          post_id: number | null;
+          reached_at: string;
+          startup_id: number;
+        };
+        Insert: {
+          key: string;
+          post_id?: number | null;
+          reached_at?: string;
+          startup_id: number;
+        };
+        Update: {
+          key?: string;
+          post_id?: number | null;
+          reached_at?: string;
+          startup_id?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "milestones_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "milestones_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       notifications: {
         Row: {
           actor_id: string | null;
+          comment_id: number | null;
           created_at: string;
           email_sent_at: string | null;
           id: number;
           kind: string;
+          post_id: number | null;
           read_at: string | null;
           request_id: number | null;
           user_id: string;
         };
         Insert: {
           actor_id?: string | null;
+          comment_id?: number | null;
           created_at?: string;
           email_sent_at?: string | null;
           id?: never;
           kind: string;
+          post_id?: number | null;
           read_at?: string | null;
           request_id?: number | null;
           user_id: string;
         };
         Update: {
           actor_id?: string | null;
+          comment_id?: number | null;
           created_at?: string;
           email_sent_at?: string | null;
           id?: never;
           kind?: string;
+          post_id?: number | null;
           read_at?: string | null;
           request_id?: number | null;
           user_id?: string;
@@ -239,6 +281,20 @@ export type Database = {
             columns: ["actor_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_comment_id_fkey";
+            columns: ["comment_id"];
+            isOneToOne: false;
+            referencedRelation: "post_comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "posts";
             referencedColumns: ["id"];
           },
           {
@@ -326,6 +382,205 @@ export type Database = {
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      post_comments: {
+        Row: {
+          author_id: string | null;
+          body: string;
+          created_at: string;
+          deleted_at: string | null;
+          id: number;
+          parent_id: number | null;
+          post_id: number;
+        };
+        Insert: {
+          author_id?: string | null;
+          body: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          id?: never;
+          parent_id?: number | null;
+          post_id: number;
+        };
+        Update: {
+          author_id?: string | null;
+          body?: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          id?: never;
+          parent_id?: number | null;
+          post_id?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_comments_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "post_comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_comments_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "posts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      post_images: {
+        Row: {
+          height: number;
+          id: number;
+          path: string;
+          position: number;
+          post_id: number;
+          width: number;
+        };
+        Insert: {
+          height: number;
+          id?: never;
+          path: string;
+          position?: number;
+          post_id: number;
+          width: number;
+        };
+        Update: {
+          height?: number;
+          id?: never;
+          path?: string;
+          position?: number;
+          post_id?: number;
+          width?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "post_images_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "posts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      post_likes: {
+        Row: {
+          created_at: string;
+          post_id: number;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          post_id: number;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          post_id?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_likes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      posts: {
+        Row: {
+          author_id: string;
+          body: string;
+          category: string | null;
+          comments_count: number;
+          created_at: string;
+          edited_at: string | null;
+          hidden_at: string | null;
+          id: number;
+          is_auto: boolean;
+          likes_count: number;
+          link_preview: Json | null;
+          link_url: string | null;
+          milestone_key: string | null;
+          province: string | null;
+          startup_id: number;
+          type: string;
+        };
+        Insert: {
+          author_id: string;
+          body: string;
+          category?: string | null;
+          comments_count?: number;
+          created_at?: string;
+          edited_at?: string | null;
+          hidden_at?: string | null;
+          id?: never;
+          is_auto?: boolean;
+          likes_count?: number;
+          link_preview?: Json | null;
+          link_url?: string | null;
+          milestone_key?: string | null;
+          province?: string | null;
+          startup_id: number;
+          type: string;
+        };
+        Update: {
+          author_id?: string;
+          body?: string;
+          category?: string | null;
+          comments_count?: number;
+          created_at?: string;
+          edited_at?: string | null;
+          hidden_at?: string | null;
+          id?: never;
+          is_auto?: boolean;
+          likes_count?: number;
+          link_preview?: Json | null;
+          link_url?: string | null;
+          milestone_key?: string | null;
+          province?: string | null;
+          startup_id?: number;
+          type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "posts_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "posts_province_fkey";
+            columns: ["province"];
+            isOneToOne: false;
+            referencedRelation: "provinces";
+            referencedColumns: ["slug"];
+          },
+          {
+            foreignKeyName: "posts_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
             referencedColumns: ["id"];
           },
         ];
@@ -549,6 +804,47 @@ export type Database = {
           slug?: string;
         };
         Relationships: [];
+      };
+      reports: {
+        Row: {
+          created_at: string;
+          id: number;
+          note: string | null;
+          reason: string;
+          reporter_id: string;
+          status: string;
+          target_id: string;
+          target_type: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: never;
+          note?: string | null;
+          reason: string;
+          reporter_id: string;
+          status?: string;
+          target_id: string;
+          target_type: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: never;
+          note?: string | null;
+          reason?: string;
+          reporter_id?: string;
+          status?: string;
+          target_id?: string;
+          target_type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reports_reporter_id_fkey";
+            columns: ["reporter_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       revenue_snapshots: {
         Row: {
@@ -878,6 +1174,27 @@ export type Database = {
             referencedColumns: ["slug"];
           },
         ];
+      };
+      storage_cleanup: {
+        Row: {
+          bucket: string;
+          id: number;
+          path: string;
+          queued_at: string;
+        };
+        Insert: {
+          bucket: string;
+          id?: never;
+          path: string;
+          queued_at?: string;
+        };
+        Update: {
+          bucket?: string;
+          id?: never;
+          path?: string;
+          queued_at?: string;
+        };
+        Relationships: [];
       };
       traffic_snapshots: {
         Row: {

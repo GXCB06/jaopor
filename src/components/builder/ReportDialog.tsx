@@ -25,7 +25,7 @@ const REASONS = [
   "other",
 ] as const;
 
-/** "รายงานผู้ใช้นี้": reason + optional note → user_reports (one per reporter per user). */
+/** "รายงานผู้ใช้นี้": reason + optional note → reports (target_type user; one per reporter per user). */
 export function ReportDialog({ profileId }: { profileId: string }) {
   const t = useTranslations("Builder");
   const [open, setOpen] = useState(false);
