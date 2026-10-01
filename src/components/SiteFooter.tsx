@@ -56,10 +56,7 @@ export function SiteFooter() {
           <ul className="grid grid-cols-2 gap-2">
             {CATEGORIES.slice(0, 8).map((c) => (
               <li key={c}>
-                <Link
-                  href={`/category/${c}`}
-                  className={link}
-                >
+                <Link href={`/category/${c}`} className={link}>
                   {categoryName(c, locale)}
                 </Link>
               </li>

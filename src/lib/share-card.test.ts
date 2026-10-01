@@ -37,8 +37,12 @@ describe("parseCardQuery", () => {
   });
 
   it("accepts the spec's 12 swatches only (old ids fall back)", () => {
-    expect(parseCardQuery(new URLSearchParams("color=rose")).color).toBe("rose");
-    expect(parseCardQuery(new URLSearchParams("color=violet")).color).toBe("indigo");
+    expect(parseCardQuery(new URLSearchParams("color=rose")).color).toBe(
+      "rose",
+    );
+    expect(parseCardQuery(new URLSearchParams("color=violet")).color).toBe(
+      "indigo",
+    );
   });
 
   it("uses month periods for the calendar", () => {

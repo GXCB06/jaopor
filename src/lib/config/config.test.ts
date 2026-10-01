@@ -3,6 +3,16 @@ import { join } from "node:path";
 import * as simpleIcons from "simple-icons";
 import { describe, expect, it } from "vitest";
 import { CATEGORIES, CATEGORY_LIST } from "./categories";
+import { SKILL_LIST } from "./skills";
+import {
+  COMMITMENTS,
+  DEALS,
+  LOOKING_ROLES,
+  RESERVED_HANDLES,
+  SOCIAL_KEYS,
+  VISIBILITY_FIELDS,
+  WORK_LOCATIONS,
+} from "@/lib/profile";
 import { CHANNEL_LIST, isChannelValue, toChannelValue } from "./channels";
 import {
   PROVINCE_LIST,
@@ -205,7 +215,9 @@ describe("stack", () => {
       .filter((sql) => sql.includes("function private.startups_validate_vocab"))
       .at(-1)!;
     for (const g of STORED_STACK_GROUPS) {
-      const m = latest.match(new RegExp(String.raw`'${g}', '(\[[^\]]*\])'::jsonb`))!;
+      const m = latest.match(
+        new RegExp(String.raw`'${g}', '(\[[^\]]*\])'::jsonb`),
+      )!;
       expect(m, g).toBeTruthy();
       expect(JSON.parse(m[1])).toEqual(
         STACK_LIST.filter((i) => i.group === g).map((i) => i.slug),
@@ -289,5 +301,48 @@ describe("custom stack entries (stack_custom_entries)", () => {
       other: ["custom:LINE Messaging API"],
     });
     expect(stackToValues(stack)).toEqual(values);
+  });
+});
+
+describe("builder profile vocabularies (migration builder_profiles)", () => {
+  const BP = readFileSync(
+    join(
+      process.cwd(),
+      "supabase/migrations/20260930155147_builder_profiles.sql",
+    ),
+    "utf8",
+  );
+  const arrayAfter = (marker: string) => {
+    const start = BP.indexOf(marker);
+    const open = BP.indexOf("array[", start);
+    const close = BP.indexOf("]", open);
+    return [...BP.slice(open, close).matchAll(/'([^']+)'/g)].map((m) => m[1]);
+  };
+
+  it("skills match the profile_skills CHECK list", () => {
+    expect(SKILL_LIST.map((s) => s.slug)).toEqual(
+      arrayAfter("skill_slug text not null check"),
+    );
+    expect(unique(SKILL_LIST.map((s) => s.slug))).toBe(true);
+  });
+
+  it("reserved handles and looking_for vocabularies match the trigger", () => {
+    expect([...RESERVED_HANDLES]).toEqual(
+      arrayAfter("add constraint profiles_handle_reserved"),
+    );
+    expect([...LOOKING_ROLES]).toEqual(arrayAfter("when 'roles'"));
+    expect([...COMMITMENTS]).toEqual(arrayAfter("when 'commitment'"));
+    expect([...DEALS]).toEqual(arrayAfter("when 'deal'"));
+    expect([...WORK_LOCATIONS]).toEqual(arrayAfter("when 'location'"));
+    expect([...SOCIAL_KEYS]).toEqual(
+      arrayAfter(
+        "for k, v in select key, value from jsonb_each(new.social_links)",
+      ),
+    );
+    expect([...VISIBILITY_FIELDS]).toEqual(
+      arrayAfter(
+        "for k, v in select key, value from jsonb_each(new.field_visibility)",
+      ),
+    );
   });
 });

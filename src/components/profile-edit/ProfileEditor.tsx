@@ -1,0 +1,674 @@
+"use client";
+
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  ArrowUpRightIcon,
+  Loader2Icon,
+  PinIcon,
+  PlusIcon,
+  XIcon,
+} from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import {
+  saveContacts,
+  savePins,
+  savePositions,
+  saveProfile,
+  saveSkills,
+  type PositionInput,
+} from "@/app/actions/profile";
+import { Card } from "@/components/core/Card";
+import { StartupLogo } from "@/components/StartupBits";
+import { Button } from "@/components/ui/button";
+import {
+  Field,
+  Select,
+  ToggleChips,
+  inputClass,
+} from "@/components/wizard/fields";
+import { Link, useRouter } from "@/i18n/navigation";
+import { CATEGORY_LIST } from "@/lib/config/categories";
+import { localizedName } from "@/lib/config/localized";
+import { PROVINCE_LIST, REGION_LIST } from "@/lib/config/provinces";
+import {
+  COMMITMENTS,
+  DEALS,
+  LOOKING_ROLES,
+  PROFILE_STATUSES,
+  SOCIAL_KEYS,
+  WORK_LOCATIONS,
+  type LookingFor,
+} from "@/lib/profile";
+import { cn } from "@/lib/utils";
+import { HandleField, type HandleState } from "./HandleField";
+import { SkillPicker, type PickedSkill } from "./SkillPicker";
+
+export type EditorInitial = {
+  handle: string;
+  displayName: string;
+  headline: string;
+  bio: string;
+  province: string;
+  xHandle: string;
+  status: string;
+  lookingFor: LookingFor;
+  socialLinks: Record<string, string>;
+  skills: PickedSkill[];
+  positions: (PositionInput & { key: string })[];
+  contacts: { lineId: string; email: string };
+  works: {
+    id: number;
+    name: string;
+    logo: string | null;
+    pinned: number | null;
+  }[];
+};
+
+const month = (d: string | null | undefined) => (d ? d.slice(0, 7) : "");
+const toDate = (m: string) => (m ? `${m}-01` : "");
+
+/**
+ * Design.md §6 Profile editor (/dashboard/profile, Phase 9d): seven cards, one sticky save bar.
+ * Saves profile → skills → experience → pins → contacts (each its own server action).
+ */
+export function ProfileEditor({ initial }: { initial: EditorInitial }) {
+  const t = useTranslations("Me");
+  const locale = useLocale();
+  const router = useRouter();
+  const [f, setF] = useState(initial);
+  const [handleState, setHandleState] = useState<HandleState>("ok");
+  const [saving, start] = useTransition();
+  const set = <K extends keyof EditorInitial>(k: K, v: EditorInitial[K]) =>
+    setF((p) => ({ ...p, [k]: v }));
+  const lf = f.lookingFor;
+  const setLf = (patch: Partial<LookingFor>) =>
+    set("lookingFor", { ...lf, ...patch });
+  const dirty = JSON.stringify(f) !== JSON.stringify(initial);
+  const pinned = f.works
+    .filter((w) => w.pinned !== null)
+    .sort((a, b) => a.pinned! - b.pinned!);
+
+  const save = () =>
+    start(async () => {
+      if (handleState !== "ok" && f.handle !== initial.handle) {
+        toast.error(t(`handle.${handleState}`));
+        return;
+      }
+      const steps = [
+        () =>
+          saveProfile({
+            handle: f.handle !== initial.handle ? f.handle : undefined,
+            displayName: f.displayName,
+            headline: f.headline,
+            bio: f.bio,
+            province: f.province || null,
+            xHandle: f.xHandle,
+            status: f.status,
+            lookingFor: f.lookingFor,
+            socialLinks: f.socialLinks,
+          }),
+        () => saveSkills(f.skills),
+        () =>
+          savePositions(
+            f.positions.map((p) => ({
+              title: p.title,
+              company: p.company,
+              startDate: toDate(month(p.startDate)),
+              endDate: p.endDate ? toDate(month(p.endDate)) : null,
+              description: p.description,
+            })),
+          ),
+        () => savePins(pinned.map((w) => w.id)),
+        () => saveContacts(f.contacts),
+      ];
+      for (const step of steps) {
+        const res = await step();
+        if (!res.ok) {
+          toast.error(
+            t.has(`errors.${res.error}`)
+              ? t(`errors.${res.error}`)
+              : t("saveFailed"),
+          );
+          return;
+        }
+      }
+      toast.success(t("saved"));
+      router.refresh();
+    });
+
+  const section = (
+    id: string,
+    title: string,
+    hint: string,
+    body: React.ReactNode,
+  ) => (
+    <Card id={id} className="scroll-mt-24 space-y-4 p-5">
+      <div>
+        <h2 className="text-sm font-bold">{title}</h2>
+        <p className="mt-0.5 text-caption text-muted-foreground">{hint}</p>
+      </div>
+      {body}
+    </Card>
+  );
+
+  const movePos = (i: number, d: -1 | 1) => {
+    const next = [...f.positions];
+    const j = i + d;
+    if (j < 0 || j >= next.length) return;
+    [next[i], next[j]] = [next[j], next[i]];
+    set("positions", next);
+  };
+  const setPos = (
+    i: number,
+    patch: Partial<EditorInitial["positions"][number]>,
+  ) =>
+    set(
+      "positions",
+      f.positions.map((p, k) => (k === i ? { ...p, ...patch } : p)),
+    );
+  const applyPins = (order: number[]) =>
+    set(
+      "works",
+      f.works.map((x) => ({
+        ...x,
+        pinned: order.includes(x.id) ? order.indexOf(x.id) : null,
+      })),
+    );
+  const togglePin = (id: number) => {
+    const order = pinned.map((w) => w.id);
+    if (order.includes(id)) applyPins(order.filter((x) => x !== id));
+    else if (order.length < 6) applyPins([...order, id]);
+  };
+  const movePin = (id: number, d: -1 | 1) => {
+    const order = pinned.map((w) => w.id);
+    const a = order.indexOf(id);
+    const b = a + d;
+    if (b < 0 || b >= order.length) return;
+    [order[a], order[b]] = [order[b], order[a]];
+    applyPins(order);
+  };
+
+  return (
+    <div className="space-y-5">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold tracking-tight">
+          {t("editProfile")}
+        </h1>
+        <Link
+          href={`/u/${initial.handle}`}
+          className="inline-flex items-center gap-1 text-caption text-brand-text hover:underline"
+        >
+          {t("previewPublic")}
+          <ArrowUpRightIcon className="size-3.5" aria-hidden="true" />
+        </Link>
+      </header>
+
+      {section(
+        "basics",
+        t("sec.basics"),
+        t("sec.basicsHint"),
+        <div className="grid gap-4 sm:grid-cols-2 [&>*]:min-w-0">
+          <Field label={t("f.displayName")} htmlFor="p-name">
+            <input
+              id="p-name"
+              value={f.displayName}
+              maxLength={80}
+              onChange={(e) => set("displayName", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+          <Field label={t("f.handle")} htmlFor="p-handle">
+            <HandleField
+              id="p-handle"
+              value={f.handle}
+              onChange={(v) => set("handle", v)}
+              onState={setHandleState}
+            />
+          </Field>
+          <Field
+            label={t("f.headline")}
+            htmlFor="p-headline"
+            hint={`${f.headline.length}/80`}
+            className="sm:col-span-2"
+          >
+            <input
+              id="p-headline"
+              value={f.headline}
+              maxLength={80}
+              placeholder={t("f.headlinePh")}
+              onChange={(e) => set("headline", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+          <Field
+            label={t("f.bio")}
+            htmlFor="p-bio"
+            hint={`${f.bio.length}/280`}
+            className="sm:col-span-2"
+          >
+            <textarea
+              id="p-bio"
+              value={f.bio}
+              maxLength={280}
+              rows={3}
+              onChange={(e) => set("bio", e.target.value)}
+              className={cn(inputClass, "h-auto py-2")}
+            />
+          </Field>
+          <Field id="province" label={t("f.province")} htmlFor="p-province">
+            <select
+              id="p-province"
+              value={f.province}
+              onChange={(e) => set("province", e.target.value)}
+              className={inputClass}
+            >
+              <option value="">{t("f.provinceNone")}</option>
+              {REGION_LIST.map((r) => (
+                <optgroup key={r.slug} label={localizedName(r, locale)}>
+                  {PROVINCE_LIST.filter((p) => p.region === r.slug).map((p) => (
+                    <option key={p.slug} value={p.slug}>
+                      {localizedName(p, locale)}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </Field>
+          <Field label={t("f.x")} htmlFor="p-x">
+            <input
+              id="p-x"
+              value={f.xHandle}
+              maxLength={16}
+              placeholder="@handle"
+              onChange={(e) => set("xHandle", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+        </div>,
+      )}
+
+      {section(
+        "status",
+        t("sec.status"),
+        t("sec.statusHint"),
+        <div className="space-y-4">
+          <div
+            role="radiogroup"
+            aria-label={t("f.status")}
+            className="grid gap-2 sm:grid-cols-2"
+          >
+            {PROFILE_STATUSES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                role="radio"
+                aria-checked={f.status === s}
+                onClick={() => set("status", s)}
+                className={cn(
+                  "rounded-lg border px-3 py-2 text-left text-caption transition-colors",
+                  f.status === s
+                    ? "border-brand bg-brand/10 font-semibold"
+                    : "hover:bg-accent",
+                )}
+              >
+                {t(`status.${s}`)}
+              </button>
+            ))}
+          </div>
+          {(f.status === "looking_cofounder" ||
+            f.status === "open_to_work") && (
+            <div className="grid gap-4 sm:grid-cols-2 [&>*]:min-w-0">
+              <Field label={t("f.roles")} className="sm:col-span-2">
+                <ToggleChips
+                  options={LOOKING_ROLES.map((r) => ({
+                    value: r,
+                    label: t(`roles.${r}`),
+                  }))}
+                  value={(lf.roles ?? []) as (typeof LOOKING_ROLES)[number][]}
+                  onChange={(v) => setLf({ roles: v })}
+                />
+              </Field>
+              <Field
+                label={t("f.offer")}
+                htmlFor="p-offer"
+                hint={`${(lf.offer ?? "").length}/200`}
+                className="sm:col-span-2"
+              >
+                <textarea
+                  id="p-offer"
+                  value={lf.offer ?? ""}
+                  maxLength={200}
+                  rows={2}
+                  placeholder={t("f.offerPh")}
+                  onChange={(e) => setLf({ offer: e.target.value })}
+                  className={cn(inputClass, "h-auto py-2")}
+                />
+              </Field>
+              <Field label={t("f.commitment")} htmlFor="p-commit">
+                <Select
+                  id="p-commit"
+                  value={lf.commitment ?? ""}
+                  placeholder="—"
+                  onChange={(v) => setLf({ commitment: v || undefined })}
+                  options={COMMITMENTS.map((c) => ({
+                    value: c,
+                    label: t(`commitment.${c}`),
+                  }))}
+                />
+              </Field>
+              <Field label={t("f.deal")} htmlFor="p-deal">
+                <Select
+                  id="p-deal"
+                  value={lf.deal ?? ""}
+                  placeholder="—"
+                  onChange={(v) => setLf({ deal: v || undefined })}
+                  options={DEALS.map((c) => ({
+                    value: c,
+                    label: t(`deal.${c}`),
+                  }))}
+                />
+              </Field>
+              <Field label={t("f.location")} htmlFor="p-loc">
+                <Select
+                  id="p-loc"
+                  value={lf.location ?? ""}
+                  placeholder="—"
+                  onChange={(v) => setLf({ location: v || undefined })}
+                  options={WORK_LOCATIONS.map((c) => ({
+                    value: c,
+                    label: t(`location.${c}`),
+                  }))}
+                />
+              </Field>
+              <Field
+                label={t("f.industries")}
+                className="sm:col-span-2"
+                hint={t("f.industriesHint")}
+              >
+                <ToggleChips
+                  options={CATEGORY_LIST.map((c) => ({
+                    value: c.slug as string,
+                    label: localizedName(c, locale),
+                  }))}
+                  value={lf.industries ?? []}
+                  onChange={(v) => setLf({ industries: v.slice(0, 5) })}
+                />
+              </Field>
+            </div>
+          )}
+        </div>,
+      )}
+
+      {section(
+        "skills",
+        t("sec.skills"),
+        t("sec.skillsHint"),
+        <SkillPicker value={f.skills} onChange={(v) => set("skills", v)} />,
+      )}
+
+      {section(
+        "experience",
+        t("sec.experience"),
+        t("sec.experienceHint"),
+        <div className="space-y-3">
+          {f.positions.map((p, i) => (
+            <div key={p.key} className="space-y-3 rounded-lg border p-3">
+              <div className="grid gap-3 sm:grid-cols-2 [&>*]:min-w-0">
+                <Field label={t("f.title")} htmlFor={`pos-t-${p.key}`}>
+                  <input
+                    id={`pos-t-${p.key}`}
+                    value={p.title}
+                    maxLength={80}
+                    onChange={(e) => setPos(i, { title: e.target.value })}
+                    className={inputClass}
+                  />
+                </Field>
+                <Field label={t("f.company")} htmlFor={`pos-c-${p.key}`}>
+                  <input
+                    id={`pos-c-${p.key}`}
+                    value={p.company ?? ""}
+                    maxLength={80}
+                    onChange={(e) => setPos(i, { company: e.target.value })}
+                    className={inputClass}
+                  />
+                </Field>
+                <Field label={t("f.start")} htmlFor={`pos-s-${p.key}`}>
+                  <input
+                    id={`pos-s-${p.key}`}
+                    type="month"
+                    value={month(p.startDate)}
+                    onChange={(e) => setPos(i, { startDate: e.target.value })}
+                    className={inputClass}
+                  />
+                </Field>
+                <Field
+                  label={t("f.end")}
+                  htmlFor={`pos-e-${p.key}`}
+                  hint={t("f.endHint")}
+                >
+                  <input
+                    id={`pos-e-${p.key}`}
+                    type="month"
+                    value={month(p.endDate)}
+                    onChange={(e) =>
+                      setPos(i, { endDate: e.target.value || null })
+                    }
+                    className={inputClass}
+                  />
+                </Field>
+                <Field
+                  label={t("f.description")}
+                  htmlFor={`pos-d-${p.key}`}
+                  className="sm:col-span-2"
+                >
+                  <input
+                    id={`pos-d-${p.key}`}
+                    value={p.description ?? ""}
+                    maxLength={200}
+                    onChange={(e) => setPos(i, { description: e.target.value })}
+                    className={inputClass}
+                  />
+                </Field>
+              </div>
+              <div className="flex justify-end gap-1">
+                <Button
+                  type="button"
+                  size="icon-sm"
+                  variant="ghost"
+                  onClick={() => movePos(i, -1)}
+                  disabled={i === 0}
+                  aria-label={t("moveUp")}
+                >
+                  <ArrowUpIcon aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
+                  size="icon-sm"
+                  variant="ghost"
+                  onClick={() => movePos(i, 1)}
+                  disabled={i === f.positions.length - 1}
+                  aria-label={t("moveDown")}
+                >
+                  <ArrowDownIcon aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
+                  size="icon-sm"
+                  variant="ghost"
+                  onClick={() =>
+                    set(
+                      "positions",
+                      f.positions.filter((_, k) => k !== i),
+                    )
+                  }
+                  aria-label={t("remove")}
+                >
+                  <XIcon aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
+          ))}
+          {f.positions.length < 20 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                set("positions", [
+                  ...f.positions,
+                  {
+                    key: `new-${Date.now()}`,
+                    title: "",
+                    company: "",
+                    startDate: "",
+                    endDate: null,
+                    description: "",
+                  },
+                ])
+              }
+            >
+              <PlusIcon aria-hidden="true" />
+              {t("addPosition")}
+            </Button>
+          )}
+        </div>,
+      )}
+
+      {section(
+        "pinned",
+        t("sec.pinned"),
+        t("sec.pinnedHint"),
+        f.works.length === 0 ? (
+          <p className="text-caption text-muted-foreground">{t("noWorks")}</p>
+        ) : (
+          <ul className="space-y-1.5">
+            {[...pinned, ...f.works.filter((w) => w.pinned === null)].map(
+              (w) => {
+                const isPinned = w.pinned !== null;
+                return (
+                  <li
+                    key={w.id}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-lg border px-3 py-2 text-caption",
+                      isPinned && "border-brand/60 bg-brand/5",
+                    )}
+                  >
+                    <StartupLogo name={w.name} src={w.logo} size={24} />
+                    <span className="min-w-0 flex-1 truncate font-semibold">
+                      {w.name}
+                    </span>
+                    {isPinned && (
+                      <>
+                        <Button
+                          type="button"
+                          size="icon-sm"
+                          variant="ghost"
+                          onClick={() => movePin(w.id, -1)}
+                          disabled={w.pinned === 0}
+                          aria-label={t("moveUp")}
+                        >
+                          <ArrowUpIcon aria-hidden="true" />
+                        </Button>
+                        <Button
+                          type="button"
+                          size="icon-sm"
+                          variant="ghost"
+                          onClick={() => movePin(w.id, 1)}
+                          disabled={w.pinned === pinned.length - 1}
+                          aria-label={t("moveDown")}
+                        >
+                          <ArrowDownIcon aria-hidden="true" />
+                        </Button>
+                      </>
+                    )}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={isPinned ? "secondary" : "outline"}
+                      onClick={() => togglePin(w.id)}
+                      disabled={!isPinned && pinned.length >= 6}
+                      aria-pressed={isPinned}
+                    >
+                      <PinIcon aria-hidden="true" />
+                      {isPinned ? t("unpin") : t("pin")}
+                    </Button>
+                  </li>
+                );
+              },
+            )}
+          </ul>
+        ),
+      )}
+
+      {section(
+        "links",
+        t("sec.links"),
+        t("sec.linksHint"),
+        <div className="grid gap-4 sm:grid-cols-2 [&>*]:min-w-0">
+          {SOCIAL_KEYS.map((k) => (
+            <Field key={k} label={t(`social.${k}`)} htmlFor={`s-${k}`}>
+              <input
+                id={`s-${k}`}
+                value={f.socialLinks[k] ?? ""}
+                inputMode="url"
+                placeholder="https://"
+                onChange={(e) =>
+                  set("socialLinks", { ...f.socialLinks, [k]: e.target.value })
+                }
+                className={inputClass}
+              />
+            </Field>
+          ))}
+        </div>,
+      )}
+
+      {section(
+        "contacts",
+        t("sec.contacts"),
+        t("sec.contactsHint"),
+        <div className="grid gap-4 sm:grid-cols-2 [&>*]:min-w-0">
+          <Field label={t("f.lineId")} htmlFor="c-line">
+            <input
+              id="c-line"
+              value={f.contacts.lineId}
+              maxLength={50}
+              onChange={(e) =>
+                set("contacts", { ...f.contacts, lineId: e.target.value })
+              }
+              className={inputClass}
+            />
+          </Field>
+          <Field label={t("f.email")} htmlFor="c-email">
+            <input
+              id="c-email"
+              type="email"
+              value={f.contacts.email}
+              maxLength={254}
+              onChange={(e) =>
+                set("contacts", { ...f.contacts, email: e.target.value })
+              }
+              className={inputClass}
+            />
+          </Field>
+        </div>,
+      )}
+
+      <div className="sticky bottom-0 z-10 -mx-4 flex items-center justify-between gap-3 border-t bg-background/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-xl sm:border">
+        <span
+          className={cn("text-caption", dirty ? "text-warning" : "text-faint")}
+        >
+          {dirty ? t("unsaved") : t("allSaved")}
+        </span>
+        <Button type="button" onClick={save} disabled={saving || !dirty}>
+          {saving && (
+            <Loader2Icon className="animate-spin" aria-hidden="true" />
+          )}
+          {t("save")}
+        </Button>
+      </div>
+    </div>
+  );
+}

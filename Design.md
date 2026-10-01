@@ -319,6 +319,37 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - Footer `border-t text-2xs`: "คุณแสดงเป็น “{ชื่อ}” · ไม่แสดงตัวฉัน" (opt-out; then "คุณไม่ได้แสดงตัว · แสดงตัวอีกครั้ง") + "ไม่ระบุตัวตน · ตำแหน่งระดับจังหวัด/ประเทศ".
 - Names only from the fixed word lists (EN "Color Animal", TH "สัตว์สี"); every received payload is validated. Production waits for the approved /privacy page (`LIVE_ENABLED`).
 
+### DashboardShell (Phase 9d, docs/design/dashboard.png)
+
+- `max-w-7xl` row: **sidebar** `w-60` (from `lg`, sticky under the header) + content. Items: ภาพรวม · ผลงานของฉัน (count) · โปรไฟล์ของฉัน · คำขอคุย (brand badge = unread notifications) · ที่บันทึกไว้ · การเชื่อมต่อ · ตั้งค่า; "คอมมูนิตี้": คนสร้าง, หา Co-founder (both `aria-disabled` with a "เร็ว ๆ นี้" chip until Phase 9c). Item `rounded-lg px-3 py-2 text-caption`; active `bg-secondary font-semibold`.
+- Bottom **user card** `rounded-xl border bg-card p-3`: avatar 36 + name + @handle (links to the public profile), then 3 equal bordered buttons: theme, language, sign out.
+- Below `lg`: the main items become one horizontal scroll row (`border-b`) above the content.
+- A user without a username is sent to /onboarding first.
+
+### Dashboard overview (`/dashboard`)
+
+- Header: "สวัสดี, {ชื่อ}" `text-2xl font-bold` + "ผลงานของคุณมีคนเข้าชม {n} ครั้งในสัปดาห์นี้"; right: outline "ดูโปรไฟล์สาธารณะ ↗" + primary "+ เพิ่มผลงาน".
+- **Setup checklist** Card (hidden when all 6 are done): title + "3 / 6" + `h-1.5` brand bar + hint; `sm:grid-cols-2 lg:grid-cols-3` items: done = check circle (positive) + faint text; the next undone item `border-brand bg-brand/10 font-semibold`; undone items link to the place that completes them.
+- `xl:grid-cols-[1fr_320px]`: **ผลงานของฉัน** table (ผลงาน: logo 36 + name + "✓ ยืนยันแล้ว · Stripe · GitHub" positive or "ยังไม่ยืนยันตัวเลข" warning · ผู้เข้าชม 7 วัน · อันดับ · MRR · icon buttons edit / copy link / view with aria-labels). Unverified owned rows get an inline banner `border-warning/40 bg-warning/10` "เชื่อมต่อเพื่อขึ้นกระดานผู้นำและโอลิมปิกจังหวัด" + primary "เชื่อมต่อ Stripe" + outline "ตัวเลือกอื่น". Under the table two dashed tiles: "เพิ่มผลงานใหม่" (/new) and "อ้างสิทธิ์ผลงาน" (disabled, "เร็ว ๆ นี้", claim flow not built).
+- Right: **คำขอคุย** card (2 latest pending: avatar, name · topic, 2-line message, ยอมรับ / ข้าม; footer "LINE / อีเมลจะแสดงหลังกดยอมรับเท่านั้น") and **โปรไฟล์ 7 วันที่ผ่านมา** (views, requests). No "ค้นหาเจอ" stat until search impressions are logged.
+
+### Profile editor (`/dashboard/profile`)
+
+- Cards in order: ข้อมูลพื้นฐาน (name, @username with live check, headline 80, bio 280, province, X) · สถานะและสิ่งที่กำลังมองหา (4 status radio tiles; looking-for fields only for looking_cofounder / open_to_work) · ทักษะ (**SkillPicker**: chosen list with ★ superpower ≤ 3, ↑/↓, ×; grouped toggle chips; ≤ 20) · ประสบการณ์ (entries with title, company, month start/end, description, ↑/↓/×) · ผลงานที่ปักหมุด (≤ 6, ↑/↓) · ลิงก์โซเชียล (https only) · ช่องทางติดต่อ (ส่วนตัว).
+- Reordering uses ↑/↓ buttons (keyboard and phone friendly) instead of drag-and-drop.
+- One sticky save bar like the startup edit page ("มีการเปลี่ยนแปลงที่ยังไม่บันทึก" warning / "บันทึกแล้ว").
+
+### Requests inbox (`/dashboard/requests`), Connections, Settings, Saved
+
+- Requests: two Cards (ได้รับ / ส่งไป); rows show avatar, name (→ profile), topic, status pill (pending warning, accepted positive), relative time, message; accepted rows reveal the other side's LINE / email in a `border-positive/30 bg-positive/10` strip. Received pending: ยอมรับ / ข้าม / บล็อก; sent pending: ยกเลิกคำขอ. Opening the page marks notifications read.
+- Connections: followers / following lists (avatar, name, @handle · headline).
+- Settings: per-field visibility as 3-way segmented radios (สาธารณะ / สมาชิก / ซ่อน), directory checkbox, a `border-negative/30` delete-account card (email request until self-service).
+- Saved: honest placeholder (no bookmarks table yet).
+
+### Onboarding (`/onboarding`, spec 9e)
+
+- `max-w-lg` Card: "ขั้นที่ n จาก 4" + 4-segment brand progress, title, hint; steps: username (live check, suggestion from the display name) → headline + province → status tiles → SkillPicker (skippable). Back / ถัดไป; the last step has "ข้ามไปก่อน" + "เสร็จสิ้น" → /dashboard.
+
 ### Privacy page (`/[locale]/privacy`, 2026-10-01)
 
 - `main max-w-3xl`: H1 `text-2xl md:text-3xl font-bold` · "ปรับปรุงล่าสุด" `text-caption text-faint` · intro `text-body text-muted-foreground` · contact line with a `text-brand-text` mailto link.
