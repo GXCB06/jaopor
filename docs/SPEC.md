@@ -613,3 +613,37 @@ lint/typecheck/build pass; RLS tested (you can't post for a startup
 you're not a confirmed member of; you can't edit others' posts);
 milestone job is idempotent (running it twice creates no duplicates);
 works at 375px.
+
+---
+
+## 13. Phase 11: In-app chat (owner decision 2026-10-01: after Phase 10)
+
+GOAL
+When a contact request is accepted, the two people can keep talking on JaoPor instead of moving
+straight to LINE.
+
+SCOPE (v1)
+- 1:1 text chat, opened automatically by an accepted contact request (existing accepted pairs
+  get a conversation too). No group chats, no images or files, no edits.
+- Live: new messages appear without reloading (Supabase Realtime, RLS applies); unread counts.
+- Limits: 2000 characters per message, 200 messages a day per person.
+- Block ends the chat for both (history stays readable, no new messages) and also blocks the
+  contact request, so LINE / email stop being shared. No unblock in v1.
+- Report a single message (reason + note) → reports, target_type message.
+- No bell notification per message (it would flood the bell); an unread badge on "ข้อความ" in the
+  header and the dashboard sidebar instead. Email notifications come later (Resend).
+- Deleting an account deletes the messages that person sent; the other person keeps the
+  conversation with their own messages.
+- /privacy: messages are stored on JaoPor (Supabase), are not end-to-end encrypted, and the team
+  reads a message only when it is reported. Wording approved by the owner before release.
+
+PAGES
+- /dashboard/messages: conversation list (other person, last message, time, unread dot) and the
+  open conversation (messages grouped by day, composer with counter, ⋯ block / report).
+  On phones the list and the conversation are separate screens.
+- "ส่งข้อความ" on a profile when a conversation exists, and on accepted rows in the requests inbox.
+
+DONE WHEN
+lint/typecheck/build pass; RLS tested (a third person can't read or write a conversation, nobody
+can write to a blocked one, the 201st message in a day is refused, deleting an account removes
+that person's messages only); works at 375px.

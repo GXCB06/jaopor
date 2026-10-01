@@ -19,6 +19,8 @@ declare
   cid2 bigint;
   cid3 bigint;
   k int;
+  conv bigint;
+  msg bigint;
   out text := '';
 begin
   insert into auth.users (id, email, raw_user_meta_data, aud, role)
@@ -539,6 +541,98 @@ begin
   end;
   select count(*) into n from public.posts where id = pid;
   out := out || format('T90 author still sees own hidden post: %s (expect 1) | ', n);
+
+  -- chat (Phase 11) -------------------------------------------------------------------------
+  -- State: B's request to A was accepted (T49) → the trigger opened a conversation for them.
+  execute 'reset role';
+  select id into conv from public.conversations
+  where user_a = least(a, b) and user_b = greatest(a, b);
+  out := out || format('T91 accepted request opened a conversation: %s (expect true) | ', conv is not null);
+
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  insert into public.chat_messages (conversation_id, sender_id, body) values (conv, b, 'hello A')
+  returning id into msg;
+  begin
+    insert into public.chat_messages (conversation_id, sender_id, body) values (conv, a, 'as A');
+    out := out || 'T92 B sends as A: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T92 B sends as A: denied (good) | ';
+  end;
+  begin
+    insert into public.conversations (user_a, user_b) values (least(b, cs[2]), greatest(b, cs[2]));
+    out := out || 'T93 client creates a conversation: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T93 client creates a conversation: denied (good) | ';
+  end;
+  begin
+    update public.conversations set blocked_at = null where id = conv;
+    out := out || 'T94 client edits a conversation: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T94 client edits a conversation: denied (good) | ';
+  end;
+  -- 200 messages a day: 199 more succeed, the 201st is refused (inserted outside the exception
+  -- block, which would roll them back).
+  for k in 1..199 loop
+    insert into public.chat_messages (conversation_id, sender_id, body) values (conv, b, 'm' || k);
+  end loop;
+  begin
+    insert into public.chat_messages (conversation_id, sender_id, body) values (conv, b, 'one too many');
+    out := out || 'T95 201st message in a day: ALLOWED (BAD) | ';
+  exception when program_limit_exceeded then out := out || 'T95 201st message in a day: denied (good) | ';
+  end;
+
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  select count(*) into n from public.chat_messages where conversation_id = conv;
+  out := out || format('T96 A reads the conversation: %s messages (expect 200) | ', n);
+  insert into public.conversation_reads (conversation_id, user_id) values (conv, a);
+  begin
+    insert into public.conversation_reads (conversation_id, user_id) values (conv, b);
+    out := out || 'T97 A marks B''s read state: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T97 A marks B''s read state: denied (good) | ';
+  end;
+  insert into public.reports (reporter_id, target_type, target_id, reason) values (a, 'message', msg::text, 'harassment');
+  out := out || 'T98 participant reports a message: ok | ';
+
+  -- A third person sees nothing and can't write or report.
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', cs[2], 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  select count(*) into n from public.conversations where id = conv;
+  out := out || format('T99 third person sees the conversation: %s (expect 0) | ', n);
+  select count(*) into n from public.chat_messages where conversation_id = conv;
+  out := out || format('T100 third person reads messages: %s (expect 0) | ', n);
+  begin
+    insert into public.chat_messages (conversation_id, sender_id, body) values (conv, cs[2], 'hi');
+    out := out || 'T101 third person writes: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T101 third person writes: denied (good) | ';
+  end;
+  begin
+    insert into public.reports (reporter_id, target_type, target_id, reason) values (cs[2], 'message', msg::text, 'spam');
+    out := out || 'T102 stranger reports (exposes) a message: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T102 stranger reports a message: denied (good) | ';
+  end;
+
+  -- Block (the server action uses the service role): no new messages, history stays.
+  execute 'reset role';
+  update public.conversations set blocked_by = a, blocked_at = now() where id = conv;
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  begin
+    insert into public.chat_messages (conversation_id, sender_id, body) values (conv, a, 'after block');
+    out := out || 'T103 message to a blocked conversation: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || format('T103 blocked: new message denied, history still %s (expect 200) | ',
+      (select count(*) from public.chat_messages where conversation_id = conv));
+  end;
+
+  -- Deleting B's account removes B's messages only; A keeps the conversation.
+  execute 'reset role';
+  insert into public.chat_messages (conversation_id, sender_id, body) values (conv, a, 'from A');
+  delete from auth.users where id = b;
+  out := out || format('T104 B deleted: B messages=%s (expect 0), A messages=%s (expect 1), conversation kept=%s | ',
+    (select count(*) from public.chat_messages where conversation_id = conv and sender_id = b),
+    (select count(*) from public.chat_messages where conversation_id = conv and sender_id = a),
+    (select count(*) = 1 from public.conversations where id = conv and a in (user_a, user_b)));
 
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;
