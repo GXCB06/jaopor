@@ -12,6 +12,26 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-02 — Phase 11: in-app 1:1 chat
+
+**Done:**
+
+- **Migration `20261001160319_chat`** (applied after owner review): `conversations` (one per pair, opened by an accepted contact request + backfill of the 2 existing accepted pairs), `chat_messages` (text 1–2,000, no edits, 200 a day via `rate_events`), `conversation_reads`, report target `message` (participants only), Realtime publication. Participants only (RLS); clients never create or block conversations.
+- **`/dashboard/messages`** (Design.md §5 Chat): conversation list with unread counts, and a conversation pane with day and sender grouping, live messages over Supabase Realtime (RLS applies) with 10s polling while the live channel is down, an Enter-to-send composer (counter after 1,800), block (closes the chat for good and blocks the contact request so LINE / email stop being shared), and report a message. On phones only the list or the conversation shows.
+- **Entry points:** header message icon with unread badge (from `sm`), "ข้อความ" in the avatar menu, sidebar item with badge, "ส่งข้อความ" on a profile once a request is accepted, "เปิดแชท" on accepted rows in คำขอคุย (`?with=<user>` resolves to the conversation).
+- **/privacy** (owner-approved wording): posts item in §2, new §7 "ข้อความ (แชท)" (not end-to-end encrypted, read only when reported, block, 200 a day), deletion section covers posts, comments and messages; renumbered; date updated.
+
+**Files:** `supabase/migrations/20261001160319_chat.sql`, `supabase/tests/rls_smoke.sql` (T91–T104), `docs/SPEC.md` §13, `src/lib/{chat,chat.test}.ts`, `src/lib/data/chat.ts`, `src/app/actions/{chat,posts}.ts`, `src/components/chat/*`, `src/app/[locale]/dashboard/messages/**`, `src/components/{HeaderAuth,builder/ProfileActions,builder/ReportDialog,dashboard/DashboardSidebar}.tsx`, `src/app/[locale]/dashboard/{layout,requests/page}.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- RLS smoke 104/104 good (T91–T104 chat: outsider can't read or write, no message without an accepted request, blocked conversation refuses messages, daily limit, message reports participants only). Advisors: no new WARN.
+- `npm test` 237/237 · typecheck ✓ · lint ✓ · build ✓ · every Chat / nav / privacy key present in th and en.
+- Layout with sample data (temporary preview page, deleted): 1280 two panes, 375 list-only and conversation-only, no horizontal scroll, long links wrap. Fix found while checking: the thread's auto-scroll used `scrollIntoView`, which also scrolled the page; it now scrolls only the message list.
+- /privacy (en) shows sections 1–10, "Messages (chat)" as §7, date October 2, 2026.
+- **Not verified yet:** signed-in chat between two real accounts (Realtime, unread badges, block) — needs the owner's sessions.
+
+**Next:** owner tests chat with two accounts that have an accepted request.
+
 ## 2026-10-01 — Phase 10e: builder profile v2 + startup page "อัปเดตล่าสุด"; feed rail status fix
 
 **Done:**

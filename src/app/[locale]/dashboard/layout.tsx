@@ -1,6 +1,7 @@
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { redirect } from "@/i18n/navigation";
 import { requireUserId } from "@/lib/auth";
+import { myUnreadMessages } from "@/lib/data/chat";
 import { getMyProfile, pendingRequests } from "@/lib/data/me";
 import { createClient } from "@/lib/supabase/server";
 
@@ -16,13 +17,14 @@ export default async function DashboardLayout({
   if (!profile?.handle) redirect({ href: "/onboarding", locale });
 
   const supabase = await createClient();
-  const [{ count: startups }, unread] = await Promise.all([
+  const [{ count: startups }, unread, messages] = await Promise.all([
     supabase
       .from("startup_members")
       .select("startup_id", { count: "exact", head: true })
       .eq("user_id", userId)
       .eq("status", "confirmed"),
     pendingRequests(userId),
+    myUnreadMessages(),
   ]);
 
   return (
@@ -37,6 +39,7 @@ export default async function DashboardLayout({
         }
         startups={startups ?? 0}
         unread={unread}
+        messages={messages}
       />
       <div className="min-w-0 flex-1">{children}</div>
     </div>

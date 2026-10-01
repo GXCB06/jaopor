@@ -1,4 +1,4 @@
-import { MailIcon, MessageCircleIcon } from "lucide-react";
+import { MailIcon, MessageCircleIcon, MessagesSquareIcon } from "lucide-react";
 import type { Metadata } from "next";
 import {
   getFormatter,
@@ -117,6 +117,15 @@ export default async function RequestsPage({
       )}
       {r.status === "accepted" && !r.contacts && (
         <p className="text-2xs text-faint">{t("noContactsShared")}</p>
+      )}
+      {r.status === "accepted" && r.other && (
+        <Link
+          href={`/dashboard/messages?with=${r.other.id}`}
+          className="inline-flex items-center gap-1.5 text-caption font-semibold text-brand-text hover:underline"
+        >
+          <MessagesSquareIcon className="size-3.5" aria-hidden="true" />
+          {t("openChat")}
+        </Link>
       )}
       {r.incoming && r.status === "pending" && (
         <RequestActions id={r.id} withBlock />

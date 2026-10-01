@@ -5,6 +5,7 @@ import {
   LayoutGridIcon,
   LogOutIcon,
   MessageSquareIcon,
+  MessagesSquareIcon,
   PlugIcon,
   RocketIcon,
   SlidersHorizontalIcon,
@@ -40,12 +41,15 @@ export function DashboardSidebar({
   avatar,
   startups,
   unread,
+  messages,
 }: {
   name: string;
   handle: string;
   avatar: string | null;
   startups: number;
   unread: number;
+  /** Unread chat messages (Phase 11). */
+  messages: number;
 }) {
   const t = useTranslations("Me");
   const pathname = usePathname();
@@ -65,6 +69,12 @@ export function DashboardSidebar({
       key: "requests",
       icon: MessageSquareIcon,
       badge: unread,
+    },
+    {
+      href: "/dashboard/messages",
+      key: "messages",
+      icon: MessagesSquareIcon,
+      badge: messages,
     },
     { href: "/dashboard/saved", key: "saved", icon: BookmarkIcon },
     { href: "/dashboard/connections", key: "connections", icon: PlugIcon },

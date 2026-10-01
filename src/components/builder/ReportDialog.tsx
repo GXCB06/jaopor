@@ -35,7 +35,7 @@ export function ReportDialog({
   open: controlledOpen,
   onOpenChange,
 }: {
-  targetType: "user" | "post" | "comment";
+  targetType: "user" | "post" | "comment" | "message";
   targetId: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;

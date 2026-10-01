@@ -136,7 +136,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 
 ### Phase 11 — In-app chat (after Phase 10)
 
-- [ ] 1:1 text chat opened by an accepted contact request; live messages, unread badges, 200 messages/day, block ends the chat, report a message; /privacy wording update (messages stored on JaoPor, not end-to-end encrypted, read only when reported)
+- [x] (2026-10-02) 1:1 text chat opened by an accepted contact request; live messages, unread badges, 200 messages/day, block ends the chat, report a message; /privacy wording update (messages stored on JaoPor, not end-to-end encrypted, read only when reported)
 
 ### Later — Verified audience
 

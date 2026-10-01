@@ -1,7 +1,12 @@
 "use client";
 
 import type { User } from "@supabase/supabase-js";
-import { LayoutDashboardIcon, LogInIcon, LogOutIcon } from "lucide-react";
+import {
+  LayoutDashboardIcon,
+  LogInIcon,
+  LogOutIcon,
+  MessageCircleIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -14,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { MessagesLink } from "./chat/MessagesLink";
 import { NotificationBell } from "./NotificationBell";
 
 /**
@@ -64,6 +70,10 @@ export function HeaderAuth() {
 
   return (
     <>
+      {/* Phones: the chat icon is in the dashboard; the header keeps the bell only. */}
+      <span className="hidden sm:contents">
+        <MessagesLink userId={user.id} />
+      </span>
       <NotificationBell />
       <DropdownMenu>
         <DropdownMenuTrigger
@@ -86,6 +96,12 @@ export function HeaderAuth() {
             <Link href="/dashboard">
               <LayoutDashboardIcon aria-hidden="true" />
               {t("dashboard")}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard/messages">
+              <MessageCircleIcon aria-hidden="true" />
+              {t("messages")}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => signOutForm.current?.submit()}>

@@ -27,7 +27,8 @@ import { cn } from "@/lib/utils";
 const TOPICS = ["cofounder", "job", "collab", "other"] as const;
 
 /**
- * Design.md §5 Builder profile actions: "ติดต่อ" (contact request dialog) + "ติดตาม". Signed-out
+ * Design.md §5 Builder profile actions: "ติดต่อ" (contact request dialog; "ส่งข้อความ" into the chat once
+ * a request is accepted) + "ติดตาม". Signed-out
  * visitors are sent to sign-in; the owner sees "แก้ไขโปรไฟล์" instead.
  */
 export function ProfileActions({
@@ -93,7 +94,15 @@ export function ProfileActions({
     requestStatus === "pending" || requestStatus === "blocked";
   return (
     <div className="grid grid-cols-2 gap-2">
-      {signedIn ? (
+      {signedIn && requestStatus === "accepted" ? (
+        <Link
+          href={`/dashboard/messages?with=${profileId}`}
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary text-sm font-semibold text-primary-foreground hover:opacity-90"
+        >
+          <MessageSquareIcon className="size-4" aria-hidden="true" />
+          {t("sendMessage")}
+        </Link>
+      ) : signedIn ? (
         <Button
           type="button"
           size="lg"

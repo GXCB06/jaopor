@@ -38,7 +38,8 @@
     "menu": "Menu",
     "olympics": "Olympics",
     "builders": "Builders",
-    "feed": "Feed"
+    "feed": "Feed",
+    "messages": "Messages"
   },
   "Footer": {
     "tagline": "The mafia turf of Startups and AI-built work from Thailand and Asia. Real work, real revenue, real numbers.",
@@ -787,7 +788,7 @@
   "Privacy": {
     "metaTitle": "Privacy policy",
     "title": "JaoPor privacy policy",
-    "updated": "Last updated: October 1, 2026",
+    "updated": "Last updated: October 2, 2026",
     "intro": "JaoPor (jaopor.vercel.app) is a directory of things people build with AI, with numbers verified at the source. This page explains what we collect, why, how long we keep it, and what you control.",
     "contact": "Privacy contact:",
     "email": "jaopordev@gmail.com",
@@ -817,6 +818,9 @@
           },
           {
             "t": "The LINE ID and contact email you add are shown only to people whose contact request you accept."
+          },
+          {
+            "t": "Product updates, comments and images you post are public. Images are resized and converted in your browser, and location data (EXIF) is removed before upload. A post's author sees who liked it; everyone else sees only the count."
           }
         ]
       },
@@ -885,22 +889,39 @@
         "body": "No advertising or cross-site tracking cookies. Stored on your device: the sign-in cookie (signed-in users only), theme, currency, the province you picked in the Olympics, the live map's anonymous ID, and your hide/opt-out choices. You can clear them in your browser settings."
       },
       {
-        "title": "7. Services we use",
+        "title": "7. Messages (chat)",
+        "items": [
+          {
+            "t": "A chat opens only when a contact request is accepted. Only you and the other person can read it."
+          },
+          {
+            "t": "Messages are stored in JaoPor's database (Supabase) and are not end-to-end encrypted. The JaoPor team reads a message only when it is reported, to check for abuse."
+          },
+          {
+            "t": "You can block at any time: the chat closes, no new messages can be sent, and your LINE / email stop being shared."
+          },
+          {
+            "t": "Up to 200 messages a day."
+          }
+        ]
+      },
+      {
+        "title": "8. Services we use",
         "body": "Vercel (hosting), Supabase (database, sign-in, realtime), Google and GitHub (sign-in), OpenFreeMap (world map images, only when you open it), Google Gemini (when a project owner presses \"Fill from website\", public text from that project's website is sent for a summary), Frankfurter (exchange rates, server-side, no user data)."
       },
       {
-        "title": "8. Deleting your data",
+        "title": "9. Deleting your data",
         "items": [
           {
             "t": "Delete a project yourself from the dashboard."
           },
           {
-            "t": "To delete your account, contact jaopordev@gmail.com. Deleting an account removes your profile, skills, experience, follows, contact requests and project memberships. (A self-service delete button is being built.)"
+            "t": "To delete your account, contact jaopordev@gmail.com. Deleting an account removes your profile, skills, experience, follows, contact requests and project memberships, plus your posts, images, comments (shown as 'comment deleted' where others replied) and the messages you sent. (A self-service delete button is being built.)"
           }
         ]
       },
       {
-        "title": "9. Changes",
+        "title": "10. Changes",
         "body": "When we change how we collect or use data, we update this page and the date above."
       }
     ],
@@ -919,7 +940,8 @@
       "connections": "Connections",
       "settings": "Settings",
       "builders": "Builders",
-      "cofounder": "Find a co-founder"
+      "cofounder": "Find a co-founder",
+      "messages": "Messages"
     },
     "navLabel": "Dashboard menu",
     "community": "Community",
@@ -1192,7 +1214,8 @@
       "public": "Anyone who opens your profile",
       "members": "Only people signed in to JaoPor",
       "hidden": "Only you"
-    }
+    },
+    "openChat": "Open chat"
   },
   "Builder": {
     "editProfile": "Edit profile",
@@ -1348,7 +1371,8 @@
     "reportTitle": {
       "user": "Report this user",
       "post": "Report this post",
-      "comment": "Report this comment"
+      "comment": "Report this comment",
+      "message": "Report this message"
     },
     "breadcrumb": "Breadcrumb",
     "breadcrumbBuilders": "Builders",
@@ -1370,7 +1394,8 @@
     "seeAllWorks": "See all {n, number}",
     "updatesTitle": "Product updates",
     "seeFeed": "See the whole feed",
-    "firstPost": "Post your first product update"
+    "firstPost": "Post your first product update",
+    "sendMessage": "Send a message"
   },
   "Builders": {
     "title": "Builders",
@@ -1533,6 +1558,43 @@
       "post_comment": "<name></name> commented",
       "request_received": "<name></name> sent you a request",
       "request_accepted": "<name></name> accepted your request"
+    }
+  },
+  "Chat": {
+    "title": "Messages",
+    "pick": "Pick a conversation on the left",
+    "emptyHint": "A chat opens when a contact request is accepted. Only you and the other person can read it.",
+    "listLabel": "Conversations",
+    "emptyList": "No conversations yet. Send a builder a contact request; once they accept, the chat opens here.",
+    "findBuilders": "Find builders",
+    "deletedUser": "Deleted account",
+    "blockedShort": "This chat is blocked",
+    "you": "You",
+    "sayHi": "Say hi",
+    "back": "Back to the list",
+    "conversationWith": "Conversation with {name}",
+    "menu": "Conversation options",
+    "viewProfile": "View profile",
+    "block": "Block",
+    "emptyThread": "No messages yet. Say hi first.",
+    "reportMessage": "Report this message",
+    "messageLabel": "Message",
+    "placeholder": "Write a message… (Enter to send, Shift+Enter for a new line)",
+    "send": "Send",
+    "blockedNote": "This chat is blocked. No new messages can be sent.",
+    "deletedNote": "The other person deleted their account. No new messages can be sent.",
+    "blockTitle": "Block {name}?",
+    "blockBody": "The chat closes for good, neither of you can send new messages, your LINE / email stop being shared, and no new contact request can be sent.",
+    "blocked": "Blocked",
+    "labelUnread": "Messages ({n} unread)",
+    "errors": {
+      "signin": "Sign in first",
+      "body": "Write a message (up to 2,000 characters)",
+      "forbidden": "Can't send: this chat is closed",
+      "limit": "Daily limit reached (200 messages a day)",
+      "failed": "That didn't work. Try again.",
+      "invalid": "Invalid input",
+      "duplicate": "Already done"
     }
   }
 }
