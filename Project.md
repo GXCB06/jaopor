@@ -132,7 +132,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [x] 10b · (2026-10-01; production posting check by the owner pending) Posting: server actions (create / edit 15 min / delete, like, comment + reply, report), link previews (SSRF guard, 3 s, size cap, cache), image upload (reuse the screenshot uploader), PostCard, composer, `/post/[id]` + OG image
 - [x] 10c · (2026-10-01) `/feed` (ล่าสุด / กำลังติดตาม / ยอดนิยมสัปดาห์นี้, type / province / category filters in the URL, cursor pagination, right rail) + header "ฟีด" + notification bell
 - [x] 10d · (2026-10-01; first real run in the next daily cron) Auto milestones in the daily cron (verified data only, idempotent keys, highest level only on the first run)
-- [ ] 10e · Profile v2 (proof line, revenue / activity tabbed card, "อัปเดตผลงาน", experience at the bottom) + startup page "อัปเดตล่าสุด"
+- [x] 10e · (2026-10-01) Profile v2 (proof line, revenue / activity tabbed card, "อัปเดตผลงาน", experience at the bottom) + startup page "อัปเดตล่าสุด"
 
 ### Phase 11 — In-app chat (after Phase 10)
 

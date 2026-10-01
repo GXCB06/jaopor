@@ -126,7 +126,9 @@ export default async function BuilderProfilePage({
     (s, w) => s + (w.revenue_all_time_cents ?? 0),
     0,
   );
-  const commits = works.reduce((s, w) => s + (w.build_commits ?? 0), 0);
+  // Demo projects carry sample numbers: never count them as this person's.
+  const real = works.filter((w) => !w.is_demo);
+  const commits = real.reduce((s, w) => s + (w.build_commits ?? 0), 0);
   const sources = [
     ...new Set(
       verified
@@ -135,9 +137,9 @@ export default async function BuilderProfilePage({
         .map((x) => SOURCE_NAME[x]),
     ),
   ];
-  const stars = works.reduce((s, w) => s + (w.build_stars ?? 0), 0);
+  const stars = real.reduce((s, w) => s + (w.build_stars ?? 0), 0);
   const months = monthsBuilding(
-    works.map((w) => w.build_first_commit_at ?? w.created_at),
+    real.map((w) => w.build_first_commit_at ?? w.created_at),
   );
   const mrrThb = thbPerUsd ? (mrrCents / 100) * thbPerUsd : 0;
   const activeDays = page.activity.filter((a) => a.score > 0).map((a) => a.day);

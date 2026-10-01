@@ -12,6 +12,26 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-01 — Phase 10e: builder profile v2 + startup page "อัปเดตล่าสุด"; feed rail status fix
+
+**Done:**
+
+- **Profile v2** (Figma "Founder Prfile 2nd" 160-2, Design.md §6): breadcrumb; proof line under the handle ("{n} ผลงาน · {v} ยืนยันแล้ว · สร้างมา {m} เดือน"); followers with the 30-day gain ("+12"); superpower skills as large chips; 4 stat tiles (MRR รวม, รายได้ทั้งหมด, GitHub ★ + commits, อัปเดตผลงาน in 6 months; zero tiles hidden); one card with tabs "รายได้รวม | กิจกรรมการสร้าง" (the startup page's chart fed with the sum of the verified, non-demo works via `getBuilderChart` + pure `sumSeries`; the heatmap with its year switcher; no verified revenue → heatmap only); pinned works (4 + "ดูทั้งหมด n ›" in place); "อัปเดตผลงาน" (latest 4 PostCards, 2-column masonry, "ดูฟีดทั้งหมด →"); experience as a 3-column grid at the bottom. "กิจกรรมล่าสุด" removed (the updates replace it).
+- **Edit in place (option C):** for the owner each section title has "✎ แก้ไข" opening the editor on exactly that section (`/dashboard/profile#basics|status|skills|pinned|experience`).
+- **Startup page "อัปเดตล่าสุด":** the latest 3 posts as compact PostPreview cards from a cookie-free query, so the page stays ISR-cached.
+- Demo projects no longer count toward GitHub stars, commits or "สร้างมา n เดือน" on a profile (sample data).
+- **Feed rail (owner screenshot):** "คนสร้างที่น่าติดตาม" wrapped the status pill into a blob in the ~240px rail → a one-line "● หา Co-founder" label.
+
+**Files:** `src/app/[locale]/u/[username]/page.tsx`, `src/components/builder/ProfileChartTabs.tsx`, `src/components/posts/PostPreview.tsx`, `src/lib/builder{,.test}.ts` (`sumSeries`), `src/lib/data/{builder,posts}.ts`, `src/app/[locale]/startup/[slug]/page.tsx`, `src/app/[locale]/feed/page.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- `npm test` 235/235 · typecheck ✓ · lint ✓ · build ✓
+- Local: the startup page shows "อัปเดตล่าสุด" with the owner's test post (RaanDee POS), no overflow.
+- Production (viewed signed in as another account): breadcrumb, proof line, GitHub + updates tiles, "ดูทั้งหมด 5 ›", the updates section with the test post, experience grid; no horizontal scroll at 1193px. The revenue / activity card is correctly hidden for visitors (no verified non-demo revenue, no activity yet).
+- Deviation from the spec (Design.md): the revenue chart ends yesterday like the startup chart, so there is no dashed "วันนี้ (ยังไม่ครบวัน)" point.
+
+**Next:** owner review of Phase 10 as a whole; then Phase 11 (in-app chat).
+
 ## 2026-10-01 — Phase 10d: automatic milestone posts; profile editor "unsaved" fix
 
 **Done:**
