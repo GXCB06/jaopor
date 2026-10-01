@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ProfileEditor } from "@/components/profile-edit/ProfileEditor";
+import {
+  ProfileEditor,
+  type EditorInitial,
+} from "@/components/profile-edit/ProfileEditor";
 import { requireUserId } from "@/lib/auth";
 import {
   getMyContacts,
@@ -55,6 +58,8 @@ export default async function ProfileEditPage({
         status: profile.status,
         lookingFor: (profile.looking_for ?? {}) as LookingFor,
         socialLinks: (profile.social_links ?? {}) as Record<string, string>,
+        visibility: (profile.field_visibility ??
+          {}) as EditorInitial["visibility"],
         skills: skills.map((s) => ({
           slug: s.skill_slug,
           superpower: s.is_superpower,

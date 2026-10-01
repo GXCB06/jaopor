@@ -40,7 +40,7 @@
     "builders": "Builders"
   },
   "Footer": {
-    "tagline": "The permanent home for AI-built projects from Thailand and Asia. Real work, real numbers.",
+    "tagline": "The mafia turf of Startups and AI-built work from Thailand and Asia. Real work, real revenue, real numbers.",
     "navigation": "Navigation",
     "browse": "Browse startups",
     "about": "About",
@@ -1009,8 +1009,8 @@
       "experienceHint": "Past jobs or projects, top to bottom",
       "pinned": "Pinned works",
       "pinnedHint": "Show up to 6 works on your profile, in this order",
-      "links": "Social links",
-      "linksHint": "https:// links only",
+      "links": "Links & contact",
+      "linksHint": "Social links show on your profile (https:// only); LINE / email only show to people whose request you accept",
       "contacts": "Contact details (private)",
       "contactsHint": "Shown only to people whose request you accept"
     },
@@ -1169,7 +1169,26 @@
       "finish": "Finish"
     },
     "back": "Back",
-    "next": "Next"
+    "next": "Next",
+    "tab": {
+      "basics": "Basics",
+      "status": "Status",
+      "skills": "Skills",
+      "experience": "Experience",
+      "pinned": "Works",
+      "links": "Links & contact"
+    },
+    "progress": "Profile {pct}% complete",
+    "nextStep": "Next: {section}",
+    "complete": "Complete",
+    "sectionsLabel": "Profile sections",
+    "socialTitle": "Social links",
+    "visLabel": "Who sees {field}: {value}",
+    "visDesc": {
+      "public": "Anyone who opens your profile",
+      "members": "Only people signed in to JaoPor",
+      "hidden": "Only you"
+    }
   },
   "Builder": {
     "editProfile": "Edit profile",

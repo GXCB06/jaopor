@@ -16,6 +16,7 @@ export function Field({
   htmlFor,
   children,
   className,
+  action,
 }: {
   /** Anchor id for deep links like /dashboard/[id]/edit#pricing */
   id?: string;
@@ -25,23 +26,35 @@ export function Field({
   htmlFor?: string;
   children: React.ReactNode;
   className?: string;
+  /** Rendered at the end of the label row (e.g. a VisibilityMenu); kept outside the <label>. */
+  action?: React.ReactNode;
 }) {
+  const labelEl = (
+    <label
+      htmlFor={htmlFor}
+      className="flex items-baseline gap-2 text-xs font-medium"
+    >
+      {label}
+      {optional && (
+        <span className="text-[10px] font-normal text-muted-foreground">
+          ({optional})
+        </span>
+      )}
+    </label>
+  );
   return (
     <div
       id={id}
       className={cn("scroll-mt-24 space-y-1.5 transition-shadow", className)}
     >
-      <label
-        htmlFor={htmlFor}
-        className="flex items-baseline gap-2 text-xs font-medium"
-      >
-        {label}
-        {optional && (
-          <span className="text-[10px] font-normal text-muted-foreground">
-            ({optional})
-          </span>
-        )}
-      </label>
+      {action ? (
+        <div className="flex items-center justify-between gap-2">
+          {labelEl}
+          {action}
+        </div>
+      ) : (
+        labelEl
+      )}
       {children}
       {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
     </div>

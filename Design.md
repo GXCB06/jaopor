@@ -333,11 +333,15 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - `xl:grid-cols-[1fr_320px]`: **ผลงานของฉัน** table (ผลงาน: logo 36 + name + "✓ ยืนยันแล้ว · Stripe · GitHub" positive or "ยังไม่ยืนยันตัวเลข" warning · ผู้เข้าชม 7 วัน · อันดับ · MRR · icon buttons edit / copy link / view with aria-labels). Unverified owned rows get an inline banner `border-warning/40 bg-warning/10` "เชื่อมต่อเพื่อขึ้นกระดานผู้นำและโอลิมปิกจังหวัด" + primary "เชื่อมต่อ Stripe" + outline "ตัวเลือกอื่น". Under the table two dashed tiles: "เพิ่มผลงานใหม่" (/new) and "อ้างสิทธิ์ผลงาน" (disabled, "เร็ว ๆ นี้", claim flow not built).
 - Right: **คำขอคุย** card (2 latest pending: avatar, name · topic, 2-line message, ยอมรับ / ข้าม; footer "LINE / อีเมลจะแสดงหลังกดยอมรับเท่านั้น") and **โปรไฟล์ 7 วันที่ผ่านมา** (views, requests). No "ค้นหาเจอ" stat until search impressions are logged.
 
-### Profile editor (`/dashboard/profile`)
+### Profile editor (`/dashboard/profile`; redesign 2026-10-01, owner: "a bit overwhelming")
 
-- Cards in order: ข้อมูลพื้นฐาน (name, @username with live check, headline 80, bio 280, province, X) · สถานะและสิ่งที่กำลังมองหา (4 status radio tiles; looking-for fields only for looking_cofounder / open_to_work) · ทักษะ (**SkillPicker**: chosen list with ★ superpower ≤ 3, ↑/↓, ×; grouped toggle chips; ≤ 20) · ประสบการณ์ (entries with title, company, month start/end, description, ↑/↓/×) · ผลงานที่ปักหมุด (≤ 6, ↑/↓) · ลิงก์โซเชียล (https only) · ช่องทางติดต่อ (ส่วนตัว).
+- **One section at a time**, same pattern as the startup Edit page, but the section menu is a **tab row** (the dashboard already has a left sidebar): chips with icon + name + state (`CheckCircle2` positive when complete, else "1/3" `text-faint`), wrapping on desktop, horizontal scroll on phones. Six sections: ข้อมูลพื้นฐาน · สถานะและสิ่งที่มองหา · ทักษะ · ประสบการณ์ · ผลงานที่ปักหมุด · ลิงก์และช่องทางติดต่อ (social links + private contacts in one card, contacts in a dashed sub-block with the "only after you accept" note).
+- **Progress header:** "โปรไฟล์ครบ {pct}%" + thin brand bar + "ถัดไป: {section} →"; "ดูโปรไฟล์สาธารณะ ↗" on the right of the title.
+- Each card: title + one hint line, the fields, then "← ก่อนหน้า" / "ถัดไป →" ghost buttons. One sticky save bar for everything (unchanged).
+- **Optional things stay folded:** experience shows only "+ เพิ่มประสบการณ์" until used; social links show filled ones plus a row of "+ GitHub", "+ LinkedIn"… chips that reveal one input each; looking-for details appear only for looking-for-co-founder / open-to-work.
+- **VisibilityMenu** (per-field privacy where the field is edited): a small outline pill next to the field or section title — `Globe` สาธารณะ / `Users` สมาชิก / `EyeOff` ซ่อน + chevron — opening a dropdown with the three choices and one explanation line each. Placed on: bio, province (fields), สิ่งที่มองหา, ทักษะ, ประสบการณ์, ลิงก์โซเชียล (section titles). The activity graph's setting stays in Settings; Settings shows the same values.
+- Deep links `#province`, `#skills`, `#experience` (any section or field id) open the right section and highlight the field.
 - Reordering uses ↑/↓ buttons (keyboard and phone friendly) instead of drag-and-drop.
-- One sticky save bar like the startup edit page ("มีการเปลี่ยนแปลงที่ยังไม่บันทึก" warning / "บันทึกแล้ว").
 
 ### Requests inbox (`/dashboard/requests`), Connections, Settings, Saved
 

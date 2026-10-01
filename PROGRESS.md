@@ -12,6 +12,25 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-01 — Profile editor fix (one section at a time + per-field visibility), footer tagline, decisions
+
+**Done:**
+
+- **Owner decisions recorded** (Project.md §6): editor A+B now, edit-in-place with Phase 10; Phase 10 in order 10a → 10e; chat after Phase 10; follower counts GitHub + YouTube first, no LINE OA (its token can send messages); no Olympics podium milestone; pricing card = image; the five Phase 10 rules approved. The `feed_posts` migration stays unapplied until 10a.
+- **Profile editor** (`/dashboard/profile`): six sections behind a tab row (✓ / "1/3" per tab), "โปรไฟล์ครบ {pct}%" bar with "ถัดไป: {section}", ← / → between sections, one sticky save bar. Links and private contacts share one section; social links show the filled ones plus "+ GitHub", "+ LinkedIn"… chips; experience starts as a single "+ เพิ่มประสบการณ์" button. Deep links (`#province`, `#skills`, `#experience`) still open the right section.
+- **VisibilityMenu**: who can see bio, province, looking-for, skills, experience and social links is set next to each one (สาธารณะ / สมาชิก / ซ่อน, with a one-line explanation); non-public shows in amber. Saved with the profile; Settings shows the same values (activity graph stays there).
+- **Footer tagline** (user): "ดินแดนมาเฟียของเหล่า Startup และผลงานที่สร้างด้วย AI ในไทยและเอเชีย ผลงานจริง รายได้จริง ตัวเลขจริง" (EN equivalent).
+- **BizModel.md**: removed the old summary (former lines 1–68); only the current version remains.
+
+**Files:** `src/components/profile-edit/{ProfileEditor,VisibilityMenu}.tsx`, `src/components/wizard/fields.tsx` (Field `action` slot), `src/app/[locale]/dashboard/profile/page.tsx`, `messages/*.json`, `Design.md`, `Project.md`, `BizModel.md`
+**Verified:**
+
+- typecheck ✓ · lint ✓ · `npm test` 212/212 · build ✓
+- Browser (local, editor rendered with sample data on a temporary dev-only page, deleted afterwards; the real page needs a signed-in session): tabs switch sections, the visibility menu changes the value and marks the form unsaved, link chips reveal inputs, `#province` opens Basics and focuses the field; 375px has no horizontal scroll and the tab row scrolls sideways. Footer text checked on /th/categories.
+- **Not verified:** saving from the real page (needs the owner's session on production after a push).
+
+**Next:** owner review; then Phase 10a (review + apply `feed_posts`, RLS smoke tests). Nothing pushed yet (owner: keep `2bbfb1a` local until the editor fix and 10a are settled).
+
 ## 2026-10-01 — Phase 9c: /builders directory + people in QuickSearch; startup owner-bar copy
 
 **Done:**

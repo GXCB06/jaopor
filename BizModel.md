@@ -1,71 +1,3 @@
-I'll look at JaoPor first, then map what fits from TrustMRR's model.
-
-JaoPor already copies TrustMRR's best idea, which is showing numbers pulled straight from the system instead of screenshots. Your users are different from TrustMRR's, though, so the business model should be different too.
-
-## Where JaoPor stands against TrustMRR
-
-|                            | TrustMRR                                             | JaoPor today                                                                      |
-| -------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Who it's for               | Global indie hackers, many already earning money     | Thai builders making web apps, mobile apps and LINE OA with AI                    |
-| What gets verified         | Revenue only                                         | Revenue, users and visitors, from Stripe, RevenueCat, Plausible, Umami and GitHub |
-| Main thing people do there | Buy and sell startups                                | Show off their work and get discovered                                            |
-| Audience                   | Marc Lou's following on X, about 200K visits a month | Not built yet. Claude Thailand Community would be your first channel              |
-| Live data                  | Thousands of startups                                | One real listing (JaoPor itself, ฿0) plus demo listings                           |
-
-Your strongest difference is that you verify visitors and commits, not just revenue. Most Thai AI builders, especially those in a Claude community, have no revenue yet. TrustMRR has nothing to offer them. JaoPor can say: "you don't need revenue to prove your work is real."
-
-## What your users actually need
-
-Think about why a Thai builder would list on JaoPor:
-
-1. **Credibility for getting hired or getting clients.** A verified portfolio shows "I can ship things that real people use." This is likely the strongest need.
-2. **Recognition and a place to show off.** The province Olympics and leaderboard tap into this well.
-3. **Their first users and feedback.** Early projects need traffic more than they need a buyer.
-4. **Selling the project.** This matters much less than on TrustMRR, because Thailand has few buyers for small digital businesses.
-
-So copying TrustMRR's marketplace-first approach is risky. You don't have deal flow yet, and in Thailand it may never be large.
-
-## Recommended model in three phases
-
-### Phase 1: Launch in Claude Thailand Community (free, the goal is listings)
-
-Charge nothing. The goal is to reach 50–100 real verified listings, because the data is the asset, just as it was for TrustMRR.
-
-- Add a **"Built with Claude"** tag or a community leaderboard so community members feel the site is theirs.
-- Hold a **monthly "JaoPor of the Month"** and announce it in the community. It costs you nothing and pulls in new listings.
-- Offer an **embeddable verified badge** that builders can put on their sites, which brings backlinks and free reach.
-- Make **pre-revenue entry** easy: connecting just GitHub and Umami or Plausible should be enough for a listing.
-
-### Phase 2: Charge for visibility, mostly to sponsors rather than builders
-
-Once you have traffic, use the same structure as TrustMRR but with Thai pricing. Thai builders have little money, while companies that want to reach them do have budgets. Indicative prices:
-
-- **Featured spot or boost** for builders: roughly ฿199–490 per week, or a one-time fee
-- **Sponsor slot** for companies such as AI tools, hosting providers, payment gateways, bootcamps and Thai SaaS firms: roughly ฿3,000–15,000 per month. This is likely your biggest revenue source at first, just as sponsors were for TrustMRR.
-- **"State of Thai AI Builders" report** each quarter, compiled from your data and sold as sponsorship or a branded report. This kind of data is rare in Thailand.
-
-### Phase 3: Earn from transactions that fit Thailand
-
-Rather than relying only on startup sales, consider matching that solves the needs above:
-
-- **Thai SMEs hiring builders.** For example, a shop wants a LINE OA or an AI automation built, so it finds a builder with a verified portfolio on JaoPor. You could charge the SME a commission of 5–10% or a lead fee. In Thailand this market is probably far larger than buying and selling startups.
-- **Talent and job matching.** Companies looking for AI-native developers could pay a monthly fee to search builders by verified data.
-- **Small project sales.** Launch this once real projects have revenue, with a flat 3% fee like TrustMRR. Expect small deals of roughly ฿20,000–200,000. You'd need a trusted escrow arrangement that suits Thailand.
-
-## Fix before launching in the community
-
-- **Demo data at the top of the leaderboard.** A site whose pitch is "real numbers" showing sample data at the top undermines trust. Hide demo listings once you have about five real ones, or show them only in an "example" section.
-- **Thai payment rails.** Many Thai products collect money through PromptPay, bank transfer or Opn (Omise), which Stripe doesn't cover. Without them, you can't verify most Thai revenue. Supporting Opn, or verifying LINE OA follower counts through LINE's API, would be a strong local advantage.
-- **Domain.** A trust product hosted on vercel.app looks unfinished. Your footer already mentions JaoPor.dev, so move it there before launch.
-- **Your own listing.** Add yourself as the founder on JaoPor's own page to show you're "building in public" yourself.
-
-The most important thing for the community launch is not monetizing yet. Get 20 Claude Thailand Community members to verify their projects in the first week, and you'll have both the data and the social proof you need for Phase 2.
-
-If you'd like, I can draft the launch post for Claude Thailand Community in Thai, or turn this into a doc for your team.
-.
-.
-.
-
 # JaoPor — Business Model
 
 > **JaoPor (เจ้าพ่อ):** the permanent home for things Thai people build with AI (web, apps, LINE OA), with revenue and usage verified directly from the source, not screenshots.
@@ -89,30 +21,30 @@ Visitors, users and commits count as verified traction, so the 90%+ of Thai AI b
 
 ### Thai competitors
 
-|                  | SaaSThai (saasthai.com)                                            | Ploykhong / ปล่อยของ (ploykhong.app)                            | JaoPor                                           |
-| ---------------- | ------------------------------------------------------------------ | --------------------------------------------------------------- | ------------------------------------------------ |
-| Model            | Directory + reviews + votes (G2 / Product Hunt style)              | App gallery to discover and try apps (Product Hunt style)       | Verified traction database                       |
-| Main audience    | Thai businesses choosing software, plus SaaS makers                | Thai users and makers; strong #ClaudeCode / #VibeCoding culture | Thai AI builders, then SMEs, sponsors and buyers |
-| Scale (Oct 2026) | ~191 products, 19 categories                                       | Dozens of apps; Editor's Choice curation                        | 1 real listing + demos                           |
-| Metrics shown    | Votes, reviews, pricing type. Maker identity verified, numbers not | Votes, tags, beta status. No numbers                            | Verified revenue, MRR, visitors, users, commits  |
-| Extras           | Partner matching (co-marketing), hire creators, collections, blog  | Beta-tester recruiting, makers to follow, "hidden gems"         | Leaderboard, province Olympics                   |
-| Monetization     | None visible; free for all                                         | None visible                                                    | Planned (see §4)                                 |
-| Engagement       | Low (single-digit votes per product)                               | Low (single-digit votes per app)                                | n/a                                              |
+| Competitor                                         | Model                                                                                                         | Audience                                                        | Scale (Oct 2026)                                                                 | Metrics shown                                        | Monetization                                                                                                                |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **SaaSThai** (saasthai.com)                        | Directory + reviews + votes (G2 / Product Hunt style); partner matching; hire creators                        | Thai businesses choosing software; SaaS makers                  | ~191 products, 19 categories                                                     | Votes, reviews; maker identity verified, numbers not | None visible                                                                                                                |
+| **Ploykhong / ปล่อยของ** (ploykhong.app)           | App gallery to discover and try apps; beta-tester recruiting                                                  | Thai users and makers; strong #ClaudeCode / #VibeCoding culture | Dozens of apps; Editor's Choice                                                  | Votes, tags                                          | None visible                                                                                                                |
+| **Made with Claude** (madewithclaude.peesamac.com) | Curated catalog of Thai sites built with Claude; live previews, idea map, "need an idea?" filter              | Claude Thailand Community                                       | Seeded from a community thread with 550+ comments; data last updated 24 Aug 2026 | None                                                 | None; founder pays token and server costs himself, asks for LINE follows                                                    |
+| **AI Supermarket Thai** (aisupermarketthai.com)    | Marketplace for AI projects (prompts, workflows, code, apps, courses); SME problem board; installer job board | Creators, SMEs, non-technical users                             | 346 projects (249 Thai), 114 AI tools                                            | Download counts, buyer-only reviews                  | 10% fee on paid sales (all items currently free); SME matching and installer jobs commission-free; PromptPay, 7-day refunds |
+| **JaoPor**                                         | Verified traction database                                                                                    | Thai AI builders, then SMEs, sponsors, buyers                   | 1 real listing + demos                                                           | Verified revenue, MRR, visitors, users, commits      | Planned (see §4)                                                                                                            |
 
 **Takeaways**
 
-- **Nobody verifies numbers.** That lane is open, and it is JaoPor's only defensible difference.
-- **Don't compete on discovery or launches.** Ploykhong owns the "launch moment" for Claude builders; SaaSThai owns "find Thai software for my business."
-- **Ploykhong overlaps most with the launch channel.** Claude Thailand Community builders already post there with #ClaudeCode. JaoPor must answer "why list again?"
-- **SaaSThai already does partner and hiring matching**, so Phase 3 matching must lean on verified data to be different.
-- **Free is the market norm** and engagement is thin everywhere. Sponsors, not builders, remain the realistic payers; keep costs low and consider ASEAN expansion later.
+- **Showcasing is commoditized.** Five Thai showcase/directory sites, all free, all with thin engagement. Expect "yet another directory" fatigue in the community.
+- **Nobody verifies numbers.** That lane is still open, and it is JaoPor's only defensible difference.
+- **The demand is real.** One "show me what you built with Claude" thread drew 550+ comments. Builders want to show their work, and it gets buried in comments, which is exactly the problem JaoPor's tagline names.
+- **Don't compete on discovery or launches.** Ploykhong owns the launch moment; Made with Claude owns the Claude gallery; SaaSThai owns "find Thai software"; AI Supermarket owns "download / buy AI stuff."
+- **SME matching is already free.** AI Supermarket runs an SME problem board and installer jobs with zero commission, and SaaSThai does partner and hiring matching. JaoPor cannot charge SMEs a commission (see revised Phase 3).
+- **Durability is an edge.** Most competitors are founder-funded side projects with no revenue (Made with Claude's data is already 5+ weeks old). The one that keeps shipping and stays fresh wins by default.
+- **Free is the market norm.** Sponsors, not builders, remain the realistic payers; keep costs low and consider ASEAN expansion later.
 
 **Positioning line:** _ปล่อยของ คือที่เปิดตัว · JaoPor คือที่พิสูจน์ว่าโตจริง_
 (Ploykhong is where you launch. JaoPor is where you prove it's actually growing.)
 
 **Coopetition, not war:** builders list everywhere because listing is free. Make JaoPor complementary:
 
-- One-click import from a Ploykhong or SaaSThai link
+- One-click import from a Ploykhong, SaaSThai, Made with Claude or AI Supermarket link
 - A "JaoPor Verified" badge builders can show on their Ploykhong / SaaSThai pages and own sites
 - Offer verified-data partnerships to both platforms (JaoPor as the verification layer)
 
@@ -166,25 +98,27 @@ Growth tactics:
 
 **Trigger:** a trusted brand and enough verified builders
 
-| Product                    | How it works                                                                                      | Fee                                                 |
-| -------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| **SME → builder matching** | A Thai SME needs a LINE OA, automation or AI tool, then hires a builder with a verified portfolio | 5–10% commission or a per-lead fee, paid by the SME |
-| **Talent search**          | Companies search builders by verified data and skills                                             | Monthly subscription                                |
-| **Small project sales**    | List a project for sale; deals typically ฿20,000–200,000                                          | Flat 3% closing fee + listing tiers                 |
-| **Data / API access**      | Investors, researchers, media                                                                     | Free tier + paid API                                |
+| Product                                | How it works                                                                              | Fee                                                                                                                                                                                              |
+| -------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Verified builder profiles for SMEs** | A Thai SME browses builders whose products have proven usage, then contacts them directly | Free for SMEs (the market norm: AI Supermarket and SaaSThai charge no commission). Monetize through optional builder Pro profiles, or partner with AI Supermarket by supplying verified builders |
+| **Talent search**                      | Companies search builders by verified data and skills                                     | Monthly subscription                                                                                                                                                                             |
+| **Small project sales**                | List a project for sale; deals typically ฿20,000–200,000                                  | Flat 3% closing fee + listing tiers                                                                                                                                                              |
+| **Data / API access**                  | Investors, researchers, media                                                             | Free tier + paid API                                                                                                                                                                             |
 
-> SME matching is likely a bigger market in Thailand than buying and selling startups, and it directly serves user need #1.
+> SME matching still serves user need #1, but competitors already offer it free. JaoPor's edge is _verified_ builders, not the matching itself, so it is a trust feature, not a commission stream.
 
 ---
 
 ## 4. Revenue mix (target state)
 
-| Stream                             | Share of revenue (target) |
-| ---------------------------------- | ------------------------- |
-| Sponsors and reports               | ~40%                      |
-| SME matching and talent search     | ~30%                      |
-| Builder visibility (boosts, links) | ~20%                      |
-| Marketplace closing fees           | ~10%                      |
+| Stream                                           | Share of revenue (target) |
+| ------------------------------------------------ | ------------------------- |
+| Sponsors and reports                             | ~50%                      |
+| Builder visibility (boosts, links, Pro profiles) | ~20%                      |
+| Talent search subscriptions                      | ~20%                      |
+| Marketplace closing fees                         | ~10%                      |
+
+> **Indirect model (Marc Lou playbook):** in a small, free-by-default market, JaoPor may work best as an audience and credibility engine for the founder's other income (own products, consulting, courses, sponsorships), with direct revenue as a bonus. TrustMRR itself is fed by Marc Lou's audience and cross-promotes his other products.
 
 _Benchmark insight: TrustMRR earns an estimated 90%+ from listings, add-ons and sponsors, not deal commissions (182 deals, ~$1.1M volume, ~$5.8K average deal in 12 months)._
 
@@ -227,13 +161,15 @@ _Benchmark insight: TrustMRR earns an estimated 90%+ from listings, add-ons and 
 
 ## 8. Risks and mitigations
 
-| Risk                                                | Mitigation                                                                                            |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Few Thai builders have Stripe revenue to verify     | Count visitors and commits as traction; add Opn, PromptPay and LINE OA verification                   |
-| Concern about handing over API keys                 | Read-only keys only, a clear security page, aggregate data only                                       |
-| Small market for paid boosts                        | Charge sponsors and SMEs, not builders                                                                |
-| Thin buyer market for acquisitions                  | Keep the marketplace secondary; lead with matching                                                    |
-| Dependence on one community                         | Expand to other Thai builder groups, universities and hackathons after launch                         |
-| Ploykhong already owns launches for Claude builders | Position as "after launch": track growth over time; one-click import; badge that works on their pages |
-| SaaSThai copies verification                        | Move fast on Thai payment rails and LINE OA verification, which are slow and costly to replicate      |
-| Thai builder market is small                        | Keep costs near zero; sponsors over builders; expand to ASEAN once the playbook works                 |
+| Risk                                                         | Mitigation                                                                                                            |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| Few Thai builders have Stripe revenue to verify              | Count visitors and commits as traction; add Opn, PromptPay and LINE OA verification                                   |
+| Concern about handing over API keys                          | Read-only keys only, a clear security page, aggregate data only                                                       |
+| Small market for paid boosts                                 | Charge sponsors and SMEs, not builders                                                                                |
+| Thin buyer market for acquisitions                           | Keep the marketplace secondary; lead with matching                                                                    |
+| Dependence on one community                                  | Expand to other Thai builder groups, universities and hackathons after launch                                         |
+| Ploykhong already owns launches for Claude builders          | Position as "after launch": track growth over time; one-click import; badge that works on their pages                 |
+| SaaSThai copies verification                                 | Move fast on Thai payment rails and LINE OA verification, which are slow and costly to replicate                      |
+| Thai builder market is small                                 | Keep costs near zero; sponsors over builders; expand to ASEAN once the playbook works                                 |
+| "Yet another directory" fatigue (5 free Thai showcase sites) | Lead the launch with live verified numbers and the leaderboard, not "list your project"; import listings in one click |
+| SME matching already offered free by AI Supermarket          | Don't charge SMEs; use verified builders as the differentiator; explore partnering instead of competing               |

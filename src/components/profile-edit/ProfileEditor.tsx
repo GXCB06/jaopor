@@ -2,15 +2,25 @@
 
 import {
   ArrowDownIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
   ArrowUpIcon,
   ArrowUpRightIcon,
+  BriefcaseIcon,
+  CheckCircle2Icon,
+  LinkIcon,
   Loader2Icon,
+  LockIcon,
   PinIcon,
   PlusIcon,
+  SparklesIcon,
+  TargetIcon,
+  UserIcon,
   XIcon,
+  type LucideIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   saveContacts,
@@ -41,10 +51,12 @@ import {
   SOCIAL_KEYS,
   WORK_LOCATIONS,
   type LookingFor,
+  type VisibilityField,
 } from "@/lib/profile";
 import { cn } from "@/lib/utils";
 import { HandleField, type HandleState } from "./HandleField";
 import { SkillPicker, type PickedSkill } from "./SkillPicker";
+import { VisibilityMenu, type Visibility } from "./VisibilityMenu";
 
 export type EditorInitial = {
   handle: string;
@@ -56,6 +68,8 @@ export type EditorInitial = {
   status: string;
   lookingFor: LookingFor;
   socialLinks: Record<string, string>;
+  /** field_visibility; a missing field is public. */
+  visibility: Partial<Record<VisibilityField, Visibility>>;
   skills: PickedSkill[];
   positions: (PositionInput & { key: string })[];
   contacts: { lineId: string; email: string };
@@ -70,8 +84,19 @@ export type EditorInitial = {
 const month = (d: string | null | undefined) => (d ? d.slice(0, 7) : "");
 const toDate = (m: string) => (m ? `${m}-01` : "");
 
+const SECTIONS = [
+  { id: "basics", icon: UserIcon },
+  { id: "status", icon: TargetIcon },
+  { id: "skills", icon: SparklesIcon },
+  { id: "experience", icon: BriefcaseIcon },
+  { id: "pinned", icon: PinIcon },
+  { id: "links", icon: LinkIcon },
+] as const satisfies readonly { id: string; icon: LucideIcon }[];
+type SectionId = (typeof SECTIONS)[number]["id"];
+
 /**
- * Design.md §6 Profile editor (/dashboard/profile, Phase 9d): seven cards, one sticky save bar.
+ * Design.md §5 Profile editor (/dashboard/profile): one section at a time behind a tab row, a
+ * completeness bar, per-field visibility next to each controlled field, one sticky save bar.
  * Saves profile → skills → experience → pins → contacts (each its own server action).
  */
 export function ProfileEditor({ initial }: { initial: EditorInitial }) {
@@ -81,6 +106,12 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
   const [f, setF] = useState(initial);
   const [handleState, setHandleState] = useState<HandleState>("ok");
   const [saving, start] = useTransition();
+  const [active, setActive] = useState<SectionId>("basics");
+  // Social inputs on screen: the filled ones plus any opened with "+ name".
+  const [shownLinks, setShownLinks] = useState<string[]>(() =>
+    SOCIAL_KEYS.filter((k) => initial.socialLinks[k]),
+  );
+  const topRef = useRef<HTMLDivElement>(null);
   const set = <K extends keyof EditorInitial>(k: K, v: EditorInitial[K]) =>
     setF((p) => ({ ...p, [k]: v }));
   const lf = f.lookingFor;
@@ -90,6 +121,81 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
   const pinned = f.works
     .filter((w) => w.pinned !== null)
     .sort((a, b) => a.pinned! - b.pinned!);
+  const looking =
+    f.status === "looking_cofounder" || f.status === "open_to_work";
+
+  const visMenu = (field: VisibilityField) => (
+    <VisibilityMenu
+      field={field}
+      value={f.visibility[field] ?? "public"}
+      onChange={(v) => set("visibility", { ...f.visibility, [field]: v })}
+    />
+  );
+
+  const go = (id: SectionId) => {
+    setActive(id);
+    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // Deep links (#province, #skills, #experience…): open the section holding that id, then
+  // highlight it. Runs on load and on in-page hash changes.
+  useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const open = () => {
+      const id = decodeURIComponent(window.location.hash.slice(1));
+      const el = id ? document.getElementById(id) : null;
+      const target = el?.closest<HTMLElement>("[data-section]")?.dataset
+        .section as SectionId | undefined;
+      if (!el || !target) return;
+      setActive(target);
+      timers.push(
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.classList.add("ring-2", "ring-brand/60", "rounded-md");
+          el.querySelector<HTMLElement>("input, textarea, select")?.focus({
+            preventScroll: true,
+          });
+        }, 50),
+        setTimeout(() => el.classList.remove("ring-2", "ring-brand/60"), 2600),
+      );
+    };
+    open();
+    window.addEventListener("hashchange", open);
+    return () => {
+      window.removeEventListener("hashchange", open);
+      timers.forEach(clearTimeout);
+    };
+  }, []);
+
+  // ---- completion (progress header + tab ticks) ----------------------------------------------
+  const done: Record<SectionId, boolean[]> = {
+    basics: [
+      Boolean(f.displayName.trim()),
+      Boolean(f.headline.trim()),
+      Boolean(f.bio.trim()),
+      Boolean(f.province),
+    ],
+    status: looking
+      ? [Boolean(lf.roles?.length), Boolean(lf.offer?.trim())]
+      : [true],
+    skills: [f.skills.length > 0, f.skills.some((s) => s.superpower)],
+    experience: [f.positions.length > 0],
+    pinned: f.works.length ? [pinned.length > 0] : [true],
+    links: [
+      Boolean(f.xHandle.trim()) ||
+        Object.values(f.socialLinks).some((v) => v?.trim()),
+      Boolean(f.contacts.lineId.trim() || f.contacts.email.trim()),
+    ],
+  };
+  const all = Object.values(done).flat();
+  const pct = Math.round((all.filter(Boolean).length / all.length) * 100);
+  // The next incomplete section other than the one on screen.
+  const nextMissing = SECTIONS.find(
+    (x) => x.id !== active && done[x.id].some((d) => !d),
+  );
+  const index = SECTIONS.findIndex((x) => x.id === active);
+  const prev = SECTIONS[index - 1];
+  const next = SECTIONS[index + 1];
 
   const save = () =>
     start(async () => {
@@ -109,6 +215,7 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
             status: f.status,
             lookingFor: f.lookingFor,
             socialLinks: f.socialLinks,
+            visibility: f.visibility,
           }),
         () => saveSkills(f.skills),
         () =>
@@ -140,26 +247,63 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
     });
 
   const section = (
-    id: string,
-    title: string,
+    id: SectionId,
     hint: string,
     body: React.ReactNode,
+    action?: React.ReactNode,
   ) => (
-    <Card id={id} className="scroll-mt-24 space-y-4 p-5">
-      <div>
-        <h2 className="text-sm font-bold">{title}</h2>
-        <p className="mt-0.5 text-caption text-muted-foreground">{hint}</p>
-      </div>
-      {body}
-    </Card>
+    <section
+      data-section={id}
+      hidden={active !== id}
+      aria-labelledby={`sec-${id}`}
+    >
+      <Card id={id} className="scroll-mt-24 space-y-4 p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 id={`sec-${id}`} className="text-sm font-bold">
+              {t(`sec.${id}`)}
+            </h2>
+            <p className="mt-0.5 text-caption text-muted-foreground">{hint}</p>
+          </div>
+          {action}
+        </div>
+        {body}
+        <div className="flex justify-between gap-2 border-t pt-4">
+          {prev ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => go(prev.id)}
+            >
+              <ArrowLeftIcon aria-hidden="true" />
+              {t(`tab.${prev.id}`)}
+            </Button>
+          ) : (
+            <span />
+          )}
+          {next && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => go(next.id)}
+            >
+              {t(`tab.${next.id}`)}
+              <ArrowRightIcon aria-hidden="true" />
+            </Button>
+          )}
+        </div>
+      </Card>
+    </section>
   );
 
   const movePos = (i: number, d: -1 | 1) => {
-    const next = [...f.positions];
+    const list = [...f.positions];
     const j = i + d;
-    if (j < 0 || j >= next.length) return;
-    [next[i], next[j]] = [next[j], next[i]];
-    set("positions", next);
+    if (j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    set("positions", list);
   };
   const setPos = (
     i: number,
@@ -192,7 +336,7 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
   };
 
   return (
-    <div className="space-y-5">
+    <div ref={topRef} className="scroll-mt-20 space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight">
           {t("editProfile")}
@@ -206,9 +350,76 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
         </Link>
       </header>
 
+      {/* Progress header */}
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 text-caption">
+          <span className="font-semibold tabular-nums">
+            {t("progress", { pct })}
+          </span>
+          {nextMissing && (
+            <button
+              type="button"
+              onClick={() => go(nextMissing.id)}
+              className="text-brand-text hover:underline"
+            >
+              {t("nextStep", { section: t(`tab.${nextMissing.id}`) })} →
+            </button>
+          )}
+        </div>
+        <div
+          className="h-1.5 overflow-hidden rounded-full bg-secondary"
+          role="progressbar"
+          aria-valuenow={pct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={t("progress", { pct })}
+        >
+          <div
+            className="h-full rounded-full bg-brand transition-[width]"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Section tabs: wrap on wider screens, scroll sideways on phones */}
+      <nav aria-label={t("sectionsLabel")}>
+        <ul className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+          {SECTIONS.map(({ id, icon: Icon }) => {
+            const d = done[id];
+            return (
+              <li key={id} className="shrink-0">
+                <button
+                  type="button"
+                  onClick={() => go(id)}
+                  aria-current={active === id ? "step" : undefined}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs whitespace-nowrap transition-colors",
+                    active === id
+                      ? "border-foreground/20 bg-secondary font-semibold text-foreground"
+                      : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground",
+                  )}
+                >
+                  <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+                  {t(`tab.${id}`)}
+                  {d.every(Boolean) ? (
+                    <CheckCircle2Icon
+                      className="size-3.5 shrink-0 text-positive"
+                      aria-label={t("complete")}
+                    />
+                  ) : (
+                    <span className="text-2xs text-faint tabular-nums">
+                      {d.filter(Boolean).length}/{d.length}
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
       {section(
         "basics",
-        t("sec.basics"),
         t("sec.basicsHint"),
         <div className="grid gap-4 sm:grid-cols-2 [&>*]:min-w-0">
           <Field label={t("f.displayName")} htmlFor="p-name">
@@ -248,6 +459,7 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
             htmlFor="p-bio"
             hint={`${f.bio.length}/280`}
             className="sm:col-span-2"
+            action={visMenu("bio")}
           >
             <textarea
               id="p-bio"
@@ -258,7 +470,13 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
               className={cn(inputClass, "h-auto py-2")}
             />
           </Field>
-          <Field id="province" label={t("f.province")} htmlFor="p-province">
+          <Field
+            id="province"
+            label={t("f.province")}
+            htmlFor="p-province"
+            className="sm:col-span-2"
+            action={visMenu("province")}
+          >
             <select
               id="p-province"
               value={f.province}
@@ -277,22 +495,11 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
               ))}
             </select>
           </Field>
-          <Field label={t("f.x")} htmlFor="p-x">
-            <input
-              id="p-x"
-              value={f.xHandle}
-              maxLength={16}
-              placeholder="@handle"
-              onChange={(e) => set("xHandle", e.target.value)}
-              className={inputClass}
-            />
-          </Field>
         </div>,
       )}
 
       {section(
         "status",
-        t("sec.status"),
         t("sec.statusHint"),
         <div className="space-y-4">
           <div
@@ -318,10 +525,13 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
               </button>
             ))}
           </div>
-          {(f.status === "looking_cofounder" ||
-            f.status === "open_to_work") && (
+          {looking && (
             <div className="grid gap-4 sm:grid-cols-2 [&>*]:min-w-0">
-              <Field label={t("f.roles")} className="sm:col-span-2">
+              <Field
+                label={t("f.roles")}
+                className="sm:col-span-2"
+                action={visMenu("looking_for")}
+              >
                 <ToggleChips
                   options={LOOKING_ROLES.map((r) => ({
                     value: r,
@@ -404,14 +614,13 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
 
       {section(
         "skills",
-        t("sec.skills"),
         t("sec.skillsHint"),
         <SkillPicker value={f.skills} onChange={(v) => set("skills", v)} />,
+        visMenu("skills"),
       )}
 
       {section(
         "experience",
-        t("sec.experience"),
         t("sec.experienceHint"),
         <div className="space-y-3">
           {f.positions.map((p, i) => (
@@ -535,11 +744,11 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
             </Button>
           )}
         </div>,
+        visMenu("positions"),
       )}
 
       {section(
         "pinned",
-        t("sec.pinned"),
         t("sec.pinnedHint"),
         f.works.length === 0 ? (
           <p className="text-caption text-muted-foreground">{t("noWorks")}</p>
@@ -605,54 +814,103 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
 
       {section(
         "links",
-        t("sec.links"),
         t("sec.linksHint"),
-        <div className="grid gap-4 sm:grid-cols-2 [&>*]:min-w-0">
-          {SOCIAL_KEYS.map((k) => (
-            <Field key={k} label={t(`social.${k}`)} htmlFor={`s-${k}`}>
-              <input
-                id={`s-${k}`}
-                value={f.socialLinks[k] ?? ""}
-                inputMode="url"
-                placeholder="https://"
-                onChange={(e) =>
-                  set("socialLinks", { ...f.socialLinks, [k]: e.target.value })
-                }
-                className={inputClass}
-              />
-            </Field>
-          ))}
-        </div>,
-      )}
+        <div className="space-y-5">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-xs font-semibold">{t("socialTitle")}</h3>
+              {visMenu("social_links")}
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 [&>*]:min-w-0">
+              <Field label={t("f.x")} htmlFor="p-x">
+                <input
+                  id="p-x"
+                  value={f.xHandle}
+                  maxLength={16}
+                  placeholder="@handle"
+                  onChange={(e) => set("xHandle", e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
+              {shownLinks.map((k) => (
+                <Field key={k} label={t(`social.${k}`)} htmlFor={`s-${k}`}>
+                  <input
+                    id={`s-${k}`}
+                    value={f.socialLinks[k] ?? ""}
+                    inputMode="url"
+                    placeholder="https://"
+                    onChange={(e) =>
+                      set("socialLinks", {
+                        ...f.socialLinks,
+                        [k]: e.target.value,
+                      })
+                    }
+                    className={inputClass}
+                  />
+                </Field>
+              ))}
+            </div>
+            {shownLinks.length < SOCIAL_KEYS.length && (
+              <div className="flex flex-wrap gap-1.5">
+                {SOCIAL_KEYS.filter((k) => !shownLinks.includes(k)).map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => {
+                      setShownLinks([...shownLinks, k]);
+                      setTimeout(() =>
+                        document.getElementById(`s-${k}`)?.focus(),
+                      );
+                    }}
+                    className="inline-flex items-center gap-1 rounded-full border border-dashed px-2.5 py-1 text-2xs text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                  >
+                    <PlusIcon className="size-3" aria-hidden="true" />
+                    {t(`social.${k}`)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-      {section(
-        "contacts",
-        t("sec.contacts"),
-        t("sec.contactsHint"),
-        <div className="grid gap-4 sm:grid-cols-2 [&>*]:min-w-0">
-          <Field label={t("f.lineId")} htmlFor="c-line">
-            <input
-              id="c-line"
-              value={f.contacts.lineId}
-              maxLength={50}
-              onChange={(e) =>
-                set("contacts", { ...f.contacts, lineId: e.target.value })
-              }
-              className={inputClass}
-            />
-          </Field>
-          <Field label={t("f.email")} htmlFor="c-email">
-            <input
-              id="c-email"
-              type="email"
-              value={f.contacts.email}
-              maxLength={254}
-              onChange={(e) =>
-                set("contacts", { ...f.contacts, email: e.target.value })
-              }
-              className={inputClass}
-            />
-          </Field>
+          <div
+            id="contacts"
+            className="space-y-3 rounded-lg border border-dashed p-4"
+          >
+            <div>
+              <h3 className="flex items-center gap-1.5 text-xs font-semibold">
+                <LockIcon className="size-3.5" aria-hidden="true" />
+                {t("sec.contacts")}
+              </h3>
+              <p className="mt-0.5 text-caption text-muted-foreground">
+                {t("sec.contactsHint")}
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 [&>*]:min-w-0">
+              <Field label={t("f.lineId")} htmlFor="c-line">
+                <input
+                  id="c-line"
+                  value={f.contacts.lineId}
+                  maxLength={50}
+                  onChange={(e) =>
+                    set("contacts", { ...f.contacts, lineId: e.target.value })
+                  }
+                  className={inputClass}
+                />
+              </Field>
+              <Field label={t("f.email")} htmlFor="c-email">
+                <input
+                  id="c-email"
+                  type="email"
+                  value={f.contacts.email}
+                  maxLength={254}
+                  onChange={(e) =>
+                    set("contacts", { ...f.contacts, email: e.target.value })
+                  }
+                  className={inputClass}
+                />
+              </Field>
+            </div>
+          </div>
         </div>,
       )}
 
