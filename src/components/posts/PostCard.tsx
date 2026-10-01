@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { localizedName } from "@/lib/config/localized";
 import { getProvince } from "@/lib/config/provinces";
 import type { CommentView, PostView } from "@/lib/data/posts";
+import { parseMilestoneKey } from "@/lib/milestones";
 import { timeAgo } from "@/lib/posts";
 import { publicEnv } from "@/lib/public-env";
 import { shareLinks } from "@/lib/share";
@@ -36,10 +37,20 @@ export function PostCard({
   const locale = useLocale();
   const isAuthor = viewerId === post.authorId;
   const milestone = post.type === "milestone";
+  const ms = milestone ? parseMilestoneKey(post.milestoneKey) : null;
+  // Milestones are written in Thai; show them in the visitor's language from their key.
+  const body = ms
+    ? t(`milestone.${ms.family}`, {
+        name: post.startup.name,
+        amount: ms.level.toLocaleString("en"),
+      })
+    : post.body;
+  const badge =
+    ms?.family === "stars" ? "★" : ms?.family === "verified" ? "✓" : "฿";
   const province = getProvince(post.province);
   const path = `/post/${post.id}`;
   const url = `${publicEnv.siteUrl}/${locale}${path}`;
-  const share = shareLinks(url, post.body.slice(0, 120));
+  const share = shareLinks(url, body.slice(0, 120));
   const loginHref = `/login?next=${encodeURIComponent(`/${locale}${path}`)}`;
   const source = isSource(post.startup.verifiedSource)
     ? SOURCE_NAME[post.startup.verifiedSource]
@@ -81,7 +92,7 @@ export function PostCard({
           <>
             {milestone ? (
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-warning/40 bg-warning/10 text-sm font-extrabold text-warning">
-                ฿
+                {badge}
               </span>
             ) : post.author.handle ? (
               <Link
@@ -146,13 +157,15 @@ export function PostCard({
             : "text-sm leading-relaxed",
         )}
       >
-        {post.body}
+        {body}
       </p>
 
-      {milestone && source && (
+      {milestone && (ms?.family === "stars" ? "GitHub" : source) && (
         <p className="flex items-center gap-1.5 text-caption text-positive">
           <BadgeCheckIcon className="size-3.5" aria-hidden="true" />
-          {t("verifiedVia", { source })}
+          {t("verifiedVia", {
+            source: ms?.family === "stars" ? "GitHub" : (source ?? ""),
+          })}
         </p>
       )}
 

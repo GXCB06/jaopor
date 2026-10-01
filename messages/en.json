@@ -1453,7 +1453,13 @@
     "breadcrumbPost": "Post",
     "ogByline": "{name} on {startup}",
     "ogFallback": "Product updates on JaoPor",
-    "ogCounts": "♥ {likes, number} · {comments, number} comments"
+    "ogCounts": "♥ {likes, number} · {comments, number} comments",
+    "milestone": {
+      "verified": "{name} is now verified on JaoPor",
+      "mrr": "{name} hit ฿{amount} MRR",
+      "revenue": "{name} passed ฿{amount} in total revenue",
+      "stars": "{name} reached ★{amount} on GitHub"
+    }
   },
   "Feed": {
     "title": "Feed",

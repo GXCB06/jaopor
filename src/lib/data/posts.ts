@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 // Embeds name their foreign keys: post_likes / startup_members are join tables, so an unnamed
 // posts→profiles or posts→startups embed would be ambiguous (PGRST201, see 2026-10-01 outage).
 
-const POST_SELECT = `id, author_id, startup_id, type, body, link_url, link_preview, is_auto,
+const POST_SELECT = `id, author_id, startup_id, type, body, link_url, link_preview, is_auto, milestone_key,
   likes_count, comments_count, created_at, edited_at, hidden_at, province,
   author:profiles!posts_author_id_fkey(handle, display_name, avatar_url),
   startup:startups!posts_startup_id_fkey(id, slug, name, logo_path, verified_provider,
@@ -25,6 +25,8 @@ export type PostView = {
   linkUrl: string | null;
   preview: LinkPreview | null;
   isAuto: boolean;
+  /** Auto posts: what the card renders, in the visitor's language. */
+  milestoneKey: string | null;
   likes: number;
   comments: number;
   createdAt: string;
@@ -52,6 +54,7 @@ type Row = {
   link_url: string | null;
   link_preview: unknown;
   is_auto: boolean;
+  milestone_key: string | null;
   likes_count: number;
   comments_count: number;
   created_at: string;
@@ -91,6 +94,7 @@ function toView(r: Row, liked: Set<number>): PostView | null {
     linkUrl: r.link_url,
     preview: (r.link_preview as LinkPreview | null) ?? null,
     isAuto: r.is_auto,
+    milestoneKey: r.milestone_key,
     likes: r.likes_count,
     comments: r.comments_count,
     createdAt: r.created_at,

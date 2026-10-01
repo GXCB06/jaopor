@@ -1453,7 +1453,13 @@
     "breadcrumbPost": "โพสต์",
     "ogByline": "{name} บน {startup}",
     "ogFallback": "อัปเดตผลงานบน JaoPor",
-    "ogCounts": "♥ {likes, number} · {comments, number} ความคิดเห็น"
+    "ogCounts": "♥ {likes, number} · {comments, number} ความคิดเห็น",
+    "milestone": {
+      "verified": "{name} ยืนยันตัวเลขกับ JaoPor แล้ว",
+      "mrr": "{name} แตะ ฿{amount} MRR",
+      "revenue": "{name} มีรายได้รวมทะลุ ฿{amount}",
+      "stars": "{name} ได้ ★{amount} บน GitHub"
+    }
   },
   "Feed": {
     "title": "ฟีด",

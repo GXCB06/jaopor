@@ -12,6 +12,25 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-01 — Phase 10d: automatic milestone posts; profile editor "unsaved" fix
+
+**Done:**
+
+- **Bug (owner report):** after saving the profile editor it still said "มีการเปลี่ยนแปลงที่ยังไม่บันทึก". The form was compared with the page's `initial` data, which the server stores differently (public visibility omitted, links normalised, new experience rows get ids), so they never matched after the refresh. Both the editor and the Settings visibility form now compare with a snapshot of what was last saved.
+- **Milestones** (`lib/milestones.ts`, pure): per startup, verified data only (demo / unpublished never qualify): first verification, MRR ฿1k / 10k / 100k, total revenue ฿100k / ฿1M (THB from the daily rate), GitHub ★100 / ★1k (only once the GitHub source has synced). In each family only the highest level reached is posted, and never a level at or below one already in the ledger (no backlog on the first run; a drop and recovery or a deleted post never brings one back). No Olympics podium milestone (owner decision).
+- **Job** (`lib/milestones-job.ts` + `lib/milestones-store.ts`, in the daily cron after the syncs): claims the ledger key first (`on conflict do nothing`), posts only when this run claimed it, links the post; a failed post releases the claim for the next run. Auto posts are authored by the startup owner.
+- **Cards** render the milestone headline from its key in the visitor's language (the stored Thai body is the fallback), with a ฿ / ★ / ✓ badge and "ยืนยันผ่าน {source}" (GitHub for stars).
+
+**Files:** `src/lib/milestones{,-job,-store}.ts`, `src/lib/milestones.test.ts`, `src/app/api/cron/sync/route.ts`, `src/lib/data/posts.ts`, `src/components/posts/PostCard.tsx`, `src/components/profile-edit/ProfileEditor.tsx`, `src/components/dashboard/SettingsForm.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- `npm test` 234/234 — new: highest level only on the first run; no re-post after a drop and recovery; verified-only (unverified, demo, hidden, unsynced stars skipped); no money milestones without a rate; key round-trip; **job idempotent** (two runs in a row and two runs at once each post every milestone exactly once, against an in-memory store with the database's uniqueness rules); a failed post is retried on the next run.
+- typecheck ✓ · lint ✓ · build ✓
+- Dry run on production data (read-only): one published non-demo startup (JaoPor, verified, ฿0 MRR, ★0), so the next cron posts one milestone: first verification.
+- **Not verified yet:** the editor fix on production (needs the owner's session) and the first real cron run.
+
+**Next:** owner re-checks saving the profile; Phase 10e (profile v2 + startup page "อัปเดตล่าสุด").
+
 ## 2026-10-01 — Phase 10c: /feed, header nav, notification bell
 
 **Done:**

@@ -117,7 +117,11 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
   const lf = f.lookingFor;
   const setLf = (patch: Partial<LookingFor>) =>
     set("lookingFor", { ...lf, ...patch });
-  const dirty = JSON.stringify(f) !== JSON.stringify(initial);
+  // What was last loaded or saved. Compared with the form instead of `initial`: the server stores
+  // some values differently (public visibility is omitted, links are normalised, new experience
+  // rows get ids), so after a save + refresh the new `initial` would never equal the form.
+  const [baseline, setBaseline] = useState(initial);
+  const dirty = JSON.stringify(f) !== JSON.stringify(baseline);
   const pinned = f.works
     .filter((w) => w.pinned !== null)
     .sort((a, b) => a.pinned! - b.pinned!);
@@ -199,14 +203,15 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
 
   const save = () =>
     start(async () => {
-      if (handleState !== "ok" && f.handle !== initial.handle) {
+      const snapshot = f;
+      if (handleState !== "ok" && f.handle !== baseline.handle) {
         toast.error(t(`handle.${handleState}`));
         return;
       }
       const steps = [
         () =>
           saveProfile({
-            handle: f.handle !== initial.handle ? f.handle : undefined,
+            handle: f.handle !== baseline.handle ? f.handle : undefined,
             displayName: f.displayName,
             headline: f.headline,
             bio: f.bio,
@@ -242,6 +247,7 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
           return;
         }
       }
+      setBaseline(snapshot);
       toast.success(t("saved"));
       router.refresh();
     });

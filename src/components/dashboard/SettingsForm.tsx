@@ -26,9 +26,13 @@ export function SettingsForm({
   const [vis, setVis] = useState(initial.visibility);
   const [dir, setDir] = useState(initial.showInDirectory);
   const [saving, start] = useTransition();
+  // Last saved values (public is stored as "no entry", so compare with this, not `initial`).
+  const [saved, setSaved] = useState({
+    vis: initial.visibility,
+    dir: initial.showInDirectory,
+  });
   const dirty =
-    dir !== initial.showInDirectory ||
-    JSON.stringify(vis) !== JSON.stringify(initial.visibility);
+    dir !== saved.dir || JSON.stringify(vis) !== JSON.stringify(saved.vis);
 
   return (
     <div className="space-y-6">
@@ -106,6 +110,7 @@ export function SettingsForm({
                 showInDirectory: dir,
               });
               if (res.ok) {
+                setSaved({ vis, dir });
                 toast.success(t("saved"));
                 router.refresh();
               } else toast.error(t("saveFailed"));

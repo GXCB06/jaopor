@@ -3,6 +3,9 @@ import { isSource, type SourceId } from "@/lib/sources/catalog";
 import { syncSource } from "@/lib/sources/sync";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { drainStorageCleanup } from "@/lib/storage-cleanup";
+import { getThbPerUsd } from "@/lib/data/fx";
+import { runMilestones } from "@/lib/milestones-job";
+import { supabaseMilestoneStore } from "@/lib/milestones-store";
 
 // Daily re-sync of every active source connection (Vercel Cron → vercel.json).
 export const maxDuration = 300;
@@ -48,6 +51,23 @@ export async function GET(req: Request) {
     console.error("[cron] refresh_activity:", refreshed.error.code);
   // Phase 8: drop stale live-visitor heartbeats.
   await admin.rpc("prune_live_pings");
+  // Phase 10d: automatic milestone posts from the numbers just synced (verified data only).
+  try {
+    const result = await runMilestones(
+      supabaseMilestoneStore(admin),
+      await getThbPerUsd(),
+    );
+    if (result.posted.length || result.failed.length)
+      console.log(
+        "[cron] milestones:",
+        result.posted.length,
+        "posted,",
+        result.failed.length,
+        "failed",
+      );
+  } catch (e) {
+    console.error("[cron] milestones:", (e as Error).name);
+  }
   // Phase 10: delete post images queued by deleted / hidden posts and deleted accounts.
   await drainStorageCleanup().catch((e: Error) =>
     console.error("[cron] storage cleanup:", e.name),
