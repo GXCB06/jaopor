@@ -54,6 +54,7 @@ import {
   type VisibilityField,
 } from "@/lib/profile";
 import { cn } from "@/lib/utils";
+import { AvatarField } from "./AvatarField";
 import { HandleField, type HandleState } from "./HandleField";
 import { SkillPicker, type PickedSkill } from "./SkillPicker";
 import { VisibilityMenu, type Visibility } from "./VisibilityMenu";
@@ -99,7 +100,14 @@ type SectionId = (typeof SECTIONS)[number]["id"];
  * completeness bar, per-field visibility next to each controlled field, one sticky save bar.
  * Saves profile → skills → experience → pins → contacts (each its own server action).
  */
-export function ProfileEditor({ initial }: { initial: EditorInitial }) {
+export function ProfileEditor({
+  initial,
+  avatar,
+}: {
+  initial: EditorInitial;
+  /** Saved on its own by AvatarField, outside the form's unsaved changes. */
+  avatar: { url: string | null; providerUrl: string | null };
+}) {
   const t = useTranslations("Me");
   const locale = useLocale();
   const router = useRouter();
@@ -428,6 +436,14 @@ export function ProfileEditor({ initial }: { initial: EditorInitial }) {
         "basics",
         t("sec.basicsHint"),
         <div className="grid gap-4 sm:grid-cols-2 [&>*]:min-w-0">
+          <div className="space-y-2 sm:col-span-2">
+            <p className="text-xs font-medium">{t("f.photo")}</p>
+            <AvatarField
+              name={f.displayName || f.handle}
+              url={avatar.url}
+              providerUrl={avatar.providerUrl}
+            />
+          </div>
           <Field label={t("f.displayName")} htmlFor="p-name">
             <input
               id="p-name"

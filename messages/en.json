@@ -1065,7 +1065,8 @@
       "endHint": "Leave empty if ongoing",
       "description": "Short description",
       "lineId": "LINE ID",
-      "email": "Contact email"
+      "email": "Contact email",
+      "photo": "Profile photo"
     },
     "status": {
       "looking_cofounder": "Looking for a co-founder",
@@ -1137,7 +1138,11 @@
       "line_invalid": "Invalid LINE ID",
       "email_invalid": "Invalid email",
       "save_failed": "Couldn't save. Try again",
-      "unauthorized": "Please sign in again"
+      "unauthorized": "Please sign in again",
+      "avatar_type": "Use an image file (JPG, PNG or WebP)",
+      "avatar_size": "That image is too large; try another one",
+      "avatar_read": "Couldn't open that image; try another file",
+      "invalid": "This account has no sign-in photo"
     },
     "withdraw": "Withdraw",
     "deletedUser": "Deleted user",
@@ -1215,7 +1220,13 @@
       "members": "Only people signed in to JaoPor",
       "hidden": "Only you"
     },
-    "openChat": "Open chat"
+    "openChat": "Open chat",
+    "photoChange": "Change photo",
+    "photoSaving": "Saving…",
+    "photoUseProvider": "Use my sign-in photo",
+    "photoRemove": "Remove photo",
+    "photoSaved": "Profile photo saved",
+    "photoHint": "JPG, PNG or WebP · cropped to a centred square and resized to 512 px on your device; location data is removed before upload"
   },
   "Builder": {
     "editProfile": "Edit profile",

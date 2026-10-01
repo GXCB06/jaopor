@@ -14,6 +14,14 @@ import {
   type LookingFor,
 } from "@/lib/profile";
 import type { Json, TablesUpdate } from "@/lib/supabase/database.types";
+import {
+  AVATAR_BUCKET,
+  MAX_AVATAR_UPLOAD,
+  avatarPath,
+  avatarType,
+  providerAvatar,
+} from "@/lib/avatar";
+import { drainStorageCleanup } from "@/lib/storage-cleanup";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -332,5 +340,77 @@ export async function savePins(startupIds: number[]): Promise<ActionResult> {
     if (upErr) return { ok: false, error: "save_failed" };
   }
   refresh();
+  return { ok: true };
+}
+
+/**
+ * Profile photo (migration profile_avatars): the browser sends a square 512 px WebP (JPEG from
+ * Safari); it is
+ * checked here and uploaded with the service role, since clients have no write access to the
+ * bucket or to profiles.avatar_url. The previous photo, if it was ours, is removed right away.
+ */
+export async function uploadAvatar(form: FormData): Promise<ActionResult> {
+  const { supabase, user } = await me();
+  if (!user) return { ok: false, error: "unauthorized" };
+  const file = form.get("file");
+  if (!(file instanceof File)) return { ok: false, error: "avatar_type" };
+  if (file.size === 0 || file.size > MAX_AVATAR_UPLOAD)
+    return { ok: false, error: "avatar_size" };
+  // The bytes decide the type, not the name or the browser's claim.
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const ext = avatarType(bytes);
+  if (!ext) return { ok: false, error: "avatar_type" };
+
+  const admin = createAdminClient();
+  const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+  const { error: upErr } = await admin.storage
+    .from(AVATAR_BUCKET)
+    .upload(path, bytes, {
+      contentType: ext === "webp" ? "image/webp" : "image/jpeg",
+      cacheControl: "31536000",
+      upsert: false,
+    });
+  if (upErr) return { ok: false, error: "save_failed" };
+  const url = admin.storage.from(AVATAR_BUCKET).getPublicUrl(path)
+    .data.publicUrl;
+  return setAvatarUrl(supabase, user.id, url, path);
+}
+
+/** Back to the Google / GitHub photo ("provider") or to initials ("none"). */
+export async function resetAvatar(
+  mode: "provider" | "none",
+): Promise<ActionResult> {
+  const { supabase, user } = await me();
+  if (!user) return { ok: false, error: "unauthorized" };
+  const url = mode === "provider" ? providerAvatar(user.user_metadata) : null;
+  if (mode === "provider" && !url) return { ok: false, error: "invalid" };
+  return setAvatarUrl(supabase, user.id, url, null);
+}
+
+async function setAvatarUrl(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  url: string | null,
+  uploaded: string | null,
+): Promise<ActionResult> {
+  const admin = createAdminClient();
+  const { data: before } = await supabase
+    .from("profiles")
+    .select("avatar_url")
+    .eq("id", userId)
+    .maybeSingle();
+  const { error } = await admin
+    .from("profiles")
+    .update({ avatar_url: url })
+    .eq("id", userId);
+  if (error) {
+    if (uploaded) await admin.storage.from(AVATAR_BUCKET).remove([uploaded]);
+    return { ok: false, error: "save_failed" };
+  }
+  // The trigger queued the old file (if it was ours); delete it now rather than at the next cron.
+  const old = avatarPath(before?.avatar_url);
+  if (old) await drainStorageCleanup({ paths: [old] }).catch(() => {});
+  refresh();
+  revalidatePath("/[locale]/u/[username]", "page");
   return { ok: true };
 }

@@ -343,6 +343,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - **VisibilityMenu** (per-field privacy where the field is edited): a small outline pill next to the field or section title — `Globe` สาธารณะ / `Users` สมาชิก / `EyeOff` ซ่อน + chevron — opening a dropdown with the three choices and one explanation line each. Placed on: bio, province (fields), สิ่งที่มองหา, ทักษะ, ประสบการณ์, ลิงก์โซเชียล (section titles). The activity graph's setting stays in Settings; Settings shows the same values.
 - Deep links `#province`, `#skills`, `#experience` (any section or field id) open the right section and highlight the field.
 - Reordering uses ↑/↓ buttons (keyboard and phone friendly) instead of drag-and-drop.
+- **Profile photo** (first row of ข้อมูลพื้นฐาน, 2026-10-02): avatar 72 + "📷 เปลี่ยนรูป" outline button · "ใช้รูปจากบัญชีที่ใช้เข้าสู่ระบบ" (only when the current photo is something else) · "ลบรูป" (back to initials) as quiet text links; hint line `text-2xs text-faint` (formats, centre square 512 px on the device, location data removed). Saved immediately with its own toast, outside the sticky save bar. The header avatar and every card use this photo.
 
 ### Requests inbox (`/dashboard/requests`), Connections, Settings, Saved
 

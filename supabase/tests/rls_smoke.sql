@@ -634,6 +634,31 @@ begin
     (select count(*) from public.chat_messages where conversation_id = conv and sender_id = a),
     (select count(*) = 1 from public.conversations where id = conv and a in (user_a, user_b)));
 
+  -- Profile photos (migration profile_avatars): avatar_url is server-only; our old files are queued.
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  begin
+    update public.profiles set avatar_url = 'https://tracker.example/pixel.gif' where id = a;
+    out := out || 'T105 client sets avatar_url: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T105 client sets avatar_url: denied (good) | ';
+  end;
+  execute 'reset role';
+  update public.profiles
+    set avatar_url = 'https://x.supabase.co/storage/v1/object/public/avatars/' || a || '/0b6f3c1e-5d1a-4c55-9a8e-3f1b2c4d5e6f.webp'
+    where id = a;
+  update public.profiles set avatar_url = 'https://avatars.githubusercontent.com/u/1' where id = a;
+  update public.profiles set avatar_url = null where id = a;
+  select count(*) into n from public.storage_cleanup
+    where bucket = 'avatars' and path like a::text || '/%';
+  out := out || format('T106 replaced photo queued for deletion: %s (expect 1; the GitHub URL is not ours) | ', n);
+  update public.profiles
+    set avatar_url = 'https://x.supabase.co/storage/v1/object/public/avatars/' || a || '/9c1d2e3f-4a5b-4c6d-8e7f-0a1b2c3d4e5f.jpg'
+    where id = a;
+  delete from auth.users where id = a;
+  select count(*) into n from public.storage_cleanup
+    where bucket = 'avatars' and path like a::text || '/%';
+  out := out || format('T107 deleted account photo queued: %s (expect 2) | ', n);
+
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;
 end $$;

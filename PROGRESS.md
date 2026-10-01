@@ -12,6 +12,18 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-02 — Profile photo upload (code done; migration awaiting owner review)
+
+**Done:**
+
+- **Profile photo** in the editor (ข้อมูลพื้นฐาน, first row): "เปลี่ยนรูป" (centre-cropped to a 512 px square on the device, WebP or JPEG on Safari, metadata removed), "ใช้รูปจากบัญชีที่ใช้เข้าสู่ระบบ", "ลบรูป". Saved immediately, outside the form's save bar. The header avatar now uses the profile photo too.
+- **Server action** `uploadAvatar` / `resetAvatar`: the file type is decided by its first bytes (WebP / JPEG), ≤ 1 MB, uploaded with the service role to `avatars/{user}/{uuid}.webp|jpg`; the previous photo is deleted right away.
+- **Migration `20261001175557_profile_avatars`** (NOT applied): `avatars` bucket (public read, no client policies), `profiles.avatar_url` no longer client-writable (closes a gap: any user could point it at any URL that every visitor's browser would load), replaced / removed / deleted-account photos queued in `storage_cleanup`. RLS smoke T105–T107 added.
+
+**Files:** `supabase/migrations/20261001175557_profile_avatars.sql`, `supabase/tests/rls_smoke.sql`, `src/lib/avatar{,.test}.ts`, `src/lib/webp.ts`, `src/app/actions/profile.ts`, `src/components/profile-edit/{AvatarField,ProfileEditor}.tsx`, `src/app/[locale]/dashboard/profile/page.tsx`, `src/components/HeaderAuth.tsx`, `messages/*.json`, `Design.md`
+**Verified:** `npm test` 247/247 · typecheck ✓ · lint ✓ · build ✓ · AvatarField at 375px (both states) on a temporary preview page (deleted).
+**Next:** owner reviews the migration → apply, advisors, RLS smoke, regenerate types → push → test an upload on production.
+
 ## 2026-10-02 — Profile revenue dashboard (Figma 160-2); chat unblock
 
 **Done:**

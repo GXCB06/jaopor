@@ -40,6 +40,21 @@ export function HeaderAuth() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  // The profile photo (uploaded or the sign-in one) wins over the provider's current photo.
+  const userId = user?.id;
+  const [photo, setPhoto] = useState<{ id: string; url: string | null }>();
+  useEffect(() => {
+    if (!userId) return;
+    void createClient()
+      .from("profiles")
+      .select("avatar_url")
+      .eq("id", userId)
+      .maybeSingle()
+      .then(({ data }) =>
+        setPhoto({ id: userId, url: data?.avatar_url ?? null }),
+      );
+  }, [userId]);
+
   if (user === undefined)
     return <span className="size-8 animate-pulse rounded-full bg-muted" />;
 
@@ -63,10 +78,14 @@ export function HeaderAuth() {
   };
   const name = meta.full_name ?? meta.name ?? user.email ?? "";
   const avatar =
-    typeof meta.avatar_url === "string" &&
-    meta.avatar_url.startsWith("https://")
-      ? meta.avatar_url
-      : null;
+    photo?.id === user.id
+      ? photo.url?.startsWith("https://")
+        ? photo.url
+        : null
+      : typeof meta.avatar_url === "string" &&
+          meta.avatar_url.startsWith("https://")
+        ? meta.avatar_url
+        : null;
 
   return (
     <>
@@ -81,7 +100,7 @@ export function HeaderAuth() {
           className="inline-flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-secondary text-xs font-bold text-muted-foreground uppercase hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
         >
           {avatar ? (
-            // eslint-disable-next-line @next/next/no-img-element -- OAuth avatar, tiny
+            // eslint-disable-next-line @next/next/no-img-element -- profile photo, tiny
             <img src={avatar} alt="" className="size-full object-cover" />
           ) : (
             name.slice(0, 1)
