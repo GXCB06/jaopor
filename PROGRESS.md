@@ -12,7 +12,7 @@
 > **Next:** the immediate follow-up
 > ```
 
-## 2026-10-02 — Profile photo upload (code done; migration awaiting owner review)
+## 2026-10-02 — Profile photo upload (migration applied after owner security review; not pushed yet)
 
 **Done:**
 
@@ -25,6 +25,8 @@
 **Next:** owner reviews the migration → apply, advisors, RLS smoke, regenerate types → push → test an upload on production.
 
 **Security review (owner checklist, same day), before approval:** the draft migration was replaced by `20261001181036_profile_avatars_v2.sql` (draft never applied or pushed). Found and fixed: (1) "use my sign-in photo" read user_metadata, which users can edit through the Auth API → arbitrary URL, or a look-alike of another user's file that a later change would have queued for deletion; now read from `auth.identities` + a Google / GitHub host allowlist; (2) sign-up copied metadata unchecked → filtered in `handle_new_user`; (3) avatar_url now has a CHECK constraint (Google / GitHub hosts, or this profile's own folder of our bucket) binding the service role too; (4) cleanup trigger limited to the profile's own folder; (5) restrictive storage policies (no client writes to avatars, ever); (6) fail closed on a misconfigured existing bucket; (7) 20 photo changes a day; (8) orphan handling (failed update deletes or queues the new file, interrupted uploads swept on the next change, the drain never deletes a photo in use); (9) a `{1,440}` regex that Postgres rejects (limit 255) was caught by the dry run. Dry run of migration + T104a–T114 on production inside one rolled-back statement: all 25 checks good; fail-closed bucket check good; production verified unchanged afterwards. Unit: 258/258.
+
+**Applied 2026-10-02 (owner: "Approve … Apply"), verification gate on the live database:** full `rls_smoke.sql` T1–T114 all good (T104a–T114: sign-up filter, privileges, client avatar_url update denied, own name / headline still editable, no client insert / update / move / copy / delete in `avatars` incl. anon, constraint refuses other folders / look-alikes / fake hosts, refused update queues nothing, replaced / deleted-account photos queued, provider URLs never queued, 21st change limited, bucket `public / 1 MB / webp+jpeg`, 3 restrictive policies, definer functions with `search_path=""`). Service-role path (rolled back): writes an avatar object, sets an own-folder URL, resets to a provider photo, is refused an arbitrary URL. No test data left. Security advisors: no new findings (existing leaked-password WARN + INFO). Types regenerated: identical to the committed file. typecheck ✓ · tests 258/258 ✓ · build ✓ · lint: 0 problems in the project; `npm run lint` also scans the parallel iPhone-upload task's worktree under `.claude/worktrees/` (15,061 problems, all there). The migration file still says "NOT APPLIED" in its header: it was committed before applying and committed migrations are protected from edits.
 
 ## 2026-10-02 — Profile revenue dashboard (Figma 160-2); chat unblock
 

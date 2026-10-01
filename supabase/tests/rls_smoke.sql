@@ -641,8 +641,8 @@ begin
   -- as the migration owner, like the server action's service role (RLS bypassed, constraint not).
   execute 'reset role';
   insert into auth.users (id, email, raw_user_meta_data, aud, role)
-  values (c1, 'rls-c1@test.local', '{"full_name":"C1","avatar_url":"https://evil.example/pixel.gif"}', 'authenticated', 'authenticated'),
-         (c2, 'rls-c2@test.local', '{"full_name":"C2","avatar_url":"https://lh3.googleusercontent.com/a/c2=s96-c"}', 'authenticated', 'authenticated');
+  values (c1, 'rls-avatar1@test.local', '{"full_name":"C1","avatar_url":"https://evil.example/pixel.gif"}', 'authenticated', 'authenticated'),
+         (c2, 'rls-avatar2@test.local', '{"full_name":"C2","avatar_url":"https://lh3.googleusercontent.com/a/c2=s96-c"}', 'authenticated', 'authenticated');
   out := out || format('T104a sign-up photo: tampered=%s (expect null), google kept=%s | ',
     coalesce((select avatar_url from public.profiles where id = c1), 'null'),
     (select avatar_url like 'https://lh3.googleusercontent.com/%' from public.profiles where id = c2));
