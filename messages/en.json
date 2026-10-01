@@ -736,5 +736,46 @@
     "empty": "No projects in {name} yet. Add yours and be the first",
     "seeAll": "See all {n} projects →",
     "others": "Other categories"
+  },
+  "Live": {
+    "title": "Who's here right now",
+    "watching": "people on JaoPor",
+    "world": "World",
+    "thailand": "Thailand",
+    "hide": "Hide this section",
+    "show": "Show who's on JaoPor",
+    "mapLabel": "Map of Thailand with {n} visitors",
+    "people": "{n} people",
+    "approx": "Approximate count (live connection unavailable)",
+    "countries": "Countries",
+    "devices": "Devices",
+    "pages": "Pages",
+    "unknown": "Unknown",
+    "abroad": "+ {n} from abroad",
+    "feed": "Latest activity",
+    "viewed": "opened {section}",
+    "justNow": "just now",
+    "minutesAgo": "{m} min ago",
+    "watchingThis": "{n} people viewing this project",
+    "device": {
+      "mobile": "mobile",
+      "desktop": "desktop"
+    },
+    "sections": {
+      "home": "the home page",
+      "startup": "a project page",
+      "startups": "the startup list",
+      "category": "a category",
+      "olympics": "the Olympics",
+      "province": "a province page",
+      "builders": "builders",
+      "dashboard": "the dashboard",
+      "other": "another page"
+    },
+    "youAre": "You appear as “{name}”",
+    "optOut": "Don't show me",
+    "optedOut": "You're hidden from this map",
+    "optIn": "Show me again",
+    "anonymousNote": "Anonymous · province/country-level location"
   }
 }

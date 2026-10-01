@@ -12,6 +12,26 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-01 — Phase 9a applied; production outage fixed; Olympics v3 (Claude Design); Phase 8 live visitors (off in prod)
+
+**Done:**
+
+- **Phase 9a applied (user: "apply"):** `builder_profiles`. The first attempt failed safely (PL/pgSQL ends an IF condition at the first THEN inside a CASE; fixed by assigning the CASE to a variable; nothing had been applied). Advisors then flagged the masked-read functions as browser-callable SECURITY DEFINER (WARN 0028/0029) → `profile_rpc_hardening`: get_profile / profile_activity are server-only (service role + explicit viewer id), get_my_profile dropped, handle_available is SECURITY INVOKER, 3 FK indexes. Types regenerated with the Supabase CLI.
+- **Production outage (caused by the migration, fixed):** `startup_members` added a second startups↔profiles path, so the `owner:profiles(...)` embed became ambiguous (PGRST201) and `/startups` returned 500 (ISR pages kept serving cached copies). Fix: name the FK (`profiles!startups_owner_id_fkey`); deployed; all key pages 200. Lesson: a migration that adds a join table between two embedded tables must re-check every PostgREST embed.
+- **Olympics v3 (user: review Claude Design frame 149:7635 as PM/marketer/designer):** adopted its structure: season metric รายได้ 30 วัน, ▲/▼ rank movement and growth vs the previous 30 days, "จังหวัดของคุณ" bar with the gap to the next rank, podium cards with the top project, dense expandable table with province search, "มาแรงเดือนนี้", share card (download image + copy link), "นับคะแนนยังไง". Kept open-spot podium places and the region map (now in the region card). Ranking is computed in TypeScript (the v1 SQL function has no 30-day metric).
+- **Phase 8 live visitors (user decisions applied):** one Supabase Realtime presence channel, connected only while the tab is visible; identities from fixed word lists (EN/TH) + DiceBear notionists avatars (CC0) generated locally; Vercel edge geo → country, nearest province (77 capital-city centre points added to config), coordinates rounded + jittered; every received payload validated; home section (Thailand pins, world map via MapLibre + OpenFreeMap on demand, count + countries/devices/pages, 4-event feed, ×, opt-out "ไม่แสดงตัวฉัน"); "n คนกำลังดูผลงานนี้" pill; heartbeat `/api/live/ping` + cached `/api/live/count` fallback. **Off in production** (`LIVE_ENABLED`) until /privacy is approved.
+- **Drafted, not applied:** `notifications_live_pings` (notifications written by contact-request triggers, email-ready via `email_sent_at`; live_pings server-only with 10-minute pruning). **Privacy wording** drafted in `docs/privacy-draft.md` (TH + EN) for the user's review.
+
+**Files:** `supabase/migrations/{20260930155147_builder_profiles,20261001021524_profile_rpc_hardening,20261001024252_notifications_live_pings}.sql`, `supabase/tests/rls_smoke.sql`, `src/lib/supabase/database.types.ts`, `src/lib/data/startups.ts`, `src/lib/olympics{,.test}.ts`, `src/lib/my-province.ts`, `src/components/olympics/{OlympicsBoard,Podium,ShareRankCard}.tsx`, `src/app/[locale]/olympics/page.tsx`, `src/lib/live/*`, `src/components/live/*`, `src/app/api/live/*`, `src/lib/config/provinces.ts`, `src/app/[locale]/{layout,page,startup/[slug]/page}.tsx`, `messages/*.json`, `Design.md`, `docs/privacy-draft.md`
+**Verified:**
+
+- RLS smoke **57/57** (new: owner auto-founder, 4th superpower refused, bad social link refused, B can't select A's bio column / edit A's profile / read A's contacts until accepted, 1 pending per pair, sender can't accept, member can't self-confirm, owner can, owner's founder row stays, 6th request/day refused, anon can't call get_profile, server get_profile masks the hidden bio unless the viewer is the owner). Advisors: only the old leaked-password dashboard WARN.
+- `npm test` 193/193 (olympics movement/gap/climbers; live identity, payload validation, geo rounding + nearest province) · typecheck ✓ · lint ✓ · build ✓
+- Browser (local): Olympics v3 at 1280 dark and 375 (pick province → "#1 ใหม่ กำลังนำ", search, expand row, no horizontal scroll). Live: status live; a Node test client joined as a second visitor → count 2, pin in Chiang Mai, feed "แพนด้าสีม่วง เปิดหน้าผลงาน · เมื่อสักครู่", pill "2 คนกำลังดูผลงานนี้"; world map loads OpenFreeMap tiles; opt-out removes me (count 0) and restores. Production after the fix: /th, /th/startups, /th/olympics, /th/startup/jaopor, /th/category/ai, /th/province/mukdahan all 200.
+- **Not verified:** live visitors on production (off until privacy approval); Vercel geo (no headers locally); the fallback count (needs the live_pings migration).
+
+**Next:** user approves the privacy wording + `notifications_live_pings` SQL; then Phase 9d (dashboard, profile editor, onboarding)
+
 ## 2026-09-30 — Phase 8 + 9 briefs recorded; Phase 9a migration drafted (not applied)
 
 **Done:**

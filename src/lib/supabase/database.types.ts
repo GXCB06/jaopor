@@ -196,6 +196,74 @@ export type Database = {
           },
         ];
       };
+      live_pings: {
+        Row: {
+          country: string | null;
+          device: string | null;
+          last_seen: string;
+          path: string;
+          province: string | null;
+          session_hash: string;
+        };
+        Insert: {
+          country?: string | null;
+          device?: string | null;
+          last_seen?: string;
+          path: string;
+          province?: string | null;
+          session_hash: string;
+        };
+        Update: {
+          country?: string | null;
+          device?: string | null;
+          last_seen?: string;
+          path?: string;
+          province?: string | null;
+          session_hash?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "live_pings_province_fkey";
+            columns: ["province"];
+            isOneToOne: false;
+            referencedRelation: "provinces";
+            referencedColumns: ["slug"];
+          },
+        ];
+      };
+      notifications: {
+        Row: {
+          actor_id: string | null;
+          created_at: string;
+          email_sent_at: string | null;
+          id: number;
+          kind: string;
+          read_at: string | null;
+          request_id: number | null;
+          user_id: string;
+        };
+        Insert: {
+          actor_id?: string | null;
+          created_at?: string;
+          email_sent_at?: string | null;
+          id?: never;
+          kind: string;
+          read_at?: string | null;
+          request_id?: number | null;
+          user_id: string;
+        };
+        Update: {
+          actor_id?: string | null;
+          created_at?: string;
+          email_sent_at?: string | null;
+          id?: never;
+          kind?: string;
+          read_at?: string | null;
+          request_id?: number | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       positions: {
         Row: {
           company: string | null;
@@ -886,6 +954,7 @@ export type Database = {
           score: number;
         }[];
       };
+      prune_live_pings: { Args: never; Returns: number };
       province_leaderboard: {
         Args: { metric?: string; region?: string };
         Returns: {

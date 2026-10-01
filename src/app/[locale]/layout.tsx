@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { IBM_Plex_Sans_Thai, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { LivePresenceProvider } from "@/components/live/LivePresence";
 import { PrefsSync } from "@/components/PrefsSync";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -87,11 +88,13 @@ export default async function LocaleLayout({
       </head>
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
-          <PrefsSync />
-          <SiteHeader />
-          <div className="flex flex-1 flex-col">{children}</div>
-          <SiteFooter />
-          <Toaster position="bottom-center" />
+          <LivePresenceProvider>
+            <PrefsSync />
+            <SiteHeader />
+            <div className="flex flex-1 flex-col">{children}</div>
+            <SiteFooter />
+            <Toaster position="bottom-center" />
+          </LivePresenceProvider>
         </NextIntlClientProvider>
         {process.env.NODE_ENV === "production" && (
           <script defer src="/v.js" data-project={SELF_PROJECT} />

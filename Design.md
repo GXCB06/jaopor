@@ -310,6 +310,19 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - **Open provinces** Card: "ยังไม่มีผลงานจาก {n} จังหวัด" + subline + "+ เพิ่มผลงาน", 10 chips then "+N จังหวัด" (expands).
 - **Sidebar (320px):** "ภาคไหนแรงสุด" (OlympicsMap h-36 + RegionStandings) · "มาแรงเดือนนี้" (Flame; top 3 climbers with ▲n; hidden when none) · **ShareRankCard** (`border-brand/40 bg-brand/5`: download the province's OG image, or the Olympics one; copy link) · "นับคะแนนยังไง" methodology text.
 
+### LiveVisitorsSection (home, Phase 8, "ตอนนี้มีคนดูอยู่")
+
+- `rounded-xl border bg-card` section after the card rows. Header: status dot (positive pulse = live, warning = fallback, faint = connecting) + title; right: "ทั่วโลก / ประเทศไทย" toggle (`h-7 border` button) and × (hides the section, remembered; a small "แสดงคนที่กำลังดู JaoPor" link brings it back).
+- Body `h-[420px] sm:h-[460px]`: Thailand silhouette (`fill-muted-foreground/15`) with one pin per province at its centre (brand circle + DiceBear avatar, positive count badge when > 1); world view = MapLibre (OpenFreeMap dark, loaded on demand) with avatar markers at the coarse coordinates.
+- Overlay top-left (`w-56 rounded-lg border bg-background/85 backdrop-blur`): big count + "คนกำลังดู JaoPor", rows ประเทศ / อุปกรณ์ / หน้า (top 3, fixed section labels only, never slugs), "+n คนจากต่างประเทศ". Fallback shows the count + "แสดงจำนวนโดยประมาณ".
+- Feed bottom-left: last 4 page views as `bg-background/85` rows: avatar, "{ชื่อ} เปิด{หน้า}", "เมื่อสักครู่ / n นาทีที่แล้ว".
+- Footer `border-t text-2xs`: "คุณแสดงเป็น “{ชื่อ}” · ไม่แสดงตัวฉัน" (opt-out; then "คุณไม่ได้แสดงตัว · แสดงตัวอีกครั้ง") + "ไม่ระบุตัวตน · ตำแหน่งระดับจังหวัด/ประเทศ".
+- Names only from the fixed word lists (EN "Color Animal", TH "สัตว์สี"); every received payload is validated. Production waits for the approved /privacy page (`LIVE_ENABLED`).
+
+### LiveViewersPill (startup page)
+
+- `rounded-full border-positive/30 bg-positive/10 text-positive text-2xs` + Eye: "{n} คนกำลังดูผลงานนี้", only when n ≥ 2 people are on the same project (any language).
+
 ### ProvinceBadge
 
 - `h-10 w-14 rounded-lg border bg-background` tile holding **ThailandMap**: a hand-simplified silhouette (6 region paths, ~150 points, viewBox 84×150). Other regions `fill-muted-foreground/30`, the province's region `--region-*`; `stroke-card` separates regions. Never an official provincial seal. Decorative (`aria-hidden`): the region name is always printed next to it.

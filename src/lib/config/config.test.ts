@@ -78,7 +78,23 @@ describe("provinces", () => {
       nameEn,
       region,
     }));
-    expect(seeded).toEqual(PROVINCE_LIST.map((p) => ({ ...p })));
+    expect(seeded).toEqual(
+      PROVINCE_LIST.map(({ slug, nameTh, nameEn, region }) => ({
+        slug,
+        nameTh,
+        nameEn,
+        region,
+      })),
+    );
+  });
+
+  it("has a centre point inside Thailand for every province", () => {
+    for (const p of PROVINCE_LIST) {
+      expect(p.lat, p.slug).toBeGreaterThan(5.6);
+      expect(p.lat, p.slug).toBeLessThan(20.5);
+      expect(p.lng, p.slug).toBeGreaterThan(97.3);
+      expect(p.lng, p.slug).toBeLessThan(105.7);
+    }
   });
 });
 

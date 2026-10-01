@@ -58,6 +58,7 @@ import {
 } from "@/lib/share";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { logoUrl } from "@/lib/supabase/public";
+import { LiveViewersPill } from "@/components/live/LiveViewersPill";
 import { provinceName } from "@/lib/config/display";
 import { DEFAULT_METRIC, provinceRank } from "@/lib/olympics";
 
@@ -274,6 +275,7 @@ export default async function StartupPage({ params }: Props) {
         </header>
 
         <ProjectLinks startup={startup} skipFirst />
+        <LiveViewersPill />
         <LookingForBanner startup={startup} />
         {startup.is_demo && (
           <p className="flex items-start gap-2 rounded-xl border border-dashed bg-card p-3 text-xs text-muted-foreground">

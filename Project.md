@@ -95,6 +95,9 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [ ] D · UI: header/footer, homepage (hero, search, recently added, leaderboard, AI-tool chips), profile, `/startups`, add-startup wizard, dashboard — ◐ all built + visually checked (375 / 500 / 1280, TH + EN) with temporary demo data; **sign-in → wizard → Stripe → dashboard end-to-end pending OAuth apps + test key**
 - [x] E · Share kit: share menu (native/copy/FB/LINE/X/badge HTML), OG image (Thai font, verified numbers), embeddable SVG badge, post-listing share dialog with a ready-to-paste post, founding badge "เจ้าพ่อรุ่นบุกเบิก #n" (first 100) — Facebook Sharing Debugger + LINE preview check pending deploy
 - [x] E12 · Edit page in 7 sections (progress, sticky save, deep links), free "fill from website" helper (no-AI metadata; free Gemini when `GEMINI_API_KEY` set), avatar menu in the header (2026-09-30)
+- [x] E21 · Phase 8 live visitors built (presence channel, home map + world toggle, feed, pill, opt-out, heartbeat routes); **off in production** until the /privacy wording is approved; `notifications_live_pings` SQL drafted (2026-10-01)
+- [x] E20 · Olympics v3 from the Claude Design frame (season metric revenue 30d, rank movement, your-province bar, podium cards, dense table, climbers, share card) (2026-10-01)
+- [x] E19 · Phase 9a applied: builder_profiles + profile_rpc_hardening, RLS smoke 57/57; fixed the production outage it caused (ambiguous startups→profiles embed) (2026-10-01)
 - [x] E18 · Compact categories grid (TrustMRR pattern) + `/category/[slug]` pages titled by the category; Olympics redesign (event hero + live stats + clickable map, podium with open places, standings table, region leaderboard, province finder, share + podium OG image) (2026-09-30)
 - [x] E17 · Spec Phase 7: home polish (count hidden below 20, Add CTA only nav + hero, categories + Olympics teasers, leaderboard empty CTA) (2026-09-30)
 - [x] E15 · Spec Phase 6: Province Olympics `/olympics` (metric + region in the URL, ranked province cards, collapsed empties) + `/province/[slug]` (+ OG) + profile "📍 จังหวัด · อันดับ #X" link + nav/footer/QuickSearch links (2026-09-30; `province_leaderboard` applied)
@@ -290,6 +293,9 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 - [ ] Omise/Opn: do read-only keys exist? If not, don't support it.
 - [ ] Spec Figma frames (Home 129-3744, Detail 137-4036, Share 129-3745, Categories 137-5989, Olympics 137-5390, Province 137-4883, QuickSearch 137-3746, Profile 142-6817, Dashboard 142-6496) couldn't be read: Figma MCP call limit again on 2026-09-30. User to export PNGs into `docs/design/` or wait for the reset.
 - [ ] Spec §7 content cleanup (user): delete "MRRMafiass", rewrite the MRRMafia copy, pricing ฿990/เดือน, verify a real metric, add stack/province/screenshots/founder message.
+- [ ] Approve `docs/privacy-draft.md` (fill contact email + publish date) → build /privacy and switch Phase 8 on in production.
+- [ ] Approve `notifications_live_pings` SQL (in-app notifications + heartbeat table with 10-minute TTL).
+- [ ] Rank history table (for "แชมป์ N เดือนติด" streaks): not built; the Olympics shows movement vs the previous 30 days only.
 - [ ] Phase 9 (builder profiles): make the profile's founder name/avatar card link to `/u/{handle}` (user request 2026-09-30).
 - [ ] Enable GitHub **secret scanning + push protection** on the now-public `GXCB06/jaopor` repo (Settings → Code security). History checked 2026-09-30: only `.env.example` (public URL + publishable key) is tracked; no real secrets.
 - [ ] Rotate the Gemini key that was pasted into chat on 2026-09-30, then set `GEMINI_API_KEY` in Vercel.

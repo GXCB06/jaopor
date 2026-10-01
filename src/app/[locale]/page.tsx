@@ -5,6 +5,7 @@ import { ProviderStrip } from "@/components/ProviderStrip";
 import { AddStartupButton, QuickSearch } from "@/components/search/QuickSearch";
 import { QuickSearchSection } from "@/components/search/QuickSearchSection";
 import { HomeTeasers } from "@/components/home/HomeTeasers";
+import { LiveVisitorsSection } from "@/components/live/LiveVisitorsSection";
 import { StartupCard } from "@/components/StartupCard";
 import { Link } from "@/i18n/navigation";
 import {
@@ -151,6 +152,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         />
       )}
 
+      <LiveVisitorsSection />
       <div className="mt-9">
         <LeaderboardCard boards={boards} thbPerUsd={thbPerUsd} />
       </div>
