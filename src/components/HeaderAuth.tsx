@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { NotificationBell } from "./NotificationBell";
 
 /**
  * Client-side auth widget → the header needs no cookies, so public pages stay static.
@@ -63,6 +64,7 @@ export function HeaderAuth() {
 
   return (
     <>
+      <NotificationBell />
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label={t("account")}

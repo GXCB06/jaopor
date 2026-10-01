@@ -138,6 +138,13 @@ export default async function OlympicsPage({
           <p className="mt-2 max-w-xl text-body text-muted-foreground">
             {t("subtitle")}
           </p>
+          {/* The header has no leaderboard link since Phase 10c (Figma 160-555): it lives here. */}
+          <Link
+            href={{ pathname: "/", hash: "leaderboard" }}
+            className="mt-3 inline-flex items-center gap-1 text-caption font-semibold text-brand-text hover:underline"
+          >
+            {t("startupLeaderboard")} →
+          </Link>
         </div>
         <div className="grid shrink-0 grid-cols-2 gap-3">
           <Card className="min-w-36 p-3.5">

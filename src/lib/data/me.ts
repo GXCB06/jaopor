@@ -112,12 +112,23 @@ export async function getMyRequests(userId: string): Promise<RequestRow[]> {
   });
 }
 
+/** The "คำขอคุย" badge: incoming requests still waiting for my answer. */
+export async function pendingRequests(userId: string): Promise<number> {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("contact_requests")
+    .select("id", { count: "exact", head: true })
+    .eq("to_id", userId)
+    .eq("status", "pending");
+  return count ?? 0;
+}
+
 export async function unreadNotifications(): Promise<number> {
   const supabase = await createClient();
   const { count } = await supabase
     .from("notifications")
     .select("id", { count: "exact", head: true })
-    // The "คำขอคุย" badge counts request notifications only; likes / comments get the bell (10c).
+    // Request notifications only (the requests page marks these read); the bell shows all kinds.
     .in("kind", ["request_received", "request_accepted"])
     .is("read_at", null);
   return count ?? 0;

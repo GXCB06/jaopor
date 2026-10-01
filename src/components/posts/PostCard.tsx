@@ -9,7 +9,6 @@ import { timeAgo } from "@/lib/posts";
 import { publicEnv } from "@/lib/public-env";
 import { shareLinks } from "@/lib/share";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
-import { logoUrl } from "@/lib/supabase/public";
 import { cn } from "@/lib/utils";
 import { Avatar, LinkCard, PostImages, PostTypeChip } from "./bits";
 import { LikeButton } from "./LikeButton";
@@ -65,7 +64,7 @@ export function PostCard({
           <>
             <StartupLogo
               name={post.startup.name}
-              src={logoUrl(post.startup.logoPath)}
+              src={post.startup.logoUrl}
               size={22}
             />
             <span className="min-w-0 flex-1 truncate">

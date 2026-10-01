@@ -25,25 +25,17 @@ export function SiteHeader() {
           <Link href="/startups" className={navLink}>
             {t("startups")}
           </Link>
-          <Link href="/categories" className={navLink}>
-            {t("categories")}
-          </Link>
           <Link href="/builders" className={navLink}>
             {t("builders")}
           </Link>
+          <Link href="/feed" className={navLink}>
+            {t("feed")}
+          </Link>
+          <Link href="/categories" className={navLink}>
+            {t("categories")}
+          </Link>
           <Link href="/olympics" className={navLink}>
             {t("olympics")}
-          </Link>
-          {/* 1024–1279px: only 4 links fit; the leaderboard is also on the home page. */}
-          <Link
-            href={{ pathname: "/", hash: "leaderboard" }}
-            className={`${navLink} hidden xl:inline`}
-          >
-            {t("leaderboard")}
-          </Link>
-          {/* Below 1280px the dashboard lives in the avatar menu only. */}
-          <Link href="/dashboard" className={`${navLink} hidden xl:inline`}>
-            {t("dashboard")}
           </Link>
         </nav>
         <div className="ml-auto flex items-center gap-0.5 sm:gap-3 lg:gap-2 xl:gap-3">

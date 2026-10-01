@@ -11,6 +11,7 @@ import {
   TrophyIcon,
   UserIcon,
   UsersIcon,
+  NewspaperIcon,
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -62,6 +63,12 @@ export function MobileNav() {
           <Link href="/builders">
             <UsersIcon aria-hidden="true" />
             {t("builders")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/feed">
+            <NewspaperIcon aria-hidden="true" />
+            {t("feed")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

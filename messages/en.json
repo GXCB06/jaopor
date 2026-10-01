@@ -37,7 +37,8 @@
     "categories": "Categories",
     "menu": "Menu",
     "olympics": "Olympics",
-    "builders": "Builders"
+    "builders": "Builders",
+    "feed": "Feed"
   },
   "Footer": {
     "tagline": "The mafia turf of Startups and AI-built work from Thailand and Asia. Real work, real revenue, real numbers.",
@@ -718,7 +719,8 @@
     "moreProvinces": "+{n} provinces",
     "risingTitle": "Rising this month",
     "howTitle": "How scoring works",
-    "howBody": "Only numbers verified through Stripe, RevenueCat, Plausible, Umami and GitHub count · revenue converted from USD at today's rate · demo projects excluded · province as chosen by the founder · rank changes compare with the previous 30 days"
+    "howBody": "Only numbers verified through Stripe, RevenueCat, Plausible, Umami and GitHub count · revenue converted from USD at today's rate · demo projects excluded · province as chosen by the founder · rank changes compare with the previous 30 days",
+    "startupLeaderboard": "See the startup leaderboard"
   },
   "Province": {
     "title": "Startups in {name}",
@@ -1452,5 +1454,54 @@
     "ogByline": "{name} on {startup}",
     "ogFallback": "Product updates on JaoPor",
     "ogCounts": "♥ {likes, number} · {comments, number} comments"
+  },
+  "Feed": {
+    "title": "Feed",
+    "metaDescription": "The latest from people building with AI in Thailand: new features, launches, lessons and milestones from verified numbers.",
+    "subline": "What builders are shipping",
+    "views": "Feed views",
+    "view": {
+      "latest": "Latest",
+      "following": "Following",
+      "popular": "Popular this week"
+    },
+    "type": "Type",
+    "allTypes": "All",
+    "province": "Province",
+    "allProvinces": "All provinces",
+    "category": "Category",
+    "allCategories": "All categories",
+    "apply": "Apply",
+    "filters": "Filters",
+    "empty": "No updates match these filters yet",
+    "emptyFollowing": "Follow builders to see their updates here",
+    "emptyFollowingSignedOut": "Sign in to see updates from people you follow",
+    "findBuilders": "Find builders →",
+    "emptyWaiting": "Nothing is waiting for your feedback. Thanks for helping!",
+    "waitingNote": "Feedback requests from the last 14 days you haven't answered yet",
+    "clear": "Clear",
+    "whoToFollow": "Builders to follow",
+    "seeAllBuilders": "See all builders",
+    "mostActive": "Most active this week",
+    "postCount": "{n, plural, one {# post} other {# posts}}",
+    "waitingTitle": "Waiting for your feedback",
+    "waitingBody": "{n, plural, one {# post is} other {# posts are}} waiting for your thoughts. Help a fellow builder.",
+    "waitingBodySignedOut": "{n, plural, one {# post has} other {# posts have}} no replies yet. Help a fellow builder.",
+    "waitingCta": "See posts waiting for replies",
+    "loadMore": "Load more",
+    "loadFailed": "Couldn't load more. Try again."
+  },
+  "Notify": {
+    "label": "Notifications",
+    "labelUnread": "Notifications ({n, number} new)",
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "someone": "Someone",
+    "kind": {
+      "post_like": "<name></name> liked your post",
+      "post_comment": "<name></name> commented",
+      "request_received": "<name></name> sent you a request",
+      "request_accepted": "<name></name> accepted your request"
+    }
   }
 }

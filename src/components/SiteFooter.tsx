@@ -38,6 +38,19 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/feed" className={link}>
+                {nav("feed")}
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={{ pathname: "/", hash: "leaderboard" }}
+                className={link}
+              >
+                {nav("leaderboard")}
+              </Link>
+            </li>
+            <li>
               <Link href="/olympics" className={link}>
                 {t("olympics")}
               </Link>

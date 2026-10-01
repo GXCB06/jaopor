@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import type { LinkPreview } from "@/lib/og-parse";
 import type { PostType } from "@/lib/posts";
+import { logoUrl } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 
 // Phase 10 reads. The viewer's own client, so RLS decides visibility (hidden posts and posts on
@@ -35,7 +36,8 @@ export type PostView = {
     id: number;
     slug: string;
     name: string;
-    logoPath: string | null;
+    /** Resolved on the server (lib/supabase/public is server-only); cards also render in the client feed list. */
+    logoUrl: string | null;
     verifiedSource: string | null;
   };
   images: { id: number; path: string; width: number; height: number }[];
@@ -104,7 +106,7 @@ function toView(r: Row, liked: Set<number>): PostView | null {
       id: r.startup.id,
       slug: r.startup.slug,
       name: r.startup.name,
-      logoPath: r.startup.logo_path,
+      logoUrl: logoUrl(r.startup.logo_path),
       verifiedSource:
         r.startup.verification_status === "verified" && !r.startup.is_demo
           ? r.startup.verified_provider
@@ -147,10 +149,18 @@ export const getPost = cache(async (id: number): Promise<PostView | null> => {
 /** Newest first; `before` = cursor (created_at of the last post shown). */
 export async function listPosts(opts: {
   authorId?: string;
+  authorIds?: string[];
+  notAuthor?: string;
   startupId?: number;
+  type?: PostType;
+  province?: string;
+  category?: string;
+  /** Only posts created at or after this time. */
+  since?: string;
   limit?: number;
   before?: string;
 }): Promise<PostView[]> {
+  if (opts.authorIds && !opts.authorIds.length) return [];
   const supabase = await createClient();
   let q = supabase
     .from("posts")
@@ -160,7 +170,13 @@ export async function listPosts(opts: {
     .order("id", { ascending: false })
     .limit(opts.limit ?? 20);
   if (opts.authorId) q = q.eq("author_id", opts.authorId);
+  if (opts.authorIds) q = q.in("author_id", opts.authorIds);
+  if (opts.notAuthor) q = q.neq("author_id", opts.notAuthor);
   if (opts.startupId) q = q.eq("startup_id", opts.startupId);
+  if (opts.type) q = q.eq("type", opts.type);
+  if (opts.province) q = q.eq("province", opts.province);
+  if (opts.category) q = q.eq("category", opts.category);
+  if (opts.since) q = q.gte("created_at", opts.since);
   if (opts.before) q = q.lt("created_at", opts.before);
   const { data, error } = await q;
   if (error) throw new Error(`listPosts: ${error.message}`);

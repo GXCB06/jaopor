@@ -1,7 +1,7 @@
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { redirect } from "@/i18n/navigation";
 import { requireUserId } from "@/lib/auth";
-import { getMyProfile, unreadNotifications } from "@/lib/data/me";
+import { getMyProfile, pendingRequests } from "@/lib/data/me";
 import { createClient } from "@/lib/supabase/server";
 
 // Design.md §5 DashboardShell (Phase 9d): sidebar + content. A signed-in user without a username
@@ -22,7 +22,7 @@ export default async function DashboardLayout({
       .select("startup_id", { count: "exact", head: true })
       .eq("user_id", userId)
       .eq("status", "confirmed"),
-    unreadNotifications(),
+    pendingRequests(userId),
   ]);
 
   return (

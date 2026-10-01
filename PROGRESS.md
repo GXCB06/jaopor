@@ -12,6 +12,26 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-01 — Phase 10c: /feed, header nav, notification bell
+
+**Done:**
+
+- **`/feed`** (Figma 160-555): views ล่าสุด / กำลังติดตาม / ยอดนิยมสัปดาห์นี้, type chips, province and category, all in the URL; composer on top; PostCards with "โหลดเพิ่ม" appending pages in place (`/api/feed`, cursor = last post time; popular and "waiting" page by offset). Right rail: builders to follow (not me, not already followed; FollowButton), most active startups this week, and "รอ Feedback จากคุณ" (feedback posts from the last 14 days that aren't mine and I haven't commented on; signed out: those with no comments) linking to `?waiting=1`.
+- "ยอดนิยมสัปดาห์นี้" = last 7 days ranked by (likes + 2 × comments) / (hours + 2)^1.5 (pure `lib/feed.ts`, tested).
+- **Header** follows the Figma nav: สตาร์ทอัพ · คนสร้าง · ฟีด · หมวดหมู่ · โอลิมปิก (owner decision). The leaderboard link moved to the Olympics page ("ดูกระดานผู้นำสตาร์ทอัพ →"), the footer and the mobile menu; ฟีด added to the mobile menu and footer.
+- **NotificationBell** next to the avatar: unread count (polled every minute while the tab is visible), the latest 15 (likes, comments, requests) linking to the post or the requests page; opening marks them read. The dashboard "คำขอคุย" badge now counts pending incoming requests (it used unread notifications, which the bell now clears).
+- Fix found while checking: PostCard renders inside the client feed list, so the startup logo URL is now resolved on the server (`lib/supabase/public` is server-only).
+
+**Files:** `src/app/[locale]/feed/page.tsx`, `src/app/api/feed/route.ts`, `src/lib/feed{,.test}.ts`, `src/lib/data/{feed,posts,me}.ts`, `src/components/posts/{FeedList,PostCard}.tsx`, `src/components/builder/FollowButton.tsx`, `src/components/{NotificationBell,HeaderAuth,SiteHeader,MobileNav,SiteFooter}.tsx`, `src/app/[locale]/{olympics/page,dashboard/layout}.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- `npm test` 226/226 · typecheck ✓ · lint ✓ · build ✓
+- Local against live data (the owner's two test posts): every view and filter (popular 2, following signed-out prompt, lesson / saas empty, feature 1, Bangkok 1, waiting empty), `/api/feed` 200, cursor paging (older than newest → the second post; popular offset 1 → the second post).
+- Layout: 1440 three columns; 1024 first overflowed by 63px (rail squeezed to 0) → three columns only from `xl`, rail under the posts at `lg`, re-checked with no overflow; header fits at 1024; 375 no horizontal scroll, view tabs moved out of the folded filters so they stay visible on phones.
+- **Not verified locally:** "who to follow" (needs the service-role key; it fails soft) and the bell (needs a session) — checked on production next.
+
+**Next:** owner checks the bell and the feed on production; then Phase 10d (automatic milestone posts).
+
 ## 2026-10-01 — Phase 10b: posting (composer, PostCard, post page, comments, reports, link previews, image cleanup)
 
 **Done:**

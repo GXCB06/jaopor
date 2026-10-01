@@ -37,7 +37,8 @@
     "categories": "หมวดหมู่",
     "menu": "เมนู",
     "olympics": "โอลิมปิก",
-    "builders": "คนสร้าง"
+    "builders": "คนสร้าง",
+    "feed": "ฟีด"
   },
   "Footer": {
     "tagline": "ดินแดนมาเฟียของเหล่า Startup และผลงานที่สร้างด้วย AI ในไทยและเอเชีย ผลงานจริง รายได้จริง ตัวเลขจริง",
@@ -718,7 +719,8 @@
     "moreProvinces": "+{n} จังหวัด",
     "risingTitle": "มาแรงเดือนนี้",
     "howTitle": "นับคะแนนยังไง",
-    "howBody": "นับเฉพาะตัวเลขที่ยืนยันผ่าน Stripe, RevenueCat, Plausible, Umami และ GitHub · รายได้แปลงจาก USD เป็นบาทตามอัตราวันนี้ · ไม่รวมโปรเจกต์ตัวอย่าง · จังหวัดตามที่ผู้ก่อตั้งเลือก · อันดับขึ้น/ลงเทียบกับ 30 วันก่อนหน้า"
+    "howBody": "นับเฉพาะตัวเลขที่ยืนยันผ่าน Stripe, RevenueCat, Plausible, Umami และ GitHub · รายได้แปลงจาก USD เป็นบาทตามอัตราวันนี้ · ไม่รวมโปรเจกต์ตัวอย่าง · จังหวัดตามที่ผู้ก่อตั้งเลือก · อันดับขึ้น/ลงเทียบกับ 30 วันก่อนหน้า",
+    "startupLeaderboard": "ดูกระดานผู้นำสตาร์ทอัพ"
   },
   "Province": {
     "title": "สตาร์ทอัพจังหวัด{name}",
@@ -1452,5 +1454,54 @@
     "ogByline": "{name} บน {startup}",
     "ogFallback": "อัปเดตผลงานบน JaoPor",
     "ogCounts": "♥ {likes, number} · {comments, number} ความคิดเห็น"
+  },
+  "Feed": {
+    "title": "ฟีด",
+    "metaDescription": "อัปเดตล่าสุดจากคนไทยที่สร้างผลงานด้วย AI: ฟีเจอร์ใหม่ การเปิดตัว บทเรียน และ Milestone จากตัวเลขที่ยืนยันแล้ว",
+    "subline": "คนสร้างอัปเดตอะไรกันบ้าง",
+    "views": "มุมมองฟีด",
+    "view": {
+      "latest": "ล่าสุด",
+      "following": "กำลังติดตาม",
+      "popular": "ยอดนิยมสัปดาห์นี้"
+    },
+    "type": "ประเภท",
+    "allTypes": "ทั้งหมด",
+    "province": "จังหวัด",
+    "allProvinces": "ทุกจังหวัด",
+    "category": "หมวดหมู่",
+    "allCategories": "ทุกหมวดหมู่",
+    "apply": "ใช้ตัวกรอง",
+    "filters": "ตัวกรอง",
+    "empty": "ยังไม่มีอัปเดตที่ตรงกับตัวกรองนี้",
+    "emptyFollowing": "ติดตามคนสร้างเพื่อเห็นอัปเดตของพวกเขาที่นี่",
+    "emptyFollowingSignedOut": "เข้าสู่ระบบเพื่อดูอัปเดตจากคนที่คุณติดตาม",
+    "findBuilders": "หาคนสร้าง →",
+    "emptyWaiting": "ไม่มีโพสต์ที่รอ Feedback จากคุณแล้ว ขอบคุณที่ช่วยกัน!",
+    "waitingNote": "โพสต์ขอ Feedback ใน 14 วันที่ผ่านมาที่คุณยังไม่ได้ตอบ",
+    "clear": "ล้าง",
+    "whoToFollow": "คนสร้างที่น่าติดตาม",
+    "seeAllBuilders": "ดูคนสร้างทั้งหมด",
+    "mostActive": "อัปเดตบ่อยสุดสัปดาห์นี้",
+    "postCount": "{n, number} โพสต์",
+    "waitingTitle": "รอ Feedback จากคุณ",
+    "waitingBody": "{n, number} โพสต์ยังรอความเห็นจากคุณ ช่วยคนสร้างด้วยกันสักนิด",
+    "waitingBodySignedOut": "{n, number} โพสต์ยังไม่มีใครตอบ ช่วยคนสร้างด้วยกันสักนิด",
+    "waitingCta": "ดูโพสต์ที่รอคำตอบ",
+    "loadMore": "โหลดเพิ่ม",
+    "loadFailed": "โหลดไม่สำเร็จ ลองอีกครั้ง"
+  },
+  "Notify": {
+    "label": "การแจ้งเตือน",
+    "labelUnread": "การแจ้งเตือน ({n, number} ใหม่)",
+    "title": "การแจ้งเตือน",
+    "empty": "ยังไม่มีการแจ้งเตือน",
+    "someone": "มีคน",
+    "kind": {
+      "post_like": "<name></name> ถูกใจโพสต์ของคุณ",
+      "post_comment": "<name></name> แสดงความคิดเห็น",
+      "request_received": "<name></name> ส่งคำขอคุยถึงคุณ",
+      "request_accepted": "<name></name> ยอมรับคำขอคุยแล้ว"
+    }
   }
 }
