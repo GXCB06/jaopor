@@ -1142,7 +1142,8 @@
       "avatar_type": "Use an image file (JPG, PNG or WebP)",
       "avatar_size": "That image is too large; try another one",
       "avatar_read": "Couldn't open that image; try another file",
-      "invalid": "This account has no sign-in photo"
+      "invalid": "This account has no sign-in photo",
+      "avatar_limit": "You can change your photo 20 times a day; try again tomorrow"
     },
     "withdraw": "Withdraw",
     "deletedUser": "Deleted user",

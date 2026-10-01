@@ -1,7 +1,15 @@
-// Profile photos (migration profile_avatars): pure checks shared by the server action and tests.
+// Profile photos (migration profile_avatars_v2): pure rules shared by the server action, the flow
+// and the tests. They mirror the database: the profiles_avatar_url_source constraint and the
+// cleanup trigger, which only ever touch this profile's own folder.
 
 export const AVATAR_BUCKET = "avatars";
 export const MAX_AVATAR_UPLOAD = 1024 * 1024; // bucket limit
+
+const UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+
+/** Google / GitHub photo hosts (same rule as the constraint and sign-up). */
+export const PROVIDER_PHOTO =
+  /^https:\/\/(lh[0-9]+\.googleusercontent\.com|avatars\.githubusercontent\.com)\/[!-~]+$/;
 
 /** The image type from the file's first bytes: WebP ("RIFF" ···· "WEBP") or JPEG (FF D8 FF). */
 export function avatarType(bytes: Uint8Array): "webp" | "jpg" | null {
@@ -19,22 +27,55 @@ export function avatarType(bytes: Uint8Array): "webp" | "jpg" | null {
   return null;
 }
 
-/** The storage path of a photo in our bucket ("{user}/{uuid}.webp|jpg"), or null for anything else. */
-export function avatarPath(url: string | null | undefined): string | null {
+/** "{userId}/{uuid}.webp|jpg" when `path` is a photo in this user's own folder, else null. */
+export function ownAvatarFile(path: string, userId: string): string | null {
+  return new RegExp(`^${userId}/${UUID}\\.(webp|jpg)$`).test(path) &&
+    new RegExp(`^${UUID}$`).test(userId)
+    ? path
+    : null;
+}
+
+/** The storage path of a photo URL in this user's own folder of our bucket, or null. */
+export function ownAvatarPath(
+  url: string | null | undefined,
+  userId: string,
+): string | null {
   if (!url) return null;
   const marker = `/storage/v1/object/public/${AVATAR_BUCKET}/`;
   const at = url.indexOf(marker);
   if (at === -1) return null;
-  const path = url.slice(at + marker.length);
-  return /^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(webp|jpg)$/.test(path) ? path : null;
+  return ownAvatarFile(url.slice(at + marker.length), userId);
 }
 
-/** The sign-in photo from Google / GitHub (user metadata), if it is a sane https URL. */
-export function providerAvatar(meta: unknown): string | null {
-  const url = (meta as { avatar_url?: unknown } | null)?.avatar_url;
-  return typeof url === "string" &&
-    url.startsWith("https://") &&
-    url.length <= 500
-    ? url
-    : null;
+type Identity = {
+  provider?: string;
+  identity_data?: Record<string, unknown> | null;
+};
+
+/**
+ * The sign-in photo, read from the provider's identity data (written by Google / GitHub at
+ * sign-in). Never from user_metadata: users can edit that themselves through the Auth API.
+ */
+export function providerPhoto(
+  user: {
+    identities?: Identity[] | null;
+    app_metadata?: { provider?: string } | null;
+  } | null,
+): string | null {
+  const ids = user?.identities ?? [];
+  const last = user?.app_metadata?.provider;
+  const ordered = [
+    ...ids.filter((i) => i.provider === last),
+    ...ids.filter((i) => i.provider !== last),
+  ];
+  for (const i of ordered) {
+    const url = i.identity_data?.avatar_url;
+    if (
+      typeof url === "string" &&
+      url.length <= 500 &&
+      PROVIDER_PHOTO.test(url)
+    )
+      return url;
+  }
+  return null;
 }

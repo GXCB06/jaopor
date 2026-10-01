@@ -21,6 +21,9 @@ declare
   k int;
   conv bigint;
   msg bigint;
+  c1 uuid := '00000000-0000-4000-8000-0000000000c1';
+  c2 uuid := '00000000-0000-4000-8000-0000000000c2';
+  base text := 'https://letfxefyqxxrfujpwtri.supabase.co/storage/v1/object/public/avatars/';
   out text := '';
 begin
   insert into auth.users (id, email, raw_user_meta_data, aud, role)
@@ -634,30 +637,164 @@ begin
     (select count(*) from public.chat_messages where conversation_id = conv and sender_id = a),
     (select count(*) = 1 from public.conversations where id = conv and a in (user_a, user_b)));
 
-  -- Profile photos (migration profile_avatars): avatar_url is server-only; our old files are queued.
-  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  -- Profile photos (migration profile_avatars_v2). Two fresh accounts c1 / c2; "service" steps run
+  -- as the migration owner, like the server action's service role (RLS bypassed, constraint not).
+  execute 'reset role';
+  insert into auth.users (id, email, raw_user_meta_data, aud, role)
+  values (c1, 'rls-c1@test.local', '{"full_name":"C1","avatar_url":"https://evil.example/pixel.gif"}', 'authenticated', 'authenticated'),
+         (c2, 'rls-c2@test.local', '{"full_name":"C2","avatar_url":"https://lh3.googleusercontent.com/a/c2=s96-c"}', 'authenticated', 'authenticated');
+  out := out || format('T104a sign-up photo: tampered=%s (expect null), google kept=%s | ',
+    coalesce((select avatar_url from public.profiles where id = c1), 'null'),
+    (select avatar_url like 'https://lh3.googleusercontent.com/%' from public.profiles where id = c2));
+
+  out := out || format('T105a privileges: table UPDATE=%s, avatar_url UPDATE=%s, display_name UPDATE=%s (expect false, false, true) | ',
+    has_table_privilege('authenticated', 'public.profiles', 'UPDATE'),
+    has_column_privilege('authenticated', 'public.profiles', 'avatar_url', 'UPDATE'),
+    has_column_privilege('authenticated', 'public.profiles', 'display_name', 'UPDATE'));
+  perform set_config('request.jwt.claims', json_build_object('sub', c1, 'role', 'authenticated')::text, true);
   execute 'set local role authenticated';
   begin
-    update public.profiles set avatar_url = 'https://tracker.example/pixel.gif' where id = a;
-    out := out || 'T105 client sets avatar_url: ALLOWED (BAD) | ';
-  exception when insufficient_privilege then out := out || 'T105 client sets avatar_url: denied (good) | ';
+    update public.profiles set avatar_url = 'https://attacker.example/test' where id = auth.uid();
+    out := out || 'T105 client sets own avatar_url: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T105 client sets own avatar_url: denied (good) | ';
+  end;
+  update public.profiles set display_name = 'C1 edited', headline = 'still editable' where id = auth.uid();
+  get diagnostics n = row_count;
+  out := out || format('T105b client edits own name / headline: %s row (expect 1) | ', n);
+  update public.profiles set display_name = 'hijack' where id = c2;
+  get diagnostics n = row_count;
+  out := out || format('T105c client edits another profile: %s rows (expect 0) | ', n);
+
+  -- Direct Storage writes (the Storage API runs these same statements under the user's JWT).
+  begin
+    insert into storage.objects (bucket_id, name, owner, owner_id)
+    values ('avatars', c1::text || '/0b6f3c1e-5d1a-4c55-9a8e-3f1b2c4d5e6f.webp', c1, c1::text);
+    out := out || 'T108 client uploads into avatars: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T108 client uploads into avatars: denied (good) | ';
+  end;
+  begin
+    insert into storage.objects (bucket_id, name) values ('avatars', 'anything/at/all.txt');
+    out := out || 'T108b client creates an arbitrary path: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T108b client creates an arbitrary path: denied (good) | ';
   end;
   execute 'reset role';
+  perform set_config('request.jwt.claims', '', true);
+  execute 'set local role anon';
+  begin
+    insert into storage.objects (bucket_id, name) values ('avatars', c1::text || '/x.webp');
+    out := out || 'T108c anon uploads into avatars: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T108c anon uploads: denied (good) | ';
+  end;
+
+  -- c2 has a real photo object (written the way the server writes it).
+  execute 'reset role';
+  insert into storage.objects (bucket_id, name, owner, owner_id)
+  values ('avatars', c2::text || '/1c7a4d2f-6e2b-4d66-8b9f-4a2c3d5e6f70.webp', c2, c2::text);
   update public.profiles
-    set avatar_url = 'https://x.supabase.co/storage/v1/object/public/avatars/' || a || '/0b6f3c1e-5d1a-4c55-9a8e-3f1b2c4d5e6f.webp'
-    where id = a;
-  update public.profiles set avatar_url = 'https://avatars.githubusercontent.com/u/1' where id = a;
-  update public.profiles set avatar_url = null where id = a;
-  select count(*) into n from public.storage_cleanup
-    where bucket = 'avatars' and path like a::text || '/%';
-  out := out || format('T106 replaced photo queued for deletion: %s (expect 1; the GitHub URL is not ours) | ', n);
-  update public.profiles
-    set avatar_url = 'https://x.supabase.co/storage/v1/object/public/avatars/' || a || '/9c1d2e3f-4a5b-4c6d-8e7f-0a1b2c3d4e5f.jpg'
-    where id = a;
-  delete from auth.users where id = a;
-  select count(*) into n from public.storage_cleanup
-    where bucket = 'avatars' and path like a::text || '/%';
-  out := out || format('T107 deleted account photo queued: %s (expect 2) | ', n);
+    set avatar_url = base || c2::text || '/1c7a4d2f-6e2b-4d66-8b9f-4a2c3d5e6f70.webp' where id = c2;
+
+  -- Raw SQL deletes are blocked for everyone by storage.protect_delete; the Storage API sets
+  -- storage.allow_delete_query per request, after which RLS decides. Do the same here.
+  perform set_config('storage.allow_delete_query', 'true', true);
+  perform set_config('request.jwt.claims', json_build_object('sub', c1, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  delete from storage.objects where bucket_id = 'avatars' and name like c2::text || '/%';
+  get diagnostics n = row_count;
+  out := out || format('T109 client deletes another user''s photo: %s rows (expect 0) | ', n);
+  update storage.objects set name = c1::text || '/1c7a4d2f-6e2b-4d66-8b9f-4a2c3d5e6f70.webp'
+    where bucket_id = 'avatars' and name like c2::text || '/%';
+  get diagnostics n = row_count;
+  out := out || format('T111 client moves / overwrites another user''s photo: %s rows (expect 0) | ', n);
+  begin
+    insert into storage.objects (bucket_id, name, owner, owner_id)
+    values ('avatars', c1::text || '/1c7a4d2f-6e2b-4d66-8b9f-4a2c3d5e6f70.webp', c1, c1::text);
+    out := out || 'T111b client copies a photo into its folder: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T111b client copies a photo: denied (good) | ';
+  end;
+  perform set_config('request.jwt.claims', json_build_object('sub', c2, 'role', 'authenticated')::text, true);
+  delete from storage.objects where bucket_id = 'avatars' and name like c2::text || '/%';
+  get diagnostics n = row_count;
+  out := out || format('T109b client deletes even its own photo directly: %s rows (expect 0; server only) | ', n);
+  execute 'reset role';
+  select count(*) into n from storage.objects where bucket_id = 'avatars' and name like c2::text || '/%';
+  out := out || format('T109c c2 photo object still there: %s (expect 1) | ', n);
+
+  -- The constraint holds for every writer (service role included).
+  begin
+    update public.profiles set avatar_url = base || c2::text || '/1c7a4d2f-6e2b-4d66-8b9f-4a2c3d5e6f70.webp' where id = c1;
+    out := out || 'T111c c1 profile pointed at c2''s file: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T111c c1 profile pointed at c2''s file: refused (good) | ';
+  end;
+  begin
+    update public.profiles set avatar_url = 'https://evil.example/storage/v1/object/public/avatars/' || c1::text || '/0b6f3c1e-5d1a-4c55-9a8e-3f1b2c4d5e6f.webp' where id = c1;
+    out := out || 'T110b look-alike host: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T110b look-alike host: refused (good) | ';
+  end;
+  begin
+    update public.profiles set avatar_url = base || c1::text || '/0b6f3c1e-5d1a-4c55-9a8e-3f1b2c4d5e6f.webp?x=1' where id = c1;
+    out := out || 'T110c malformed own URL: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T110c malformed own URL: refused (good) | ';
+  end;
+  begin
+    update public.profiles set avatar_url = 'https://lh3.googleusercontent.com.evil.example/a' where id = c1;
+    out := out || 'T110d fake Google host: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T110d fake Google host: refused (good) | ';
+  end;
+
+  -- T112: a refused profile update changes nothing and queues nothing.
+  select count(*) into k from public.storage_cleanup where bucket = 'avatars';
+  begin
+    update public.profiles set avatar_url = 'https://attacker.example/x.gif' where id = c2;
+  exception when check_violation then null;
+  end;
+  out := out || format('T112 refused update: photo unchanged=%s, queue grew by %s (expect true, 0) | ',
+    (select avatar_url = base || c2::text || '/1c7a4d2f-6e2b-4d66-8b9f-4a2c3d5e6f70.webp' from public.profiles where id = c2),
+    (select count(*) from public.storage_cleanup where bucket = 'avatars') - k);
+
+  -- T106: replacing an own photo queues exactly the old own file.
+  update public.profiles set avatar_url = base || c1::text || '/0b6f3c1e-5d1a-4c55-9a8e-3f1b2c4d5e6f.webp' where id = c1;
+  update public.profiles set avatar_url = base || c1::text || '/9c1d2e3f-4a5b-4c6d-8e7f-0a1b2c3d4e5f.jpg' where id = c1;
+  out := out || format('T106 replaced own photo queued: %s (expect %s/0b6f…webp only) | ',
+    (select string_agg(path, ',') from public.storage_cleanup where bucket = 'avatars' and path like c1::text || '/%'), c1);
+
+  -- T110: Google / GitHub URLs are never queued.
+  delete from public.storage_cleanup where bucket = 'avatars';
+  update public.profiles set avatar_url = 'https://lh3.googleusercontent.com/a/c2=s96-c' where id = c2;
+  delete from public.storage_cleanup where bucket = 'avatars'; -- (c2's own file, queued: correct)
+  update public.profiles set avatar_url = 'https://avatars.githubusercontent.com/u/2?v=4' where id = c2;
+  update public.profiles set avatar_url = null where id = c2;
+  select count(*) into n from public.storage_cleanup where bucket = 'avatars';
+  out := out || format('T110 provider URLs replaced / removed: %s queued (expect 0) | ', n);
+
+  -- T107: deleting an account queues its own photo (and nobody else's).
+  delete from auth.users where id = c1;
+  out := out || format('T107 c1 deleted: profile gone=%s, queued=%s (expect true, %s/9c1d…jpg) | ',
+    not exists (select 1 from public.profiles where id = c1),
+    (select string_agg(path, ',') from public.storage_cleanup where bucket = 'avatars'), c1);
+
+  -- T113: 20 photo changes a day; anon can't call it.
+  perform set_config('request.jwt.claims', json_build_object('sub', c2, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  for k in 1..20 loop
+    perform public.take_avatar_change();
+  end loop;
+  begin
+    perform public.take_avatar_change();
+    out := out || 'T113 21st photo change today: ALLOWED (BAD) | ';
+  exception when sqlstate '54000' then out := out || 'T113 21st photo change today: limited (good) | ';
+  end;
+  execute 'reset role';
+  out := out || format('T113b anon may call take_avatar_change: %s (expect false) | ',
+    has_function_privilege('anon', 'public.take_avatar_change()', 'EXECUTE'));
+
+  -- T114: configuration as intended.
+  out := out || format('T114 bucket=%s; restrictive no-write policies=%s (expect 3); cleanup fn callable by authenticated=%s (expect false); definer+search_path: %s | ',
+    (select format('public=%s limit=%s types=%s', public, file_size_limit, allowed_mime_types) from storage.buckets where id = 'avatars'),
+    (select count(*) from pg_policies where schemaname = 'storage' and tablename = 'objects' and permissive = 'RESTRICTIVE' and policyname like 'avatars:%'),
+    has_function_privilege('authenticated', 'private.profiles_queue_avatar_cleanup()', 'EXECUTE'),
+    (select string_agg(p.proname || '=' || p.prosecdef || ':' || coalesce(array_to_string(p.proconfig, ','), 'none'), ' ')
+       from pg_proc p join pg_namespace ns on ns.oid = p.pronamespace
+      where (ns.nspname, p.proname) in (('private', 'profiles_queue_avatar_cleanup'), ('private', 'handle_new_user'), ('public', 'take_avatar_change'))));
 
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;

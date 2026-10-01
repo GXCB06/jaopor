@@ -1454,6 +1454,7 @@ export type Database = {
           verified_provider: string;
         }[];
       };
+      take_avatar_change: { Args: never; Returns: undefined };
     };
     Enums: {
       [_ in never]: never;

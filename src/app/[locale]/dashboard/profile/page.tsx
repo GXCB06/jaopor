@@ -5,7 +5,7 @@ import {
   type EditorInitial,
 } from "@/components/profile-edit/ProfileEditor";
 import { requireUserId } from "@/lib/auth";
-import { providerAvatar } from "@/lib/avatar";
+import { providerPhoto } from "@/lib/avatar";
 import {
   getMyContacts,
   getMyPositions,
@@ -52,7 +52,7 @@ export default async function ProfileEditPage({
     <ProfileEditor
       avatar={{
         url: profile.avatar_url,
-        providerUrl: providerAvatar(auth.user?.user_metadata),
+        providerUrl: providerPhoto(auth.user),
       }}
       initial={{
         handle: profile.handle ?? "",

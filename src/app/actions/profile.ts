@@ -17,10 +17,10 @@ import type { Json, TablesUpdate } from "@/lib/supabase/database.types";
 import {
   AVATAR_BUCKET,
   MAX_AVATAR_UPLOAD,
-  avatarPath,
   avatarType,
-  providerAvatar,
+  providerPhoto,
 } from "@/lib/avatar";
+import { changeAvatar, type AvatarPorts } from "@/lib/avatar-flow";
 import { drainStorageCleanup } from "@/lib/storage-cleanup";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -344,10 +344,12 @@ export async function savePins(startupIds: number[]): Promise<ActionResult> {
 }
 
 /**
- * Profile photo (migration profile_avatars): the browser sends a square 512 px WebP (JPEG from
- * Safari); it is
- * checked here and uploaded with the service role, since clients have no write access to the
- * bucket or to profiles.avatar_url. The previous photo, if it was ours, is removed right away.
+ * Profile photo (migration profile_avatars_v2). The browser sends a square 512 px WebP (JPEG from
+ * Safari). Nothing it says is trusted: the type comes from the file's first bytes, the size from
+ * the bytes received, the name is ignored. Who it is comes from the session (getUser verifies the
+ * token with Auth), and the path and the profile row are derived from that id only. Clients can't
+ * write the bucket or avatar_url, so the upload and the update use the service role; the
+ * database still checks the URL (profiles_avatar_url_source) and rate-limits (20 a day).
  */
 export async function uploadAvatar(form: FormData): Promise<ActionResult> {
   const { supabase, user } = await me();
@@ -356,24 +358,21 @@ export async function uploadAvatar(form: FormData): Promise<ActionResult> {
   if (!(file instanceof File)) return { ok: false, error: "avatar_type" };
   if (file.size === 0 || file.size > MAX_AVATAR_UPLOAD)
     return { ok: false, error: "avatar_size" };
-  // The bytes decide the type, not the name or the browser's claim.
   const bytes = new Uint8Array(await file.arrayBuffer());
+  if (bytes.length === 0 || bytes.length > MAX_AVATAR_UPLOAD)
+    return { ok: false, error: "avatar_size" };
   const ext = avatarType(bytes);
   if (!ext) return { ok: false, error: "avatar_type" };
-
-  const admin = createAdminClient();
-  const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-  const { error: upErr } = await admin.storage
-    .from(AVATAR_BUCKET)
-    .upload(path, bytes, {
-      contentType: ext === "webp" ? "image/webp" : "image/jpeg",
-      cacheControl: "31536000",
-      upsert: false,
-    });
-  if (upErr) return { ok: false, error: "save_failed" };
-  const url = admin.storage.from(AVATAR_BUCKET).getPublicUrl(path)
-    .data.publicUrl;
-  return setAvatarUrl(supabase, user.id, url, path);
+  const limited = await takeAvatarChange(supabase);
+  if (limited) return limited;
+  return finish(
+    await changeAvatar(
+      avatarPorts(),
+      user.id,
+      { upload: { bytes, ext, id: crypto.randomUUID() } },
+      Date.now(),
+    ),
+  );
 }
 
 /** Back to the Google / GitHub photo ("provider") or to initials ("none"). */
@@ -382,35 +381,83 @@ export async function resetAvatar(
 ): Promise<ActionResult> {
   const { supabase, user } = await me();
   if (!user) return { ok: false, error: "unauthorized" };
-  const url = mode === "provider" ? providerAvatar(user.user_metadata) : null;
+  // From the provider identity, never from user_metadata (user-editable).
+  const url = mode === "provider" ? providerPhoto(user) : null;
   if (mode === "provider" && !url) return { ok: false, error: "invalid" };
-  return setAvatarUrl(supabase, user.id, url, null);
+  const limited = await takeAvatarChange(supabase);
+  if (limited) return limited;
+  return finish(
+    await changeAvatar(avatarPorts(), user.id, { url }, Date.now()),
+  );
 }
 
-async function setAvatarUrl(
+async function takeAvatarChange(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  userId: string,
-  url: string | null,
-  uploaded: string | null,
-): Promise<ActionResult> {
-  const admin = createAdminClient();
-  const { data: before } = await supabase
-    .from("profiles")
-    .select("avatar_url")
-    .eq("id", userId)
-    .maybeSingle();
-  const { error } = await admin
-    .from("profiles")
-    .update({ avatar_url: url })
-    .eq("id", userId);
-  if (error) {
-    if (uploaded) await admin.storage.from(AVATAR_BUCKET).remove([uploaded]);
-    return { ok: false, error: "save_failed" };
-  }
-  // The trigger queued the old file (if it was ours); delete it now rather than at the next cron.
-  const old = avatarPath(before?.avatar_url);
-  if (old) await drainStorageCleanup({ paths: [old] }).catch(() => {});
+): Promise<ActionResult | null> {
+  const { error } = await supabase.rpc("take_avatar_change");
+  if (!error) return null;
+  return {
+    ok: false,
+    error: error.code === "54000" ? "avatar_limit" : "save_failed",
+  };
+}
+
+function finish(result: "ok" | "failed"): ActionResult {
+  if (result === "failed") return { ok: false, error: "save_failed" };
   refresh();
   revalidatePath("/[locale]/u/[username]", "page");
   return { ok: true };
+}
+
+function avatarPorts(): AvatarPorts {
+  const admin = createAdminClient();
+  const bucket = admin.storage.from(AVATAR_BUCKET);
+  return {
+    async listOwn(userId) {
+      const { data } = await bucket.list(userId, { limit: 100 });
+      return (data ?? []).map((f) => ({
+        path: `${userId}/${f.name}`,
+        createdAt: f.created_at ? Date.parse(f.created_at) : 0,
+      }));
+    },
+    async upload(path, bytes, contentType) {
+      const { error } = await bucket.upload(path, bytes, {
+        contentType,
+        cacheControl: "31536000",
+        upsert: false,
+      });
+      return !error;
+    },
+    async remove(paths) {
+      const { error } = await bucket.remove(paths);
+      return !error;
+    },
+    async current(userId) {
+      const { data } = await admin
+        .from("profiles")
+        .select("avatar_url")
+        .eq("id", userId)
+        .maybeSingle();
+      return data?.avatar_url ?? null;
+    },
+    async set(userId, url) {
+      const { error, count } = await admin
+        .from("profiles")
+        .update({ avatar_url: url }, { count: "exact" })
+        .eq("id", userId);
+      return !error && count === 1;
+    },
+    async queue(path) {
+      await admin
+        .from("storage_cleanup")
+        .upsert(
+          { bucket: AVATAR_BUCKET, path },
+          { onConflict: "bucket,path", ignoreDuplicates: true },
+        );
+    },
+    async drain(paths) {
+      await drainStorageCleanup({ paths });
+    },
+    publicUrl: (path) => bucket.getPublicUrl(path).data.publicUrl,
+  };
 }
