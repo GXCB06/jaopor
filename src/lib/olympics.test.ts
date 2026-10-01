@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   boardSummary,
+  climbers,
   emptyProvinces,
-  regionStandings,
-  fromRpc,
+  gapToNext,
   parseMetric,
   parseRegion,
   provinceRank,
   rankProvinces,
+  regionStandings,
   type OlympicSource,
 } from "./olympics";
 
@@ -19,9 +20,11 @@ const row = (over: Partial<OlympicSource>): OlympicSource => ({
   status: "published",
   is_demo: false,
   verification_status: "verified",
-  revenue_all_time_cents: null,
+  revenue_30d_cents: null,
+  revenue_prev_30d_cents: null,
   mrr_cents: null,
   visitors_30d: null,
+  visitors_prev_30d: null,
   build_commits: null,
   ...over,
 });
@@ -73,11 +76,13 @@ const ROWS = [
 describe("rankProvinces", () => {
   it("sums verified values per province, biggest first", () => {
     const r = rankProvinces(ROWS, "mrr");
-    expect(r.map((p) => [p.province, p.total, p.startups])).toEqual([
-      ["chiang-mai", 900, 1],
-      ["bangkok", 800, 2],
+    expect(r.map((p) => [p.rank, p.province, p.total, p.startups])).toEqual([
+      [1, "chiang-mai", 900, 1],
+      [2, "bangkok", 800, 2],
     ]);
     expect(r[1].top.map((t) => t.slug)).toEqual(["a", "b"]);
+    // MRR has no previous period: no movement, no growth.
+    expect(r[0]).toMatchObject({ prevTotal: null, change: null, growth: null });
   });
 
   it("counts synced traffic/commits without revenue verification", () => {
@@ -106,6 +111,71 @@ describe("rankProvinces", () => {
   });
 });
 
+describe("30-day season: movement and growth", () => {
+  const season = [
+    // Bangkok led last month, Phuket overtakes it now; Nan is new.
+    row({
+      slug: "bk",
+      province: "bangkok",
+      revenue_30d_cents: 500,
+      revenue_prev_30d_cents: 900,
+    }),
+    row({
+      slug: "pk",
+      province: "phuket",
+      revenue_30d_cents: 800,
+      revenue_prev_30d_cents: 400,
+    }),
+    row({
+      slug: "nn",
+      province: "nan",
+      revenue_30d_cents: 100,
+      revenue_prev_30d_cents: null,
+    }),
+    // Unverified revenue never counts.
+    row({
+      slug: "zz",
+      province: "yala",
+      verification_status: "unverified",
+      revenue_30d_cents: 9999,
+    }),
+  ];
+
+  it("ranks by the last 30 days and compares with the 30 before", () => {
+    const r = rankProvinces(season, "revenue30d");
+    expect(
+      r.map((p) => [p.province, p.rank, p.prevRank, p.change, p.growth]),
+    ).toEqual([
+      ["phuket", 1, 2, 1, 1],
+      ["bangkok", 2, 1, -1, (500 - 900) / 900],
+      ["nan", 3, null, null, null],
+    ]);
+  });
+
+  it("lists climbers and the gap to the next place", () => {
+    const r = rankProvinces(season, "revenue30d");
+    expect(climbers(r).map((p) => p.province)).toEqual(["phuket"]);
+    expect(gapToNext(r, "nan")).toMatchObject({
+      ahead: { province: "bangkok" },
+      gap: 401,
+    });
+    expect(gapToNext(r, "phuket")).toBeNull();
+  });
+
+  it("visitors use visitors_prev_30d", () => {
+    const r = rankProvinces(
+      [row({ province: "nan", visitors_30d: 30, visitors_prev_30d: 10 })],
+      "visitors",
+    );
+    expect(r[0]).toMatchObject({
+      prevTotal: 10,
+      prevRank: 1,
+      change: 0,
+      growth: 2,
+    });
+  });
+});
+
 describe("helpers", () => {
   it("lists the provinces with no numbers", () => {
     const ranked = rankProvinces(ROWS, "mrr");
@@ -119,38 +189,9 @@ describe("helpers", () => {
 
   it("parses URL params with safe defaults", () => {
     expect(parseMetric("visitors")).toBe("visitors");
-    expect(parseMetric("drop table")).toBe("revenue");
+    expect(parseMetric("drop table")).toBe("revenue30d");
     expect(parseRegion("south")).toBe("south");
     expect(parseRegion(["south"])).toBeNull();
-  });
-
-  it("normalises RPC rows", () => {
-    expect(
-      fromRpc([
-        {
-          province: "mukdahan",
-          region_slug: "northeast",
-          startups: 1,
-          total: "46",
-          top: [{ slug: "j", name: "J", logo_path: null, value: "46" }],
-        },
-        {
-          province: "nowhere",
-          region_slug: "x",
-          startups: 1,
-          total: 1,
-          top: [],
-        },
-      ]),
-    ).toEqual([
-      {
-        province: "mukdahan",
-        region: "northeast",
-        startups: 1,
-        total: 46,
-        top: [{ slug: "j", name: "J", logo_path: null, value: 46 }],
-      },
-    ]);
   });
 });
 
@@ -166,8 +207,6 @@ describe("region standings", () => {
       startups: 1,
     });
     expect(r[1].region).toBe("central");
-    expect(r.slice(2).every((x) => x.total === 0)).toBe(true);
-    // Empty regions keep config order.
     expect(r.slice(2).map((x) => x.region)).toEqual([
       "north",
       "east",

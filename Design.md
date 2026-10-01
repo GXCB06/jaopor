@@ -298,15 +298,17 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
 - Hero "ดูผลงานทั้งหมด {n} ชิ้น" shows the number only from 20 projects ("ดูผลงานทั้งหมด" below).
 - LeaderboardCard empty state: "ยังไม่มีตัวเลขที่ยืนยัน… มาเป็นคนแรกบนกระดาน" + `text-brand-text` link "ยืนยันตัวเลขของคุณ →" (/dashboard).
 
-### Olympics page (`/[locale]/olympics`, spec 6.7; redesign 2026-09-30, user: "one of our selling points")
+### Olympics page (`/[locale]/olympics`, spec 6.7; v3 2026-10-01 = Claude Design frame 149:7635 + our open spots and map)
 
-- **Hero** `rounded-2xl border bg-card` with a soft brand radial glow; `md:grid-cols-[1fr_auto]`:
-  - left: eyebrow pill (`Trophy`, "JaoPor Olympics · ฤดูกาล {year}", `border-brand/40 text-brand-text text-2xs uppercase`) · H1 `text-3xl md:text-4xl font-extrabold` · subtitle · 3 live stats under `border-t` (จังหวัดลงแข่ง "{n}/77", ผลงาน, "{metric} รวม"; value `text-xl sm:text-2xl font-bold`, label `text-2xs uppercase text-faint`) · CTAs: primary "+ ส่งผลงานแทนจังหวัดคุณ" (/new) + outline "แชร์อันดับ" (share sheet, else copy link).
-  - right: **OlympicsMap** (`h-44 sm:h-64 md:h-80`): regions with a number in their `--region-*` colour, others `fill-muted-foreground/25`; click filters by region (click again clears), the selected region gets a foreground outline and the others dim. Caption "แตะภาคบนแผนที่เพื่อดูอันดับในภาค". The SVG is aria-hidden; RegionStandings is the accessible control.
-- **Controls:** metric SegmentedControl (nowrap segments) + a removable region chip when filtered. Metric and region stay in the URL.
-- **Podium** card: title "ผู้นำ {metric} · {scope}", 3 columns (DOM order 1-2-3, shown 2-1-3): province badge, name, total, logo stack; pedestals `rounded-t-lg border border-t-4 bg-secondary` with heights 1st > 2nd > 3rd and medal-tone top border + big rank number. An empty place = dashed "+ ที่ว่าง · ส่งผลงานแทนจังหวัดคุณ" link.
-- `lg:grid-cols-[1fr_300px]`: left **StandingsTable** (#4 onward: rank · region dot + province + "{region} · {n} สตาร์ทอัพ" · top-project logos (md+) · total + a bar relative to the leader; whole row links to the province page) and the **open provinces** `<details>` (dashed, open while ≤ 3 ranked) grouped by region with chips + CTA. Right aside: **RegionStandings** "ภาคไหนนำ" (all 6 regions: dot, name, total, bar in region colour, "{n}/{of} จังหวัด"; links filter) and **ProvinceFinder** (native select grouped by region → province page).
-- Footnote + bottom QuickSearch. OG image: podium list (medal rings, ฿ totals, "ที่ว่าง") + map.
+Product decision (user asked to act as PM / marketer / designer): the Claude Design structure wins on retention and sharing (your-province gap, rank movement, monthly season, dense table, share + methodology cards). Kept from v2: dashed "ที่ว่าง" podium places (the board is young) and the region map (moved into the region card). Not adopted yet: "แชมป์ N เดือนติด" (needs rank history) and "อัปเดตทุกชั่วโมง" (we sync daily).
+
+- **Season metric:** รายได้ 30 วัน (default) · MRR · ผู้เข้าชม 30 วัน · Commits. Rank movement (▲/▼/–/ใหม่) and growth % compare with the previous 30 days (revenue30d, visitors only).
+- **Header:** pills "● อัปเดตทุกวัน" (positive dot) + "ฤดูกาล {month year}" (Gregorian year) · H1 `text-3xl md:text-4xl font-extrabold` · subtitle; right: two stat Cards (จังหวัดที่ลงแข่ง n / 77 · "{metric} รวมทั้งประเทศ").
+- **Podium cards** (`md:grid-cols-3`, shown 2-1-3): rank ring (gold / silver / bronze tokens) + "ผู้นำฤดูกาล" on #1 · region dot + name · province `text-2xl` (#1 `text-3xl`) · other-language name + "{n} สตาร์ทอัพ" · total `text-3xl` (#1 `text-4xl`) · top project row under `border-t` ("ตัวท็อป: {name}" + value). #1 card `border-warning/40 bg-warning/5`, taller. Empty place: dashed card "+ ที่ว่าง · ส่งผลงานแทนจังหวัดคุณ" → /new.
+- **Controls:** metric SegmentedControl + region chips (dot + name; horizontal scroll on phones). Both in the URL.
+- **OlympicsBoard** (client): **your-province bar** (`border-brand/40 bg-brand/5`; MapPin "จังหวัดของคุณ" · badge + name · #rank · RankChange · "อีก ฿X จะแซง{ahead}ขึ้นอันดับ #n" or "กำลังนำกระดาน" · "เปลี่ยนจังหวัด"; no pick yet → inline select grouped by region; stored in localStorage `jaopor.myProvince`) · province search (whole board) · **table** from #4: # · change · badge + name (+ "· คุณ") + region · ผลงาน (md+) · value · growth (sm+) · top logos (lg+) · expand chevron → sub-row with top projects (logo, name, share %, value, `h-1` brand bar) + "ดูผลงานทั้งหมดใน{จังหวัด} n ชิ้น →". 10 rows then "ดูอันดับ 14–N ↓". Own row `bg-brand/5` + 3px brand inset edge.
+- **Open provinces** Card: "ยังไม่มีผลงานจาก {n} จังหวัด" + subline + "+ เพิ่มผลงาน", 10 chips then "+N จังหวัด" (expands).
+- **Sidebar (320px):** "ภาคไหนแรงสุด" (OlympicsMap h-36 + RegionStandings) · "มาแรงเดือนนี้" (Flame; top 3 climbers with ▲n; hidden when none) · **ShareRankCard** (`border-brand/40 bg-brand/5`: download the province's OG image, or the Olympics one; copy link) · "นับคะแนนยังไง" methodology text.
 
 ### ProvinceBadge
 

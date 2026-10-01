@@ -88,7 +88,7 @@ export async function RegionStandings({
                     {localizedName(r, locale)}
                   </span>
                   <span className="shrink-0 font-bold tabular-nums">
-                    {s.total > 0 ? (
+                    {s.provinces > 0 ? (
                       <OlympicValue
                         value={s.total}
                         metric={metric}

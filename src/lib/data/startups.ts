@@ -5,7 +5,6 @@ import type { Region } from "@/lib/config/provinces";
 import type { LookingFor } from "@/lib/links";
 import {
   OLYMPIC_COLUMNS,
-  fromRpc,
   rankProvinces,
   type OlympicMetric,
   type OlympicSource,
@@ -22,7 +21,10 @@ export type Owner = Pick<
 >;
 export type StartupRow = Tables<"startups"> & { owner: Owner | null };
 
-const SELECT = "*, owner:profiles(handle, display_name, avatar_url, x_handle)";
+// Named FK: startup_members also links startups and profiles (many-to-many), so the plain embed
+// is ambiguous (PGRST201).
+const SELECT =
+  "*, owner:profiles!startups_owner_id_fkey(handle, display_name, avatar_url, x_handle)";
 
 function db() {
   return createPublicClient();
@@ -453,18 +455,13 @@ export async function getCategoryCounts(): Promise<Record<string, number>> {
 }
 
 /**
- * Spec 6.7 Province Olympics board. Uses the `province_leaderboard(metric, region)` RPC; until
- * that migration exists it ranks the same columns here with the identical TS rules.
+ * Spec 6.7 Province Olympics board (v3): ranked in TypeScript from the public startup rows, with
+ * previous-period ranks for the 30-day metrics (see lib/olympics.ts).
  */
 export async function getProvinceLeaderboard(
   metric: OlympicMetric,
   region: Region | null = null,
 ): Promise<ProvinceRank[]> {
-  const rpc = await db().rpc("province_leaderboard", {
-    metric,
-    region: region ?? undefined,
-  });
-  if (!rpc.error) return fromRpc(rpc.data ?? []);
   const { data, error } = await db()
     .from("startups")
     .select(OLYMPIC_COLUMNS)

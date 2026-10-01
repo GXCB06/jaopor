@@ -3,31 +3,38 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { StartupLogo } from "@/components/StartupBits";
 import { Link } from "@/i18n/navigation";
 import { localizedName } from "@/lib/config/localized";
-import { getProvince } from "@/lib/config/provinces";
+import { getProvince, getRegion } from "@/lib/config/provinces";
 import type { OlympicMetric, ProvinceRank } from "@/lib/olympics";
 import { logoUrl } from "@/lib/supabase/public";
 import { cn } from "@/lib/utils";
 import { OlympicValue } from "./OlympicValue";
-import { ProvinceBadge } from "./ProvinceBadge";
 
-// DOM order 1 · 2 · 3 (screen readers), shown 2 · 1 · 3 via `order`; pedestal height and medal tone per place (token colours, Design.md §5 Medal).
+// DOM order 1 · 2 · 3 (screen readers), shown 2 · 1 · 3 from md via `order`. Medal tones = tokens.
 const PLACES = [
-  { rank: 1, height: "h-24 sm:h-28", tone: "border-t-warning text-warning" },
+  {
+    rank: 1,
+    order: "md:order-2",
+    ring: "border-warning text-warning",
+    card: "border-warning/40 bg-warning/5 md:pb-7 md:pt-7",
+  },
   {
     rank: 2,
-    height: "h-16 sm:h-20",
-    tone: "border-t-muted-foreground text-muted-foreground",
+    order: "md:order-1",
+    ring: "border-muted-foreground text-muted-foreground",
+    card: "",
   },
   {
     rank: 3,
-    height: "h-11 sm:h-14",
-    tone: "border-t-warning/60 text-warning/70",
+    order: "md:order-3",
+    ring: "border-warning/60 text-warning/70",
+    card: "",
   },
 ] as const;
 
 /**
- * Design.md §5 Podium: the top 3 provinces on pedestals. An empty place is a dashed invitation
- * ("ว่าง — จังหวัดคุณ?" → /new), so a young board still reads as a race you can join.
+ * Design.md §5 Podium (Olympics v3, Claude Design cards): one card per place — rank ring, region,
+ * province name, project count, the total, and the province's top project. The leader's card is
+ * taller with a gold edge. An empty place is a dashed "ที่ว่าง" invitation to /new.
  */
 export async function Podium({
   top,
@@ -46,45 +53,87 @@ export async function Podium({
   return (
     <ol
       aria-label={t("podium")}
-      className="grid grid-cols-3 items-end gap-2 sm:gap-4"
+      className="grid gap-3 md:grid-cols-3 md:items-end md:gap-4"
     >
-      {PLACES.map(({ rank, height, tone }) => {
+      {PLACES.map(({ rank, order, ring, card }) => {
         const row = top[rank - 1];
         const p = row ? getProvince(row.province) : undefined;
-        return (
-          <li
-            key={rank}
+        const ringEl = (
+          <span
             className={cn(
-              "flex min-w-0 flex-col",
-              rank === 1 && "order-2",
-              rank === 2 && "order-1",
-              rank === 3 && "order-3",
+              "flex size-9 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold tabular-nums",
+              ring,
             )}
+            aria-label={t("rank", { rank })}
           >
-            {row && p ? (
+            {rank}
+          </span>
+        );
+        if (!row || !p)
+          return (
+            <li key={rank} className={order}>
               <Link
-                href={`/province/${p.slug}`}
-                className="group mb-2 flex min-w-0 flex-col items-center gap-1.5 text-center"
+                href="/new"
+                className="flex min-h-40 flex-col justify-between rounded-xl border border-dashed p-5 text-muted-foreground transition-colors hover:border-brand/60 hover:text-brand-text"
               >
-                <ProvinceBadge
-                  region={p.region}
-                  className={cn(
-                    "transition-transform group-hover:-translate-y-0.5",
-                    rank === 1 ? "h-14 w-20" : "h-11 w-16",
+                {ringEl}
+                <span>
+                  <span className="flex items-center gap-1.5 text-base font-bold">
+                    <PlusIcon className="size-4" aria-hidden="true" />
+                    {t("openSpot")}
+                  </span>
+                  <span className="mt-1 block text-caption">
+                    {t("openSpotHint")}
+                  </span>
+                </span>
+              </Link>
+            </li>
+          );
+        const region = getRegion(p.region);
+        const best = row.top[0];
+        return (
+          <li key={rank} className={order}>
+            <div
+              className={cn(
+                "rounded-xl border bg-card p-5 transition-colors hover:border-border-strong",
+                card,
+              )}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  {ringEl}
+                  {rank === 1 && (
+                    <span className="text-2xs font-bold tracking-wider text-warning uppercase">
+                      {t("leader")}
+                    </span>
                   )}
-                />
+                </span>
+                <span className="flex items-center gap-1.5 text-2xs text-muted-foreground">
+                  <span
+                    aria-hidden="true"
+                    className="size-1.5 rounded-full"
+                    style={{ background: region.color }}
+                  />
+                  {localizedName(region, locale)}
+                </span>
+              </div>
+              <Link href={`/province/${p.slug}`} className="group mt-4 block">
                 <span
                   className={cn(
-                    "w-full truncate font-bold group-hover:underline",
-                    rank === 1 ? "text-base" : "text-sm",
+                    "block truncate font-bold tracking-tight group-hover:underline",
+                    rank === 1 ? "text-3xl" : "text-2xl",
                   )}
                 >
                   {localizedName(p, locale)}
                 </span>
+                <span className="mt-1 block text-caption text-faint">
+                  {locale === "th" ? p.nameEn : p.nameTh} ·{" "}
+                  {t("startups", { count: row.startups })}
+                </span>
                 <span
                   className={cn(
-                    "font-bold tracking-tight tabular-nums",
-                    rank === 1 ? "text-xl sm:text-2xl" : "text-base sm:text-lg",
+                    "mt-3 block font-bold tracking-tight tabular-nums",
+                    rank === 1 ? "text-4xl" : "text-3xl",
                   )}
                 >
                   <OlympicValue
@@ -93,48 +142,31 @@ export async function Podium({
                     thbPerUsd={thbPerUsd}
                   />
                 </span>
-                <span className="flex items-center gap-1.5 text-2xs text-muted-foreground">
-                  <span className="flex -space-x-1.5">
-                    {row.top.slice(0, 3).map((s) => (
-                      <StartupLogo
-                        key={s.slug}
-                        name={s.name}
-                        src={logoUrl(s.logo_path)}
-                        size={16}
-                        className="ring-2 ring-card"
-                      />
-                    ))}
-                  </span>
-                  <span className="hidden sm:inline">
-                    {t("startups", { count: row.startups })}
-                  </span>
-                </span>
               </Link>
-            ) : (
-              <Link
-                href="/new"
-                className="mb-2 flex min-w-0 flex-col items-center gap-1.5 rounded-lg border border-dashed px-2 py-3 text-center text-muted-foreground transition-colors hover:border-brand/60 hover:text-brand-text"
-              >
-                <PlusIcon className="size-4" aria-hidden="true" />
-                <span className="text-caption font-semibold">
-                  {t("openSpot")}
-                </span>
-                <span className="hidden text-2xs sm:block">
-                  {t("openSpotHint")}
-                </span>
-              </Link>
-            )}
-            <div
-              aria-hidden="true"
-              className={cn(
-                "flex items-start justify-center rounded-t-lg border border-t-4 bg-secondary pt-2 text-2xl font-extrabold tabular-nums dark:bg-black/40",
-                height,
-                tone,
+              {best && (
+                <Link
+                  href={`/startup/${best.slug}`}
+                  className="mt-4 flex items-center gap-2 border-t pt-3 text-caption hover:underline"
+                >
+                  <StartupLogo
+                    name={best.name}
+                    src={logoUrl(best.logo_path)}
+                    size={18}
+                  />
+                  <span className="min-w-0 truncate text-muted-foreground">
+                    {t("topProject")}{" "}
+                    <b className="font-semibold text-foreground">{best.name}</b>
+                  </span>
+                  <span className="ml-auto shrink-0 text-faint tabular-nums">
+                    <OlympicValue
+                      value={best.value}
+                      metric={metric}
+                      thbPerUsd={thbPerUsd}
+                    />
+                  </span>
+                </Link>
               )}
-            >
-              {rank}
             </div>
-            <span className="sr-only">{t("rank", { rank })}</span>
           </li>
         );
       })}

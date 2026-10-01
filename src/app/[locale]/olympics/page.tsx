@@ -1,28 +1,22 @@
-import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-  PlusIcon,
-  TrophyIcon,
-  XIcon,
-} from "lucide-react";
+import { ChevronRightIcon, FlameIcon, PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Card } from "@/components/core/Card";
 import { MetricSwitch } from "@/components/olympics/MetricSwitch";
+import { OlympicsBoard, RankChange } from "@/components/olympics/OlympicsBoard";
 import { OlympicsMap } from "@/components/olympics/OlympicsMap";
 import { OlympicValue } from "@/components/olympics/OlympicValue";
 import { Podium } from "@/components/olympics/Podium";
-import { ProvinceFinder } from "@/components/olympics/ProvinceFinder";
+import { ProvinceBadge } from "@/components/olympics/ProvinceBadge";
 import { RegionStandings } from "@/components/olympics/RegionStandings";
-import { ShareBoardButton } from "@/components/olympics/ShareBoardButton";
-import { StandingsTable } from "@/components/olympics/StandingsTable";
+import { ShareRankCard } from "@/components/olympics/ShareRankCard";
 import { QuickSearchSection } from "@/components/search/QuickSearchSection";
 import { Link } from "@/i18n/navigation";
 import { localizedName } from "@/lib/config/localized";
 import {
   PROVINCE_LIST,
   REGION_LIST,
-  getRegion,
+  getProvince,
   type Region,
 } from "@/lib/config/provinces";
 import { getThbPerUsd } from "@/lib/data/fx";
@@ -30,11 +24,14 @@ import { getProvinceLeaderboard } from "@/lib/data/startups";
 import {
   DEFAULT_METRIC,
   boardSummary,
+  climbers,
   emptyProvinces,
   parseMetric,
   parseRegion,
   regionStandings,
 } from "@/lib/olympics";
+import { logoUrl } from "@/lib/supabase/public";
+import { cn } from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -50,10 +47,11 @@ export async function generateMetadata({
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
-// Design.md §6 Olympics page (redesign 2026-09-30, user: "one of our selling points"):
-// event hero with live totals + clickable map · metric switch · podium (empty places invite a
-// submission) · standings table from #4 · side panel (regions, "where is my province?") · the
-// provinces still open, grouped by region. Metric and region live in the URL.
+const OPEN_CHIPS = 10;
+
+// Design.md §6 Olympics page (v3, 2026-10-01: Claude Design structure + our open-spot podium and
+// map): season header + national stats · podium cards · metric/region controls · your province +
+// standings · sidebar (regions with map, climbers, share, how scoring works) · open provinces.
 export default async function OlympicsPage({
   params,
   searchParams,
@@ -64,37 +62,48 @@ export default async function OlympicsPage({
   const metric = parseMetric(one(sp.metric));
   const region = parseRegion(one(sp.region));
 
-  const [t, common, all, thbPerUsd] = await Promise.all([
+  const [t, common, national, thbPerUsd] = await Promise.all([
     getTranslations("Olympics"),
     getTranslations("Common"),
     getProvinceLeaderboard(metric),
     getThbPerUsd(),
   ]);
-  const board = region ? all.filter((r) => r.region === region) : all;
-  const summary = boardSummary(board);
-  const regions = regionStandings(all);
+  // Logo URLs resolved here: the board below is a client component.
+  const board = (
+    region ? await getProvinceLeaderboard(metric, region) : national
+  ).map((r) => ({
+    ...r,
+    top: r.top.map((s) => ({ ...s, logo_url: logoUrl(s.logo_path) })),
+  }));
+  const summary = boardSummary(national);
+  const regions = regionStandings(national);
+  const rising = climbers(national);
   const open = emptyProvinces(board, region);
   const metricName = t(`metrics.${metric}`);
-  const scope = region
-    ? localizedName(getRegion(region), locale)
-    : t("nationwide");
+  const season = new Intl.DateTimeFormat(
+    locale === "th" ? "th-TH-u-ca-gregory" : "en",
+    { month: "long", year: "numeric" },
+  ).format(new Date());
   const regionNames = Object.fromEntries(
     REGION_LIST.map((r) => [r.slug, localizedName(r, locale)]),
   ) as Record<Region, string>;
-  const clearHref = {
+  const ranks = Object.fromEntries(national.map((r) => [r.province, r.rank]));
+  const regionHref = (r: Region | null) => ({
     pathname: "/olympics" as const,
-    query: metric !== DEFAULT_METRIC ? { metric } : {},
-  };
-
-  const stat = (value: React.ReactNode, label: string) => (
-    <div className="min-w-0">
-      <div className="truncate text-xl font-bold tracking-tight tabular-nums sm:text-2xl">
-        {value}
-      </div>
-      <div className="truncate text-2xs tracking-wider text-faint uppercase">
-        {label}
-      </div>
-    </div>
+    query: {
+      ...(metric !== DEFAULT_METRIC && { metric }),
+      ...(r && { region: r }),
+    },
+  });
+  const chip = (active: boolean) =>
+    cn(
+      "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-caption whitespace-nowrap transition-colors",
+      active
+        ? "border-foreground/20 bg-secondary font-semibold text-foreground"
+        : "text-muted-foreground hover:text-foreground",
+    );
+  const value = (v: number) => (
+    <OlympicValue value={v} metric={metric} thbPerUsd={thbPerUsd} />
   );
 
   return (
@@ -110,182 +119,162 @@ export default async function OlympicsPage({
         <span className="text-foreground">{t("title")}</span>
       </nav>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden rounded-2xl border bg-card">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_85%_20%,color-mix(in_oklab,var(--brand)_16%,transparent),transparent_70%)]"
-        />
-        <div className="relative grid gap-6 p-5 sm:p-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-          <div className="min-w-0">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-brand/40 px-2.5 py-1 text-2xs font-bold tracking-wider text-brand-text uppercase">
-              <TrophyIcon className="size-3.5" aria-hidden="true" />
-              {t("eyebrow", { year: new Date().getFullYear() })}
+      {/* Header: season + national stats */}
+      <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2 text-2xs">
+            <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-semibold">
+              <span
+                aria-hidden="true"
+                className="size-1.5 rounded-full bg-positive"
+              />
+              {t("updatedDaily")}
             </span>
-            <h1 className="mt-4 text-3xl font-extrabold tracking-tight md:text-4xl">
-              {t("title")}
-            </h1>
-            <p className="mt-2 max-w-xl text-body text-muted-foreground">
-              {t("subtitle")}
-            </p>
-            <div className="mt-6 grid max-w-lg grid-cols-3 gap-4 border-t pt-5">
-              {stat(
-                <>
-                  {summary.provinces}
-                  <span className="text-sm font-medium text-faint">
-                    /
-                    {region
-                      ? open.length + summary.provinces
-                      : PROVINCE_LIST.length}
-                  </span>
-                </>,
-                t("statProvinces"),
-              )}
-              {stat(summary.startups, t("statProjects"))}
-              {stat(
-                <OlympicValue
-                  value={summary.total}
-                  metric={metric}
-                  thbPerUsd={thbPerUsd}
-                />,
-                t("statTotal", { metric: metricName }),
-              )}
-            </div>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <Link
-                href="/new"
-                className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-              >
-                <PlusIcon className="size-3.5" aria-hidden="true" />
-                {t("ctaCompete")}
-              </Link>
-              <ShareBoardButton text={t("shareText")} />
-            </div>
+            <span className="text-faint">{t("season", { season })}</span>
           </div>
-          <figure className="mx-auto flex flex-col items-center gap-2">
-            <div className="h-44 sm:h-64 md:h-80">
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight md:text-4xl">
+            {t("title")}
+          </h1>
+          <p className="mt-2 max-w-xl text-body text-muted-foreground">
+            {t("subtitle")}
+          </p>
+        </div>
+        <div className="grid shrink-0 grid-cols-2 gap-3">
+          <Card className="min-w-36 p-3.5">
+            <p className="text-2xs tracking-wider text-faint uppercase">
+              {t("statProvinces")}
+            </p>
+            <p className="mt-1 text-xl font-bold tabular-nums">
+              {summary.provinces}
+              <span className="text-sm font-medium text-faint">
+                {" "}
+                / {PROVINCE_LIST.length}
+              </span>
+            </p>
+          </Card>
+          <Card className="min-w-36 p-3.5">
+            <p className="truncate text-2xs tracking-wider text-faint uppercase">
+              {t("statTotal", { metric: metricName })}
+            </p>
+            <p className="mt-1 text-xl font-bold tabular-nums">
+              {value(summary.total)}
+            </p>
+          </Card>
+        </div>
+      </header>
+
+      {/* Podium */}
+      <section aria-label={t("podium")} className="mt-8">
+        <Podium top={board.slice(0, 3)} metric={metric} thbPerUsd={thbPerUsd} />
+      </section>
+
+      {/* Controls */}
+      <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div className="max-w-full shrink-0 overflow-x-auto">
+          <MetricSwitch metric={metric} region={region} />
+        </div>
+        <nav
+          aria-label={t("region")}
+          className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0 lg:pb-0"
+        >
+          <Link
+            href={regionHref(null)}
+            scroll={false}
+            aria-current={region === null ? "page" : undefined}
+            className={chip(region === null)}
+          >
+            {t("allRegions")}
+          </Link>
+          {REGION_LIST.map((r) => (
+            <Link
+              key={r.slug}
+              href={regionHref(r.slug)}
+              scroll={false}
+              aria-current={region === r.slug ? "page" : undefined}
+              className={chip(region === r.slug)}
+            >
+              <span
+                aria-hidden="true"
+                className="size-1.5 rounded-full"
+                style={{ background: r.color }}
+              />
+              {localizedName(r, locale)}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0 space-y-4">
+          <OlympicsBoard board={board} metric={metric} thbPerUsd={thbPerUsd} />
+
+          {open.length > 0 && (
+            <Card className="p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-bold">
+                    {t("openTitle", { n: open.length })}
+                  </h2>
+                  <p className="mt-1 text-caption text-muted-foreground">
+                    {t("openSub")}
+                  </p>
+                </div>
+                <Link
+                  href="/new"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground hover:opacity-90"
+                >
+                  <PlusIcon className="size-3.5" aria-hidden="true" />
+                  {t("addProject")}
+                </Link>
+              </div>
+              <ul className="mt-4 flex flex-wrap gap-1.5">
+                {open.slice(0, OPEN_CHIPS).map((p) => (
+                  <li key={p.slug}>
+                    <Link
+                      href={`/province/${p.slug}`}
+                      className="inline-block rounded-full border bg-secondary px-2.5 py-0.5 text-2xs text-muted-foreground hover:text-foreground"
+                    >
+                      {localizedName(p, locale)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              {open.length > OPEN_CHIPS && (
+                <details className="group mt-1.5">
+                  <summary className="inline-block cursor-pointer list-none rounded-full border border-dashed px-2.5 py-0.5 text-2xs text-muted-foreground group-open:hidden hover:text-foreground [&::-webkit-details-marker]:hidden">
+                    {t("moreProvinces", { n: open.length - OPEN_CHIPS })}
+                  </summary>
+                  <ul className="flex flex-wrap gap-1.5">
+                    {open.slice(OPEN_CHIPS).map((p) => (
+                      <li key={p.slug}>
+                        <Link
+                          href={`/province/${p.slug}`}
+                          className="inline-block rounded-full border bg-secondary px-2.5 py-0.5 text-2xs text-muted-foreground hover:text-foreground"
+                        >
+                          {localizedName(p, locale)}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </Card>
+          )}
+        </div>
+
+        <aside className="space-y-4">
+          <Card className="p-4">
+            <h2 className="mb-3 text-xs font-semibold">{t("regionsTitle")}</h2>
+            <div className="mb-3 flex h-36 justify-center">
               <OlympicsMap
                 active={regions
-                  .filter((r) => r.total > 0 || r.provinces > 0)
+                  .filter((r) => r.provinces > 0)
                   .map((r) => r.region)}
                 selected={region}
                 metric={metric}
                 names={regionNames}
               />
             </div>
-            <figcaption className="text-2xs text-faint">
-              {t("mapHint")}
-            </figcaption>
-          </figure>
-        </div>
-      </section>
-
-      {/* Controls */}
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="max-w-full overflow-x-auto">
-          <MetricSwitch metric={metric} region={region} />
-        </div>
-        {region && (
-          <Link
-            href={clearHref}
-            scroll={false}
-            className="inline-flex items-center gap-1.5 self-start rounded-full border bg-secondary px-2.5 py-1 text-caption hover:text-foreground sm:self-auto"
-          >
-            <span
-              aria-hidden="true"
-              className="size-2 rounded-full"
-              style={{ background: getRegion(region).color }}
-            />
-            {scope}
-            <XIcon className="size-3" aria-hidden="true" />
-            <span className="sr-only">{t("clearRegion")}</span>
-          </Link>
-        )}
-      </div>
-
-      {/* Podium */}
-      <Card className="mt-4 p-4 pb-0 sm:p-6 sm:pb-0">
-        <h2 className="mb-5 text-center text-xs font-semibold text-muted-foreground">
-          {t("podiumTitle", { scope, metric: metricName })}
-        </h2>
-        <Podium top={board.slice(0, 3)} metric={metric} thbPerUsd={thbPerUsd} />
-      </Card>
-
-      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="min-w-0 space-y-4">
-          {board.length > 3 && (
-            <section className="space-y-2">
-              <h2 className="text-xs font-semibold">{t("restTitle")}</h2>
-              <StandingsTable
-                rows={board.slice(3)}
-                startRank={4}
-                leaderTotal={board[0].total}
-                metric={metric}
-                thbPerUsd={thbPerUsd}
-              />
-            </section>
-          )}
-
-          {open.length > 0 && (
-            <details
-              className="group rounded-xl border border-dashed bg-card"
-              open={board.length <= 3}
-            >
-              <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-xs hover:text-foreground sm:px-5 [&::-webkit-details-marker]:hidden">
-                <ChevronDownIcon
-                  className="size-3.5 shrink-0 text-faint transition-transform group-open:rotate-180"
-                  aria-hidden="true"
-                />
-                <span className="font-semibold">
-                  {t("emptyProvinces", { n: open.length })}
-                </span>
-              </summary>
-              <div className="space-y-4 border-t px-4 py-4 sm:px-5">
-                {REGION_LIST.filter((r) =>
-                  open.some((p) => p.region === r.slug),
-                ).map((r) => (
-                  <div key={r.slug} className="space-y-2">
-                    <h3 className="flex items-center gap-1.5 text-2xs font-semibold tracking-wider text-faint uppercase">
-                      <span
-                        aria-hidden="true"
-                        className="size-1.5 rounded-full"
-                        style={{ background: r.color }}
-                      />
-                      {localizedName(r, locale)}
-                    </h3>
-                    <ul className="flex flex-wrap gap-1.5">
-                      {open
-                        .filter((p) => p.region === r.slug)
-                        .map((p) => (
-                          <li key={p.slug}>
-                            <Link
-                              href={`/province/${p.slug}`}
-                              className="inline-block rounded-full border bg-secondary px-2.5 py-0.5 text-2xs text-muted-foreground hover:text-foreground"
-                            >
-                              {localizedName(p, locale)}
-                            </Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                ))}
-                <Link
-                  href="/new"
-                  className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground hover:opacity-90"
-                >
-                  <PlusIcon className="size-3.5" aria-hidden="true" />
-                  {t("ctaCompete")}
-                </Link>
-              </div>
-            </details>
-          )}
-        </div>
-
-        <aside className="space-y-4">
-          <Card className="p-4">
-            <h2 className="mb-2 px-1 text-xs font-semibold">
-              {t("regionsTitle")}
-            </h2>
             <RegionStandings
               standings={regions}
               selected={region}
@@ -293,13 +282,48 @@ export default async function OlympicsPage({
               thbPerUsd={thbPerUsd}
             />
           </Card>
+
+          {rising.length > 0 && (
+            <Card className="p-4">
+              <h2 className="mb-3 flex items-center gap-1.5 text-xs font-semibold">
+                <FlameIcon
+                  className="size-3.5 text-warning"
+                  aria-hidden="true"
+                />
+                {t("risingTitle")}
+              </h2>
+              <ul className="space-y-2">
+                {rising.map((r) => {
+                  const p = getProvince(r.province)!;
+                  return (
+                    <li key={r.province}>
+                      <Link
+                        href={`/province/${p.slug}`}
+                        className="flex items-center gap-2.5 text-caption hover:underline"
+                      >
+                        <ProvinceBadge region={p.region} className="h-7 w-10" />
+                        <span className="min-w-0 flex-1 truncate">
+                          {localizedName(p, locale)}
+                        </span>
+                        <RankChange row={r} metric={metric} />
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </Card>
+          )}
+
+          <ShareRankCard ranks={ranks} />
+
           <Card className="p-4">
-            <ProvinceFinder />
+            <h2 className="text-xs font-semibold">{t("howTitle")}</h2>
+            <p className="mt-1.5 text-caption leading-relaxed text-muted-foreground">
+              {t("howBody")}
+            </p>
           </Card>
         </aside>
       </div>
-
-      <p className="mt-6 text-center text-2xs text-faint">{t("footnote")}</p>
 
       <QuickSearchSection />
     </main>
