@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Tables } from "@/lib/supabase/database.types";
+import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import type { LookingFor } from "@/lib/profile";
 import { orderSkills, type DirectoryBuilder } from "@/lib/builders";
@@ -247,17 +248,56 @@ export const listBuilders = cache(async (): Promise<DirectoryBuilder[]> => {
  * Profile v2 revenue card: daily verified revenue / MRR summed over the builder's verified,
  * non-demo works (USD cents; the chart converts to ฿). Null when none has verified revenue.
  */
-export async function getBuilderChart(works: BuilderWork[]) {
+/**
+ * The profile revenue dashboard: daily revenue summed over the verified, non-demo works (demo
+ * projects carry sample numbers and never count as this person's), plus today's partial value.
+ */
+export async function getBuilderRevenue(works: BuilderWork[]) {
   const verified = works.filter(
     (w) => w.verification_status === "verified" && !w.is_demo,
   );
   if (!verified.length) return null;
-  const series = await Promise.all(
-    verified.map((w) => getChartSeries({ ...w, owner: null })),
-  );
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const [series, todayRows] = await Promise.all([
+    Promise.all(verified.map((w) => getChartSeries({ ...w, owner: null }))),
+    createPublicClient()
+      .from("revenue_snapshots")
+      .select("revenue_cents")
+      .in(
+        "startup_id",
+        verified.map((w) => w.id),
+      )
+      .eq("day", todayKey),
+  ]);
   const sum = sumSeries(series);
-  return sum && (sum.revenue || sum.mrr) ? sum : null;
+  if (!sum?.revenue) return null;
+  const today = todayRows.data?.length
+    ? todayRows.data.reduce((s, r) => s + (r.revenue_cents ?? 0), 0)
+    : null;
+  const synced = verified
+    .map((w) => w.last_synced_at)
+    .filter((d): d is string => !!d)
+    .sort();
+  return {
+    start: sum.start,
+    daily: sum.revenue,
+    today,
+    todayKey,
+    names: verified.map((w) => w.name),
+    sources: [
+      ...new Set(
+        verified
+          .map((w) => w.verified_provider)
+          .filter((p): p is string => !!p),
+      ),
+    ],
+    syncedAt: synced.at(-1) ?? null,
+  };
 }
+
+export type BuilderRevenue = NonNullable<
+  Awaited<ReturnType<typeof getBuilderRevenue>>
+>;
 
 /** "+12": followers gained in the last 30 days, and posts in the last 6 months. */
 export async function getBuilderCounts(profileId: string) {

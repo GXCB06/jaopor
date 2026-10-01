@@ -14,6 +14,7 @@ import {
   type LookingFor,
 } from "@/lib/profile";
 import type { Json, TablesUpdate } from "@/lib/supabase/database.types";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 // Phase 9d server actions. Every write goes through the user's own Supabase client, so RLS + the
@@ -259,8 +260,24 @@ export async function answerRequest(
     .update({ status: answer })
     .eq("id", id)
     .eq("to_id", user.id)
-    .select("id");
+    .select("id, from_id, responded_at");
   if (error || !data?.length) return { ok: false, error: "save_failed" };
+  // Blocking someone also closes our chat, if we have one (as blocking from the chat does).
+  if (answer === "blocked") {
+    const other = data[0].from_id;
+    const { data: convo } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("user_a", user.id < other ? user.id : other)
+      .eq("user_b", user.id < other ? other : user.id)
+      .is("blocked_at", null)
+      .maybeSingle();
+    if (convo)
+      await createAdminClient()
+        .from("conversations")
+        .update({ blocked_by: user.id, blocked_at: data[0].responded_at })
+        .eq("id", convo.id);
+  }
   refresh();
   return { ok: true };
 }

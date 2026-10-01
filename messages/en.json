@@ -1390,12 +1390,30 @@
     "tabRevenue": "Revenue",
     "tabActivity": "Build activity",
     "tabsLabel": "View",
-    "chartStamp": "Verified via {sources} · all verified works combined, unverified works left out",
     "seeAllWorks": "See all {n, number}",
     "updatesTitle": "Product updates",
     "seeFeed": "See the whole feed",
     "firstPost": "Post your first product update",
-    "sendMessage": "Send a message"
+    "sendMessage": "Send a message",
+    "range": {
+      "7d": "7 days",
+      "30d": "30 days",
+      "12m": "12 months"
+    },
+    "rangeLabel": "Period",
+    "vsPrevPeriod": "vs previous period",
+    "prevPeriod": "Previous period",
+    "thisPeriod": "This period",
+    "todayPartial": "Today (partial)",
+    "monthPartial": "This month (partial)",
+    "revenueChartLabel": "Total revenue chart, {range}",
+    "tableDate": "Date",
+    "revenueFooter": "Verified via {sources} · Updated {time} · Unverified works not included",
+    "revenueFooterNoTime": "Verified via {sources} · Unverified works not included",
+    "revenueEmptyOwner": "No verified revenue yet (demo projects don't count). Connect Stripe or RevenueCat on your works and your total revenue chart appears here.",
+    "revenueEmptyCta": "Go to my works",
+    "todayShort": "Today",
+    "monthShort": "This month"
   },
   "Builders": {
     "title": "Builders",
@@ -1584,7 +1602,7 @@
     "blockedNote": "This chat is blocked. No new messages can be sent.",
     "deletedNote": "The other person deleted their account. No new messages can be sent.",
     "blockTitle": "Block {name}?",
-    "blockBody": "The chat closes for good, neither of you can send new messages, your LINE / email stop being shared, and no new contact request can be sent.",
+    "blockBody": "The chat closes until you unblock. Neither of you can send new messages, your LINE / email stop being shared, and no new contact request can be sent.",
     "blocked": "Blocked",
     "labelUnread": "Messages ({n} unread)",
     "errors": {
@@ -1595,6 +1613,11 @@
       "failed": "That didn't work. Try again.",
       "invalid": "Invalid input",
       "duplicate": "Already done"
-    }
+    },
+    "unblock": "Unblock",
+    "unblockTitle": "Unblock {name}?",
+    "unblockBody": "The chat reopens, you can message each other again, and your LINE / email are shared as they were before the block.",
+    "unblocked": "Unblocked",
+    "blockedByMeNote": "You blocked this chat"
   }
 }

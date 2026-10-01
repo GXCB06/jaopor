@@ -9,7 +9,12 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { blockConversation, markRead, sendMessage } from "@/app/actions/chat";
+import {
+  blockConversation,
+  markRead,
+  sendMessage,
+  unblockConversation,
+} from "@/app/actions/chat";
 import { ReportDialog } from "@/components/builder/ReportDialog";
 import { useConfirm } from "@/components/core/useConfirm";
 import { Avatar } from "@/components/posts/bits";
@@ -36,12 +41,14 @@ export function ChatThread({
   viewer,
   other,
   blocked: initialBlocked,
+  blockedByMe: initialBlockedByMe = false,
   initial,
 }: {
   conversationId: number;
   viewer: string;
   other: ChatPerson | null;
   blocked: boolean;
+  blockedByMe?: boolean;
   initial: ChatMessage[];
 }) {
   const t = useTranslations("Chat");
@@ -49,6 +56,7 @@ export function ChatThread({
   const router = useRouter();
   const [messages, setMessages] = useState(initial);
   const [blocked, setBlocked] = useState(initialBlocked);
+  const [blockedByMe, setBlockedByMe] = useState(initialBlockedByMe);
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [live, setLive] = useState(false);
@@ -171,7 +179,26 @@ export function ChatThread({
       return;
     }
     setBlocked(true);
+    setBlockedByMe(true);
     toast.success(t("blocked"));
+    router.refresh();
+  }
+
+  async function unblock() {
+    const ok = await confirm({
+      title: t("unblockTitle", { name: other?.name ?? "" }),
+      body: t("unblockBody"),
+      confirmLabel: t("unblock"),
+    });
+    if (!ok) return;
+    const res = await unblockConversation(conversationId);
+    if (!res.ok) {
+      toast.error(t(`errors.${res.error}` as "errors.failed"));
+      return;
+    }
+    setBlocked(false);
+    setBlockedByMe(false);
+    toast.success(t("unblocked"));
     router.refresh();
   }
 
@@ -371,6 +398,17 @@ export function ChatThread({
             <span className="hidden sm:inline">{t("send")}</span>
           </button>
         </form>
+      ) : other && blockedByMe ? (
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-t px-4 py-3 text-caption text-faint">
+          <span>{t("blockedByMeNote")}</span>
+          <button
+            type="button"
+            onClick={() => void unblock()}
+            className="font-semibold text-brand-text hover:underline"
+          >
+            {t("unblock")}
+          </button>
+        </div>
       ) : (
         <p className="border-t px-4 py-3 text-center text-caption text-faint">
           {other ? t("blockedNote") : t("deletedNote")}

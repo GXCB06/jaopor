@@ -45,6 +45,7 @@ export default async function ConversationPage({
           viewer={convo.viewer}
           other={convo.other}
           blocked={convo.blocked}
+          blockedByMe={convo.blockedByMe}
           initial={convo.messages}
         />
       </ChatShell>

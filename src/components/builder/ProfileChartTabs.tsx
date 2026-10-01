@@ -1,25 +1,40 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import type { BuilderRevenue } from "@/lib/data/builder";
+import { REVENUE_RANGES, type RevenueRange } from "@/lib/profile-revenue";
 import { cn } from "@/lib/utils";
+import { ProfileRevenueChart } from "./ProfileRevenueChart";
+import { toolbarButton } from "./toolbar";
 
 /**
- * Design.md §6 Builder profile v2: one card with tabs "รายได้รวม | กิจกรรมการสร้าง". Both panels
- * are rendered on the server; without verified revenue only the activity panel shows (no tabs).
+ * Design.md §6 Builder profile v2: one card with tabs "รายได้รวม | กิจกรรมการสร้าง"; the toolbar
+ * holds the range buttons (revenue) or the year buttons (activity). Without verified revenue,
+ * visitors get the activity panel alone and the owner gets `revenueEmpty` in the revenue tab.
  */
 export function ProfileChartTabs({
   revenue,
+  revenueEmpty,
+  thbPerUsd,
+  sources,
   activity,
-  labels,
+  activityActions,
 }: {
-  revenue: React.ReactNode | null;
+  revenue: BuilderRevenue | null;
+  revenueEmpty: React.ReactNode | null;
+  thbPerUsd: number | null;
+  sources: string;
   activity: React.ReactNode;
-  labels: { revenue: string; activity: string; group: string };
+  activityActions: React.ReactNode;
 }) {
+  const t = useTranslations("Builder");
+  const hasRevenueTab = revenue !== null || revenueEmpty !== null;
   const [tab, setTab] = useState<"revenue" | "activity">(
-    revenue ? "revenue" : "activity",
+    hasRevenueTab ? "revenue" : "activity",
   );
-  if (!revenue) return <>{activity}</>;
+  const [range, setRange] = useState<RevenueRange>("30d");
+
   const btn = (id: "revenue" | "activity", label: string) => (
     <button
       type="button"
@@ -38,28 +53,62 @@ export function ProfileChartTabs({
       {label}
     </button>
   );
+
   return (
-    <div className="space-y-4">
-      <div
-        role="tablist"
-        aria-label={labels.group}
-        className="inline-flex gap-1 rounded-xl border bg-background p-1"
-      >
-        {btn("revenue", labels.revenue)}
-        {btn("activity", labels.activity)}
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center gap-3">
+        {hasRevenueTab && (
+          <div
+            role="tablist"
+            aria-label={t("tabsLabel")}
+            className="inline-flex gap-1 rounded-xl border bg-background p-1"
+          >
+            {btn("revenue", t("tabRevenue"))}
+            {btn("activity", t("tabActivity"))}
+          </div>
+        )}
+        <span className="flex-1" />
+        {tab === "revenue" && revenue ? (
+          <div role="group" aria-label={t("rangeLabel")} className="flex gap-1">
+            {REVENUE_RANGES.map((r) => (
+              <button
+                key={r}
+                type="button"
+                aria-pressed={range === r}
+                onClick={() => setRange(r)}
+                className={toolbarButton(range === r)}
+              >
+                {t(`range.${r}`)}
+              </button>
+            ))}
+          </div>
+        ) : tab === "activity" ? (
+          activityActions
+        ) : null}
       </div>
+      {hasRevenueTab && (
+        <div
+          role="tabpanel"
+          id="profile-panel-revenue"
+          aria-labelledby="profile-tab-revenue"
+          hidden={tab !== "revenue"}
+        >
+          {revenue ? (
+            <ProfileRevenueChart
+              data={revenue}
+              range={range}
+              thbPerUsd={thbPerUsd}
+              sources={sources}
+            />
+          ) : (
+            revenueEmpty
+          )}
+        </div>
+      )}
       <div
-        role="tabpanel"
-        id="profile-panel-revenue"
-        aria-labelledby="profile-tab-revenue"
-        hidden={tab !== "revenue"}
-      >
-        {revenue}
-      </div>
-      <div
-        role="tabpanel"
+        role={hasRevenueTab ? "tabpanel" : undefined}
         id="profile-panel-activity"
-        aria-labelledby="profile-tab-activity"
+        aria-labelledby={hasRevenueTab ? "profile-tab-activity" : undefined}
         hidden={tab !== "activity"}
       >
         {activity}

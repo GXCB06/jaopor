@@ -138,6 +138,8 @@ Status: ☐ not started · ◐ in progress · ☑ done
 
 - [x] (2026-10-02) 1:1 text chat opened by an accepted contact request; live messages, unread badges, 200 messages/day, block ends the chat, report a message; /privacy wording update (messages stored on JaoPor, not end-to-end encrypted, read only when reported)
 
+- [x] (2026-10-02) Profile revenue dashboard per Figma 160-2 (ranges, previous period, today partial, tooltip); chat unblock; blocking a request also closes the chat
+
 ### Later — Verified audience
 
 - [ ] Verified follower counts: GitHub + YouTube first (no LINE OA: its token can send messages); links stay link-only until verified; daily snapshots for the 30-day change

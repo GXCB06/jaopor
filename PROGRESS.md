@@ -12,6 +12,23 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-02 — Profile revenue dashboard (Figma 160-2); chat unblock
+
+**Done:**
+
+- **Profile "รายได้รวม" dashboard** (owner request: follow the Figma / HTML mockup, Design.md §6 "Profile revenue dashboard"): replaces the startup page's MetricChart on profiles. Toolbar with the tabs and 7 วัน / 30 วัน / 12 เดือน (year buttons on the activity tab, same style); range total in the visitor's currency, growth vs the previous period (complete days only), legend with the works included; brand area + line, the previous period dashed behind it, today (this month on 12 เดือน) as a dashed partial segment ending in a ring; hover / touch / arrow-key tooltip; a screen-reader table; footer "ยืนยันผ่าน {sources} · อัปเดตล่าสุด {time} · ไม่รวมผลงานที่ยังไม่ยืนยัน". Verified, non-demo works only (the owner's own profile has only demo works, so it shows the owner prompt instead). Pure windowing in `lib/profile-revenue.ts`.
+- **Unblock** (owner question): the person who blocked sees "คุณบล็อกแชทนี้ไว้ · เลิกบล็อก" in the chat. Unblocking reopens the chat and undoes only what that block changed (the opening request is accepted again so LINE / email are shared as before; other requests it closed become declined; anything blocked earlier stays blocked; the accept trigger's notifications are removed). The block dialog no longer says "ถาวร".
+- **Gap closed:** blocking a contact request from คำขอคุย now also closes an existing chat with that person.
+
+**Files:** `src/lib/profile-revenue{,.test}.ts`, `src/lib/data/builder.ts` (`getBuilderRevenue`), `src/components/builder/{ProfileRevenueChart,ProfileChartTabs,toolbar}.tsx|ts`, `src/app/[locale]/u/[username]/page.tsx`, `src/app/actions/{chat,profile}.ts`, `src/lib/data/chat.ts`, `src/components/chat/ChatThread.tsx`, `src/app/[locale]/dashboard/messages/[id]/page.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- `npm test` 244/244 (new: 30-day window with today partial, 7 days without today, growth on complete days only, nulls before the first data, 12-month buckets, nice axis max, works label) · typecheck ✓ · lint ✓ · build ✓ · all new keys in th and en.
+- Temporary preview with sample data (deleted): 900px (tooltip, legend, partial ring, axis, footer), 12 เดือน, 375px (no horizontal scroll; x labels first / middle / "วันนี้" only after a label collision was found and fixed), owner empty state (en), chat "You blocked this chat · Unblock".
+- **Not verified yet:** unblocking on production with the owner's accounts.
+
+**Next:** owner unblocks the test chat (jaopor_dev → chawankorn_bouraphan) and checks the profile dashboard on a profile with verified, non-demo revenue.
+
 ## 2026-10-02 — Phase 11: in-app 1:1 chat
 
 **Done:**

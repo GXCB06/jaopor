@@ -23,8 +23,8 @@ import { ProfileViewBeacon } from "@/components/builder/ProfileViewBeacon";
 import { StatusPill } from "@/components/builder/StatusPill";
 import { ReportDialog } from "@/components/builder/ReportDialog";
 import { ProfileChartTabs } from "@/components/builder/ProfileChartTabs";
+import { toolbarButton } from "@/components/builder/toolbar";
 import { Card } from "@/components/core/Card";
-import { MetricChart } from "@/components/MetricChart";
 import { PostCard } from "@/components/posts/PostCard";
 import { GrowthValue, Money, StartupLogo } from "@/components/StartupBits";
 import { Link } from "@/i18n/navigation";
@@ -43,7 +43,7 @@ import { getProvince, getRegion } from "@/lib/config/provinces";
 import { getSkill } from "@/lib/config/skills";
 import { aiToolLabel, isAiTool } from "@/lib/config/stack";
 import {
-  getBuilderChart,
+  getBuilderRevenue,
   getBuilderCounts,
   getPublicProfile,
   getBuilderPage,
@@ -110,7 +110,7 @@ export default async function BuilderProfilePage({
     listPosts({ authorId: profile.id, limit: 4 }),
   ]);
   const { isOwner, works } = page;
-  const chart = await getBuilderChart(works);
+  const revenue = await getBuilderRevenue(works);
   const now = renderNow();
   const name = profile.display_name ?? profile.handle;
   const province = getProvince(profile.province);
@@ -129,14 +129,6 @@ export default async function BuilderProfilePage({
   // Demo projects carry sample numbers: never count them as this person's.
   const real = works.filter((w) => !w.is_demo);
   const commits = real.reduce((s, w) => s + (w.build_commits ?? 0), 0);
-  const sources = [
-    ...new Set(
-      verified
-        .map((w) => w.verified_provider)
-        .filter(isSource)
-        .map((x) => SOURCE_NAME[x]),
-    ),
-  ];
   const stars = real.reduce((s, w) => s + (w.build_stars ?? 0), 0);
   const months = monthsBuilding(
     real.map((w) => w.build_first_commit_at ?? w.created_at),
@@ -620,65 +612,53 @@ export default async function BuilderProfilePage({
           })()}
 
           {/* Revenue | activity (Design.md §6 Builder profile v2) */}
-          {chart || totalActivity > 0 || isOwner ? (
-            <Card className="p-4 sm:p-6">
+          {revenue || totalActivity > 0 || isOwner ? (
+            <Card className="rounded-2xl px-4 py-5 sm:px-6">
               <ProfileChartTabs
-                labels={{
-                  revenue: t("tabRevenue"),
-                  activity: t("tabActivity"),
-                  group: t("tabsLabel"),
-                }}
-                revenue={
-                  chart ? (
-                    <MetricChart
-                      series={chart}
-                      thbPerUsd={thbPerUsd}
-                      stamps={{
-                        revenue: (
-                          <span>
-                            ✓ {t("chartStamp", { sources: sources.join(", ") })}
-                          </span>
-                        ),
-                        mrr: (
-                          <span>
-                            ✓ {t("chartStamp", { sources: sources.join(", ") })}
-                          </span>
-                        ),
-                      }}
-                    />
+                revenue={revenue}
+                thbPerUsd={thbPerUsd}
+                sources={(revenue?.sources ?? [])
+                  .filter(isSource)
+                  .map((x) => SOURCE_NAME[x])
+                  .join(", ")}
+                revenueEmpty={
+                  isOwner ? (
+                    <div className="space-y-2 rounded-xl border border-dashed px-4 py-8 text-center text-caption text-muted-foreground">
+                      <p>{t("revenueEmptyOwner")}</p>
+                      <Link
+                        href="/dashboard/startups"
+                        className="font-semibold text-brand-text hover:underline"
+                      >
+                        {t("revenueEmptyCta")} →
+                      </Link>
+                    </div>
                   ) : null
+                }
+                activityActions={
+                  <nav aria-label={t("year")} className="flex gap-1">
+                    {[null, ...(page.hasLastYear ? [thisYear - 1] : [])].map(
+                      (y) => (
+                        <Link
+                          key={y ?? "now"}
+                          href={{
+                            pathname: `/u/${profile.handle}`,
+                            query: y ? { year: String(y) } : {},
+                          }}
+                          scroll={false}
+                          aria-current={year === y ? "page" : undefined}
+                          className={toolbarButton(year === y)}
+                        >
+                          {y ?? thisYear}
+                        </Link>
+                      ),
+                    )}
+                  </nav>
                 }
                 activity={
                   <section className="space-y-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h2 className="text-base font-bold">
-                        {t("activityTitle", { n: totalActivity })}
-                      </h2>
-                      <nav aria-label={t("year")} className="flex gap-1.5">
-                        {[
-                          null,
-                          ...(page.hasLastYear ? [thisYear - 1] : []),
-                        ].map((y) => (
-                          <Link
-                            key={y ?? "now"}
-                            href={{
-                              pathname: `/u/${profile.handle}`,
-                              query: y ? { year: String(y) } : {},
-                            }}
-                            scroll={false}
-                            aria-current={year === y ? "page" : undefined}
-                            className={cn(
-                              "rounded-md border px-3 py-1 text-caption",
-                              year === y
-                                ? "border-brand bg-brand font-semibold text-white"
-                                : "text-muted-foreground hover:text-foreground",
-                            )}
-                          >
-                            {y ?? thisYear}
-                          </Link>
-                        ))}
-                      </nav>
-                    </div>
+                    <h2 className="text-xl font-extrabold tabular-nums">
+                      {t("activityTitle", { n: totalActivity })}
+                    </h2>
                     <div className="overflow-x-auto pb-1">
                       <div className="min-w-[640px]">
                         <div className="relative ml-6 h-4 text-3xs text-faint">

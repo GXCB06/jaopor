@@ -68,7 +68,7 @@ export async function markRead(conversationId: number): Promise<void> {
   });
 }
 
-/** Block: closes the conversation for good and blocks the contact request between the two. */
+/** Block: closes the conversation and blocks the contact requests between the two (until unblocked). */
 export async function blockConversation(
   conversationId: number,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -98,6 +98,63 @@ export async function blockConversation(
       .or(
         `and(from_id.eq.${user.id},to_id.eq.${other}),and(from_id.eq.${other},to_id.eq.${user.id})`,
       );
+  }
+  revalidatePath("/[locale]/dashboard", "layout");
+  return { ok: true };
+}
+
+/**
+ * Unblock (only whoever blocked): reopens the conversation and undoes what that block changed:
+ * the request that opened the chat is accepted again (LINE / email shared as before) and other
+ * requests it closed become declined. Requests blocked earlier, before this block, stay blocked
+ * (the block action stamps responded_at, so they're told apart by time).
+ */
+export async function unblockConversation(
+  conversationId: number,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { supabase, user } = await me();
+  if (!user) return { ok: false, error: "signin" };
+  const { data: c } = await supabase
+    .from("conversations")
+    .select("id, user_a, user_b, blocked_by, blocked_at, request_id")
+    .eq("id", conversationId)
+    .maybeSingle();
+  if (!c) return { ok: false, error: "forbidden" };
+  if (!c.blocked_at) return { ok: true };
+  if (c.blocked_by !== user.id) return { ok: false, error: "forbidden" };
+  const other = c.user_a === user.id ? c.user_b : c.user_a;
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("conversations")
+    .update({ blocked_by: null, blocked_at: null })
+    .eq("id", conversationId);
+  if (error) return { ok: false, error: "failed" };
+  if (other) {
+    const pair = `and(from_id.eq.${user.id},to_id.eq.${other}),and(from_id.eq.${other},to_id.eq.${user.id})`;
+    if (c.request_id) {
+      // A minute of slack for clock skew between this server and the database.
+      const since = new Date(Date.now() - 60_000).toISOString();
+      const { count } = await admin
+        .from("contact_requests")
+        .update({ status: "accepted" }, { count: "exact" })
+        .eq("id", c.request_id)
+        .eq("status", "blocked")
+        .gte("responded_at", c.blocked_at);
+      // The accept trigger notifies both sides; a restore isn't a new acceptance.
+      if (count)
+        await admin
+          .from("notifications")
+          .delete()
+          .eq("request_id", c.request_id)
+          .eq("kind", "request_accepted")
+          .gte("created_at", since);
+    }
+    await admin
+      .from("contact_requests")
+      .update({ status: "declined" })
+      .eq("status", "blocked")
+      .gte("responded_at", c.blocked_at)
+      .or(pair);
   }
   revalidatePath("/[locale]/dashboard", "layout");
   return { ok: true };

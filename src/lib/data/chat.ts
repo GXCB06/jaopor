@@ -36,7 +36,7 @@ type Person = {
   avatar_url: string | null;
 } | null;
 
-const SELECT = `id, user_a, user_b, blocked_at, last_message_at, created_at,
+const SELECT = `id, user_a, user_b, blocked_at, blocked_by, last_message_at, created_at,
   a:profiles!conversations_user_a_fkey(id, handle, display_name, avatar_url),
   b:profiles!conversations_user_b_fkey(id, handle, display_name, avatar_url)`;
 
@@ -123,6 +123,8 @@ export async function getConversation(id: number) {
     viewer,
     other: person((c.user_a === viewer ? c.b : c.a) as Person),
     blocked: c.blocked_at !== null,
+    /** Only the person who blocked can unblock. */
+    blockedByMe: c.blocked_at !== null && c.blocked_by === viewer,
     messages: (msgs ?? []).reverse().map((m) => ({
       id: m.id,
       senderId: m.sender_id,
