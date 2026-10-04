@@ -12,6 +12,24 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-04 — Landed the iPhone upload fix and the share-image ฿ fix; trust pages built (awaiting approval)
+
+**Done:**
+
+- **iPhone / Safari uploads (`49ca189`, deployed):** the parallel session's uncommitted work (screenshots and post images fall back to JPEG; migration `upload_images_jpeg`, applied 2026-10-02) was committed, rebased onto master (one PROGRESS.md conflict; its RLS tests renumbered T108–T112 → T115–T119 to avoid the avatar tests), and deployed. Database and code were out of step until then (buckets accepted JPEG, the app still uploaded WebP only).
+- **Transparent PNG on Safari (item from the avatar close-out):** fixed by the same change: the shared encoder paints transparent pixels white before JPEG, for avatars too.
+- **Share-image "฿" box (`1c5b7f7`, deployed):** the baht session's uncommitted work (`lib/og-fonts`: each font subset its own family, used by all 7 next/og routes) applied as a patch on master and deployed. Production builder card now shows "฿2k" and bold Thai.
+- **`/security` and `/terms`** (footer links that 404): built with a shared `DocPage` (the Privacy page's frame), content in `messages/*.json` (`Security`, `Terms`). The security page states only what the code does (verified against the connectors, `crypto/keys.ts`, `sync.ts`, the cron schedule and the live DB: key table has no client grants, cascade on project delete). Terms is a plain-language draft. **Not pushed: waiting for the owner's approval of both texts.**
+
+**Files:** `src/components/DocPage.tsx`, `src/app/[locale]/{security,terms}/page.tsx`, `messages/*.json`, `Design.md`, `Project.md`, `PROGRESS.md` (+ the two landed commits)
+**Verified:**
+
+- Upload fix: typecheck ✓ · lint ✓ · tests 261/261 · build ✓; live DB (rolled back): `.jpg` screenshot / post image accepted, `.png` refused, another startup's folder refused, hide queues both files, both buckets exactly WebP + JPEG at 3 MB. Production: pages 200, existing WebP screenshots still served.
+- ฿ fix: tests 264/264 (incl. font coverage) · build ✓; production OG images 200 (builder th / en, startup, home, olympics), builder card shows "฿2k".
+- Trust pages: typecheck ✓ · lint ✓ · tests 264/264 · build ✓ (both prerendered in th / en; H1, 5 / 8 sections, contact link checked in the built HTML). Not viewed in the browser pane (the preview server runs the main checkout, not this worktree); same frame as the verified Privacy page.
+
+**Next:** owner approves (or edits) the `/security` and `/terms` wording → push. Owner-only pre-launch items remain in Project.md §7 (publish the Google consent screen, decide on the email provider, delete demo projects at launch).
+
 ## 2026-10-04 — OG images: "฿" missing-glyph box fixed (shared OG fonts)
 
 **Done:**

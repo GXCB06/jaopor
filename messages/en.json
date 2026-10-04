@@ -1632,5 +1632,187 @@
     "unblockBody": "The chat reopens, you can message each other again, and your LINE / email are shared as they were before the block.",
     "unblocked": "Unblocked",
     "blockedByMeNote": "You blocked this chat"
+  },
+  "Security": {
+    "metaTitle": "How we handle your key",
+    "title": "How we handle your API keys",
+    "updated": "Last updated: October 4, 2026",
+    "intro": "JaoPor shows verified numbers (revenue, visitors, GitHub activity) read from the services you already use. This page explains which keys we accept, how we store them, and how you can revoke them.",
+    "contact": "Found a vulnerability or have a security question? Contact:",
+    "email": "jaopordev@gmail.com",
+    "sections": [
+      {
+        "id": "read-only",
+        "title": "1. Read-only access only",
+        "body": "Before we store a key, we check every time that it can't write or change anything in your account. If it can, we reject it and don't keep it.",
+        "items": [
+          {
+            "b": "Stripe:",
+            "t": "only restricted keys (starting with rk_live_ or rk_test_). Full-access secret keys (sk_) are rejected. We send empty update requests for records that don't exist; the key must be told “no permission” to pass."
+          },
+          {
+            "b": "RevenueCat:",
+            "t": "the secret key (v2) must have no write permission. We check it the same way before storing it."
+          },
+          {
+            "b": "Cloudflare:",
+            "t": "the API token must have only Account Analytics: Read. If it can reach zones, Workers or account settings, we reject it, and we only read your project's own domain."
+          },
+          {
+            "b": "Plausible and Umami:",
+            "t": "Plausible Stats API keys are read-only by design; Umami uses a view-only share link."
+          },
+          {
+            "b": "GitHub:",
+            "t": "no key needed. We read public repos only, and the repo must belong to the GitHub account you signed in with (or an organisation you're a public member of)."
+          },
+          {
+            "b": "JaoPor visitor counter:",
+            "t": "a snippet you add to your own site. No key involved."
+          }
+        ]
+      },
+      {
+        "id": "encryption",
+        "title": "2. Encrypted before storage",
+        "items": [
+          {
+            "t": "Keys are encrypted with AES-256-GCM before they are saved. The decryption key is kept separately on the server only, not in the database."
+          },
+          {
+            "t": "Keys are decrypted only on the server when numbers are fetched. They are never sent back to the browser and never logged. After saving, you only see the last few characters to recognise the key."
+          },
+          {
+            "t": "The table that holds keys can't be read by any user or browser, including the project's owner."
+          }
+        ]
+      },
+      {
+        "title": "3. Only totals are stored",
+        "items": [
+          {
+            "t": "We store totals only, such as MRR, 30-day and all-time revenue, active subscriptions, visitor counts, and daily figures for the charts."
+          },
+          {
+            "t": "We never store your customers' data, such as names, emails or card details."
+          },
+          {
+            "t": "Verified numbers are public on your project page, labelled with the service that verified them."
+          }
+        ]
+      },
+      {
+        "title": "4. When numbers update",
+        "body": "Numbers are fetched once a day (around 3 AM Thailand time) and whenever you press “Refresh” in your dashboard."
+      },
+      {
+        "id": "disconnect",
+        "title": "5. Revoke at any time",
+        "items": [
+          {
+            "t": "Disconnect a source in your dashboard: the encrypted key, and that source's numbers and history, are deleted immediately."
+          },
+          {
+            "t": "You can also revoke the key at the provider, for example in Stripe under Developers → API keys. The numbers then stop updating and the project shows that the connection failed."
+          },
+          {
+            "t": "Deleting a project deletes all of its keys."
+          }
+        ]
+      }
+    ]
+  },
+  "Terms": {
+    "metaTitle": "Terms of use",
+    "title": "JaoPor terms of use",
+    "updated": "Last updated: October 4, 2026",
+    "intro": "These terms apply to your use of JaoPor (jaopor.vercel.app). By using the site or creating an account, you agree to these terms and to our privacy policy.",
+    "contact": "Questions about these terms:",
+    "email": "jaopordev@gmail.com",
+    "sections": [
+      {
+        "title": "1. Your account",
+        "items": [
+          {
+            "t": "You sign in with Google or GitHub and are responsible for activity on your account."
+          },
+          {
+            "t": "Your profile and projects must be your own. Don't impersonate another person or organisation."
+          }
+        ]
+      },
+      {
+        "title": "2. Content you publish",
+        "items": [
+          {
+            "t": "Your projects, posts, images and comments remain yours. You must have the right to publish them."
+          },
+          {
+            "t": "You allow JaoPor to display and share what you publish, including share images and cards made from it, to run the service and help people discover your work."
+          },
+          {
+            "t": "When you delete content or your account, we stop showing it as described in our privacy policy."
+          }
+        ]
+      },
+      {
+        "title": "3. Verified numbers",
+        "items": [
+          {
+            "t": "Verified numbers come from the services you connect, as those services report them. JaoPor doesn't audit your accounts and doesn't guarantee their accounting or tax accuracy."
+          },
+          {
+            "t": "Numbers on JaoPor are not investment or acquisition advice."
+          },
+          {
+            "t": "Don't fake or distort numbers, for example with fake sales or by connecting an account that doesn't belong to the project."
+          }
+        ]
+      },
+      {
+        "title": "4. What's not allowed",
+        "items": [
+          {
+            "t": "Spam, harassment, or illegal content."
+          },
+          {
+            "t": "Accessing data or systems without permission, or trying to get around usage limits or security."
+          },
+          {
+            "t": "Automated bulk collection that disrupts the service."
+          }
+        ]
+      },
+      {
+        "title": "5. Keeping the community safe",
+        "items": [
+          {
+            "t": "We may hide content, remove verification, or suspend accounts that break these terms."
+          },
+          {
+            "t": "You can report posts, comments, messages or users from the “Report” menu."
+          }
+        ]
+      },
+      {
+        "title": "6. The service",
+        "items": [
+          {
+            "t": "JaoPor is provided as is. It may change, pause, or contain errors."
+          },
+          {
+            "t": "To the extent the law allows, JaoPor is not liable for indirect damages from using the site."
+          }
+        ]
+      },
+      {
+        "title": "7. Changes to these terms",
+        "body": "When we change these terms, we update this page and the date above. Continuing to use JaoPor after that means you accept the new terms."
+      },
+      {
+        "title": "8. Governing law",
+        "body": "These terms are governed by the laws of Thailand."
+      }
+    ]
   }
 }

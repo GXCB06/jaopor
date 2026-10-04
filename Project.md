@@ -334,12 +334,12 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 - [x] Phase 9 (builder profiles): make the profile's founder name/avatar card link to `/u/{handle}` (user request 2026-09-30; done in 9b, 2026-10-01).
 - [ ] Enable GitHub **secret scanning + push protection** on the now-public `GXCB06/jaopor` repo (Settings → Code security). History checked 2026-09-30: only `.env.example` (public URL + publishable key) is tracked; no real secrets.
 - [ ] Rotate the Gemini key that was pasted into chat on 2026-09-30, then set `GEMINI_API_KEY` in Vercel.
-- [ ] Footer privacy/terms/security links 404 (pages don't exist yet); needed before Phase 8's /privacy note.
+- [ ] Footer privacy/terms/security links 404 → `/privacy` live; **`/security` ("How we handle your key") and `/terms` built 2026-10-04, awaiting the owner's approval of the wording** (terms ideally also a lawyer) before they ship.
 - [ ] The Figma MCP (Starter plan) hit its call limit on 2026-09-29. The remaining frames (Marketplace filters, share-dialog details) were built from screenshots; re-check the fine details once the limit resets.
 - [ ] Deploy the JPEG fallback (migration `upload_images_jpeg` applied 2026-10-02; code on branch `claude/upbeat-colden-9ef8d3`, waiting for the avatar v2 work on `master`) and test a screenshot + post image upload from an iPhone.
 - [ ] The OG card and share images still use Inconsolata. Vendor JetBrains Mono woff (OFL) if they should match the site font.
-- [ ] **Share image: the baht sign renders as a missing-glyph box** ("□2k" in the builder card's revenue tile). Predates the profile-photo work; being fixed in a separate session (task "Fix missing ฿ glyph in profile share image"). Not an avatar issue.
-- [ ] Profile photo (non-blocking, found 2026-10-04): a **transparent PNG uploaded from Safari gets a black background** (Safari can't encode WebP, the JPEG fallback has no transparency). Fix: fill the canvas (e.g. white) before encoding JPEG in `toAvatarImage` (`src/lib/webp.ts`).
+- [x] (2026-10-04, `1c5b7f7`) ~~**Share image: the baht sign renders as a missing-glyph box**~~ ("□2k" in the builder card's revenue tile). Predates the profile-photo work; being fixed in a separate session (task "Fix missing ฿ glyph in profile share image"). Not an avatar issue.
+- [x] (2026-10-04, `49ca189`) ~~Profile photo (non-blocking, found 2026-10-04): a **transparent PNG uploaded from Safari gets a black background**~~ (fixed by the shared JPEG encoder: transparent pixels are painted white) (Safari can't encode WebP, the JPEG fallback has no transparency). Fix: fill the canvas (e.g. white) before encoding JPEG in `toAvatarImage` (`src/lib/webp.ts`).
 - [ ] Profile photo (monitor only): very large phone photos (e.g. 48 MP) are decoded at full size in the browser before the 512 px crop. Passed the owner's real-device test; act only if crashes or reloads are reported on older iPhones (decode with `createImageBitmap` resize options).
 
 ## 8. Success metrics (first 30 days after launch)

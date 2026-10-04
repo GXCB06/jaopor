@@ -435,6 +435,12 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - §5 (`#live`) ends with **LiveOptOutControl**: `rounded-lg border bg-card px-4 py-3` row, Eye (positive) / EyeOff (faint) icon, status text, outline `sm` button ("ไม่แสดงตัวฉัน" / "แสดงตัวอีกครั้ง").
 - Wording is owner-approved (docs/privacy-draft.md); change it only with the owner, and update "ปรับปรุงล่าสุด".
 
+### Trust pages: "How we handle your key" (`/[locale]/security`) and Terms (`/[locale]/terms`), 2026-10-04
+
+- Same frame and type scale as the Privacy page (shared `DocPage`): H1, "ปรับปรุงล่าสุด", intro, contact mailto, numbered sections with paragraphs and bullet lists (lead phrase `font-semibold text-foreground`). Static, both locales; linked from the footer's "เกี่ยวกับเรา" column.
+- **Security** states only what the code does (read-only key checks per source, AES-256-GCM at rest, server-only decryption, aggregate numbers only, daily sync + รีเฟรช, disconnect deletes the key and that source's numbers). Section ids for deep links: `#read-only`, `#encryption`, `#disconnect`.
+- **Terms** is a plain-language draft; it needs the owner's (and ideally a lawyer's) approval before it ships, like the privacy wording.
+
 ### LiveViewersPill (startup page)
 
 - `rounded-full border-positive/30 bg-positive/10 text-positive text-2xs` + Eye: "{n} คนกำลังดูผลงานนี้", only when n ≥ 2 people are on the same project (any language).
