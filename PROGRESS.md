@@ -12,6 +12,16 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-04 — Fix: product page kept the old founder photo after a photo change
+
+**Root cause (owner report):** the product page (and home / directory) are ISR pages (60 s) that show the owner's photo, but the avatar actions only refreshed the dashboard and `/u/[username]`. ISR is stale-while-revalidate: after a change the product page kept serving the old photo until 60 s had passed _and_ a visit triggered a rebuild (production: `/th/startup/jaopor` served `STALE` at age 304–305 s with an old uploaded photo, then rebuilt on the next visit). The old file was already deleted, but the browser's image cache (1 year) kept showing it, so it looked unchanged rather than broken. Second, smaller cause: the founder-message photo (`ProfileBlocks`, 80 px) was missed by the `PersonPhoto` pass, so without a cached copy it would have been a broken image.
+
+**Done:** after a successful photo change the actions refresh the owner's projects' pages in every locale (`/{locale}/startup/{slug}`, `/{locale}`, `/{locale}/startups`, the same set as `revalidateStartup`), read with the user's own client (RLS) and not exported as an action. Founder-message photo now uses `PersonPhoto` (initials fallback). No database change.
+
+**Files:** `src/app/actions/profile.ts`, `src/components/ProfileBlocks.tsx`
+**Verified:** typecheck ✓ · lint ✓ · tests 261/261 · build ✓. No other person-photo renderer outside `PersonPhoto` remains (sweep of `<img>` / `<Image>`).
+**Not verified:** the immediate refresh on production (needs a signed-in photo change after deploy).
+
 ## 2026-10-04 — Profile photo review fixes (fallback, header refresh, share image, wording)
 
 **Done (owner review, category "fix before public launch"):**

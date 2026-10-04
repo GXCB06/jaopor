@@ -12,7 +12,6 @@ import {
   UsersIcon,
   type LucideIcon,
 } from "lucide-react";
-import Image from "next/image";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getCategory } from "@/lib/config/categories";
@@ -27,6 +26,7 @@ import { formatPricing } from "@/lib/pricing";
 import { isSyncStale, type StartupRow } from "@/lib/data/startups";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { cn } from "@/lib/utils";
+import { PersonPhoto } from "./PersonPhoto";
 import { Card } from "./core/Card";
 import { InsightCard } from "./core/InsightCard";
 import { LogoChip } from "./core/LogoChip";
@@ -353,22 +353,18 @@ export async function FounderMessageCard({ startup }: { startup: StartupRow }) {
   return (
     <section aria-label={t("founderMessage")}>
       <Card className="flex flex-col gap-5 p-5 sm:flex-row sm:p-6">
-        {owner?.avatar_url ? (
-          <Image
-            src={owner.avatar_url}
-            alt=""
-            width={80}
-            height={80}
-            className="size-20 shrink-0 rounded-full border object-cover"
-          />
-        ) : (
-          <span
-            aria-hidden="true"
-            className="flex size-20 shrink-0 items-center justify-center rounded-full border bg-secondary text-2xl font-bold text-muted-foreground uppercase"
-          >
-            {name.slice(0, 1)}
-          </span>
-        )}
+        <PersonPhoto
+          src={owner?.avatar_url}
+          className="size-20 shrink-0 rounded-full border object-cover"
+          fallback={
+            <span
+              aria-hidden="true"
+              className="flex size-20 shrink-0 items-center justify-center rounded-full border bg-secondary text-2xl font-bold text-muted-foreground uppercase"
+            >
+              {name.slice(0, 1)}
+            </span>
+          }
+        />
         <figure className="min-w-0 space-y-4">
           <p className="text-2xs font-bold tracking-wider text-faint uppercase">
             {t("founderMessage")}

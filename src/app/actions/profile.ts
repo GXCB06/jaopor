@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { routing } from "@/i18n/routing";
 import { isProvince } from "@/lib/config/provinces";
 import { MAX_SKILLS, MAX_SUPERPOWERS, isSkill } from "@/lib/config/skills";
 import {
@@ -376,6 +377,8 @@ export async function uploadAvatar(form: FormData): Promise<AvatarResult> {
       { upload: { bytes, ext, id: crypto.randomUUID() } },
       Date.now(),
     ),
+    supabase,
+    user.id,
   );
 }
 
@@ -392,6 +395,8 @@ export async function resetAvatar(
   if (limited) return limited;
   return finish(
     await changeAvatar(avatarPorts(), user.id, { url }, Date.now()),
+    supabase,
+    user.id,
   );
 }
 
@@ -410,11 +415,40 @@ async function takeAvatarChange(
 export type AvatarResult =
   { ok: true; url: string | null } | { ok: false; error: string };
 
-function finish(result: AvatarOutcome): AvatarResult {
+async function finish(
+  result: AvatarOutcome,
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+): Promise<AvatarResult> {
   if (!result.ok) return { ok: false, error: "save_failed" };
   refresh();
   revalidatePath("/[locale]/u/[username]", "page");
+  await revalidateOwnedStartups(supabase, userId);
   return { ok: true, url: result.url };
+}
+
+/**
+ * The owner's photo is shown on their projects' cached (ISR) pages: the product page's founder
+ * card and founder message, the home cards / leaderboard and the directory. Refresh those right
+ * away (same paths as revalidateStartup), otherwise they keep the old photo until the next
+ * revalidation. Not exported: only the avatar actions call it, for the signed-in user's own
+ * projects (read with their own client, so RLS applies).
+ */
+async function revalidateOwnedStartups(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+): Promise<void> {
+  const { data } = await supabase
+    .from("startups")
+    .select("slug")
+    .eq("owner_id", userId)
+    .limit(50);
+  for (const locale of routing.locales) {
+    for (const { slug } of data ?? [])
+      revalidatePath(`/${locale}/startup/${slug}`);
+    revalidatePath(`/${locale}`);
+    revalidatePath(`/${locale}/startups`);
+  }
 }
 
 function avatarPorts(): AvatarPorts {
