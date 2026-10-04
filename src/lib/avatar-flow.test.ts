@@ -88,9 +88,15 @@ function world() {
 describe("changeAvatar", () => {
   it("normal change: new file current, previous file deleted, nothing left queued", async () => {
     const w = world();
-    expect(await w.upload(A, 1)).toBe("ok");
-    expect(await w.upload(A, 2)).toBe("ok");
+    expect(await w.upload(A, 1)).toMatchObject({ ok: true });
+    expect(await w.upload(A, 2)).toMatchObject({ ok: true });
     expect(w.avatar.get(A)).toBe(`${BASE}${A}/${id(2)}.webp`);
+    // the URL handed back to the editor / header is exactly what was stored
+    expect(await w.upload(A, 3)).toEqual({
+      ok: true,
+      url: `${BASE}${A}/${id(3)}.webp`,
+    });
+    expect(await w.upload(A, 2)).toMatchObject({ ok: true });
     expect([...w.files.keys()]).toEqual([`${A}/${id(2)}.webp`]);
     expect(w.queue.size).toBe(0);
   });
@@ -99,7 +105,7 @@ describe("changeAvatar", () => {
     const w = world();
     await w.upload(A, 1);
     w.fail.set = true;
-    expect(await w.upload(A, 2)).toBe("failed");
+    expect(await w.upload(A, 2)).toEqual({ ok: false });
     expect(w.avatar.get(A)).toBe(`${BASE}${A}/${id(1)}.webp`);
     expect([...w.files.keys()]).toEqual([`${A}/${id(1)}.webp`]);
   });
@@ -108,7 +114,7 @@ describe("changeAvatar", () => {
     const w = world();
     w.fail.set = true;
     w.fail.remove = true;
-    expect(await w.upload(A, 1)).toBe("failed");
+    expect(await w.upload(A, 1)).toEqual({ ok: false });
     expect([...w.queue]).toEqual([`${A}/${id(1)}.webp`]);
   });
 
@@ -116,7 +122,7 @@ describe("changeAvatar", () => {
     const w = world();
     await w.upload(A, 1);
     w.fail.drain = true;
-    expect(await w.upload(A, 2)).toBe("ok");
+    expect(await w.upload(A, 2)).toMatchObject({ ok: true });
     expect([...w.queue]).toEqual([`${A}/${id(1)}.webp`]);
     w.fail.drain = false;
     await w.ports.drain([...w.queue]); // the daily cron
@@ -138,7 +144,7 @@ describe("changeAvatar", () => {
   it("D: rapid changes end with exactly the current file, which is never deleted", async () => {
     const w = world();
     for (let n = 1; n <= 6; n++) {
-      expect(await w.upload(A, n)).toBe("ok");
+      expect(await w.upload(A, n)).toMatchObject({ ok: true });
       w.tick(1000);
     }
     expect([...w.files.keys()]).toEqual([`${A}/${id(6)}.webp`]);
@@ -152,9 +158,13 @@ describe("changeAvatar", () => {
     const w = world();
     await w.upload(A, 1);
     const google = "https://lh3.googleusercontent.com/a/x=s96-c";
-    expect(await changeAvatar(w.ports, A, { url: google }, 0)).toBe("ok");
+    expect(await changeAvatar(w.ports, A, { url: google }, 0)).toMatchObject({
+      ok: true,
+    });
     expect(w.files.size).toBe(0);
-    expect(await changeAvatar(w.ports, A, { url: null }, 0)).toBe("ok");
+    expect(await changeAvatar(w.ports, A, { url: null }, 0)).toMatchObject({
+      ok: true,
+    });
     expect(w.queue.size).toBe(0);
   });
 
@@ -169,13 +179,13 @@ describe("changeAvatar", () => {
     // and A can't point its profile at B's file
     expect(
       await changeAvatar(w.ports, A, { url: `${BASE}${B}/${id(1)}.webp` }, 0),
-    ).toBe("failed");
+    ).toEqual({ ok: false });
   });
 
   it("upload failure changes nothing", async () => {
     const w = world();
     w.fail.upload = true;
-    expect(await w.upload(A, 1)).toBe("failed");
+    expect(await w.upload(A, 1)).toEqual({ ok: false });
     expect(w.files.size + w.queue.size).toBe(0);
     expect(w.avatar.get(A)).toBeNull();
   });

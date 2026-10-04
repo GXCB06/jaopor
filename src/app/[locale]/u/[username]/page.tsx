@@ -28,6 +28,7 @@ import { Card } from "@/components/core/Card";
 import { PostCard } from "@/components/posts/PostCard";
 import { GrowthValue, Money, StartupLogo } from "@/components/StartupBits";
 import { Link } from "@/i18n/navigation";
+import { PersonPhoto } from "@/components/PersonPhoto";
 import {
   badges,
   currentRole,
@@ -234,16 +235,10 @@ export default async function BuilderProfilePage({
         <aside className="space-y-6 lg:sticky lg:top-20 lg:self-start">
           <div className="relative w-fit">
             <span className="flex size-36 items-center justify-center overflow-hidden rounded-full border bg-secondary text-4xl font-bold text-muted-foreground uppercase lg:size-60 lg:text-7xl">
-              {profile.avatar_url?.startsWith("https://") ? (
-                // eslint-disable-next-line @next/next/no-img-element -- OAuth avatar
-                <img
-                  src={profile.avatar_url}
-                  alt=""
-                  className="size-full object-cover"
-                />
-              ) : (
-                name.slice(0, 2)
-              )}
+              <PersonPhoto
+                src={profile.avatar_url}
+                fallback={name.slice(0, 2)}
+              />
             </span>
             <span
               aria-hidden="true"

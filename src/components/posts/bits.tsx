@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import type { LinkPreview } from "@/lib/og-parse";
 import { postImageUrl, type PostType } from "@/lib/posts";
 import { cn } from "@/lib/utils";
+import { PersonPhoto } from "@/components/PersonPhoto";
 
 // Design.md §5 PostCard parts that need no client code.
 
@@ -47,17 +48,7 @@ export function Avatar({
         className,
       )}
     >
-      {src?.startsWith("https://") ? (
-        // eslint-disable-next-line @next/next/no-img-element -- OAuth avatar
-        <img
-          src={src}
-          alt=""
-          className="size-full object-cover"
-          loading="lazy"
-        />
-      ) : (
-        name.slice(0, 2)
-      )}
+      <PersonPhoto src={src} fallback={name.slice(0, 2)} loading="lazy" />
     </span>
   );
 }

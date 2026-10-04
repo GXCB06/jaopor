@@ -18,6 +18,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
+import { PersonPhoto } from "@/components/PersonPhoto";
+import { onAvatarChange } from "@/lib/avatar-events";
 import { createClient } from "@/lib/supabase/client";
 import { MessagesLink } from "./chat/MessagesLink";
 import { NotificationBell } from "./NotificationBell";
@@ -53,6 +55,8 @@ export function HeaderAuth() {
       .then(({ data }) =>
         setPhoto({ id: userId, url: data?.avatar_url ?? null }),
       );
+    // The profile editor announces a confirmed change, so the header follows without a reload.
+    return onAvatarChange((url) => setPhoto({ id: userId, url }));
   }, [userId]);
 
   if (user === undefined)
@@ -99,12 +103,7 @@ export function HeaderAuth() {
           aria-label={t("account")}
           className="inline-flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-secondary text-xs font-bold text-muted-foreground uppercase hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
         >
-          {avatar ? (
-            // eslint-disable-next-line @next/next/no-img-element -- profile photo, tiny
-            <img src={avatar} alt="" className="size-full object-cover" />
-          ) : (
-            name.slice(0, 1)
-          )}
+          <PersonPhoto src={avatar} fallback={name.slice(0, 1)} />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-48">
           <DropdownMenuLabel className="truncate text-caption font-normal text-muted-foreground">

@@ -7,21 +7,23 @@ import { toast } from "sonner";
 import { resetAvatar, uploadAvatar } from "@/app/actions/profile";
 import { Avatar } from "@/components/posts/bits";
 import { useRouter } from "@/i18n/navigation";
+import { announceAvatar } from "@/lib/avatar-events";
 import { toAvatarImage } from "@/lib/webp";
 
 /**
  * Design.md §6 Profile editor › ข้อมูลพื้นฐาน: the profile photo. Saved on its own (not part of the
- * form's unsaved changes): picked → centre-cropped to a 512 px WebP (JPEG on Safari) in the browser → uploaded.
+ * form's unsaved changes): picked → centre-cropped to a 512 px WebP (JPEG on Safari) in the browser
+ * → uploaded. After the server confirms, the stored URL is shown here and announced to the header.
  */
 export function AvatarField({
   name,
   url,
-  providerUrl,
+  provider,
 }: {
   name: string;
   url: string | null;
   /** The Google / GitHub sign-in photo, offered when the current photo is something else. */
-  providerUrl: string | null;
+  provider: { url: string; name: string } | null;
 }) {
   const t = useTranslations("Me");
   const router = useRouter();
@@ -49,9 +51,7 @@ export function AvatarField({
       form.set("file", new File([blob], "avatar", { type: blob.type }));
       const res = await uploadAvatar(form);
       if (!res.ok) return fail(res.error);
-      setCurrent(URL.createObjectURL(blob));
-      toast.success(t("photoSaved"));
-      router.refresh();
+      done(res.url, t("photoUpdated"));
     });
   };
 
@@ -59,31 +59,27 @@ export function AvatarField({
     start(async () => {
       const res = await resetAvatar(mode);
       if (!res.ok) return fail(res.error);
-      setCurrent(mode === "provider" ? providerUrl : null);
-      toast.success(t("photoSaved"));
-      router.refresh();
+      done(
+        res.url,
+        mode === "provider"
+          ? t("photoUsingProvider", { provider: provider?.name ?? "" })
+          : t("photoRemoved"),
+      );
     });
+
+  /** The server confirmed: show the stored photo here and in the header, refresh the page data. */
+  function done(stored: string | null, message: string) {
+    setCurrent(stored);
+    announceAvatar(stored);
+    toast.success(message);
+    router.refresh();
+  }
 
   const link =
     "text-caption font-semibold text-muted-foreground hover:text-foreground hover:underline disabled:opacity-50";
   return (
     <div className="flex items-center gap-4">
-      <span className="relative">
-        <Avatar
-          name={name || "?"}
-          src={current?.startsWith("blob:") ? null : current}
-          size={72}
-          className="text-sm"
-        />
-        {current?.startsWith("blob:") && (
-          // eslint-disable-next-line @next/next/no-img-element -- local preview of the new photo
-          <img
-            src={current}
-            alt=""
-            className="absolute inset-0 size-[72px] rounded-full border object-cover"
-          />
-        )}
-      </span>
+      <Avatar name={name || "?"} src={current} size={72} className="text-sm" />
       <div className="min-w-0 space-y-1.5">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
           <button
@@ -102,14 +98,14 @@ export function AvatarField({
             )}
             {busy ? t("photoSaving") : t("photoChange")}
           </button>
-          {providerUrl && current !== providerUrl && (
+          {provider && current !== provider.url && (
             <button
               type="button"
               disabled={busy}
               onClick={() => reset("provider")}
               className={link}
             >
-              {t("photoUseProvider")}
+              {t("photoUseProvider", { provider: provider.name })}
             </button>
           )}
           {current && (

@@ -5,7 +5,6 @@ import {
   MapPinIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   getFormatter,
@@ -39,6 +38,7 @@ import { FoundingBadge, Money, StartupLogo } from "@/components/StartupBits";
 import { QuickSearchSection } from "@/components/search/QuickSearchSection";
 import { StartupCard } from "@/components/StartupCard";
 import { Link } from "@/i18n/navigation";
+import { PersonPhoto } from "@/components/PersonPhoto";
 import { PostPreview } from "@/components/posts/PostPreview";
 import { listStartupPostsPublic } from "@/lib/data/posts";
 import { renderNow } from "@/lib/posts";
@@ -333,15 +333,11 @@ export default async function StartupPage({ params }: Props) {
                 label={t("founder")}
                 value={
                   <span className="flex items-center gap-2 text-base">
-                    {owner?.avatar_url ? (
-                      <Image
-                        src={owner.avatar_url}
-                        alt=""
-                        width={20}
-                        height={20}
-                        className="size-5 rounded-full"
-                      />
-                    ) : null}
+                    <PersonPhoto
+                      src={owner?.avatar_url}
+                      className="size-5 shrink-0 rounded-full object-cover"
+                      fallback={null}
+                    />
                     <span className="truncate">{ownerName}</span>
                   </span>
                 }

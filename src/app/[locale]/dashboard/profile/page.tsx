@@ -5,7 +5,7 @@ import {
   type EditorInitial,
 } from "@/components/profile-edit/ProfileEditor";
 import { requireUserId } from "@/lib/auth";
-import { providerPhoto } from "@/lib/avatar";
+import { providerPhotoSource } from "@/lib/avatar";
 import {
   getMyContacts,
   getMyPositions,
@@ -47,12 +47,13 @@ export default async function ProfileEditPage({
   ]);
   if (!profile) return null;
   const { data: auth } = await supabase.auth.getUser();
+  const signIn = providerPhotoSource(auth.user);
 
   return (
     <ProfileEditor
       avatar={{
         url: profile.avatar_url,
-        providerUrl: providerPhoto(auth.user),
+        provider: signIn ? { url: signIn.url, name: signIn.provider } : null,
       }}
       initial={{
         handle: profile.handle ?? "",

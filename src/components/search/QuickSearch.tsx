@@ -11,6 +11,7 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
+import { PersonPhoto } from "@/components/PersonPhoto";
 import { CATEGORY_LIST, getCategory } from "@/lib/config/categories";
 import { localizedName } from "@/lib/config/localized";
 import { highlightParts } from "@/lib/search-text";
@@ -334,16 +335,7 @@ export function QuickSearch({
               "people",
               <>
                 <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-secondary text-3xs font-bold text-muted-foreground uppercase">
-                  {p.avatar ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- OAuth avatar
-                    <img
-                      src={p.avatar}
-                      alt=""
-                      className="size-full object-cover"
-                    />
-                  ) : (
-                    p.name.slice(0, 2)
-                  )}
+                  <PersonPhoto src={p.avatar} fallback={p.name.slice(0, 2)} />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-xs font-semibold">

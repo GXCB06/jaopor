@@ -5,6 +5,8 @@ import {
   ownAvatarFile,
   ownAvatarPath,
   providerPhoto,
+  providerPhotoSource,
+  shareablePhoto,
 } from "./avatar";
 
 const bytes = (s: string) => new Uint8Array([...s].map((c) => c.charCodeAt(0)));
@@ -94,5 +96,54 @@ describe("providerPhoto (never from user-editable metadata)", () => {
     expect(
       PROVIDER_PHOTO.test("https://avatars.githubusercontent.com/u/1 x"),
     ).toBe(false);
+  });
+});
+
+describe("providerPhotoSource (editor wording)", () => {
+  it("names the provider the photo comes from", () => {
+    expect(
+      providerPhotoSource({
+        identities: [
+          {
+            provider: "github",
+            identity_data: {
+              avatar_url: "https://avatars.githubusercontent.com/u/1?v=4",
+            },
+          },
+        ],
+      }),
+    ).toEqual({
+      url: "https://avatars.githubusercontent.com/u/1?v=4",
+      provider: "GitHub",
+    });
+  });
+});
+
+describe("shareablePhoto (what the share-image renderer may fetch)", () => {
+  const project = "https://letfxefyqxxrfujpwtri.supabase.co";
+  it("allows Google / GitHub photos and our own uploaded photos", () => {
+    expect(
+      shareablePhoto("https://lh5.googleusercontent.com/a/x=s96-c", project),
+    ).toBe(true);
+    expect(
+      shareablePhoto("https://avatars.githubusercontent.com/u/1?v=4", project),
+    ).toBe(true);
+    expect(shareablePhoto(`${base}${A}/${F}.webp`, project)).toBe(true);
+    expect(shareablePhoto(`${base}${A}/${F}.jpg`, `${project}/`)).toBe(true);
+  });
+  it("never anything else", () => {
+    expect(shareablePhoto("https://evil.example/p.png", project)).toBe(false);
+    expect(
+      shareablePhoto(`${base}${A}/${F}.webp`, "https://other.supabase.co"),
+    ).toBe(false);
+    expect(
+      shareablePhoto(
+        `${project}/storage/v1/object/public/logos/${A}/${F}.webp`,
+        project,
+      ),
+    ).toBe(false);
+    expect(shareablePhoto(`${base}${A}/../${F}.webp`, project)).toBe(false);
+    expect(shareablePhoto(`${base}${A}/${F}.webp?x=1`, project)).toBe(false);
+    expect(shareablePhoto(null, project)).toBe(false);
   });
 });

@@ -15,6 +15,7 @@ import { RequestActions } from "@/components/dashboard/RequestActions";
 import { Composer } from "@/components/posts/Composer";
 import { Money, StartupLogo } from "@/components/StartupBits";
 import { Link } from "@/i18n/navigation";
+import { PersonPhoto } from "@/components/PersonPhoto";
 import { requireUserId } from "@/lib/auth";
 import { getThbPerUsd } from "@/lib/data/fx";
 import { myPostableStartups } from "@/lib/data/posts";
@@ -422,16 +423,10 @@ export default async function DashboardPage({
                   <li key={r.id} className="space-y-3 border-b px-5 py-4">
                     <div className="flex gap-3">
                       <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-secondary text-2xs font-bold uppercase">
-                        {r.other?.avatar_url?.startsWith("https://") ? (
-                          // eslint-disable-next-line @next/next/no-img-element -- OAuth avatar
-                          <img
-                            src={r.other.avatar_url}
-                            alt=""
-                            className="size-full object-cover"
-                          />
-                        ) : (
-                          (r.other?.display_name ?? "?").slice(0, 2)
-                        )}
+                        <PersonPhoto
+                          src={r.other?.avatar_url}
+                          fallback={(r.other?.display_name ?? "?").slice(0, 2)}
+                        />
                       </span>
                       <span className="min-w-0 text-caption">
                         <span className="block truncate">

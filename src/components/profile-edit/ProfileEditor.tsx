@@ -106,7 +106,10 @@ export function ProfileEditor({
 }: {
   initial: EditorInitial;
   /** Saved on its own by AvatarField, outside the form's unsaved changes. */
-  avatar: { url: string | null; providerUrl: string | null };
+  avatar: {
+    url: string | null;
+    provider: { url: string; name: string } | null;
+  };
 }) {
   const t = useTranslations("Me");
   const locale = useLocale();
@@ -441,7 +444,7 @@ export function ProfileEditor({
             <AvatarField
               name={f.displayName || f.handle}
               url={avatar.url}
-              providerUrl={avatar.providerUrl}
+              provider={avatar.provider}
             />
           </div>
           <Field label={t("f.displayName")} htmlFor="p-name">

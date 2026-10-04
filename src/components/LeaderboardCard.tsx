@@ -2,10 +2,10 @@
 
 import { Medal } from "./core/Medal";
 import { ChevronDownIcon } from "lucide-react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Link } from "@/i18n/navigation";
+import { PersonPhoto } from "@/components/PersonPhoto";
 import type { BoardMetric } from "@/lib/data/startups";
 import { CornerTag, GrowthValue, Money, StartupLogo } from "./StartupBits";
 
@@ -144,19 +144,15 @@ export function LeaderboardCard({
                 <td className="hidden px-3 py-3 sm:table-cell">
                   {r.founder ? (
                     <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
-                      {r.founder.avatar ? (
-                        <Image
-                          src={r.founder.avatar}
-                          alt=""
-                          width={16}
-                          height={16}
-                          className="size-4 rounded-full"
-                        />
-                      ) : (
-                        <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-secondary text-3xs uppercase">
-                          {r.founder.name.slice(0, 1)}
-                        </span>
-                      )}
+                      <PersonPhoto
+                        src={r.founder.avatar}
+                        className="size-4 shrink-0 rounded-full object-cover"
+                        fallback={
+                          <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-secondary text-3xs uppercase">
+                            {r.founder.name.slice(0, 1)}
+                          </span>
+                        }
+                      />
                       <span className="truncate">{r.founder.name}</span>
                     </span>
                   ) : (

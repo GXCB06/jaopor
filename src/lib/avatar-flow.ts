@@ -27,6 +27,9 @@ export type AvatarPorts = {
  * uploads; younger ones may belong to a parallel request, so they are left alone. */
 export const ORPHAN_AGE_MS = 10 * 60_000;
 
+/** On success, the URL now stored (null = initials), for the editor and the header. */
+export type AvatarOutcome = { ok: true; url: string | null } | { ok: false };
+
 export type AvatarChange =
   | { upload: { bytes: Uint8Array; ext: "webp" | "jpg"; id: string } }
   | { url: string | null };
@@ -36,7 +39,7 @@ export async function changeAvatar(
   userId: string,
   change: AvatarChange,
   now: number,
-): Promise<"ok" | "failed"> {
+): Promise<AvatarOutcome> {
   const before = await ports.current(userId);
   const keep = ownAvatarPath(before, userId);
   let path: string | null = null;
@@ -58,9 +61,10 @@ export async function changeAvatar(
       `${userId}/${change.upload.id}.${change.upload.ext}`,
       userId,
     );
-    if (!path) return "failed";
+    if (!path) return { ok: false };
     const type = change.upload.ext === "webp" ? "image/webp" : "image/jpeg";
-    if (!(await ports.upload(path, change.upload.bytes, type))) return "failed";
+    if (!(await ports.upload(path, change.upload.bytes, type)))
+      return { ok: false };
     url = ports.publicUrl(path);
   } else {
     url = change.url;
@@ -70,9 +74,9 @@ export async function changeAvatar(
     // Never leave the new file behind: delete it, or queue it if even that fails.
     if (path && !(await ports.remove([path]).catch(() => false)))
       await ports.queue(path).catch(() => {});
-    return "failed";
+    return { ok: false };
   }
   // The trigger queued the previous file; delete it now rather than at the next cron.
   if (keep && keep !== path) await ports.drain([keep]).catch(() => {});
-  return "ok";
+  return { ok: true, url };
 }

@@ -4,7 +4,9 @@
 import "server-only";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { shareablePhoto } from "@/lib/avatar";
 import { getScreenshots } from "@/lib/data/startups";
+import { publicEnv } from "@/lib/public-env";
 import { screenshotUrl } from "@/lib/media";
 import { logoUrl } from "@/lib/supabase/public";
 
@@ -74,22 +76,17 @@ export async function ogCoverDataUri(
   }
 }
 
-// OAuth avatars only: the profile row's avatar_url is user-influenced, so the OG renderer never
-// fetches any other host.
-const AVATAR_HOSTS = new Set([
-  "lh3.googleusercontent.com",
-  "avatars.githubusercontent.com",
-]);
-
-/** Builder avatar as a 256px PNG data URI (allowlisted OAuth hosts only). */
+/**
+ * Builder avatar as a 256px PNG data URI. Only Google / GitHub photos and files in our own
+ * avatars bucket are fetched (`shareablePhoto`, same rule as the database constraint); uploaded
+ * photos are WebP / JPEG and sharp converts them. Anything else → null (initials on the card).
+ */
 export async function avatarDataUri(
   url: string | null,
 ): Promise<string | null> {
   try {
-    if (!url) return null;
-    const u = new URL(url);
-    if (u.protocol !== "https:" || !AVATAR_HOSTS.has(u.hostname)) return null;
-    const bytes = await fetchBytes(u.toString());
+    if (!url || !shareablePhoto(url, publicEnv.supabaseUrl)) return null;
+    const bytes = await fetchBytes(url);
     if (!bytes) return null;
     return await toDataUri(
       bytes,

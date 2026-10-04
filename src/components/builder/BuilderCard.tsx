@@ -2,6 +2,7 @@ import { BadgeCheckIcon, MapPinIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Money } from "@/components/StartupBits";
 import { Link } from "@/i18n/navigation";
+import { PersonPhoto } from "@/components/PersonPhoto";
 import type { DirectoryBuilder } from "@/lib/builders";
 import { localizedName } from "@/lib/config/localized";
 import { getProvince } from "@/lib/config/provinces";
@@ -32,17 +33,11 @@ export function BuilderCard({
     >
       <div className="flex items-center gap-3">
         <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-secondary text-sm font-bold text-muted-foreground uppercase">
-          {b.avatarUrl?.startsWith("https://") ? (
-            // eslint-disable-next-line @next/next/no-img-element -- OAuth avatar
-            <img
-              src={b.avatarUrl}
-              alt=""
-              loading="lazy"
-              className="size-full object-cover"
-            />
-          ) : (
-            b.name.slice(0, 2)
-          )}
+          <PersonPhoto
+            src={b.avatarUrl}
+            fallback={b.name.slice(0, 2)}
+            loading="lazy"
+          />
         </span>
         <span className="min-w-0">
           <span className="block truncate font-semibold group-hover:underline">

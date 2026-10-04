@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Card } from "@/components/core/Card";
 import { Link } from "@/i18n/navigation";
+import { PersonPhoto } from "@/components/PersonPhoto";
 import { requireUserId } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -59,16 +60,10 @@ export default async function ConnectionsPage({
                 className="flex items-center gap-3 px-5 py-3 hover:bg-accent/40"
               >
                 <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-secondary text-2xs font-bold uppercase">
-                  {p.avatar_url?.startsWith("https://") ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- OAuth avatar
-                    <img
-                      src={p.avatar_url}
-                      alt=""
-                      className="size-full object-cover"
-                    />
-                  ) : (
-                    (p.display_name ?? p.handle).slice(0, 2)
-                  )}
+                  <PersonPhoto
+                    src={p.avatar_url}
+                    fallback={(p.display_name ?? p.handle).slice(0, 2)}
+                  />
                 </span>
                 <span className="min-w-0 text-caption">
                   <span className="block truncate font-semibold">

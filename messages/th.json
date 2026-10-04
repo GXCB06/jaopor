@@ -1224,10 +1224,12 @@
     "openChat": "เปิดแชท",
     "photoChange": "เปลี่ยนรูป",
     "photoSaving": "กำลังบันทึก…",
-    "photoUseProvider": "ใช้รูปจากบัญชีที่ใช้เข้าสู่ระบบ",
+    "photoUseProvider": "ใช้รูปจาก {provider}",
     "photoRemove": "ลบรูป",
-    "photoSaved": "บันทึกรูปโปรไฟล์แล้ว",
-    "photoHint": "JPG, PNG หรือ WebP · ระบบตัดเป็นสี่เหลี่ยมจัตุรัสตรงกลางและย่อเหลือ 512 px ในเครื่องคุณ ข้อมูลตำแหน่งในรูปถูกลบก่อนอัปโหลด"
+    "photoHint": "JPG, PNG หรือ WebP · ระบบจะครอปเป็นสี่เหลี่ยมจัตุรัสจากตรงกลาง และลบข้อมูลตำแหน่งในรูปก่อนอัปโหลด",
+    "photoUpdated": "อัปเดตรูปโปรไฟล์แล้ว",
+    "photoUsingProvider": "เปลี่ยนเป็นรูปจาก {provider} แล้ว",
+    "photoRemoved": "ลบรูปโปรไฟล์แล้ว"
   },
   "Builder": {
     "editProfile": "แก้ไขโปรไฟล์",

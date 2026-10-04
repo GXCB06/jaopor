@@ -12,6 +12,20 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-04 — Profile photo review fixes (fallback, header refresh, share image, wording)
+
+**Done (owner review, category "fix before public launch"):**
+
+- **Photo fallback everywhere** (`PersonPhoto`): 11 hand-rolled avatar renderers (shared Avatar for posts / comments / chat / feed, builder cards, profile, dashboard, requests, connections, sidebar, header, quick search, leaderboard, startup founder) now show the frame's initials when a photo is missing, not https, deleted or fails to load, including images that fail before hydration. Fixes the blank circle on cached home / startup pages (60 s ISR) after a photo change deleted the old file, without giving up caching.
+- **Header updates at once:** the editor announces the confirmed stored URL (`lib/avatar-events.ts`, a same-page event) and the header listens; no global store, no reload. The editor now shows the stored URL instead of a local blob preview (the actions return `{ ok, url }`).
+- **Share images used to drop uploaded photos:** the OG renderer only fetched `lh3.googleusercontent.com` / GitHub; it now uses `shareablePhoto` (Google `lhN` / GitHub, or a uuid file in our own avatars bucket, nothing else).
+- **Wording:** toasts name the result ("อัปเดตรูปโปรไฟล์แล้ว" / "เปลี่ยนเป็นรูปจาก {provider} แล้ว" / "ลบรูปโปรไฟล์แล้ว"); the button names the provider ("ใช้รูปจาก Google"); the hint keeps formats, centre-square crop and location removal, drops "512 px" and processing details.
+
+**Files:** `src/components/PersonPhoto.tsx`, `src/lib/avatar-events.ts`, `src/lib/avatar{,.test}.ts`, `src/lib/avatar-flow{,.test}.ts`, `src/lib/og-images.ts`, `src/app/actions/profile.ts`, `src/components/profile-edit/{AvatarField,ProfileEditor}.tsx`, `src/components/{HeaderAuth,LeaderboardCard,posts/bits,builder/BuilderCard,dashboard/DashboardSidebar,search/QuickSearch}.tsx`, `src/app/[locale]/{u/[username],startup/[slug],dashboard,dashboard/{profile,requests,connections}}/page.tsx`, `messages/*.json`, `Design.md`
+**Verified:** typecheck ✓ · lint ✓ (project; worktrees excluded) · tests 261/261 (new: stored URL returned by the flow, provider name, share-image allowlist) · build ✓ · browser (temporary page, deleted): live Google photo loads; deleted Storage file, non-https URL and no photo all show initials in both the shared Avatar and a bare frame. No database change: live check confirms avatar_url not client-writable, 3 restrictive storage policies, bucket 1 MB webp/jpeg, constraint + cleanup trigger present, rate function not callable by anon.
+**Not verified:** header update and toasts while signed in (needs the owner's session), share image with the uploaded photo (after deploy), any iPhone / Safari behaviour.
+**Next:** owner review → push → owner signed-in check + real iPhone test.
+
 ## 2026-10-02 — Profile photo upload (migration applied after owner security review; not pushed yet)
 
 **Done:**

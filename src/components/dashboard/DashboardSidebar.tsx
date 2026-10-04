@@ -19,6 +19,7 @@ import { useRef } from "react";
 import { LocaleSwitch } from "@/components/LocaleSwitch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Link, usePathname } from "@/i18n/navigation";
+import { PersonPhoto } from "@/components/PersonPhoto";
 import { cn } from "@/lib/utils";
 
 type Item = {
@@ -170,12 +171,7 @@ export function DashboardSidebar({
             className="flex items-center gap-2.5 hover:underline"
           >
             <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-secondary text-xs font-bold uppercase">
-              {avatar ? (
-                // eslint-disable-next-line @next/next/no-img-element -- OAuth avatar, tiny
-                <img src={avatar} alt="" className="size-full object-cover" />
-              ) : (
-                name.slice(0, 2)
-              )}
+              <PersonPhoto src={avatar} fallback={name.slice(0, 2)} />
             </span>
             <span className="min-w-0">
               <span className="block truncate text-xs font-semibold">

@@ -1224,10 +1224,12 @@
     "openChat": "Open chat",
     "photoChange": "Change photo",
     "photoSaving": "Saving…",
-    "photoUseProvider": "Use my sign-in photo",
+    "photoUseProvider": "Use my {provider} photo",
     "photoRemove": "Remove photo",
-    "photoSaved": "Profile photo saved",
-    "photoHint": "JPG, PNG or WebP · cropped to a centred square and resized to 512 px on your device; location data is removed before upload"
+    "photoHint": "JPG, PNG or WebP. We crop it to a square from the center and remove location data before upload.",
+    "photoUpdated": "Profile photo updated",
+    "photoUsingProvider": "Now using your {provider} photo",
+    "photoRemoved": "Profile photo removed"
   },
   "Builder": {
     "editProfile": "Edit profile",

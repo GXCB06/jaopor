@@ -52,16 +52,22 @@ type Identity = {
   identity_data?: Record<string, unknown> | null;
 };
 
+const PROVIDER_NAME: Record<string, string> = {
+  google: "Google",
+  github: "GitHub",
+};
+
 /**
  * The sign-in photo, read from the provider's identity data (written by Google / GitHub at
  * sign-in). Never from user_metadata: users can edit that themselves through the Auth API.
+ * `provider` is the display name for the editor's wording ("ใช้รูปจาก Google").
  */
-export function providerPhoto(
+export function providerPhotoSource(
   user: {
     identities?: Identity[] | null;
     app_metadata?: { provider?: string } | null;
   } | null,
-): string | null {
+): { url: string; provider: string } | null {
   const ids = user?.identities ?? [];
   const last = user?.app_metadata?.provider;
   const ordered = [
@@ -75,7 +81,34 @@ export function providerPhoto(
       url.length <= 500 &&
       PROVIDER_PHOTO.test(url)
     )
-      return url;
+      return {
+        url,
+        provider: PROVIDER_NAME[i.provider ?? ""] ?? "Google / GitHub",
+      };
   }
   return null;
+}
+
+/** Just the sign-in photo URL (what the server action stores). */
+export function providerPhoto(
+  user: Parameters<typeof providerPhotoSource>[0],
+): string | null {
+  return providerPhotoSource(user)?.url ?? null;
+}
+
+/**
+ * May the share-image renderer fetch this photo? Google / GitHub photos, or a file in our own
+ * avatars bucket (`supabaseUrl` = this project's URL). Nothing else is ever fetched server-side.
+ */
+export function shareablePhoto(
+  url: string | null | undefined,
+  supabaseUrl: string,
+): boolean {
+  if (!url || url.length > 500) return false;
+  if (PROVIDER_PHOTO.test(url)) return true;
+  const prefix = `${supabaseUrl.replace(/\/+$/, "")}/storage/v1/object/public/${AVATAR_BUCKET}/`;
+  if (!url.startsWith(prefix)) return false;
+  return new RegExp(`^${UUID}/${UUID}\\.(webp|jpg)$`).test(
+    url.slice(prefix.length),
+  );
 }

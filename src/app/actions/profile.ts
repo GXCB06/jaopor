@@ -20,7 +20,11 @@ import {
   avatarType,
   providerPhoto,
 } from "@/lib/avatar";
-import { changeAvatar, type AvatarPorts } from "@/lib/avatar-flow";
+import {
+  changeAvatar,
+  type AvatarOutcome,
+  type AvatarPorts,
+} from "@/lib/avatar-flow";
 import { drainStorageCleanup } from "@/lib/storage-cleanup";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -351,7 +355,7 @@ export async function savePins(startupIds: number[]): Promise<ActionResult> {
  * write the bucket or avatar_url, so the upload and the update use the service role; the
  * database still checks the URL (profiles_avatar_url_source) and rate-limits (20 a day).
  */
-export async function uploadAvatar(form: FormData): Promise<ActionResult> {
+export async function uploadAvatar(form: FormData): Promise<AvatarResult> {
   const { supabase, user } = await me();
   if (!user) return { ok: false, error: "unauthorized" };
   const file = form.get("file");
@@ -378,7 +382,7 @@ export async function uploadAvatar(form: FormData): Promise<ActionResult> {
 /** Back to the Google / GitHub photo ("provider") or to initials ("none"). */
 export async function resetAvatar(
   mode: "provider" | "none",
-): Promise<ActionResult> {
+): Promise<AvatarResult> {
   const { supabase, user } = await me();
   if (!user) return { ok: false, error: "unauthorized" };
   // From the provider identity, never from user_metadata (user-editable).
@@ -393,7 +397,7 @@ export async function resetAvatar(
 
 async function takeAvatarChange(
   supabase: Awaited<ReturnType<typeof createClient>>,
-): Promise<ActionResult | null> {
+): Promise<AvatarResult | null> {
   const { error } = await supabase.rpc("take_avatar_change");
   if (!error) return null;
   return {
@@ -402,11 +406,15 @@ async function takeAvatarChange(
   };
 }
 
-function finish(result: "ok" | "failed"): ActionResult {
-  if (result === "failed") return { ok: false, error: "save_failed" };
+/** The avatar actions also return the URL now stored, so the editor and header show it. */
+export type AvatarResult =
+  { ok: true; url: string | null } | { ok: false; error: string };
+
+function finish(result: AvatarOutcome): AvatarResult {
+  if (!result.ok) return { ok: false, error: "save_failed" };
   refresh();
   revalidatePath("/[locale]/u/[username]", "page");
-  return { ok: true };
+  return { ok: true, url: result.url };
 }
 
 function avatarPorts(): AvatarPorts {
