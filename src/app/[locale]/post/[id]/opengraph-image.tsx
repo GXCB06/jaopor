@@ -1,9 +1,8 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
 import { getPost } from "@/lib/data/posts";
 import { logoTileDataUri } from "@/lib/logo";
+import { OG_SANS, ogFonts } from "@/lib/og-fonts";
 import { avatarDataUri } from "@/lib/og-images";
 import { publicEnv } from "@/lib/public-env";
 import { BRAND_HEX, CARD_THEME } from "@/lib/share-palette";
@@ -18,9 +17,6 @@ export const revalidate = 300;
 
 const C = { ...CARD_THEME.dark, brand: BRAND_HEX };
 
-const font = (file: string) =>
-  readFile(join(process.cwd(), "src/assets/fonts", file));
-
 export default async function Image({
   params,
 }: {
@@ -29,16 +25,12 @@ export default async function Image({
   const { locale, id } = await params;
   const found = /^[0-9]{1,18}$/.test(id) ? await getPost(Number(id)) : null;
   const post = found && !found.hidden ? found : null;
-  const [t, plexThai, plexThaiBold, plexLatin, plexLatinBold, tile, avatar] =
-    await Promise.all([
-      getTranslations({ locale, namespace: "Posts" }),
-      font("ibm-plex-sans-thai-thai-400-normal.woff"),
-      font("ibm-plex-sans-thai-thai-700-normal.woff"),
-      font("ibm-plex-sans-thai-latin-400-normal.woff"),
-      font("ibm-plex-sans-thai-latin-700-normal.woff"),
-      logoTileDataUri(),
-      avatarDataUri(post?.author.avatarUrl ?? null),
-    ]);
+  const [t, fonts, tile, avatar] = await Promise.all([
+    getTranslations({ locale, namespace: "Posts" }),
+    ogFonts(),
+    logoTileDataUri(),
+    avatarDataUri(post?.author.avatarUrl ?? null),
+  ]);
   const host = new URL(publicEnv.siteUrl).host;
   const body = post
     ? post.body.length > 160
@@ -57,7 +49,7 @@ export default async function Image({
         background: C.bg,
         color: C.fg,
         padding: 64,
-        fontFamily: "Plex",
+        fontFamily: OG_SANS,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -129,12 +121,7 @@ export default async function Image({
     </div>,
     {
       ...size,
-      fonts: [
-        { name: "Plex", data: plexLatin, weight: 400, style: "normal" },
-        { name: "Plex", data: plexLatinBold, weight: 700, style: "normal" },
-        { name: "Plex", data: plexThai, weight: 400, style: "normal" },
-        { name: "Plex", data: plexThaiBold, weight: 700, style: "normal" },
-      ],
+      fonts,
     },
   );
 }

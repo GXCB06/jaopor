@@ -12,6 +12,26 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-04 — OG images: "฿" missing-glyph box fixed (shared OG fonts)
+
+**Done:**
+
+- **Builder OG image** showed the verified revenue as "□2k". The amount is drawn in `Mono` (Inconsolata, Latin only), and "฿" (U+0E3F) exists only in the Thai subset of IBM Plex Sans Thai.
+- **Root cause, every next/og route:** the renderer (Satori) keeps one file per family name and weight. The Latin and Thai Plex subsets were both registered as `Plex`, so the Latin file always won. "฿" became a box (builder card, post bodies, axis labels), and Thai text never used Plex Thai: it fell back to a font the renderer downloads at render time, at regular weight even where the card asks for bold (names, titles, badges).
+- **Fix:** new `lib/og-fonts` (`ogFonts()`, `OG_SANS` = "Plex, PlexThai", `OG_MONO` = "Mono, PlexThai"). Each subset has its own family. All 7 renderers use it: builder, startup, post, home, olympics and province OG, plus `/api/share-card`. Removed the per-route "Baht" family workarounds (share-card calendar, olympics amounts). `lib/share-card.ts` has no fonts and needed no change.
+- Side effects: bold Thai now renders bold, and the olympics podium amount takes the row's bold weight. Layout, palette and sizes are unchanged (Design.md §9).
+
+**Files:** `src/lib/og-fonts{,.test}.ts`, `src/app/[locale]/{u/[username],startup/[slug],post/[id],province/[slug],olympics,}/opengraph-image.tsx`, `src/app/api/share-card/[slug]/route.tsx`, `Design.md`
+**Verified:**
+
+- Reproduced "□2k" by rendering the real builder route (temporary Vitest harness with mocked data, deleted). After the fix, rendered PNGs of builder th/en, startup, post (body with "฿10,000" and "$300"), share-card badge dark/light, chart and calendar were all inspected: "฿" renders, digits are still Inconsolata, Thai is Plex Thai at the right weights.
+- Dev server PNGs of olympics, province and home inspected.
+- `npm run typecheck` ✓ · `npm run lint` ✓ · `npm test` 264/264 ✓. New test: no duplicate family + weight, and both stacks cover ฿ / Thai / $ / digits.
+- `npm run build` ✓. All 7 routes' `.nft.json` still trace the font files.
+
+**Not verified:** the live builder route locally (it needs `SUPABASE_SECRET_KEY`, not available here); production after deploy.
+**Next:** owner review → push → re-check https://jaopor.vercel.app/th/u/gxcb06/opengraph-image after deploy (it is cached for up to 300 s).
+
 ## 2026-10-04 — Profile photo (avatar) work closed: production-complete
 
 **Done:**

@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
 import { REGION_PATH } from "@/components/olympics/ThailandMap";
@@ -9,6 +7,7 @@ import { getThbPerUsd } from "@/lib/data/fx";
 import { getProvinceLeaderboard } from "@/lib/data/startups";
 import { money } from "@/lib/format";
 import { logoTileDataUri } from "@/lib/logo";
+import { OG_SANS, ogFonts } from "@/lib/og-fonts";
 import { DEFAULT_METRIC, regionStandings } from "@/lib/olympics";
 import { publicEnv } from "@/lib/public-env";
 import { BRAND_HEX, CARD_THEME, REGION_HEX } from "@/lib/share-palette";
@@ -23,50 +22,22 @@ export const contentType = "image/png";
 const C = { ...CARD_THEME.dark, brand: BRAND_HEX };
 const MEDAL = ["#f59e0b", "#a1a1a6", "#b45309"];
 
-const font = (file: string) =>
-  readFile(join(process.cwd(), "src/assets/fonts", file));
-
 export default async function Image({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const [
-    t,
-    tile,
-    ranked,
-    thbPerUsd,
-    plexThai,
-    plexThaiBold,
-    plexLatin,
-    plexLatinBold,
-  ] = await Promise.all([
+  const [t, tile, ranked, thbPerUsd, fonts] = await Promise.all([
     getTranslations({ locale, namespace: "Olympics" }),
     logoTileDataUri(),
     getProvinceLeaderboard(DEFAULT_METRIC).catch(() => []),
     getThbPerUsd(),
-    font("ibm-plex-sans-thai-thai-400-normal.woff"),
-    font("ibm-plex-sans-thai-thai-700-normal.woff"),
-    font("ibm-plex-sans-thai-latin-400-normal.woff"),
-    font("ibm-plex-sans-thai-latin-700-normal.woff"),
+    ogFonts(),
   ]);
   const active = regionStandings(ranked)
     .filter((r) => r.provinces > 0)
     .map((r) => r.region);
-
-  // "฿" lives only in the Thai subset: render it in its own family (see the share-card route).
-  const amount = (cents: number) => {
-    const s = money(cents, { currency: "thb", thbPerUsd });
-    return s.startsWith("฿") ? (
-      <span style={{ display: "flex" }}>
-        <span style={{ fontFamily: "Baht", fontWeight: 400 }}>฿</span>
-        {s.slice(1)}
-      </span>
-    ) : (
-      s
-    );
-  };
 
   return new ImageResponse(
     <div
@@ -79,7 +50,7 @@ export default async function Image({
         padding: "0 80px",
         background: C.bg,
         color: C.fg,
-        fontFamily: "Plex",
+        fontFamily: OG_SANS,
       }}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
@@ -133,7 +104,7 @@ export default async function Image({
                   <span
                     style={{ fontSize: 34, fontWeight: 700, color: C.muted }}
                   >
-                    {amount(row.total)}
+                    {money(row.total, { currency: "thb", thbPerUsd })}
                   </span>
                 )}
               </div>
@@ -159,13 +130,7 @@ export default async function Image({
     </div>,
     {
       ...size,
-      fonts: [
-        { name: "Plex", data: plexLatin, weight: 400, style: "normal" },
-        { name: "Plex", data: plexLatinBold, weight: 700, style: "normal" },
-        { name: "Plex", data: plexThai, weight: 400, style: "normal" },
-        { name: "Plex", data: plexThaiBold, weight: 700, style: "normal" },
-        { name: "Baht", data: plexThai, weight: 400, style: "normal" },
-      ],
+      fonts,
     },
   );
 }

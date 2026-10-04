@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
 import {
@@ -11,6 +9,7 @@ import {
 import { getThbPerUsd } from "@/lib/data/fx";
 import { money } from "@/lib/format";
 import { logoTileDataUri } from "@/lib/logo";
+import { OG_MONO, OG_SANS, ogFonts } from "@/lib/og-fonts";
 import { logoDataUri } from "@/lib/og-images";
 import { badgeHeadline, projectCurrencySymbol } from "@/lib/share";
 import {
@@ -28,9 +27,6 @@ import { CARD_THEME, SWATCHES } from "@/lib/share-palette";
 // ids, never caller-supplied values. Public data only (the same numbers the profile shows).
 
 export const revalidate = 300;
-
-const font = (file: string) =>
-  readFile(join(process.cwd(), "src/assets/fonts", file));
 
 type Series = {
   metric: "revenue" | "visitors";
@@ -101,18 +97,13 @@ export async function GET(
   };
   const accent = SWATCHES[q.color];
   const days = q.kind === "calendar" ? Math.round(q.period * 30.4) : q.period;
-  const [t, series, plex, plexBold, plexThai, plexThaiBold, mono, tile, logo] =
-    await Promise.all([
-      getTranslations({ locale: q.locale, namespace: "ShareCard" }),
-      q.kind === "badge" ? Promise.resolve(null) : loadSeries(startup, days),
-      font("ibm-plex-sans-thai-latin-400-normal.woff"),
-      font("ibm-plex-sans-thai-latin-700-normal.woff"),
-      font("ibm-plex-sans-thai-thai-400-normal.woff"),
-      font("ibm-plex-sans-thai-thai-700-normal.woff"),
-      font("inconsolata-latin-700-normal.woff"),
-      logoTileDataUri(),
-      logoDataUri(startup.logo_path),
-    ]);
+  const [t, series, fonts, tile, logo] = await Promise.all([
+    getTranslations({ locale: q.locale, namespace: "ShareCard" }),
+    q.kind === "badge" ? Promise.resolve(null) : loadSeries(startup, days),
+    ogFonts(),
+    logoTileDataUri(),
+    logoDataUri(startup.logo_path),
+  ]);
 
   const verifiedLine = (
     <div
@@ -204,7 +195,7 @@ export async function GET(
             style={{
               fontSize: m ? 84 : 44,
               fontWeight: 700,
-              fontFamily: "Mono",
+              fontFamily: OG_MONO,
               lineHeight: 1.05,
             }}
           >
@@ -258,7 +249,7 @@ export async function GET(
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <span style={{ fontSize: 64, fontWeight: 700, fontFamily: "Mono" }}>
+          <span style={{ fontSize: 64, fontWeight: 700, fontFamily: OG_MONO }}>
             {fmt(series.metric, total, true)}
           </span>
           <span style={{ fontSize: 22, color: C.faint }}>
@@ -326,9 +317,9 @@ export async function GET(
             alignItems: "center",
             justifyContent: "center",
             fontSize: px * 0.95,
-            // "฿" only exists in the Thai subset; give it its own family so the renderer can't
-            // pick the Latin file (same family name) and draw a missing-glyph box.
-            fontFamily: glyph === "฿" ? "Baht" : "Mono",
+            // "฿" comes from the Thai subset (lib/og-fonts); the regular weight keeps the
+            // heatmap cells light.
+            fontFamily: OG_MONO,
             fontWeight: glyph === "฿" ? 400 : 700,
             lineHeight: 1,
             color: lvl < 0 ? "transparent" : lvl === 0 ? C.grid : accent,
@@ -458,7 +449,7 @@ export async function GET(
         background: C.bg,
         color: C.fg,
         padding: 32,
-        fontFamily: "Plex",
+        fontFamily: OG_SANS,
       }}
     >
       {body}
@@ -469,14 +460,7 @@ export async function GET(
         "Cache-Control": "public, max-age=300, s-maxage=300",
         "X-Content-Type-Options": "nosniff",
       },
-      fonts: [
-        { name: "Plex", data: plex, weight: 400, style: "normal" },
-        { name: "Plex", data: plexBold, weight: 700, style: "normal" },
-        { name: "Plex", data: plexThai, weight: 400, style: "normal" },
-        { name: "Plex", data: plexThaiBold, weight: 700, style: "normal" },
-        { name: "Mono", data: mono, weight: 700, style: "normal" },
-        { name: "Baht", data: plexThai, weight: 400, style: "normal" },
-      ],
+      fonts,
     },
   );
 }

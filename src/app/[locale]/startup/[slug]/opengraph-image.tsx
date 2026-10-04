@@ -1,17 +1,16 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
 import { getStartupBySlug } from "@/lib/data/startups";
 import { publicEnv } from "@/lib/public-env";
 import { shareMetrics, verifiedSources } from "@/lib/share";
 import { logoTileDataUri } from "@/lib/logo";
+import { OG_MONO, OG_SANS, ogFonts } from "@/lib/og-fonts";
 import { logoDataUri, ogCoverDataUri } from "@/lib/og-images";
 import { BRAND_HEX, CARD_THEME } from "@/lib/share-palette";
 
 // Design.md §9 OG image: the card people see when a profile link is pasted into Facebook/LINE/X.
 // 1200×630, dark, name + up to 3 verified numbers + sources. Thai via IBM Plex Sans Thai,
-// numbers in Inconsolata (fonts vendored in src/assets/fonts, OFL).
+// numbers in Inconsolata (lib/og-fonts).
 
 export const alt = "JaoPor";
 export const size = { width: 1200, height: 630 };
@@ -21,34 +20,17 @@ export const revalidate = 300;
 // The OG renderer has no CSS variables: the shared renderer palette mirrors the dark tokens.
 const C = { ...CARD_THEME.dark, brand: BRAND_HEX };
 
-const font = (file: string) =>
-  readFile(join(process.cwd(), "src/assets/fonts", file));
-
 export default async function Image({
   params,
 }: {
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  const [
-    startup,
-    t,
-    card,
-    plexThai,
-    plexThaiBold,
-    plexLatin,
-    plexLatinBold,
-    mono,
-    tile,
-  ] = await Promise.all([
+  const [startup, t, card, fonts, tile] = await Promise.all([
     getStartupBySlug(slug),
     getTranslations({ locale, namespace: "Share" }),
     getTranslations({ locale, namespace: "Card" }),
-    font("ibm-plex-sans-thai-thai-400-normal.woff"),
-    font("ibm-plex-sans-thai-thai-700-normal.woff"),
-    font("ibm-plex-sans-thai-latin-400-normal.woff"),
-    font("ibm-plex-sans-thai-latin-700-normal.woff"),
-    font("inconsolata-latin-700-normal.woff"),
+    ogFonts(),
     logoTileDataUri(),
   ]);
 
@@ -70,7 +52,7 @@ export default async function Image({
         background: C.bg,
         color: C.fg,
         padding: 64,
-        fontFamily: "Plex",
+        fontFamily: OG_SANS,
         position: "relative",
       }}
     >
@@ -194,7 +176,7 @@ export default async function Image({
                   {t(`metric.${m.id}`)}
                 </span>
                 <span
-                  style={{ fontSize: 56, fontWeight: 700, fontFamily: "Mono" }}
+                  style={{ fontSize: 56, fontWeight: 700, fontFamily: OG_MONO }}
                 >
                   {m.value}
                 </span>
@@ -247,13 +229,7 @@ export default async function Image({
     </div>,
     {
       ...size,
-      fonts: [
-        { name: "Plex", data: plexLatin, weight: 400, style: "normal" },
-        { name: "Plex", data: plexLatinBold, weight: 700, style: "normal" },
-        { name: "Plex", data: plexThai, weight: 400, style: "normal" },
-        { name: "Plex", data: plexThaiBold, weight: 700, style: "normal" },
-        { name: "Mono", data: mono, weight: 700, style: "normal" },
-      ],
+      fonts,
     },
   );
 }

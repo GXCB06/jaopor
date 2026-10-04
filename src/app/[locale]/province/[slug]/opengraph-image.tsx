@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
 import { REGION_PATH } from "@/components/olympics/ThailandMap";
@@ -7,6 +5,7 @@ import { localizedName } from "@/lib/config/localized";
 import { REGION_LIST, getProvince, getRegion } from "@/lib/config/provinces";
 import { getProvinceLeaderboard } from "@/lib/data/startups";
 import { logoTileDataUri } from "@/lib/logo";
+import { OG_SANS, ogFonts } from "@/lib/og-fonts";
 import { DEFAULT_METRIC, provinceRank } from "@/lib/olympics";
 import { publicEnv } from "@/lib/public-env";
 import { BRAND_HEX, CARD_THEME, REGION_HEX } from "@/lib/share-palette";
@@ -19,9 +18,6 @@ export const contentType = "image/png";
 
 const C = { ...CARD_THEME.dark, brand: BRAND_HEX };
 
-const font = (file: string) =>
-  readFile(join(process.cwd(), "src/assets/fonts", file));
-
 export default async function Image({
   params,
 }: {
@@ -29,16 +25,12 @@ export default async function Image({
 }) {
   const { locale, slug } = await params;
   const p = getProvince(slug);
-  const [t, tile, ranked, plexThai, plexThaiBold, plexLatin, plexLatinBold] =
-    await Promise.all([
-      getTranslations({ locale, namespace: "Province" }),
-      logoTileDataUri(),
-      p ? getProvinceLeaderboard(DEFAULT_METRIC).catch(() => []) : [],
-      font("ibm-plex-sans-thai-thai-400-normal.woff"),
-      font("ibm-plex-sans-thai-thai-700-normal.woff"),
-      font("ibm-plex-sans-thai-latin-400-normal.woff"),
-      font("ibm-plex-sans-thai-latin-700-normal.woff"),
-    ]);
+  const [t, tile, ranked, fonts] = await Promise.all([
+    getTranslations({ locale, namespace: "Province" }),
+    logoTileDataUri(),
+    p ? getProvinceLeaderboard(DEFAULT_METRIC).catch(() => []) : [],
+    ogFonts(),
+  ]);
   const rank = p ? provinceRank(ranked, p.slug) : null;
   const name = p ? localizedName(p, locale) : "JaoPor";
 
@@ -53,7 +45,7 @@ export default async function Image({
         padding: "0 96px",
         background: C.bg,
         color: C.fg,
-        fontFamily: "Plex",
+        fontFamily: OG_SANS,
       }}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -90,12 +82,7 @@ export default async function Image({
     </div>,
     {
       ...size,
-      fonts: [
-        { name: "Plex", data: plexLatin, weight: 400, style: "normal" },
-        { name: "Plex", data: plexLatinBold, weight: 700, style: "normal" },
-        { name: "Plex", data: plexThai, weight: 400, style: "normal" },
-        { name: "Plex", data: plexThaiBold, weight: 700, style: "normal" },
-      ],
+      fonts,
     },
   );
 }

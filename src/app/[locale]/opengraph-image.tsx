@@ -1,8 +1,7 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
 import { logoTileDataUri } from "@/lib/logo";
+import { OG_SANS, ogFonts } from "@/lib/og-fonts";
 import { publicEnv } from "@/lib/public-env";
 import { BRAND_HEX, CARD_THEME } from "@/lib/share-palette";
 
@@ -15,24 +14,17 @@ export const contentType = "image/png";
 
 const C = { ...CARD_THEME.dark, brand: BRAND_HEX };
 
-const font = (file: string) =>
-  readFile(join(process.cwd(), "src/assets/fonts", file));
-
 export default async function Image({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const [t, tile, plexThai, plexThaiBold, plexLatin, plexLatinBold] =
-    await Promise.all([
-      getTranslations({ locale, namespace: "Home" }),
-      logoTileDataUri(),
-      font("ibm-plex-sans-thai-thai-400-normal.woff"),
-      font("ibm-plex-sans-thai-thai-700-normal.woff"),
-      font("ibm-plex-sans-thai-latin-400-normal.woff"),
-      font("ibm-plex-sans-thai-latin-700-normal.woff"),
-    ]);
+  const [t, tile, fonts] = await Promise.all([
+    getTranslations({ locale, namespace: "Home" }),
+    logoTileDataUri(),
+    ogFonts(),
+  ]);
 
   return new ImageResponse(
     <div
@@ -46,7 +38,7 @@ export default async function Image({
         gap: 28,
         background: C.bg,
         color: C.fg,
-        fontFamily: "Plex",
+        fontFamily: OG_SANS,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
@@ -73,12 +65,7 @@ export default async function Image({
     </div>,
     {
       ...size,
-      fonts: [
-        { name: "Plex", data: plexLatin, weight: 400, style: "normal" },
-        { name: "Plex", data: plexLatinBold, weight: 700, style: "normal" },
-        { name: "Plex", data: plexThai, weight: 400, style: "normal" },
-        { name: "Plex", data: plexThaiBold, weight: 700, style: "normal" },
-      ],
+      fonts,
     },
   );
 }

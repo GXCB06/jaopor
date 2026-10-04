@@ -1,11 +1,10 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
 import { getProfileCard } from "@/lib/data/builder";
 import { getThbPerUsd } from "@/lib/data/fx";
 import { money } from "@/lib/format";
 import { logoTileDataUri } from "@/lib/logo";
+import { OG_MONO, OG_SANS, ogFonts } from "@/lib/og-fonts";
 import { avatarDataUri } from "@/lib/og-images";
 import { publicEnv } from "@/lib/public-env";
 import { BRAND_HEX, CARD_THEME } from "@/lib/share-palette";
@@ -20,9 +19,6 @@ export const revalidate = 300;
 
 const C = { ...CARD_THEME.dark, brand: BRAND_HEX };
 
-const font = (file: string) =>
-  readFile(join(process.cwd(), "src/assets/fonts", file));
-
 export default async function Image({
   params,
 }: {
@@ -30,25 +26,11 @@ export default async function Image({
 }) {
   const { locale, username } = await params;
   const handle = username.toLowerCase();
-  const [
-    card,
-    t,
-    thbPerUsd,
-    plexThai,
-    plexThaiBold,
-    plexLatin,
-    plexLatinBold,
-    mono,
-    tile,
-  ] = await Promise.all([
+  const [card, t, thbPerUsd, fonts, tile] = await Promise.all([
     getProfileCard(handle),
     getTranslations({ locale, namespace: "Builder" }),
     getThbPerUsd(),
-    font("ibm-plex-sans-thai-thai-400-normal.woff"),
-    font("ibm-plex-sans-thai-thai-700-normal.woff"),
-    font("ibm-plex-sans-thai-latin-400-normal.woff"),
-    font("ibm-plex-sans-thai-latin-700-normal.woff"),
-    font("inconsolata-latin-700-normal.woff"),
+    ogFonts(),
     logoTileDataUri(),
   ]);
 
@@ -72,7 +54,7 @@ export default async function Image({
         background: C.bg,
         color: C.fg,
         padding: 64,
-        fontFamily: "Plex",
+        fontFamily: OG_SANS,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -163,7 +145,9 @@ export default async function Image({
             <span style={{ fontSize: 22, color: C.muted }}>
               {t("ogVerifiedMrr")}
             </span>
-            <span style={{ fontSize: 56, fontWeight: 700, fontFamily: "Mono" }}>
+            <span
+              style={{ fontSize: 56, fontWeight: 700, fontFamily: OG_MONO }}
+            >
               {money(card.mrrCents, {
                 currency: locale === "th" ? "thb" : "usd",
                 thbPerUsd,
@@ -182,13 +166,7 @@ export default async function Image({
     </div>,
     {
       ...size,
-      fonts: [
-        { name: "Plex", data: plexLatin, weight: 400, style: "normal" },
-        { name: "Plex", data: plexLatinBold, weight: 700, style: "normal" },
-        { name: "Plex", data: plexThai, weight: 400, style: "normal" },
-        { name: "Plex", data: plexThaiBold, weight: 700, style: "normal" },
-        { name: "Mono", data: mono, weight: 700, style: "normal" },
-      ],
+      fonts,
     },
   );
 }
