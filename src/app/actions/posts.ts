@@ -124,7 +124,7 @@ export async function deletePost(id: number): Promise<Result> {
 export async function cleanupPostUpload(paths: string[]): Promise<void> {
   const { user } = await me();
   if (!user || !paths.length) return;
-  const own = paths.filter((p) => /^[0-9]{1,18}\/[0-9a-f-]{36}\.webp$/.test(p));
+  const own = paths.filter((p) => /^[0-9]{1,18}\/[0-9a-f-]{36}\.(webp|jpg)$/.test(p));
   const admin = createAdminClient();
   // Only files of my own posts that have no image row.
   const ids = [...new Set(own.map((p) => Number(p.split("/")[0])))];

@@ -196,7 +196,7 @@ Brand logos come from the `simple-icons` package, inlined as SVG. Render logos w
 - `startups.demo_video_url` text (YouTube / Loom / TikTok, validated).
 - `startups.founder_message` text (max 600), `founder_role` text.
 - New table `startup_screenshots`: id, startup_id (fk, cascade), url, kind ('desktop'|'mobile'|'line'), caption (≤60), width, height, position, created_at. RLS: public read; only the owner can insert, update or delete.
-- Storage bucket `screenshots`: path `{startup_id}/{uuid}.webp`. Public read; the owner writes. When a startup is deleted, delete its files.
+- Storage bucket `screenshots`: path `{startup_id}/{uuid}.webp` (`.jpg` from Safari, which can't encode WebP). Public read; the owner writes. When a startup is deleted, delete its files.
 - New table `fx_rates` (date, usd_thb).
 - Extension `pg_trgm` plus trigram GIN indexes on startup name/description (for Thai search, 6.8).
 - Views or RPCs: `category_counts()`, `province_leaderboard(metric, region)`, `search_all(q, locale)`.
@@ -312,7 +312,7 @@ Used in the nav (`/` shortcut), the hero, and a **bottom section** above the foo
 - **เทคโนโลยีที่ใช้ / ช่องทางการตลาด:** searchable multi-selects that show logo chips. Selected chips have ×. Custom entries are allowed (generic icon).
 - **ราคา:** amount + currency + period.
 - **ภาพผลงาน step:** drag-and-drop, paste (Ctrl/Cmd+V) or click. PNG/JPG/WebP, max 8 images, 5MB each. Detect the kind from the aspect ratio (the owner can switch to "line"). Drag to reorder; the first is the cover. Caption per image.
-  - **Compress in the browser** to WebP, max 2400px on the long side, and **strip EXIF** (it can contain GPS) before upload.
+  - **Compress in the browser** to WebP (JPEG on Safari / iOS, which can't encode WebP from a canvas), max 2400px on the long side, and **strip EXIF** (it can contain GPS) before upload.
   - Optional "ลิงก์วิดีโอเดโม".
   - Optional "ดึงภาพจากเว็บอัตโนมัติ": capture via a screenshot API (ask me which one before adding). The result is added as a draft for the owner to keep or delete, never auto-published.
 - **ข้อความจากผู้ก่อตั้ง** (≤600, with a live counter) + role.
@@ -552,7 +552,7 @@ DATA (migrations, RLS on every table, show SQL first)
   posts), province + category (copied from the startup for fast
   filtering), created_at, edited_at, hidden_at.
 - post_images: post_id, url, width, height, position (max 4 per post).
-  Storage bucket "post-images" at {post_id}/{uuid}.webp. Reuse the
+  Storage bucket "post-images" at {post_id}/{uuid}.webp (.jpg from Safari). Reuse the
   screenshot uploader (compress to WebP, strip EXIF).
 - post_likes: (post_id, user_id) primary key.
 - post_comments: id, post_id, author_id, parent_id (nullable, max 1

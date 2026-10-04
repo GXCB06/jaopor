@@ -250,7 +250,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 ### ScreenshotsManager (edit form, spec 6.9)
 
-- Drop zone `rounded-xl border border-dashed p-6 text-center` ("ลากไฟล์มาวาง, วาง (Ctrl/Cmd+V) หรือคลิกเพื่อเลือก"), PNG/JPG/WebP ≤ 5MB, max 8. Files are resized in the browser to ≤ 2400px, re-encoded to WebP (drops EXIF/GPS), then uploaded to `screenshots/{startup_id}/{uuid}.webp`.
+- Drop zone `rounded-xl border border-dashed p-6 text-center` ("ลากไฟล์มาวาง, วาง (Ctrl/Cmd+V) หรือคลิกเพื่อเลือก"), PNG/JPG/WebP ≤ 5MB, max 8. Files are resized in the browser to ≤ 2400px, re-encoded to WebP (JPEG on Safari / iOS, transparent areas white; both drop EXIF/GPS), then uploaded to `screenshots/{startup_id}/{uuid}.webp|jpg`.
 - Grid of thumbnails (`grid grid-cols-2 sm:grid-cols-4 gap-3`): thumbnail, kind select (Desktop / Mobile / LINE; auto from aspect ratio), caption input (≤ 60), ←/→ move buttons + drag to reorder, delete (×). The first is marked "ภาพปก" (cover).
 
 ### VocabCombobox (edit form, spec 6.9)
@@ -399,7 +399,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 ### Composer (Phase 10b)
 
-- Card `p-4 space-y-3`: avatar + textarea (`rows 3`, placeholder "อัปเดตอะไรในผลงานของคุณวันนี้?"). Row below: startup select (only my confirmed works), type select (ฟีเจอร์ใหม่ / เปิดตัว / บทเรียน / ขอ Feedback; never Milestone), image button (≤ 4, WebP in the browser like screenshots), link button (reveals an https input), counter "n / 500" (`text-warning` past 450), "โพสต์" primary. Thumbnails of picked images with × under the textarea.
+- Card `p-4 space-y-3`: avatar + textarea (`rows 3`, placeholder "อัปเดตอะไรในผลงานของคุณวันนี้?"). Row below: startup select (only my confirmed works), type select (ฟีเจอร์ใหม่ / เปิดตัว / บทเรียน / ขอ Feedback; never Milestone), image button (≤ 4, WebP / JPEG on Safari in the browser like screenshots), link button (reveals an https input), counter "n / 500" (`text-warning` past 450), "โพสต์" primary. Thumbnails of picked images with × under the textarea.
 - Signed out: one line + "เข้าสู่ระบบเพื่อโพสต์". No confirmed work: "เพิ่มผลงานก่อนจึงจะโพสต์ได้" + link to /new. Errors inline: "โพสต์ได้วันละ 5 ครั้ง", "เฉพาะทีมของผลงานนี้".
 - Lives on the dashboard overview in 10b and at the top of /feed in 10c.
 

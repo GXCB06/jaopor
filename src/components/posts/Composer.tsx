@@ -18,7 +18,7 @@ import {
 } from "@/lib/posts";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { toWebp } from "@/lib/webp";
+import { toUploadImage } from "@/lib/webp";
 import { Avatar } from "./bits";
 
 const selectCls =
@@ -115,12 +115,12 @@ export function Composer({
       const db = createClient();
       const failed: string[] = [];
       for (const [position, { file }] of files.entries()) {
-        const path = `${res.id}/${crypto.randomUUID()}.webp`;
         try {
-          const { blob, width, height } = await toWebp(file);
+          const { blob, type, ext, width, height } = await toUploadImage(file);
+          const path = `${res.id}/${crypto.randomUUID()}.${ext}`;
           const up = await db.storage
             .from(POST_IMAGE_BUCKET)
-            .upload(path, blob, { contentType: "image/webp", upsert: false });
+            .upload(path, blob, { contentType: type, upsert: false });
           if (up.error) throw up.error;
           const { error } = await db
             .from("post_images")

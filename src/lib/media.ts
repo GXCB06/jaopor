@@ -17,7 +17,7 @@ export type Screenshot = {
   position: number;
 };
 
-/** Public URL of a file in the `screenshots` bucket (`{startup_id}/{uuid}.webp`). */
+/** Public URL of a file in the `screenshots` bucket (`{startup_id}/{uuid}.webp|jpg`). */
 export function screenshotUrl(path: string): string {
   return `${publicEnv.supabaseUrl}/storage/v1/object/public/screenshots/${path}`;
 }

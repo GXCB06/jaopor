@@ -585,7 +585,6 @@
     "tooMany": "You can add up to {max} images",
     "badType": "Only PNG, JPG or WebP",
     "tooLarge": "Files must be 5MB or smaller",
-    "noWebp": "This browser can't convert images to WebP. Try Chrome, Edge or Firefox",
     "uploadFailed": "Upload failed, please try again",
     "saveFailed": "Couldn't save",
     "thumbAlt": "Image {n}",

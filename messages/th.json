@@ -585,7 +585,6 @@
     "tooMany": "เพิ่มได้สูงสุด {max} ภาพ",
     "badType": "รองรับเฉพาะ PNG, JPG หรือ WebP",
     "tooLarge": "ไฟล์ต้องไม่เกิน 5MB",
-    "noWebp": "เบราว์เซอร์นี้แปลงภาพเป็น WebP ไม่ได้ ลองใช้ Chrome, Edge หรือ Firefox",
     "uploadFailed": "อัปโหลดไม่สำเร็จ ลองอีกครั้ง",
     "saveFailed": "บันทึกไม่สำเร็จ",
     "thumbAlt": "ภาพที่ {n}",

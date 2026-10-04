@@ -23,7 +23,7 @@ import {
 import { revalidateStartup } from "@/app/actions/revalidate";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { toWebp } from "@/lib/webp";
+import { toUploadImage } from "@/lib/webp";
 import { inputClass } from "./fields";
 
 const BUCKET = "screenshots";
@@ -64,11 +64,11 @@ export function ScreenshotsManager({
 
     for (const file of batch) {
       try {
-        const { blob, width, height } = await toWebp(file);
-        const path = `${startupId}/${crypto.randomUUID()}.webp`;
+        const { blob, type, ext, width, height } = await toUploadImage(file);
+        const path = `${startupId}/${crypto.randomUUID()}.${ext}`;
         const up = await db()
           .storage.from(BUCKET)
-          .upload(path, blob, { contentType: "image/webp", upsert: false });
+          .upload(path, blob, { contentType: type, upsert: false });
         if (up.error) throw up.error;
         // Sequential uploads: the ref holds the list as of the last render.
         const position = shotsRef.current.length;
@@ -90,12 +90,8 @@ export function ScreenshotsManager({
         }
         setShots((s) => [...s, data as Screenshot]);
         void revalidateStartup(startupId);
-      } catch (e) {
-        toast.error(
-          e instanceof Error && e.message === "no-webp"
-            ? t("noWebp")
-            : t("uploadFailed"),
-        );
+      } catch {
+        toast.error(t("uploadFailed"));
       } finally {
         setBusy((b) => b - 1);
       }

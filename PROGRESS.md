@@ -51,6 +51,26 @@
 **Not verified:** header update and toasts while signed in (needs the owner's session), share image with the uploaded photo (after deploy), any iPhone / Safari behaviour.
 **Next:** owner review → push → owner signed-in check + real iPhone test.
 
+## 2026-10-02 — Screenshot and post image uploads on iPhone / Safari (JPEG fallback; migration applied, not deployed)
+
+**Done:**
+
+- **Bug:** Safari (macOS, and every browser on iOS, since they all run WebKit) can't encode WebP from a canvas. `toBlob("image/webp")` returns a PNG, so `toWebp` threw `no-webp`. Every screenshot upload (wizard / edit) and every post image (Composer) failed on iPhone. Confirmed on caniuse (`toBlob` WebP: not supported in any Safari or iOS version up to 27.2) and in WebKit bug 183257 (still open).
+- `src/lib/webp.ts`: `toUploadImage()` replaces `toWebp()`. Encoding goes WebP → JPEG, shared with `toAvatarImage()`. For JPEG, transparent pixels are painted white (they used to turn black). It returns `{ blob, type, ext, width, height }`. ScreenshotsManager and Composer upload `{id}/{uuid}.webp|jpg` with the matching content type. `cleanupPostUpload` accepts `.jpg`. The "this browser can't convert to WebP" toast and its `noWebp` keys are removed.
+- **Migration `20261001180710_upload_images_jpeg`** (applied 2026-10-02 after owner review; remote version `20261001181333`): the `screenshots` and `post-images` buckets accept `image/jpeg` too, and the `startup_screenshots.path` / `post_images.path` checks accept `.webp|.jpg`. Storage policies check only the folder, so they are unchanged (confirmed on the live DB: no policy or function mentions `.webp`). RLS smoke T108–T112 added (renumbered T115–T119 when merged after the avatar tests; T119 checks that both buckets accept exactly WebP and JPEG; the Storage API enforces the type, not SQL), and T86 now expects 2 queued files.
+- **Avatar migration not applied (coordination check):** the owner chose to apply `20261001175557_profile_avatars` first. In the main checkout another session has replaced it with `20261001181036_profile_avatars_v2` (uncommitted and still being edited: identity-data provider photo, a URL source CHECK, cleanup tied to the profile's own folder, restrictive storage policies, rate limit) and staged the old file for deletion. Applying the old draft would have shipped the weaker version and broken v2 (duplicate trigger), so neither avatar migration was applied from here.
+
+**Files:** `src/lib/webp.ts`, `src/components/wizard/ScreenshotsManager.tsx`, `src/components/posts/Composer.tsx`, `src/app/actions/posts.ts`, `supabase/migrations/20261001180710_upload_images_jpeg.sql`, `supabase/tests/rls_smoke.sql`, `messages/*.json`, `docs/SPEC.md`, `Design.md`
+**Verified:**
+
+- `npm test` 247/247 · typecheck ✓ · lint ✓.
+- The `encode()` logic in the browser pane (Chromium), with `toBlob` patched to answer WebP requests with PNG like Safari does: the output is `image/jpeg`, the transparent half is white and the red half is unchanged. Unpatched, it stays `image/webp` with alpha kept.
+- Live DB after applying: `screenshots` and `post-images` = `image/webp,image/jpeg`, 3 MB; both path checks = `\.(webp|jpg)$`. Advisors: nothing new (the only WARN, leaked-password protection, is an existing Auth setting). RLS smoke: every test good, including T108–T112 (now T115–T119), **except T105–T107** (avatar tests, expected to fail until an avatar migration is applied; T105 "client sets avatar_url: ALLOWED" is the existing production gap that v2 closes). Types: unchanged (bucket rows and CHECK constraints aren't in the generated types).
+- `npm run build` ✓ (after `npm ci` in the worktree, which had no `node_modules` of its own).
+- **Not done:** commit, push, deploy and the production checks (iPhone upload, existing WebP uploads, cleanup). This branch sits on the unpushed avatar commit `953954b`, so pushing it would ship the avatar UI without its migration while another session is reworking that code on `master`.
+
+**Next:** the avatar session lands v2 (apply, smoke T105–T107 against its own tests); then merge this branch (expect conflicts in `rls_smoke.sql`, PROGRESS.md and Project.md), deploy, and test uploads from an iPhone.
+
 ## 2026-10-02 — Profile photo upload (migration applied after owner security review; not pushed yet)
 
 **Done:**

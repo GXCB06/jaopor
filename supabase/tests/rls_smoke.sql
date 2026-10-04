@@ -193,6 +193,18 @@ begin
   exception when insufficient_privilege then out := out || 'T35 A uploads into another startup folder: denied (good) | ';
   end;
 
+  -- upload_images_jpeg: Safari uploads JPEG, so .jpg paths are valid too; nothing else is.
+  insert into public.startup_screenshots (startup_id, path, kind, width, height)
+  values (sid2, sid2 || '/' || gen_random_uuid() || '.jpg', 'desktop', 10, 10);
+  get diagnostics n = row_count;
+  out := out || format('T115 A adds a .jpg screenshot: %s (expect 1) | ', n);
+  begin
+    insert into public.startup_screenshots (startup_id, path, kind, width, height)
+    values (sid2, sid2 || '/' || gen_random_uuid() || '.png', 'desktop', 10, 10);
+    out := out || 'T116 .png screenshot path: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T116 .png screenshot path: denied (good) | ';
+  end;
+
   begin
     update public.provinces set region = 'south' where slug = 'bangkok';
     out := out || 'T27 A edits provinces: ALLOWED (BAD) | ';
@@ -436,6 +448,15 @@ begin
   insert into public.post_images (post_id, path, width, height, position)
   values (pid, pid || '/' || gen_random_uuid() || '.webp', 10, 10, 0);
   out := out || 'T71 author adds image while editable: ok | ';
+  insert into public.post_images (post_id, path, width, height, position)
+  values (pid, pid || '/' || gen_random_uuid() || '.jpg', 10, 10, 1);
+  out := out || 'T117 author adds a .jpg image: ok | ';
+  begin
+    insert into public.post_images (post_id, path, width, height, position)
+    values (pid, pid || '/' || gen_random_uuid() || '.png', 10, 10, 2);
+    out := out || 'T118 .png post image path: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T118 .png post image path: denied (good) | ';
+  end;
   begin
     perform 1 from public.milestones;
     out := out || 'T72 client reads milestones: ALLOWED (BAD) | ';
@@ -518,7 +539,7 @@ begin
 
   -- Moderation: hiding drops the images and queues their files.
   update public.posts set hidden_at = now() where id = pid;
-  out := out || format('T86 hide: image rows=%s (expect 0), files queued=%s (expect 1) | ',
+  out := out || format('T86 hide: image rows=%s (expect 0), files queued=%s (expect 2: .webp + .jpg) | ',
     (select count(*) from public.post_images where post_id = pid),
     (select count(*) from public.storage_cleanup where path like pid || '/%'));
 
@@ -795,6 +816,14 @@ begin
     (select string_agg(p.proname || '=' || p.prosecdef || ':' || coalesce(array_to_string(p.proconfig, ','), 'none'), ' ')
        from pg_proc p join pg_namespace ns on ns.oid = p.pronamespace
       where (ns.nspname, p.proname) in (('private', 'profiles_queue_avatar_cleanup'), ('private', 'handle_new_user'), ('public', 'take_avatar_change'))));
+
+  -- upload_images_jpeg: the Storage API enforces these types (not SQL), so check the config.
+  execute 'reset role';
+  select count(*) into n from storage.buckets
+  where id in ('screenshots', 'post-images')
+    and allowed_mime_types @> array['image/webp', 'image/jpeg']
+    and allowed_mime_types <@ array['image/webp', 'image/jpeg'];
+  out := out || format('T119 screenshot + post-image buckets accept exactly WebP + JPEG: %s (expect 2) | ', n);
 
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;

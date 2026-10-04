@@ -30,7 +30,7 @@ export function isManualPostType(v: unknown): v is ManualPostType {
   return (MANUAL_POST_TYPES as readonly unknown[]).includes(v);
 }
 
-/** Public URL of a file in the `post-images` bucket (`{post_id}/{uuid}.webp`). */
+/** Public URL of a file in the `post-images` bucket (`{post_id}/{uuid}.webp|jpg`). */
 export function postImageUrl(path: string): string {
   return `${publicEnv.supabaseUrl}/storage/v1/object/public/${POST_IMAGE_BUCKET}/${path}`;
 }
