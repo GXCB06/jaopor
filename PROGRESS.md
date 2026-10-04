@@ -12,6 +12,21 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-04 — Profile photo (avatar) work closed: production-complete
+
+**Done:**
+
+- **Security migration** `profile_avatars_v2` applied 2026-10-02 after the owner's security review; full RLS smoke T1–T114 passed on the live database (client writes to `avatar_url` and to the `avatars` bucket refused, URL source constraint, own-folder cleanup, fail-closed bucket, 20 changes a day).
+- **UX / reliability fixes deployed:** `7d74768` (initials fallback for every person photo, header updates without a reload, share images use uploaded photos, result-specific Thai / English wording) and `7d06f3d` (the owner's cached product, home and directory pages refresh after a photo change; founder-message photo fallback).
+- **Production deployment completed:** `7d06f3d` live on jaopor.vercel.app (deployment `dpl_EqCQsHE4HF8fSWjoev2Y7tLs4H8d`, READY).
+- **Manual production verification passed** (owner, 2026-10-04): upload, replace, sign-in photo, remove, invalid files, persistence, consistency across the product, share image, cached pages.
+- **Real-device / iPhone verification passed** (owner, 2026-10-04).
+- Server-side evidence from the same day: every replaced upload deleted (empty folder, empty cleanup queue, deleted URLs answer 400), no profile with a disallowed photo URL, product page / home / builders / feed / profile and the share image show the current photo.
+
+**Status:** profile photo is **production-complete**.
+**Known non-blocking items** (Project.md §7): transparent PNG from Safari gets a black background; very large phone photos decode at full size (monitor only). Separate, not avatar work: the share image's baht sign renders as a missing-glyph box (own session).
+**Files:** `PROGRESS.md`, `Project.md` (docs only; no code or migration change)
+
 ## 2026-10-04 — Fix: product page kept the old founder photo after a photo change
 
 **Root cause (owner report):** the product page (and home / directory) are ISR pages (60 s) that show the owner's photo, but the avatar actions only refreshed the dashboard and `/u/[username]`. ISR is stale-while-revalidate: after a change the product page kept serving the old photo until 60 s had passed _and_ a visit triggered a rebuild (production: `/th/startup/jaopor` served `STALE` at age 304–305 s with an old uploaded photo, then rebuilt on the next visit). The old file was already deleted, but the browser's image cache (1 year) kept showing it, so it looked unchanged rather than broken. Second, smaller cause: the founder-message photo (`ProfileBlocks`, 80 px) was missed by the `PersonPhoto` pass, so without a cached copy it would have been a broken image.
