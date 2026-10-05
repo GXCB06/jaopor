@@ -334,7 +334,8 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 - [x] Phase 9 (builder profiles): make the profile's founder name/avatar card link to `/u/{handle}` (user request 2026-09-30; done in 9b, 2026-10-01).
 - [ ] Enable GitHub **secret scanning + push protection** on the now-public `GXCB06/jaopor` repo (Settings → Code security). History checked 2026-09-30: only `.env.example` (public URL + publishable key) is tracked; no real secrets.
 - [ ] Rotate the Gemini key that was pasted into chat on 2026-09-30, then set `GEMINI_API_KEY` in Vercel.
-- [ ] Footer privacy/terms/security links 404 → `/privacy` live; **`/security` ("How we handle your key") and `/terms` built 2026-10-04, awaiting the owner's approval of the wording** (terms ideally also a lawyer) before they ship.
+- [x] (2026-10-05) Footer privacy/terms/security links 404 → `/privacy`, `/security` ("How we handle your key") and `/terms` live. `/terms` is a labelled draft.
+- [ ] **Legal review of `/terms`** (draft, owner-approved 2026-10-05), then remove its draft note (`Terms.note`) and "(ฉบับร่าง)" from the title.
 - [ ] The Figma MCP (Starter plan) hit its call limit on 2026-09-29. The remaining frames (Marketplace filters, share-dialog details) were built from screenshots; re-check the fine details once the limit resets.
 - [ ] Deploy the JPEG fallback (migration `upload_images_jpeg` applied 2026-10-02; code on branch `claude/upbeat-colden-9ef8d3`, waiting for the avatar v2 work on `master`) and test a screenshot + post image upload from an iPhone.
 - [ ] The OG card and share images still use Inconsolata. Vendor JetBrains Mono woff (OFL) if they should match the site font.

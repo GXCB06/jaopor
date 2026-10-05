@@ -12,14 +12,16 @@
 > **Next:** the immediate follow-up
 > ```
 
-## 2026-10-04 — Landed the iPhone upload fix and the share-image ฿ fix; trust pages built (awaiting approval)
+## 2026-10-04 — Landed the iPhone upload fix and the share-image ฿ fix; trust pages shipped (/security approved, /terms as a labelled draft)
 
 **Done:**
 
 - **iPhone / Safari uploads (`49ca189`, deployed):** the parallel session's uncommitted work (screenshots and post images fall back to JPEG; migration `upload_images_jpeg`, applied 2026-10-02) was committed, rebased onto master (one PROGRESS.md conflict; its RLS tests renumbered T108–T112 → T115–T119 to avoid the avatar tests), and deployed. Database and code were out of step until then (buckets accepted JPEG, the app still uploaded WebP only).
 - **Transparent PNG on Safari (item from the avatar close-out):** fixed by the same change: the shared encoder paints transparent pixels white before JPEG, for avatars too.
 - **Share-image "฿" box (`1c5b7f7`, deployed):** the baht session's uncommitted work (`lib/og-fonts`: each font subset its own family, used by all 7 next/og routes) applied as a patch on master and deployed. Production builder card now shows "฿2k" and bold Thai.
-- **`/security` and `/terms`** (footer links that 404): built with a shared `DocPage` (the Privacy page's frame), content in `messages/*.json` (`Security`, `Terms`). The security page states only what the code does (verified against the connectors, `crypto/keys.ts`, `sync.ts`, the cron schedule and the live DB: key table has no client grants, cascade on project delete). Terms is a plain-language draft. **Not pushed: waiting for the owner's approval of both texts.**
+- **`/security` and `/terms`** (footer links that 404): built with a shared `DocPage` (the Privacy page's frame), content in `messages/*.json` (`Security`, `Terms`). The security page states only what the code does (verified against the connectors, `crypto/keys.ts`, `sync.ts`, the cron schedule and the live DB: key table has no client grants, cascade on project delete). Terms is a plain-language draft.
+- **Owner approval (2026-10-05):** `/security` as written; `/terms` published as a clearly labelled draft: "(ฉบับร่าง)" in the title and a warning-tone note under the date ("ยังไม่ผ่านการตรวจทานทางกฎหมาย และอาจมีการปรับปรุง"), rendered by `DocPage` from an optional `note` key. Not described as legally reviewed.
+- **Claims re-audited against code and DB before shipping, two corrected:** "disconnect deletes that source's numbers _and history_" now says revenue / traffic only (GitHub's daily commit history in `build_activity` is kept); "the _project_ shows the connection failed" now says the dashboard (the connection shows "!" there). Terms §5 limited to what exists (hide / remove content, delete accounts; no "remove verification / suspend"). Confirmed: last 4 characters shown (`keyHint`), only error names logged (connect / disconnect / sync), keys cascade with the project, no client grants on the key table, cron 20:00 UTC = 03:00 ICT, "รีเฟรช" / "รายงาน" match the real labels. TH / EN structure identical (Security 5 sections, Terms 8, same items and ids).
 
 **Files:** `src/components/DocPage.tsx`, `src/app/[locale]/{security,terms}/page.tsx`, `messages/*.json`, `Design.md`, `Project.md`, `PROGRESS.md` (+ the two landed commits)
 **Verified:**
@@ -28,7 +30,7 @@
 - ฿ fix: tests 264/264 (incl. font coverage) · build ✓; production OG images 200 (builder th / en, startup, home, olympics), builder card shows "฿2k".
 - Trust pages: typecheck ✓ · lint ✓ · tests 264/264 · build ✓ (both prerendered in th / en; H1, 5 / 8 sections, contact link checked in the built HTML). Not viewed in the browser pane (the preview server runs the main checkout, not this worktree); same frame as the verified Privacy page.
 
-**Next:** owner approves (or edits) the `/security` and `/terms` wording → push. Owner-only pre-launch items remain in Project.md §7 (publish the Google consent screen, decide on the email provider, delete demo projects at launch).
+**Next:** formal legal review of `/terms`, then remove the draft note. Owner-only pre-launch items remain in Project.md §7 (publish the Google consent screen, decide on the email provider, delete demo projects at launch).
 
 ## 2026-10-04 — OG images: "฿" missing-glyph box fixed (shared OG fonts)
 

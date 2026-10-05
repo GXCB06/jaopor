@@ -5,7 +5,8 @@ type Section = { id?: string; title: string; body?: string; items?: Item[] };
 
 /**
  * Design.md §6 Trust pages: the Privacy page's frame for text pages whose content lives in
- * messages/*.json under `namespace` (title, updated, intro, contact, email, sections).
+ * messages/*.json under `namespace` (title, updated, intro, contact, email, sections; optional
+ * `note`, a status callout such as "draft, not yet legally reviewed").
  */
 export async function DocPage({ namespace }: { namespace: string }) {
   const t = await getTranslations(namespace);
@@ -17,6 +18,14 @@ export async function DocPage({ namespace }: { namespace: string }) {
         {t("title")}
       </h1>
       <p className="mt-2 text-caption text-faint">{t("updated")}</p>
+      {t.has("note") && (
+        <p
+          role="note"
+          className="mt-4 rounded-lg border border-warning/40 bg-warning/5 px-4 py-3 text-caption leading-relaxed text-warning"
+        >
+          {t("note")}
+        </p>
+      )}
       <p className="mt-5 text-body leading-relaxed text-muted-foreground">
         {t("intro")}
       </p>

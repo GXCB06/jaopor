@@ -1710,10 +1710,10 @@
         "title": "5. Revoke at any time",
         "items": [
           {
-            "t": "Disconnect a source in your dashboard: the encrypted key, and that source's numbers and history, are deleted immediately."
+            "t": "Disconnect a revenue or traffic source in your dashboard: the encrypted key, and that source's numbers and daily history, are deleted immediately."
           },
           {
-            "t": "You can also revoke the key at the provider, for example in Stripe under Developers → API keys. The numbers then stop updating and the project shows that the connection failed."
+            "t": "You can also revoke the key at the provider, for example in Stripe under Developers → API keys. The numbers then stop updating and your dashboard shows that the connection no longer works."
           },
           {
             "t": "Deleting a project deletes all of its keys."
@@ -1723,8 +1723,8 @@
     ]
   },
   "Terms": {
-    "metaTitle": "Terms of use",
-    "title": "JaoPor terms of use",
+    "metaTitle": "Terms of use (draft)",
+    "title": "JaoPor terms of use (draft)",
     "updated": "Last updated: October 4, 2026",
     "intro": "These terms apply to your use of JaoPor (jaopor.vercel.app). By using the site or creating an account, you agree to these terms and to our privacy policy.",
     "contact": "Questions about these terms:",
@@ -1787,7 +1787,7 @@
         "title": "5. Keeping the community safe",
         "items": [
           {
-            "t": "We may hide content, remove verification, or suspend accounts that break these terms."
+            "t": "We may hide or remove content, and delete accounts, that break these terms."
           },
           {
             "t": "You can report posts, comments, messages or users from the “Report” menu."
@@ -1813,6 +1813,7 @@
         "title": "8. Governing law",
         "body": "These terms are governed by the laws of Thailand."
       }
-    ]
+    ],
+    "note": "Draft: these terms describe how JaoPor works today. They have not been legally reviewed yet and may change."
   }
 }

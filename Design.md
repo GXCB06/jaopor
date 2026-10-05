@@ -439,7 +439,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 - Same frame and type scale as the Privacy page (shared `DocPage`): H1, "ปรับปรุงล่าสุด", intro, contact mailto, numbered sections with paragraphs and bullet lists (lead phrase `font-semibold text-foreground`). Static, both locales; linked from the footer's "เกี่ยวกับเรา" column.
 - **Security** states only what the code does (read-only key checks per source, AES-256-GCM at rest, server-only decryption, aggregate numbers only, daily sync + รีเฟรช, disconnect deletes the key and that source's numbers). Section ids for deep links: `#read-only`, `#encryption`, `#disconnect`.
-- **Terms** is a plain-language draft; it needs the owner's (and ideally a lawyer's) approval before it ships, like the privacy wording.
+- **Terms** ships as a clearly labelled draft (owner approval 2026-10-04): "(ฉบับร่าง)" in the title and a status note under the date, `rounded-lg border border-warning/40 bg-warning/5 px-4 py-3 text-caption text-warning` with `role="note"` ("ยังไม่ผ่านการตรวจทานทางกฎหมาย และอาจมีการปรับปรุง"). Wording describes only current product behaviour; remove the note after a legal review.
 
 ### LiveViewersPill (startup page)
 
