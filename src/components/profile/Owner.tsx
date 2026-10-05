@@ -1,6 +1,6 @@
 "use client";
 
-import { PencilIcon } from "lucide-react";
+import { PencilIcon, ShieldAlertIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -103,19 +103,46 @@ export function UnverifiedLine({ items }: { items: string[] }) {
 }
 
 /** Shown only to the owner, at the top of their own profile. */
-export function OwnerBar() {
+/**
+ * Owner-only bar above the profile. Without any verified number it becomes the "not verified
+ * yet" prompt (Design.md §5 Owner "not verified yet" prompt): first users listed and never verified.
+ */
+export function OwnerBar({ unverified = false }: { unverified?: boolean }) {
   const { isOwner, startupId } = useContext(Ctx);
   const t = useTranslations("Profile");
   if (!isOwner) return null;
+  const edit = `/dashboard/${startupId}/edit`;
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand/40 bg-brand/5 px-4 py-3">
-      <p className="text-xs">{t("ownerBar")}</p>
-      <Button asChild size="sm">
-        <Link href={`/dashboard/${startupId}/edit`}>
-          <PencilIcon />
-          {t("editProfile")}
-        </Link>
-      </Button>
+    <div
+      className={cn(
+        "flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3",
+        unverified
+          ? "border-warning/40 bg-warning/10"
+          : "border-brand/40 bg-brand/5",
+      )}
+    >
+      <p className="flex min-w-0 flex-1 items-start gap-2 text-xs">
+        {unverified && (
+          <ShieldAlertIcon
+            className="mt-px size-4 shrink-0 text-warning"
+            aria-hidden="true"
+          />
+        )}
+        {unverified ? t("unverifiedOwner") : t("ownerBar")}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {unverified && (
+          <Button asChild size="sm">
+            <Link href={`${edit}#verify`}>{t("verifyNow")}</Link>
+          </Button>
+        )}
+        <Button asChild size="sm" variant={unverified ? "outline" : "default"}>
+          <Link href={edit}>
+            <PencilIcon />
+            {t("editProfile")}
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }

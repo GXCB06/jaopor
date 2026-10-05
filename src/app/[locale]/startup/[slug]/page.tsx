@@ -217,7 +217,14 @@ export default async function StartupPage({ params }: Props) {
           <span className="truncate text-foreground">{startup.name}</span>
         </nav>
 
-        <OwnerBar />
+        <OwnerBar
+          unverified={
+            !verified &&
+            !startup.is_demo &&
+            startup.visitors_30d === null &&
+            startup.build_commits === null
+          }
+        />
 
         <header className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
           <div className="flex min-w-0 items-start gap-5">

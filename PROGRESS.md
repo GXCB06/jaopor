@@ -12,6 +12,24 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-05 — First-user fixes, round 2: Add Startup people finish (auto-fill, "What do you have?", Stripe guide, trust box)
+
+**Why (first-user test):** listing a startup asked for six things at once, verification showed three groups of providers on one screen, the Stripe key page opened blank, and 2 of 3 real startups were never verified.
+
+**Done:**
+
+- **Step 1 "ลงผลงาน" (List it):** link first; for a website link the server reads the page ~600 ms after typing stops and fills name, one-liner (new field, ≤ 140) and logo. Only empty fields or ones still holding the last auto value are replaced; typed values never are. Then category. AI tools, looking-for and screenshots moved to the edit page (the profile's "+ เพิ่ม…" cards already lead there). The auto logo is uploaded as a PNG on submit; "อัปโหลดเอง" / "ลบโลโก้" next to a 48 px preview tile.
+- **Auto-fill server** (`POST /api/startups/preview`, signed-in only, 20 calls / minute / user): website links only, same SSRF guard as link previews (public https, every redirect re-checked, max 3), 3 s for the page (512 KB) and 3 s for icons (1 MB each). Icon order: apple-touch-icon, then the largest PNG / SVG / WebP / JPEG icon, then `/apple-touch-icon.png`; `.ico` and icons under 48 px are skipped; SVGs only when self-contained (no DOCTYPE / entities / scripts / images / external references). sharp → 256 px PNG data URL. Nothing is stored.
+- **Step 2 "ยืนยันตัวเลข": VerifyPanel chooser** while nothing is connected (wizard and edit page): one question, five tiles (มีเว็บไซต์ → snippet, shown only with a website · Stripe · RevenueCat · GitHub · analytics: Plausible / Umami / Cloudflare), "ไม่ต้องใช้คีย์" / "คีย์อ่านอย่างเดียว" chips. Only the chosen connector shows, with "← เปลี่ยนวิธี"; connected tiles get ✓ and "เพิ่มอีกแหล่ง". Tiles keep the `#verify-revenue / -traffic / -build` ids for the profile's deep links. With a connection, the grouped manage view is unchanged.
+- **Stripe permission guide:** Stripe has no pre-filled key link, so a mock of its permission table shows exactly Charges: Read, Subscriptions: Read, everything else: None (what the connector reads).
+- **Trust box** beside every key field: what we store and show (totals, daily chart figures, the verifying service) and what we never store or do (customer names / emails / cards; create, change or refund; show the key), "disconnect deletes the key and that source's numbers", link to `/security`. Wording checked against /security and the Stripe connector.
+- **Owner "not verified yet" prompt:** on the startup page, an owner whose project has no verified revenue, visitors or build proof sees the owner bar in warning tone with "ยืนยันตัวเลข" (→ edit page `#verify`). The dashboard's unverified-row banner already existed.
+
+**Files:** `src/components/wizard/{StartupWizard,VerifyPanel}.tsx`, `src/app/api/startups/preview/route.ts`, `src/lib/net/link-preview.ts`, `src/lib/og-parse{,.test}.ts`, `src/components/profile/Owner.tsx`, `src/app/[locale]/startup/[slug]/page.tsx`, `messages/*.json`, `Design.md`
+**Verified:** typecheck ✓ · lint ✓ · tests 289/289 (new: 6 site-identity cases: site name, title part matching the domain, "Name: one-liner", 140 clip, icon order without .ico / mask-icon / http, SVG) · build ✓. Live run of the server function (temporary test, deleted): jaopor.vercel.app, vercel.com, stripe.com, wongnai.com, github.com all gave name + one-liner + logo in 0.3–0.6 s; `https://localhost` and `https://127.0.0.1` refused. Unauthenticated `POST /api/startups/preview` → 401. Browser (temporary page, deleted): auto-fill fills name / one-liner / logo, a typed name survives a link change, chooser → Stripe guide + trust box; desktop and 375 px, no horizontal scroll.
+**Not verified:** the owner prompt on a real startup page (needs a signed-in owner; sign-in on localhost goes to production) and a real auto-fill through the signed-in route (the client was checked with a stubbed response).
+**Next:** owner review on production (add a project from a website link, verify with Stripe), then round 3 (verified first in lists, "Owner verified" badge; migration SQL shown before applying).
+
 ## 2026-10-05 — First-user fixes, round 1: province search + sign-in returns people to the product
 
 **Why (first-user test):** people scrolled a 77-item province list and gave up, and every sign-in landed on an empty dashboard (the header's "เข้าสู่ระบบ" link had no return path, so `next` defaulted to `/dashboard`).

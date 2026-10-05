@@ -249,7 +249,9 @@
     "demoVideo": "{name} demo video",
     "provinceRank": "{province} · #{rank} in the Olympics",
     "latestUpdates": "Latest updates",
-    "seeFeed": "See the whole feed"
+    "seeFeed": "See the whole feed",
+    "unverifiedOwner": "This project has no verified numbers yet. Verify in about a minute so people trust your numbers and you can rank.",
+    "verifyNow": "Verify numbers"
   },
   "Verified": {
     "stamp": "Revenue is verified with <b>{provider}</b> API key.",
@@ -269,7 +271,7 @@
   "Wizard": {
     "title": "Add your Startup",
     "step": "Step {current} of {total}",
-    "stepBasics": "Basics",
+    "stepBasics": "List it",
     "stepRevenue": "Verify numbers",
     "stepInsights": "Insights",
     "name": "Startup name",
@@ -313,11 +315,11 @@
     "finish": "Publish profile",
     "limitReached": "You can list up to 5 startups.",
     "choose": "Choose…",
-    "basicsIntro": "Takes under a minute — one link is enough. Everything else can be added later from your profile.",
+    "basicsIntro": "Paste your project's link first: we fill in the name, one-liner and logo from your site, and you can edit every field. Everything else can be added later.",
     "openStripe": "Open Stripe key page",
     "openStripeTest": "test mode",
     "writeAccessOn": "This key still has write access for: {resources}. Change those to Read or None, then paste it again.",
-    "goToProfile": "Go to profile",
+    "goToProfile": "Go to project page",
     "skipToProfile": "Skip for now",
     "projectLink": "Project link",
     "projectLinkHint": "Website · App Store · Google Play · LINE OA (@id) · GitHub",
@@ -349,7 +351,16 @@
     "stackAddDetected": "Add all",
     "stackGithubHint": "Add your public GitHub repo under “Links & location”, then press “Pull from GitHub” to fill the stack",
     "nameRequired": "Enter the product name",
-    "provinceRequired": "Choose your province"
+    "provinceRequired": "Choose your province",
+    "autofillReading": "Reading your page…",
+    "autofillDone": "✨ Filled in from your site. Edit anything.",
+    "taglineCount": "{count}/140",
+    "taglinePlaceholder": "e.g. Tax invoices in one minute",
+    "logoUpload": "Upload",
+    "logoRemove": "Remove logo",
+    "logoFromSite": "Logo from your site",
+    "logoNone": "No logo yet",
+    "verifyLater": "You can verify later from your project page."
   },
   "Errors": {
     "invalid_key": "{source} didn't accept that key or link — check it and paste again.",
@@ -484,6 +495,60 @@
       "howTo3": "Paste the token and your Account ID (on the account's Overview page). The number shown is visits to your site.",
       "accountId": "Account ID",
       "key": "API token (Account Analytics: Read)"
+    },
+    "choose": {
+      "title": "What do you have? Pick one to start",
+      "hint": "About a minute. Every option is read-only, and you can add more sources later.",
+      "website": "A website",
+      "websiteHint": "Count real visitors with one line of JaoPor code",
+      "stripe": "Paid through Stripe",
+      "stripeHint": "Verify revenue and MRR",
+      "revenuecat": "A mobile app on RevenueCat",
+      "revenuecatHint": "App revenue from the App Store and Google Play",
+      "github": "Code on GitHub",
+      "githubHint": "Commits, and how much was co-written with Claude",
+      "analytics": "Analytics you already use",
+      "analyticsHint": "Plausible, Umami or Cloudflare",
+      "noKey": "No key needed",
+      "readKey": "Read-only key",
+      "change": "Change method",
+      "addAnother": "Add another source",
+      "connected": "Connected"
+    },
+    "stripeGuide": {
+      "label": "Permissions to set on the key",
+      "rest": "Everything else",
+      "caption": "As it looks in Stripe › Developers › API keys › Create restricted key"
+    },
+    "trust": {
+      "keepTitle": "What we store and show",
+      "neverTitle": "What we never store or do",
+      "keep": {
+        "revenue": [
+          "Totals: MRR, 30-day and all-time revenue, subscriber count",
+          "Daily figures for the chart",
+          "Which service verified it, e.g. “Verified via Stripe”"
+        ],
+        "traffic": [
+          "Visitors in the last 30 days",
+          "Daily figures for the chart",
+          "Which service verified it"
+        ]
+      },
+      "never": {
+        "revenue": [
+          "Your customers' names, emails or card details",
+          "Create, change or refund anything in your account (we check the key is read-only before saving it)",
+          "Show your key to anyone (it is encrypted; you only see its last characters)"
+        ],
+        "traffic": [
+          "Data about individual visitors",
+          "Change settings in your account (read access only)",
+          "Show your key to anyone (it is encrypted; you only see its last characters)"
+        ]
+      },
+      "revoke": "Disconnect at any time: the key and that source's numbers are deleted immediately.",
+      "more": "How we handle your key"
     }
   },
   "Share": {

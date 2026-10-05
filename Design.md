@@ -365,6 +365,31 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - After sign-in: no username yet → onboarding, then `next`. With a username: `next` if given; else users with a startup → `/dashboard`, users without → `/startups?welcome=1`. `next` must be an internal path (no `//`, no backslash) and never `/login` or `/onboarding`.
 - **Welcome banner** on `/startups?welcome=1`: dismissible `rounded-xl border border-brand/30 bg-brand/5 px-4 py-3` row under the hero, "ยินดีต้อนรับสู่ JaoPor 👋 ดูผลงานของคนอื่นก่อนได้ สร้างอะไรด้วย AI อยู่ก็เพิ่มของคุณได้เมื่อพร้อม" + "เพิ่มผลงานของฉัน →" link to `/new` + × close.
 
+### Add-startup wizard v2 (`/new`, 2026-10-05, first-user test: "adding a startup is hard", most skipped verification)
+
+- **Step labels:** "1. ลงผลงาน" / "List it" · "2. ยืนยันตัวเลข" / "Verify". Same 2-segment `border-t-2` bar.
+- **Step 1, four things, link first:** ลิงก์ผลงาน (full width, autofocus) → ชื่อ · คำโปรย (optional, ≤ 140, counter `text-2xs text-faint tabular-nums`) → หมวดหมู่ · โลโก้. AI tools, looking-for and screenshots moved to the edit page (the profile's "+ เพิ่ม…" cards lead there).
+- **Auto-fill from the link** (website links only): ~600 ms after typing stops, the server reads the page (SSRF-guarded, 3 s, 512 KB) and returns name (`og:site_name`, else the `<title>` part that matches the domain), one-liner (meta description, ≤ 140) and logo (apple-touch-icon, else the largest PNG / SVG / WebP / JPEG icon; resized to 256 px PNG). It fills only fields that are empty or still hold the previous auto value, never what the user typed. Status line under the link (`text-caption`): muted "กำลังอ่านหน้าเว็บ…" → brand "✨ เติมจากเว็บของคุณแล้ว แก้ได้ทุกช่อง" → nothing on failure (fields stay manual).
+- **Logo field:** 48 px rounded tile preview (auto or uploaded) + "อัปโหลดเอง" file button + "ลบ" text button; the auto logo is uploaded as PNG on submit.
+- **Step 2:** the VerifyPanel **chooser** (below), then the footer row: muted "ยืนยันทีหลังได้จากหน้าผลงานของคุณ" + outline "ข้ามไปก่อน" (primary "ไปที่หน้าผลงาน" once something is connected).
+
+### VerifyPanel chooser (no source connected yet: wizard step 2 and the edit page)
+
+- One question, `text-sm font-semibold` "คุณมีอะไรบ้าง? เลือกหนึ่งอย่างก่อน" + hint. Choice tiles `grid gap-2 sm:grid-cols-2`, each a `button` `rounded-xl border bg-card p-3 text-left hover:bg-accent` with lucide icon (size-4, muted) + title `text-sm font-semibold` + one line `text-caption text-muted-foreground` + right-aligned chip `text-2xs` ("ไม่ต้องใช้คีย์" positive / "คีย์อ่านอย่างเดียว" muted):
+  1. **มีเว็บไซต์** (Globe) → JaoPor snippet. Only when the project has a website link.
+  2. **รับเงินผ่าน Stripe** (CreditCard) → Stripe.
+  3. **แอปมือถือ ใช้ RevenueCat** (Smartphone) → RevenueCat.
+  4. **โค้ดบน GitHub** (Github) → GitHub (repo must be public and the user's).
+  5. **มี analytics อยู่แล้ว** (BarChart3) → Plausible | Umami | Cloudflare segmented switch.
+- Choosing shows only that connector: "← เปลี่ยนวิธี" text button + its title, then the usual numbered how-to and form. Connected sources show as ✓ on their tile; "เพิ่มอีกแหล่ง" returns to the tiles. Tiles carry the deep-link ids (`#verify-revenue` Stripe · `#verify-traffic` snippet, or analytics without a website · `#verify-build` GitHub), so the profile's "+ เชื่อม…" links scroll to and highlight the right tile.
+- Once a source is connected (edit page after refresh), the panel switches to the grouped manage view (§5 VerifyPanel).
+- **Stripe permission guide** (Stripe has no pre-filled key link): under how-to step 2 a small mock of Stripe's permission table, `rounded-lg border bg-card text-caption divide-y`: rows "Charges" and "Subscriptions" with a `Read` pill (`bg-positive/15 text-positive font-semibold`), then "ทุกอย่างที่เหลือ" with a `None` pill (muted). Caption `text-2xs text-faint`: "หน้าตาในหน้า Stripe › Developers › API keys › Create restricted key".
+- **Trust box** beside every key field (all sources that take a key): `rounded-xl border bg-muted/30 p-3 text-caption`, two short lists side by side from `sm` — "✓ สิ่งที่เราเก็บและแสดง" (positive check icons: the totals for that kind, the provider name) and "✕ สิ่งที่เราไม่เก็บและทำไม่ได้" (muted x icons: customer names / emails / cards, writing or refunding, showing the key) — then one line "ยกเลิกได้ทุกเมื่อ คีย์และตัวเลขจะถูกลบทันที · อ่านวิธีที่เราดูแลคีย์ →" (link `/security`). Wording must match /security.
+
+### Owner "not verified yet" prompt (startup page)
+
+- When the project has no verified number at all (no revenue, visitors or build proof) and is not a demo, the owner's `OwnerBar` turns warning-tone: `border-warning/40 bg-warning/10`, `ShieldAlert` icon, "ผลงานนี้ยังไม่มีตัวเลขที่ยืนยัน ยืนยันใน 1 นาทีเพื่อให้คนเชื่อตัวเลขและติดอันดับ" + primary "ยืนยันตัวเลข" (→ `/dashboard/{id}/edit#verify`) + outline "แก้ไขโปรไฟล์". Visitors never see it. The dashboard keeps its existing unverified row banner.
+
 ### Builder profile v2 (`/u/[username]`, also `/@username`; Phase 10e, Figma "Founder Prfile 2nd" 160-2)
 
 - Breadcrumb (JaoPor › คนสร้าง › name, `text-2xs text-faint`), then `lg:grid-cols-[296px_minmax(0,1fr)] gap-12`; the sidebar is `lg:sticky lg:top-20` and stacks above the main column below `lg`.
@@ -485,7 +510,7 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 - **ProjectLinks:** one link lists a project (website / App Store / Play / LINE OA / GitHub); outline `size="sm"` buttons with lucide `Globe`/`Smartphone`/`MessageCircle`/`Code`.
 - **LookingForBanner:** `rounded-xl border border-warning/30 bg-warning/5 p-3 text-xs` with `HandHelping` icon, asks as chips, primary "Try it" link.
 - **TractionTiles:** StatCard row (only metrics with data; owner sees EmptyOwnerCards) "Verified traction": Visitors (30d) · Active users · Build proof (commits, % co-authored by Claude, first commit). Never convert users into revenue; self-typed numbers never appear.
-- **VerifyPanel:** three bordered groups (Revenue: Stripe | RevenueCat · Visitors: **JaoPor snippet** | Plausible | Umami | Cloudflare · Build proof: GitHub), segmented source switch, numbered how-to, one primary "Verify". One source per group.
+- **VerifyPanel** (manage view; the chooser in §5 Add-startup wizard v2 is shown while nothing is connected): three bordered groups (Revenue: Stripe | RevenueCat · Visitors: **JaoPor snippet** | Plausible | Umami | Cloudflare · Build proof: GitHub), segmented source switch, numbered how-to, one primary "Verify". One source per group.
   - **JaoPor snippet** (no analytics account needed; listed first): a read-only code box (`rounded-lg border bg-card p-3 font-mono text-caption`) with the one-line `<script>` and a Copy button, then the install status: "รอการเข้าชมครั้งแรก" / "Waiting for the first visit" (muted, pulsing dot) → "นับตั้งแต่ {date}" / "Counting since {date}" (positive).
   - **Cloudflare:** API token (Account Analytics: Read only) + account ID. Numbers are **visits** (sessions), labelled so.
 - **TractionTiles source captions:** "นับโดย JaoPor ตั้งแต่ {date}" / "Counted by JaoPor since {date}" for the snippet; "ยืนยันผ่าน Cloudflare · visits" for Cloudflare.
@@ -508,7 +533,7 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 | `/feed`            | Filters (view, type, province, category) · composer + PostCards + โหลดเพิ่ม · right rail (who to follow, most active, waiting for feedback)                                                                                                                                         |
 | `/builders`        | Hero (people search) · filter sidebar (skill, area, status, built with, verified) + BuilderCard grid + pager                                                                                                                                                                        |
 | `/dashboard`       | Title + "+ Add Startup" · Dashboard startup cards                                                                                                                                                                                                                                   |
-| Add-startup wizard | 2 steps: 1) name · project link (auto-detected) · category · built with · looking for · logo → 2) VerifyPanel or skip                                                                                                                                                               |
+| Add-startup wizard | 2 steps: 1) project link (auto-fills name · one-liner · logo) · category → 2) VerifyPanel chooser or skip                                                                                                                                                                           |
 | `/acquire`         | Phase 2: Directory layout + price/multiple filters and FOR SALE tags                                                                                                                                                                                                                |
 
 ## 7. States

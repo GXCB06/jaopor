@@ -91,3 +91,120 @@ export function parseOpenGraph(html: string, pageUrl: string): LinkPreview {
     domain: page.hostname.replace(/^www\./, ""),
   };
 }
+
+// Add-startup auto-fill (Design.md §5 Add-startup wizard v2): name, one-liner and icon candidates
+// for a project's own website. The server fetches the page and the icon; this part stays pure.
+
+export type SiteIdentity = {
+  name: string | null;
+  tagline: string | null;
+  /** Icon URLs to try in order (https, resolved against the page); never .ico (can't be decoded). */
+  icons: string[];
+};
+
+/** Every <link> tag in the <head> as a lower-cased attribute map. */
+function linkTags(html: string): Map<string, string>[] {
+  const end = html.search(/<\/head>/i);
+  const head = end > 0 ? html.slice(0, end) : html;
+  const out: Map<string, string>[] = [];
+  for (const [tag] of head.matchAll(/<link\b[^>]*>/gi)) {
+    const attrs = new Map<string, string>();
+    for (const m of tag.matchAll(
+      /\b([a-z-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi,
+    ))
+      attrs.set(m[1].toLowerCase(), decode(m[2] ?? m[3] ?? m[4]).trim());
+    out.push(attrs);
+  }
+  return out;
+}
+
+/** Lower-case letters and digits only, for comparing a title part with the domain. */
+const squash = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+
+/** Largest side declared in sizes="180x180 32x32"; "any" (SVG) counts as large. */
+function declaredSize(sizes: string | undefined): number | null {
+  if (!sizes) return null;
+  if (/\bany\b/i.test(sizes)) return 512;
+  let best = 0;
+  for (const m of sizes.matchAll(/(\d+)x(\d+)/gi))
+    best = Math.max(best, Math.min(Number(m[1]), Number(m[2])));
+  return best || null;
+}
+
+export function parseSiteIdentity(html: string, pageUrl: string): SiteIdentity {
+  const page = new URL(pageUrl);
+  const meta = metaTags(html);
+  const titleTag = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1];
+  const title = clean(meta.get("og:title") ?? titleTag, 200);
+  const parts = title
+    ? title
+        .split(/\s+[|\-–—·:•]\s+|:\s+/)
+        .map((p) => p.trim())
+        .filter(Boolean)
+    : [];
+
+  // Name: the site's own name tag, else the title part that matches the domain, else the first.
+  const label = squash(page.hostname.replace(/^www\./, "").split(".")[0]);
+  const matching = parts.find((p) => {
+    const q = squash(p);
+    return q.length >= 3 && (q.includes(label) || label.includes(q));
+  });
+  const fromTitle = matching ?? parts[0];
+  const name = clean(
+    meta.get("og:site_name") ?? meta.get("application-name") ?? fromTitle,
+    80,
+  );
+
+  const description = clean(
+    meta.get("og:description") ??
+      meta.get("description") ??
+      meta.get("twitter:description"),
+    140,
+  );
+  // No description: the rest of the title often is the one-liner ("Acme | Invoices in 1 minute").
+  const rest = parts
+    .filter((p) => p !== fromTitle)
+    .sort((a, b) => b.length - a.length)[0];
+  const tagline =
+    description ?? (rest && rest.length >= 12 ? clean(rest, 140) : null);
+
+  const scored: { url: string; score: number }[] = [];
+  for (const l of linkTags(html)) {
+    const rel = (l.get("rel") ?? "").toLowerCase().split(/\s+/);
+    const href = l.get("href");
+    if (!href || rel.includes("mask-icon")) continue;
+    const apple = rel.some((r) => r.startsWith("apple-touch-icon"));
+    if (!apple && !rel.includes("icon")) continue;
+    let url: URL;
+    try {
+      url = new URL(href, page);
+    } catch {
+      continue;
+    }
+    const type = (l.get("type") ?? "").toLowerCase();
+    if (
+      url.protocol !== "https:" ||
+      /\.ico$/i.test(url.pathname) ||
+      type.includes("icon") // image/x-icon, image/vnd.microsoft.icon
+    )
+      continue;
+    const svg = /\.svg$/i.test(url.pathname) || type.includes("svg");
+    const size = declaredSize(l.get("sizes")) ?? (apple ? 180 : svg ? 512 : 32);
+    // Apple touch icons are made to be shown as an app tile: prefer them at equal quality.
+    scored.push({ url: url.toString(), score: size + (apple ? 64 : 0) });
+  }
+  scored.push({
+    url: new URL("/apple-touch-icon.png", page).toString(),
+    score: 0,
+  });
+  const icons = [
+    ...new Set(
+      scored
+        .sort((a, b) => b.score - a.score)
+        .map((s) => s.url)
+        .filter((u) => u.length <= 500),
+    ),
+  ].slice(0, 4);
+
+  return { name, tagline, icons };
+}

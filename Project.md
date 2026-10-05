@@ -144,7 +144,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 ### First-user fixes (owner test 2026-10-05; plan: rounds 1–3)
 
 - [x] (2026-10-05) Round 1: searchable province picker (aliases, popular first, location suggestion) + sign-in returns people to where they were (new users: onboarding, then back; no startup: `/startups` + welcome banner)
-- [ ] Round 2: Add Startup redesign (link-first auto-fill, "What do you have?" verify chooser, easier Stripe key, trust box, unverified prompt)
+- [x] (2026-10-05) Round 2: Add Startup redesign (link-first auto-fill of name / one-liner / logo, "What do you have?" verify chooser, Stripe two-permission guide (no prefill link exists), trust box, owner "not verified yet" prompt)
 - [ ] Round 3: make verified worth it (verified first, muted unverified cards, "Owner verified" via the snippet; migration shown before applying)
 - [ ] Round 4 (later): per-metric visibility (exact / range / growth only / badge only), masked server-side
 
