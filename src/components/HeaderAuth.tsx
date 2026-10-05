@@ -8,6 +8,7 @@ import {
   MessageCircleIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   DropdownMenu,
@@ -20,6 +21,7 @@ import {
 import { Link } from "@/i18n/navigation";
 import { PersonPhoto } from "@/components/PersonPhoto";
 import { onAvatarChange } from "@/lib/avatar-events";
+import { safeNextPath } from "@/lib/next-path";
 import { createClient } from "@/lib/supabase/client";
 import { MessagesLink } from "./chat/MessagesLink";
 import { NotificationBell } from "./NotificationBell";
@@ -30,6 +32,8 @@ import { NotificationBell } from "./NotificationBell";
  */
 export function HeaderAuth() {
   const t = useTranslations("Nav");
+  // Sign-in returns here (Design.md §6 Sign-in routing); the full path includes the locale.
+  const here = safeNextPath(usePathname());
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const signOutForm = useRef<HTMLFormElement>(null);
 
@@ -65,7 +69,7 @@ export function HeaderAuth() {
   if (!user) {
     return (
       <Link
-        href="/login"
+        href={{ pathname: "/login", query: here ? { next: here } : {} }}
         aria-label={t("signIn")}
         className="inline-flex h-8 items-center text-xs font-medium whitespace-nowrap text-muted-foreground hover:text-foreground max-sm:size-8 max-sm:justify-center max-sm:rounded-md max-sm:hover:bg-accent"
       >

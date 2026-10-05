@@ -744,3 +744,35 @@ export function matchProvince(
   }
   return null;
 }
+
+/**
+ * Popular provinces pinned on top of the province picker before the user types (Design.md §5
+ * VocabCombobox: first-user test 2026-10-05, people scrolled 77 provinces and gave up).
+ */
+export const POPULAR_PROVINCES = [
+  "bangkok",
+  "chiang-mai",
+  "khon-kaen",
+  "chonburi",
+  "phuket",
+  "nonthaburi",
+] as const;
+
+/** What people actually type for a province (short forms, old names, its best-known city). */
+export const PROVINCE_ALIASES: Record<string, string> = {
+  bangkok: "กทม กรุงเทพ กรุงเทพฯ bkk krungthep",
+  "chiang-mai": "cnx เชียงใหม่ chiangmai",
+  "chiang-rai": "cei chiangrai",
+  "nakhon-ratchasima": "โคราช korat",
+  chonburi: "พัทยา pattaya ศรีราชา sriracha",
+  songkhla: "หาดใหญ่ hat yai hatyai",
+  "phra-nakhon-si-ayutthaya": "อยุธยา ayutthaya",
+  "samut-prakan": "ปากน้ำ paknam",
+  "surat-thani": "สมุย samui koh samui",
+  "prachuap-khiri-khan": "หัวหิน hua hin huahin",
+  "ubon-ratchathani": "อุบล ubon",
+  "udon-thani": "อุดร udon",
+  "nakhon-si-thammarat": "นครศรี",
+  "khon-kaen": "kkc",
+  phuket: "hkt",
+};

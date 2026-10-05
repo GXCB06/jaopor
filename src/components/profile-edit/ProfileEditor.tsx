@@ -42,7 +42,6 @@ import {
 import { Link, useRouter } from "@/i18n/navigation";
 import { CATEGORY_LIST } from "@/lib/config/categories";
 import { localizedName } from "@/lib/config/localized";
-import { PROVINCE_LIST, REGION_LIST } from "@/lib/config/provinces";
 import {
   COMMITMENTS,
   DEALS,
@@ -56,6 +55,7 @@ import {
 import { cn } from "@/lib/utils";
 import { AvatarField } from "./AvatarField";
 import { HandleField, type HandleState } from "./HandleField";
+import { ProvinceField } from "./ProvinceField";
 import { SkillPicker, type PickedSkill } from "./SkillPicker";
 import { VisibilityMenu, type Visibility } from "./VisibilityMenu";
 
@@ -502,23 +502,11 @@ export function ProfileEditor({
             className="sm:col-span-2"
             action={visMenu("province")}
           >
-            <select
+            <ProvinceField
               id="p-province"
               value={f.province}
-              onChange={(e) => set("province", e.target.value)}
-              className={inputClass}
-            >
-              <option value="">{t("f.provinceNone")}</option>
-              {REGION_LIST.map((r) => (
-                <optgroup key={r.slug} label={localizedName(r, locale)}>
-                  {PROVINCE_LIST.filter((p) => p.region === r.slug).map((p) => (
-                    <option key={p.slug} value={p.slug}>
-                      {localizedName(p, locale)}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
+              onChange={(v) => set("province", v)}
+            />
           </Field>
         </div>,
       )}

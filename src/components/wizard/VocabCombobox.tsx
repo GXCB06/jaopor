@@ -38,6 +38,7 @@ export function VocabCombobox({
   describeCustom,
   required,
   labels,
+  pinned,
 }: {
   id: string;
   options: VocabOption[];
@@ -53,6 +54,8 @@ export function VocabCombobox({
   describeCustom?: (value: string) => string;
   required?: boolean;
   labels: { remove: (label: string) => string; noMatch: string };
+  /** Shown first under their own header while nothing is typed (e.g. popular provinces). */
+  pinned?: { values: readonly string[]; label: string };
 }) {
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -77,8 +80,21 @@ export function VocabCombobox({
     toCustom && query.trim() && !matches.some((m) => norm(m.label) === q)
       ? toCustom(query.trim())
       : null;
+  // Before typing, pinned options move to the top under their own header (not repeated below);
+  // ungrouped options (e.g. "ไม่ระบุ") stay above them so they don't read as part of the group.
+  const pinnedSet = !q && pinned ? new Set(pinned.values) : null;
+  const ordered = pinnedSet
+    ? [
+        ...matches.filter((o) => !o.group && !pinnedSet.has(o.value)),
+        ...pinned!.values
+          .map((v) => matches.find((o) => o.value === v))
+          .filter((o): o is VocabOption => !!o)
+          .map((o) => ({ ...o, group: pinned!.label })),
+        ...matches.filter((o) => o.group && !pinnedSet.has(o.value)),
+      ]
+    : matches;
   const rows: VocabOption[] = [
-    ...matches,
+    ...ordered,
     ...(custom && !value.includes(custom)
       ? [{ value: custom, label: customLabel?.(query.trim()) ?? query.trim() }]
       : []),

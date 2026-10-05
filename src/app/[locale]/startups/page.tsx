@@ -1,3 +1,4 @@
+import { WelcomeBanner } from "@/components/WelcomeBanner";
 import { SlidersHorizontalIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -225,6 +226,8 @@ export default async function StartupsPage({
           <AddStartupButton />
         </div>
       </section>
+
+      {one(sp.welcome) === "1" && <WelcomeBanner />}
 
       <div className="grid gap-4 lg:grid-cols-[15rem_1fr]">
         <aside>

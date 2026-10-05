@@ -159,7 +159,11 @@
       "newest": "Newest"
     },
     "province": "Province",
-    "allProvinces": "All provinces"
+    "allProvinces": "All provinces",
+    "welcomeTitle": "Welcome to JaoPor 👋",
+    "welcomeBody": "Have a look around first. Built something with AI? Add yours when you're ready.",
+    "welcomeCta": "Add my work",
+    "welcomeClose": "Close welcome message"
   },
   "Profile": {
     "visit": "Visit",
@@ -1065,7 +1069,11 @@
       "description": "Short description",
       "lineId": "LINE ID",
       "email": "Contact email",
-      "photo": "Profile photo"
+      "photo": "Profile photo",
+      "provincePh": "Type a province, e.g. Bangkok",
+      "provinceNoMatch": "No province found. Try another name",
+      "provincePopular": "Popular",
+      "provinceSuggested": "Guessed from your approximate location. You can change it"
     },
     "status": {
       "looking_cofounder": "Looking for a co-founder",

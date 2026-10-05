@@ -257,6 +257,8 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 - Searchable multi-select: selected **LogoChips with ×** above an input (`inputClass`); typing filters a listbox (`rounded-md border bg-popover shadow-md max-h-64 overflow-auto`) grouped under muted headers, each option with its glyph; ↑/↓/Enter/Esc; Backspace in an empty input removes the last chip. Channels allow a custom entry row "+ เพิ่ม “{text}”".
 - Province uses the single-select variant (grouped by region), required when the country is Thailand.
+- **Province picker everywhere** (onboarding, profile editor, startup edit; first-user test 2026-10-05: people scrolled 77 provinces and gave up): the same single-select combobox. Before typing, a **"จังหวัดยอดนิยม"** group sits on top (Bangkok, Chiang Mai, Khon Kaen, Chon Buri, Phuket, Nonthaburi), then the regions. Typing matches Thai and English names plus common aliases ("กทม", "bkk", "โคราช", "korat", "หาดใหญ่", "pattaya"…). Where province is optional, a "ไม่ระบุ" option sits first. Placeholder "พิมพ์ชื่อจังหวัด เช่น กทม".
+- **Suggested province** (onboarding only): when the field is still empty, it is pre-filled from the visitor's approximate location (`/api/live/whoami`, nearest province, Thailand only) with a hint under the field "เดาจากตำแหน่งโดยประมาณ เปลี่ยนได้" (`text-2xs text-faint`). Nothing is saved until the user continues.
 
 ### More startups (profile bottom)
 
@@ -355,7 +357,13 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 ### Onboarding (`/onboarding`, spec 9e)
 
-- `max-w-lg` Card: "ขั้นที่ n จาก 4" + 4-segment brand progress, title, hint; steps: username (live check, suggestion from the display name) → headline + province → status tiles → SkillPicker (skippable). Back / ถัดไป; the last step has "ข้ามไปก่อน" + "เสร็จสิ้น" → /dashboard.
+- `max-w-lg` Card: "ขั้นที่ n จาก 4" + 4-segment brand progress, title, hint; steps: username (live check, suggestion from the display name) → headline + province → status tiles → SkillPicker (skippable). Back / ถัดไป; the last step has "ข้ามไปก่อน" + "เสร็จสิ้น" → back to the page the user signed in from (`next`), else `/startups` with the welcome banner.
+
+### Sign-in routing (2026-10-05, first-user test: everyone landed on an empty dashboard)
+
+- Every "เข้าสู่ระบบ" link carries the current page as `next` (header included); gated pages (e.g. "เพิ่ม Startup" → `/new`) already do.
+- After sign-in: no username yet → onboarding, then `next`. With a username: `next` if given; else users with a startup → `/dashboard`, users without → `/startups?welcome=1`. `next` must be an internal path (no `//`, no backslash) and never `/login` or `/onboarding`.
+- **Welcome banner** on `/startups?welcome=1`: dismissible `rounded-xl border border-brand/30 bg-brand/5 px-4 py-3` row under the hero, "ยินดีต้อนรับสู่ JaoPor 👋 ดูผลงานของคนอื่นก่อนได้ สร้างอะไรด้วย AI อยู่ก็เพิ่มของคุณได้เมื่อพร้อม" + "เพิ่มผลงานของฉัน →" link to `/new` + × close.
 
 ### Builder profile v2 (`/u/[username]`, also `/@username`; Phase 10e, Figma "Founder Prfile 2nd" 160-2)
 

@@ -159,7 +159,11 @@
       "newest": "ใหม่ล่าสุด"
     },
     "province": "จังหวัด",
-    "allProvinces": "ทุกจังหวัด"
+    "allProvinces": "ทุกจังหวัด",
+    "welcomeTitle": "ยินดีต้อนรับสู่ JaoPor 👋",
+    "welcomeBody": "ดูผลงานของคนอื่นก่อนได้ สร้างอะไรด้วย AI อยู่ก็เพิ่มของคุณได้เมื่อพร้อม",
+    "welcomeCta": "เพิ่มผลงานของฉัน",
+    "welcomeClose": "ปิดข้อความต้อนรับ"
   },
   "Profile": {
     "visit": "เข้าเว็บไซต์",
@@ -1065,7 +1069,11 @@
       "description": "รายละเอียดสั้น ๆ",
       "lineId": "LINE ID",
       "email": "อีเมลติดต่อ",
-      "photo": "รูปโปรไฟล์"
+      "photo": "รูปโปรไฟล์",
+      "provincePh": "พิมพ์ชื่อจังหวัด เช่น กทม",
+      "provinceNoMatch": "ไม่พบจังหวัดนี้ ลองพิมพ์ชื่ออื่น",
+      "provincePopular": "จังหวัดยอดนิยม",
+      "provinceSuggested": "เดาจากตำแหน่งโดยประมาณ เปลี่ยนได้"
     },
     "status": {
       "looking_cofounder": "กำลังหา Co-founder",

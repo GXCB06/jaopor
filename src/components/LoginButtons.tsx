@@ -7,7 +7,14 @@ import { createClient } from "@/lib/supabase/client";
 
 type Provider = "google" | "github";
 
-export function LoginButtons({ next }: { next: string }) {
+export function LoginButtons({
+  next,
+  locale,
+}: {
+  /** Already validated (safeNextPath); null = let the callback decide. */
+  next: string | null;
+  locale: string;
+}) {
   const t = useTranslations("Login");
   const [pending, setPending] = useState<Provider | null>(null);
   const [error, setError] = useState(false);
@@ -15,7 +22,9 @@ export function LoginButtons({ next }: { next: string }) {
   async function signIn(provider: Provider) {
     setPending(provider);
     setError(false);
-    const redirectTo = `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(next)}`;
+    const params = new URLSearchParams({ locale });
+    if (next) params.set("next", next);
+    const redirectTo = `${window.location.origin}/api/auth/callback?${params}`;
     const { error } = await createClient().auth.signInWithOAuth({
       provider,
       options: { redirectTo },

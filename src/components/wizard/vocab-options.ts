@@ -1,7 +1,11 @@
 // Option lists for the VocabCombobox fields (spec 6.9), built from src/lib/config.
 import { CHANNEL_LIST, CUSTOM_PREFIX } from "@/lib/config/channels";
 import { localizedLabel, localizedName } from "@/lib/config/localized";
-import { PROVINCE_LIST, REGION_LIST } from "@/lib/config/provinces";
+import {
+  PROVINCE_ALIASES,
+  PROVINCE_LIST,
+  REGION_LIST,
+} from "@/lib/config/provinces";
 import {
   STACK_GROUP_LABEL,
   STACK_LIST,
@@ -82,7 +86,7 @@ export function provinceOptions(locale: string): VocabOption[] {
       .map((p) => ({
         value: p.slug as string,
         label: localizedName(p, locale),
-        keywords: `${p.nameTh} ${p.nameEn}`,
+        keywords: `${p.nameTh} ${p.nameEn} ${PROVINCE_ALIASES[p.slug] ?? ""}`,
         group: localizedName(r, locale),
       }))
       .sort((a, b) => collator.compare(a.label, b.label)),

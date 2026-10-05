@@ -141,6 +141,13 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [x] (2026-10-04) **Profile photo: production-complete.** Upload / sign-in photo / remove in the editor, server-validated upload; migration `profile_avatars_v2` applied 2026-10-02 after security review (RLS smoke T1–T114); UX / reliability fixes deployed (`7d74768`: initials fallback everywhere, header updates at once, share images use uploaded photos, result-specific wording; `7d06f3d`: owner's cached product / home / directory pages refresh on change). Owner's manual production test and real-device iPhone test passed 2026-10-04. Known non-blocking items in §7.
 - [x] (2026-10-02) Profile revenue dashboard per Figma 160-2 (ranges, previous period, today partial, tooltip); chat unblock; blocking a request also closes the chat
 
+### First-user fixes (owner test 2026-10-05; plan: rounds 1–3)
+
+- [x] (2026-10-05) Round 1: searchable province picker (aliases, popular first, location suggestion) + sign-in returns people to where they were (new users: onboarding, then back; no startup: `/startups` + welcome banner)
+- [ ] Round 2: Add Startup redesign (link-first auto-fill, "What do you have?" verify chooser, easier Stripe key, trust box, unverified prompt)
+- [ ] Round 3: make verified worth it (verified first, muted unverified cards, "Owner verified" via the snippet; migration shown before applying)
+- [ ] Round 4 (later): per-metric visibility (exact / range / growth only / badge only), masked server-side
+
 ### Later — Verified audience
 
 - [ ] Verified follower counts: GitHub + YouTube first (no LINE OA: its token can send messages); links stay link-only until verified; daily snapshots for the 30-day change

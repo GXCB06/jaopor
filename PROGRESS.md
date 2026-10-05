@@ -12,6 +12,21 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-05 — First-user fixes, round 1: province search + sign-in returns people to the product
+
+**Why (first-user test):** people scrolled a 77-item province list and gave up, and every sign-in landed on an empty dashboard (the header's "เข้าสู่ระบบ" link had no return path, so `next` defaulted to `/dashboard`).
+
+**Done:**
+
+- **Province picker** (onboarding + profile editor, shared `ProvinceField`): the existing searchable `VocabCombobox` instead of a `<select>`; "ไม่ระบุ" first, then a pinned "จังหวัดยอดนิยม" group (Bangkok, Chiang Mai, Khon Kaen, Chon Buri, Phuket, Nonthaburi; new `pinned` prop, shown only before typing, never duplicated), then the regions. Search also matches aliases (`PROVINCE_ALIASES`: กทม / bkk, โคราช / korat, หาดใหญ่, pattaya…). Onboarding pre-fills an empty field from the live map's `/api/live/whoami` (nearest province, Thailand only) with the hint "เดาจากตำแหน่งโดยประมาณ เปลี่ยนได้".
+- **Sign-in routing** (`lib/next-path`, pure + tested): every sign-in link carries the current page (`HeaderAuth` uses the full pathname). The callback sends users without a username to onboarding, which then continues to that page; others go back where they were, else `/dashboard` if they have a startup, else `/startups?welcome=1`. `next` is internal-only (no `//` or `\`, ≤ 500 chars) and never `/login` or `/onboarding`. Onboarding keeps its 4 steps (owner decision). The login page no longer defaults to the dashboard and passes the locale to the callback.
+- **Welcome banner** on `/startups?welcome=1` (dismissible): explore first, "เพิ่มผลงานของฉัน →" when ready.
+
+**Files:** `src/components/profile-edit/{ProvinceField,OnboardingFlow,ProfileEditor}.tsx`, `src/components/wizard/{VocabCombobox.tsx,vocab-options.ts,vocab-options.test.ts}`, `src/lib/config/provinces.ts`, `src/lib/next-path{,.test}.ts`, `src/app/api/auth/callback/route.ts`, `src/app/[locale]/{login,onboarding,startups}/page.tsx`, `src/components/{HeaderAuth,LoginButtons,WelcomeBanner}.tsx`, `messages/*.json`, `Design.md`
+**Verified:** typecheck ✓ · lint ✓ (project) · tests 283/283 (new: 12 province-search cases in th / en incl. กทม / bkk / โคราช / หาดใหญ่ / pattaya, alias and popular slugs exist, 77 options; 7 sign-in routing cases incl. open-redirect and loop refusals) · build ✓. Browser (temporary page, deleted): "ไม่ระบุ" → popular → regions; typing "กทม" leaves only กรุงเทพมหานคร and Enter stores `bangkok`; fits 375 px. `/th/startups?welcome=1`: banner fits 375 px, no horizontal scroll; header sign-in link = `/th/login?next=%2Fth%2Fstartups`.
+**Not verified:** a real OAuth sign-in through the new callback (needs a real Google / GitHub sign-in on production), and the location pre-fill (Vercel geo headers exist only in production).
+**Privacy note for the owner:** the pre-fill reuses the approximate location already described for the live map (/privacy §5) for a new purpose (suggesting a province); nothing is stored unless the user continues. Consider one line in /privacy (owner-approved wording, so not changed here).
+
 ## 2026-10-04 — Landed the iPhone upload fix and the share-image ฿ fix; trust pages shipped (/security approved, /terms as a labelled draft)
 
 **Done:**

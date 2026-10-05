@@ -1,36 +1,38 @@
 "use client";
 
 import { ArrowLeftIcon, ArrowRightIcon, Loader2Icon } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { saveProfile, saveSkills } from "@/app/actions/profile";
 import { Card } from "@/components/core/Card";
 import { Button } from "@/components/ui/button";
 import { Field, inputClass } from "@/components/wizard/fields";
-import { useRouter } from "@/i18n/navigation";
-import { localizedName } from "@/lib/config/localized";
-import { PROVINCE_LIST, REGION_LIST } from "@/lib/config/provinces";
+import { useRouter } from "next/navigation";
 import { PROFILE_STATUSES } from "@/lib/profile";
 import { cn } from "@/lib/utils";
 import { HandleField, type HandleState } from "./HandleField";
+import { ProvinceField } from "./ProvinceField";
 import { SkillPicker, type PickedSkill } from "./SkillPicker";
 
 const STEPS = ["handle", "about", "status", "skills"] as const;
 
 /**
  * Design.md §6 Onboarding (spec 9e): username (live check) → headline + province → status →
- * skills (skippable), then the dashboard with its checklist.
+ * skills (skippable), then `done`: the page they signed in from, else the dashboard (has a startup)
+ * or the startups list (Design.md §6 Sign-in routing).
  */
 export function OnboardingFlow({
   suggestedHandle,
   name,
+  done,
 }: {
   suggestedHandle: string;
   name: string;
+  /** Full path including the locale. */
+  done: string;
 }) {
   const t = useTranslations("Me");
-  const locale = useLocale();
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [handle, setHandle] = useState(suggestedHandle);
@@ -63,7 +65,7 @@ export function OnboardingFlow({
         const s = await saveSkills(skills);
         if (!s.ok) toast.error(t("saveFailed"));
       }
-      router.replace("/dashboard");
+      router.replace(done);
     });
 
   const canNext = current !== "handle" || handleState === "ok";
@@ -120,23 +122,12 @@ export function OnboardingFlow({
             />
           </Field>
           <Field label={t("f.province")} htmlFor="onb-province">
-            <select
+            <ProvinceField
               id="onb-province"
               value={province}
-              onChange={(e) => setProvince(e.target.value)}
-              className={inputClass}
-            >
-              <option value="">{t("f.provinceNone")}</option>
-              {REGION_LIST.map((r) => (
-                <optgroup key={r.slug} label={localizedName(r, locale)}>
-                  {PROVINCE_LIST.filter((p) => p.region === r.slug).map((p) => (
-                    <option key={p.slug} value={p.slug}>
-                      {localizedName(p, locale)}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
+              onChange={setProvince}
+              suggest
+            />
           </Field>
         </div>
       )}

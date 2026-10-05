@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BrandMark } from "@/components/BrandLogo";
 import { LoginButtons } from "@/components/LoginButtons";
+import { safeNextPath } from "@/lib/next-path";
 
 export async function generateMetadata({
   params,
@@ -20,11 +21,8 @@ export default async function LoginPage({
   const sp = await searchParams;
   const t = await getTranslations("Login");
 
-  const rawNext = typeof sp.next === "string" ? sp.next : "";
-  const next =
-    rawNext.startsWith("/") && !rawNext.startsWith("//")
-      ? rawNext
-      : `/${locale}/dashboard`;
+  // Where to go after sign-in is decided by the callback (Design.md §6 Sign-in routing).
+  const next = safeNextPath(typeof sp.next === "string" ? sp.next : null);
 
   return (
     <main className="mx-auto flex w-full max-w-sm flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center">
@@ -34,7 +32,7 @@ export default async function LoginPage({
         <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
       {sp.error && <p className="text-sm text-destructive">{t("error")}</p>}
-      <LoginButtons next={next} />
+      <LoginButtons next={next} locale={locale} />
       <p className="text-xs text-muted-foreground">{t("legal")}</p>
     </main>
   );
