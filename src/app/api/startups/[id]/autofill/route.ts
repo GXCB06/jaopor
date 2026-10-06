@@ -8,7 +8,7 @@ import {
   parseDraft,
   type AutofillDraft,
 } from "@/lib/autofill";
-import { assertPublicHttpsUrl } from "@/lib/net/public-url";
+import { fetchHtml } from "@/lib/net/link-preview";
 import { createClient } from "@/lib/supabase/server";
 
 // Design.md §5 Edit page "✨ ช่วยเติมจากเว็บไซต์": owner-only. Reads the project's public website
@@ -18,28 +18,10 @@ import { createClient } from "@/lib/supabase/server";
 const MAX_HTML = 1_500_000;
 const lastCall = new Map<string, number>(); // per-instance throttle (one call / 10 s / user)
 
-/** GET the page, following up to 3 redirects, each hop re-checked by the SSRF guard. */
+/** The page's HTML through the shared SSRF guard (IP checked at connect time, redirects re-checked). */
 async function fetchSite(raw: string): Promise<string | null> {
-  let url = raw.replace(/^http:\/\//i, "https://");
-  for (let hop = 0; hop < 4; hop++) {
-    const safe = await assertPublicHttpsUrl(url);
-    const res = await fetch(safe, {
-      redirect: "manual",
-      headers: { "user-agent": "JaoPorBot/1.0 (+https://jaopor.vercel.app)" },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (res.status >= 300 && res.status < 400) {
-      const loc = res.headers.get("location");
-      if (!loc) return null;
-      url = new URL(loc, safe).toString();
-      continue;
-    }
-    if (!res.ok || !(res.headers.get("content-type") ?? "").includes("html"))
-      return null;
-    const buf = await res.arrayBuffer();
-    return new TextDecoder().decode(buf.slice(0, MAX_HTML));
-  }
-  return null;
+  const page = await fetchHtml(raw, AbortSignal.timeout(8000), MAX_HTML);
+  return page?.html ?? null;
 }
 
 async function fetchReadme(repo: string | null): Promise<string | null> {

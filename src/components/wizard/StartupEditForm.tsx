@@ -1179,7 +1179,6 @@ export function StartupEditForm({
             <div id="verify" className="sm:col-span-2">
               <VerifyPanel
                 startupId={startup.id}
-                slug={startup.slug}
                 connections={connections}
                 websiteHost={websiteHost(startup.website_url)}
                 githubLogin={githubLogin}

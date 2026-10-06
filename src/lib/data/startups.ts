@@ -51,7 +51,12 @@ export async function getBoard(
   limit = 50,
 ): Promise<StartupRow[]> {
   const column = BOARD_COLUMN[metric];
-  let query = db().from("startups").select(SELECT).not(column, "is", null);
+  // Demo projects never rank (their numbers are made up; the Olympics board excludes them too).
+  let query = db()
+    .from("startups")
+    .select(SELECT)
+    .not(column, "is", null)
+    .eq("is_demo", false);
   // Revenue columns only count once the provider connection is verified.
   if (metric === "mrr" || metric === "revenue30d")
     query = query.eq("verification_status", "verified");
@@ -173,6 +178,10 @@ export async function listStartups(
       );
   }
   const page = Math.max(1, filters.page ?? 1);
+  // Round 3 "verified first": verified numbers, then owner verified, then the rest (demos last).
+  // "Newest" stays purely chronological.
+  if ((filters.sort ?? "mrr") !== "newest")
+    query = query.order("proof_level", { ascending: false });
   const { data, error, count } = await query
     .order(SORT_COLUMN[filters.sort ?? "mrr"], {
       ascending: false,

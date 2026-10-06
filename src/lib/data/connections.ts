@@ -11,10 +11,18 @@ import { createClient } from "@/lib/supabase/server";
 export async function getConnections(
   startupId: number,
 ): Promise<ConnectionInfo[]> {
-  const { data } = await createAdminClient()
-    .from("provider_connections")
-    .select("provider, status, last_synced_at, last_error, key_hint, config")
-    .eq("startup_id", startupId);
+  const admin = createAdminClient();
+  const [{ data }, { data: startup }] = await Promise.all([
+    admin
+      .from("provider_connections")
+      .select("provider, status, last_synced_at, last_error, key_hint, config")
+      .eq("startup_id", startupId),
+    admin
+      .from("startups")
+      .select("owner_verified_at")
+      .eq("id", startupId)
+      .maybeSingle(),
+  ]);
   return (data ?? []).flatMap((c) => {
     if (!isSource(c.provider)) return [];
     const config = (c.config ?? {}) as Record<string, string>;
@@ -31,6 +39,9 @@ export async function getConnections(
         lastError: c.last_error,
         label: label || null,
         since: config.since ?? null,
+        ...(c.provider === "jaopor"
+          ? { ownerVerified: !!startup?.owner_verified_at }
+          : {}),
       },
     ];
   });

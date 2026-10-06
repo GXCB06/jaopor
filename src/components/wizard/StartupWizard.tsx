@@ -381,7 +381,6 @@ export function StartupWizard({
         <div className="space-y-5">
           <VerifyPanel
             startupId={saved.id}
-            slug={saved.slug}
             connections={[]}
             websiteHost={websiteHost(saved.website)}
             githubLogin={githubLogin}

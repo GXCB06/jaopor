@@ -17,7 +17,9 @@
     "optional": "ไม่บังคับ",
     "notVerified": "ยังไม่ยืนยัน",
     "genericError": "มีบางอย่างผิดพลาด กรุณาลองอีกครั้ง",
-    "verifiedVia": "ยืนยันแล้ว · {source}"
+    "verifiedVia": "ยืนยันแล้ว · {source}",
+    "ownerVerified": "ยืนยันเจ้าของเว็บแล้ว",
+    "ownerVerifiedHint": "พบโค้ด JaoPor ของผลงานนี้บนหน้าเว็บที่ลงไว้ แสดงว่าคนลงผลงานแก้ไขหน้าเว็บนั้นได้ ป้ายนี้ไม่ได้ยืนยันตัวเลขใด ๆ"
   },
   "Nav": {
     "startups": "สตาร์ทอัพ",
@@ -100,7 +102,8 @@
     "revenueShort": "รายได้",
     "visitorsShort": "ผู้เข้าชม",
     "demo": "ตัวอย่าง",
-    "revenueAllTime": "รวมทั้งหมด"
+    "revenueAllTime": "รวมทั้งหมด",
+    "ownerVerified": "เจ้าของยืนยัน"
   },
   "Leaderboard": {
     "rank": "#",
@@ -459,7 +462,7 @@
     "revenuecat": {
       "howTo1": "RevenueCat → Project settings → API keys → + New secret API key → เลือก V2",
       "howTo2": "ตั้ง Charts & metrics → Read only และส่วนอื่นทั้งหมด → No access",
-      "howTo3": "คัดลอกคีย์ sk_… และ Project ID (อยู่ใน URL: app.revenuecat.com/projects/<ID>/…)",
+      "howTo3": "คัดลอกคีย์ sk_… และ Project ID (อยู่ใน URL: app.revenuecat.com/projects/{idTag}/…)",
       "key": "V2 secret key (sk_…)",
       "projectId": "Project ID"
     },
@@ -481,13 +484,18 @@
       "needGithub": "ต้องเข้าสู่ระบบด้วย GitHub ก่อน เพื่อยืนยันว่า repo เป็นของคุณ"
     },
     "jaopor": {
-      "howTo1": "คัดลอกโค้ดหนึ่งบรรทัดด้านล่าง แล้ววางไว้ก่อน </head> ของทุกหน้าในเว็บของคุณ ใช้ได้กับ Vercel, Netlify, GitHub Pages หรือโฮสต์ไหนก็ได้",
-      "howTo2": "กด \"เริ่มนับ\" แล้วเปิดเว็บของคุณหนึ่งครั้ง ระบบจะเริ่มนับเมื่อมีผู้เข้าชมครั้งแรก ไม่มีคุกกี้ และไม่เก็บ IP",
+      "howTo1": "คัดลอกโค้ดหนึ่งบรรทัดด้านล่าง แล้ววางไว้ก่อน {headTag} ของทุกหน้าในเว็บของคุณ ใช้ได้กับ Vercel, Netlify, GitHub Pages หรือโฮสต์ไหนก็ได้",
+      "howTo2": "กด \"เริ่มนับ\" เราจะเปิดหน้าแรกของเว็บคุณเพื่อหาโค้ดนี้ เจอแล้วผลงานจะได้ป้าย \"ยืนยันเจ้าของเว็บ\" และเริ่มนับผู้เข้าชม ไม่มีคุกกี้ และไม่เก็บ IP",
       "copy": "คัดลอกโค้ด",
       "copied": "คัดลอกโค้ดแล้ว",
       "start": "เริ่มนับ",
       "waiting": "รอการเข้าชมครั้งแรกจากเว็บของคุณ…",
-      "since": "กำลังนับตั้งแต่ {date}"
+      "since": "กำลังนับตั้งแต่ {date}",
+      "ownerFound": "พบโค้ดบน {host} แล้ว ผลงานนี้ได้ป้าย “ยืนยันเจ้าของเว็บ” และกำลังรอผู้เข้าชมคนแรก",
+      "ownerFoundToast": "พบโค้ดบนเว็บของคุณแล้ว",
+      "ownerMissing": "ยังไม่พบโค้ดบน {host} วางโค้ดด้านล่างไว้ใน HTML ของหน้าแรก (ก่อน {headTag}) แล้ว deploy จากนั้นกด “ตรวจอีกครั้ง” ระหว่างนี้ยังไม่นับผู้เข้าชม",
+      "stillMissing": "ยังไม่พบโค้ดบน {host} ตรวจว่า deploy แล้ว และโค้ดอยู่ใน HTML ของหน้าแรก",
+      "recheck": "ตรวจอีกครั้ง"
     },
     "cloudflare": {
       "howTo1": "Cloudflare → My Profile → API Tokens → Create Token → Custom token",

@@ -10,6 +10,7 @@ import {
 import { decryptSecret, encryptSecret, keyHint } from "@/lib/crypto/keys";
 import { serverEnv } from "@/lib/env";
 import { websiteHost } from "@/lib/links";
+import { findOwnerSnippet } from "@/lib/net/link-preview";
 import { fetchPublic } from "@/lib/net/public-url";
 import { fetchUsdRates } from "@/lib/revenue/fx";
 import { computeMetrics, utcDay } from "@/lib/revenue/metrics";
@@ -52,7 +53,8 @@ import {
 type Admin = SupabaseClient<Database>;
 
 export type SourceResult =
-  | { ok: true }
+  /** ownerVerified: JaoPor snippet only, whether it was found on the website (Owner verified). */
+  | { ok: true; ownerVerified?: boolean }
   | {
       ok: false;
       code: ProviderErrorCode | "not_connected";
@@ -357,6 +359,62 @@ function toResult(err: unknown): Extract<SourceResult, { ok: false }> {
   };
 }
 
+/** At most one website check per project this often (shared by every server instance). */
+const OWNER_RECHECK_MS = 20_000;
+
+/**
+ * Owner verified (Design.md §5): re-read the website and record whether this project's snippet
+ * (its permanent id) is on it. Unreachable keeps the last result. The collect route counts
+ * visits only while it is set, so the snippet can't be used for a site the lister doesn't edit.
+ *
+ * Rate limit: the check first claims a slot on the connection row (compare-and-set on
+ * config.ownerCheckedAt), so parallel clicks, instances or cron can't make us fetch the same
+ * site more than once per OWNER_RECHECK_MS per project. Never throws.
+ */
+async function checkOwner(
+  admin: Admin,
+  startupId: number,
+  conn: { id: number; config: Json | null },
+): Promise<boolean | "throttled"> {
+  const config = (conn.config ?? {}) as Record<string, string>;
+  const last = Date.parse(config.ownerCheckedAt ?? "") || 0;
+  if (Date.now() - last < OWNER_RECHECK_MS) return "throttled";
+  const claim = admin
+    .from("provider_connections")
+    .update({
+      config: { ...config, ownerCheckedAt: new Date().toISOString() },
+    })
+    .eq("id", conn.id);
+  const { data: claimed } = await (config.ownerCheckedAt
+    ? claim.eq("config->>ownerCheckedAt", config.ownerCheckedAt)
+    : claim.is("config->>ownerCheckedAt", null)
+  ).select("id");
+  if (!claimed?.length) return "throttled";
+
+  const { data: s } = await admin
+    .from("startups")
+    .select("website_url, owner_verified_at")
+    .eq("id", startupId)
+    .maybeSingle();
+  if (!s?.website_url) return false;
+  const was = s.owner_verified_at !== null;
+  try {
+    const found = await findOwnerSnippet(s.website_url, String(startupId));
+    if (found === "unreachable") return was;
+    const now = found === "found";
+    if (now !== was)
+      await admin
+        .from("startups")
+        .update({ owner_verified_at: now ? new Date().toISOString() : null })
+        .eq("id", startupId)
+        // The website may have changed meanwhile: the result was for this address only.
+        .eq("website_url", s.website_url);
+    return now;
+  } catch {
+    return was;
+  }
+}
+
 export async function syncSource(
   admin: Admin,
   startupId: number,
@@ -370,8 +428,19 @@ export async function syncSource(
     .maybeSingle();
   if (!conn || conn.status === "revoked")
     return { ok: false, code: "not_connected", message: "Not connected." };
-  // Snippet installed but no visit seen yet: nothing to sync.
-  if (conn.status === "pending") return { ok: true };
+  let ownerVerified: boolean | undefined;
+  if (source === "jaopor") {
+    const checked = await checkOwner(admin, startupId, conn);
+    if (checked === "throttled")
+      return {
+        ok: false,
+        code: "rate_limited",
+        message: "Checked a moment ago. Try again in 20 seconds.",
+      };
+    ownerVerified = checked;
+  }
+  // Snippet installed but no visit seen yet: nothing else to sync.
+  if (conn.status === "pending") return { ok: true, ownerVerified };
 
   try {
     const stored: Stored = {
@@ -389,7 +458,7 @@ export async function syncSource(
         last_synced_at: new Date().toISOString(),
       })
       .eq("id", conn.id);
-    return { ok: true };
+    return { ok: true, ownerVerified };
   } catch (err) {
     const result = toResult(err);
     const broken = CREDENTIAL_ERRORS.includes(result.code as ProviderErrorCode);
@@ -516,7 +585,8 @@ async function prepare(
       return { secret: key, config: { accountId, host }, hint: keyHint(key) };
     }
     case "jaopor": {
-      // No credential: the snippet proves itself when a visit arrives from the website.
+      // No credential: our server finds the snippet on the website (Owner verified), then
+      // visits from that website count.
       requireWebsite(ctx.website);
       return { secret: null, config: {}, hint: null };
     }
@@ -566,7 +636,7 @@ export async function connectSource(
     .select("id");
   if (replaced?.length) await clearKind(admin, startup.id, kind);
 
-  // Re-connecting the snippet keeps a connection that is already counting.
+  // Re-connecting the snippet keeps a connection that is already counting (and re-checks it).
   if (input.source === "jaopor") {
     const { data: existing } = await admin
       .from("provider_connections")
@@ -574,7 +644,7 @@ export async function connectSource(
       .eq("startup_id", startup.id)
       .eq("provider", "jaopor")
       .maybeSingle();
-    if (existing) return { ok: true };
+    if (existing) return syncSource(admin, startup.id, "jaopor");
   }
 
   const { error } = await admin.from("provider_connections").upsert(
@@ -626,6 +696,8 @@ async function clearKind(admin: Admin, startupId: number, kind: SourceKind) {
         visitors_30d: null,
         visitors_prev_30d: null,
         traffic_synced_at: null,
+        // Only the snippet sets it; without a traffic source nothing re-checks it.
+        owner_verified_at: null,
       })
       .eq("id", startupId);
     await admin.from("traffic_snapshots").delete().eq("startup_id", startupId);

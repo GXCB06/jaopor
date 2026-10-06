@@ -72,9 +72,46 @@ export function visitorHashes(
   };
 }
 
-/** The line founders paste before </head>. */
-export function snippetTag(siteUrl: string, slug: string): string {
-  return `<script defer src="${siteUrl}/v.js" data-project="${slug}"></script>`;
+/**
+ * Owner verified (Design.md §5): does this page carry the JaoPor snippet for this project? Any
+ * `<script>` whose src is a `v.js` and whose data-project is exactly the project's permanent id,
+ * anywhere in the HTML (our own site renders it at the end of <body>). Pure; the server fetches
+ * the page.
+ */
+export function hasOwnerSnippet(html: string, projectId: string): boolean {
+  for (const [tag] of html.matchAll(/<script\b[^>]*>/gi)) {
+    const attr = (name: string) =>
+      new RegExp(
+        `\\s${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`,
+        "i",
+      ).exec(tag);
+    const src = attr("src");
+    const project = attr("data-project");
+    if (!src || !project) continue;
+    const srcValue = (src[1] ?? src[2] ?? src[3]).trim();
+    const projectValue = (project[1] ?? project[2] ?? project[3]).trim();
+    if (
+      /(^|\/)v\.js(\?[^#]*)?(#.*)?$/i.test(srcValue) &&
+      projectValue === projectId
+    )
+      return true;
+  }
+  return false;
+}
+
+/**
+ * The page we read must be the listed website itself (or a subdomain of it): a snippet on a page
+ * that some other domain redirected us to proves nothing about the listed one.
+ */
+export function sameSite(pageHost: string, websiteHost: string): boolean {
+  const page = bareDomain(pageHost);
+  const web = bareDomain(websiteHost);
+  return page === web || page.endsWith(`.${web}`);
+}
+
+/** The line founders paste before </head> (project = the permanent startup id). */
+export function snippetTag(siteUrl: string, projectId: number): string {
+  return `<script defer src="${siteUrl}/v.js" data-project="${projectId}"></script>`;
 }
 
 /** Rows of `pixel_visitors` (one per unique visitor per day) → visitors per day. */

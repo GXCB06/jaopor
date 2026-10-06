@@ -12,6 +12,52 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-06 — First-user fixes, round 3: verified first, "Owner verified", and a security pass on every server-side fetch
+
+**Why:** listings without any proof looked the same as verified ones, and a review before applying the migration found that the snippet's visitor counting and the SSRF guard could be abused.
+
+**Done:**
+
+- **Migration `owner_verified`** (owner-approved and applied 2026-10-06):
+  - `startups.owner_verified_at`: server-written only, no client grant. A trigger clears it on any change to `website_url`.
+  - `startups.proof_level`, generated: 3 verified revenue · 2 GitHub build proof · 1 site proof (owner verified, or an analytics account for the site connected) · 0 nothing. Demos are always 0.
+  - Index on `(proof_level desc, created_at desc)`.
+  - Visitor counts never rank above 1: anyone can send events to a snippet or an analytics endpoint, so they are counted, not verified.
+- **Verified first:** `/startups` and category pages sort by proof level, except "ใหม่ล่าสุด". Cards with no proof are muted (dashed, no fill). Leaderboards no longer rank the demo projects.
+- **Owner verified:**
+  - Our server reads the listed website and looks for the snippet with the project's **permanent id**.
+  - The page it ends on must be on the listed domain, not a redirect elsewhere.
+  - It runs on "เริ่มนับ", on "ตรวจอีกครั้ง" and nightly (the cron now includes pending snippets). It is limited to once per 20 s per project, claimed atomically on the connection row so the limit holds across instances.
+  - The neutral `ShieldCheck` badge appears on the startup header and on cards.
+  - The VerifyPanel shows "พบโค้ดบน {host} แล้ว" or "ยังไม่พบโค้ด …" with "ตรวจอีกครั้ง".
+- **Security fixes:**
+  - **DNS rebinding (critical, existed before this round):** every fetch of a user URL (link previews, both auto-fills, the snippet check, Umami) now goes through `guardedGet`. It checks the IP inside the socket's own DNS lookup, re-checks every redirect (https:443, no IP literals in any numeric form, no local suffixes, at most 3 redirects), caps the body after decompression and sets a deadline.
+  - **Wider private-address list:** test ranges, IPv6 link-local/site-local/multicast, and IPv4 hidden in IPv6 (mapped, compatible, NAT64, 6to4).
+  - **Snippet hijack through slug reuse (critical):** the snippet now names its project by the permanent startup id (JaoPor: 29), not the slug. The collect route only counts visits for owner-verified projects.
+  - **Edit-page auto-fill** no longer reads unbounded pages.
+- **Messages broken in production (existed before this round):** `Sources.jaopor.howTo1` and `Sources.revenuecat.howTo3` contained a literal `</head>` / `<ID>`. next-intl parses those as tags, so production showed the raw key `Sources.jaopor.howTo1`. They are now passed in as values.
+
+**Files:**
+- `supabase/migrations/20261005162816_owner_verified.sql`, `supabase/tests/rls_smoke.sql` (T120–T126)
+- `src/lib/net/{public-url,link-preview}.ts` (+ `public-url.test.ts`, `ssrf.live.test.ts`)
+- `src/lib/traffic/pixel.ts` (+ `owner-snippet.test.ts`)
+- `src/lib/sources/sync.ts`, `src/lib/data/{startups,connections}.ts`
+- `src/app/api/{collect,cron/sync,startups/[id]/sources/[source],startups/[id]/autofill}/route.ts`, `src/app/[locale]/{layout,startup/[slug]/page}.tsx`
+- `src/components/{StartupCard,core/VerifiedBadge,wizard/VerifyPanel,wizard/StartupWizard,wizard/StartupEditForm}.tsx`
+- `src/lib/supabase/database.types.ts`, `messages/*.json`, `Design.md`
+
+**Verified:**
+- Rolled-back dry runs on the live DB before applying.
+- After applying: full RLS smoke test T1–T126, every line good. Advisors: no new warning. Live values: JaoPor at level 3, demos at 0. Types regenerated.
+- typecheck ✓ · lint ✓ · tests 352 passed (+17 opt-in live-network SSRF tests passed with `LIVE_NET=1`) · build ✓.
+- Browser (temporary page, deleted), desktop and 375 px: badges, the owner-verified and muted cards, both snippet states, the fixed messages; no horizontal scroll.
+
+**Not verified:**
+- A real owner check on production. It needs this deploy: JaoPor's own snippet changes to `data-project="29"`, and counting for JaoPor pauses until the first check ("รีเฟรช" or the 03:00 cron).
+- The 20 s throttle's conditional update through PostgREST (the JSON-field filter) in a live request.
+
+**Next:** push and deploy, press "รีเฟรช" on JaoPor's visitor source, then the owner decisions in Project.md §7 (visitor wording, visitors on leaderboards).
+
 ## 2026-10-05 — First-user fixes, round 2: Add Startup people finish (auto-fill, "What do you have?", Stripe guide, trust box)
 
 **Why (first-user test):** listing a startup asked for six things at once, verification showed three groups of providers on one screen, the Stripe key page opened blank, and 2 of 3 real startups were never verified.

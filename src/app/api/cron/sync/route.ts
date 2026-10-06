@@ -25,7 +25,8 @@ export async function GET(req: Request) {
   const { data: connections, error } = await admin
     .from("provider_connections")
     .select("startup_id, provider")
-    .eq("status", "active");
+    // Pending = JaoPor snippet waiting for its first visit: the nightly run re-checks the website.
+    .in("status", ["active", "pending"]);
   if (error) return json({ error: "db" }, 500);
 
   const queue: Array<{ startupId: number; source: SourceId }> = (

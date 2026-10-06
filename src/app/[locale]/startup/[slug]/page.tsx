@@ -240,7 +240,12 @@ export default async function StartupPage({ params }: Props) {
                   {startup.name}
                 </h1>
                 <FoundingBadge n={startup.founding_number} />
-                {!startup.is_demo && <VerifiedBadge source={verifiedSource} />}
+                {!startup.is_demo && (
+                  <VerifiedBadge
+                    source={verifiedSource}
+                    ownerVerified={startup.owner_verified_at !== null}
+                  />
+                )}
               </div>
               <div className="max-w-2xl space-y-2 text-body text-muted-foreground">
                 {startup.tagline ? (

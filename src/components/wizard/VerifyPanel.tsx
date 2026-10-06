@@ -9,6 +9,7 @@ import {
   ExternalLinkIcon,
   GitBranchIcon,
   GlobeIcon,
+  ShieldCheckIcon,
   SmartphoneIcon,
   XIcon,
   type LucideIcon,
@@ -47,6 +48,8 @@ export type ConnectionInfo = {
   label: string | null;
   /** JaoPor snippet: day the first visit arrived (null while waiting). */
   since: string | null;
+  /** JaoPor snippet: our server found it on the website (Owner verified). */
+  ownerVerified?: boolean;
 };
 
 const KINDS: SourceKind[] = ["revenue", "traffic", "build"];
@@ -113,14 +116,12 @@ const SETTINGS_URL: Partial<Record<SourceId, { live: string; test?: string }>> =
 
 export function VerifyPanel({
   startupId,
-  slug,
   connections,
   websiteHost,
   githubLogin,
   onConnected,
 }: {
   startupId: number;
-  slug: string;
   connections: ConnectionInfo[];
   websiteHost: string | null;
   githubLogin: string | null;
@@ -131,7 +132,6 @@ export function VerifyPanel({
     return (
       <VerifyChooser
         startupId={startupId}
-        slug={slug}
         websiteHost={websiteHost}
         githubLogin={githubLogin}
         onConnected={onConnected}
@@ -145,7 +145,6 @@ export function VerifyPanel({
           key={kind}
           kind={kind}
           startupId={startupId}
-          slug={slug}
           connections={connections}
           websiteHost={websiteHost}
           githubLogin={githubLogin}
@@ -206,13 +205,11 @@ const CHOICES: {
 
 function VerifyChooser({
   startupId,
-  slug,
   websiteHost,
   githubLogin,
   onConnected,
 }: {
   startupId: number;
-  slug: string;
   websiteHost: string | null;
   githubLogin: string | null;
   onConnected?: (source: SourceId) => void;
@@ -222,6 +219,8 @@ function VerifyChooser({
   const [analytics, setAnalytics] = useState<SourceId>("plausible");
   // Sources connected here (the wizard's `connections` never refreshes).
   const [done, setDone] = useState<SourceId[]>([]);
+  // JaoPor snippet: whether our server found it on the website (Owner verified).
+  const [owner, setOwner] = useState(false);
 
   // The snippet needs a website; without one, analytics takes its deep-link anchor.
   const choices = CHOICES.filter((c) => c.id !== "website" || websiteHost).map(
@@ -344,29 +343,36 @@ function VerifyChooser({
           </div>
         )}
         {connected ? (
-          <div className="space-y-3">
+          source === "jaopor" ? (
+            <div className="space-y-3">
+              <OwnerCheck
+                startupId={startupId}
+                host={websiteHost}
+                verified={owner}
+                onChecked={setOwner}
+              />
+              <SnippetBox projectId={startupId} />
+            </div>
+          ) : (
             <p className="flex items-center gap-2 text-sm text-positive">
               <CheckIcon className="size-4" aria-hidden="true" />
-              {source === "jaopor"
-                ? t("jaopor.waiting")
-                : `${SOURCE_NAME[source]} · ${t("connected")}`}
+              {`${SOURCE_NAME[source]} · ${t("connected")}`}
             </p>
-            {source === "jaopor" && <SnippetBox slug={slug} />}
-          </div>
+          )
         ) : (
           <SourceForm
             key={source}
             source={source}
             startupId={startupId}
-            slug={slug}
             replaces={replaces}
             websiteHost={websiteHost}
             githubLogin={githubLogin}
-            onConnected={(s) => {
+            onConnected={(s, ownerVerified) => {
               setDone((d) => [
                 ...d.filter((x) => SOURCE_KIND[x] !== SOURCE_KIND[s]),
                 s,
               ]);
+              if (s === "jaopor") setOwner(!!ownerVerified);
               onConnected?.(s);
             }}
           />
@@ -484,7 +490,6 @@ function TrustBox({ kind }: { kind: "revenue" | "traffic" }) {
 function SourceGroup({
   kind,
   startupId,
-  slug,
   connections,
   websiteHost,
   githubLogin,
@@ -492,7 +497,6 @@ function SourceGroup({
 }: {
   kind: SourceKind;
   startupId: number;
-  slug: string;
   connections: ConnectionInfo[];
   websiteHost: string | null;
   githubLogin: string | null;
@@ -549,15 +553,14 @@ function SourceGroup({
       {connection ? (
         <ConnectedRow
           startupId={startupId}
-          slug={slug}
           connection={connection}
+          websiteHost={websiteHost}
         />
       ) : (
         <SourceForm
           key={selected}
           source={selected}
           startupId={startupId}
-          slug={slug}
           replaces={current?.source ?? null}
           websiteHost={websiteHost}
           githubLogin={githubLogin}
@@ -582,7 +585,6 @@ function useErrorText() {
 function SourceForm({
   source,
   startupId,
-  slug,
   replaces,
   websiteHost,
   githubLogin,
@@ -590,11 +592,10 @@ function SourceForm({
 }: {
   source: SourceId;
   startupId: number;
-  slug: string;
   replaces: SourceId | null;
   websiteHost: string | null;
   githubLogin: string | null;
-  onConnected?: (source: SourceId) => void;
+  onConnected?: (source: SourceId, ownerVerified?: boolean) => void;
 }) {
   const t = useTranslations("Sources");
   const errorText = useErrorText();
@@ -621,10 +622,11 @@ function SourceForm({
         ok?: boolean;
         error?: string;
         detail?: string;
+        ownerVerified?: boolean;
       };
       if (res.ok && body.ok) {
         toast.success(t("success"));
-        onConnected?.(source);
+        onConnected?.(source, body.ownerVerified);
         router.refresh();
       } else {
         const code =
@@ -642,7 +644,14 @@ function SourceForm({
     <div className="space-y-3">
       <ol className="list-decimal space-y-1 pl-5 text-sm">
         {Array.from({ length: HOW_TO[source] }, (_, i) => (
-          <li key={i}>{t(`${source}.howTo${i + 1}` as "stripe.howTo1")}</li>
+          <li key={i}>
+            {t(`${source}.howTo${i + 1}` as "stripe.howTo1", {
+              // ICU reads a literal "</head>" or "<ID>" as a tag and the message fails to render, so
+              // they are passed in as values.
+              headTag: "</head>",
+              idTag: "<ID>",
+            })}
+          </li>
         ))}
       </ol>
       {source === "stripe" && <StripePermissions />}
@@ -672,7 +681,7 @@ function SourceForm({
         </p>
       ) : (
         <form onSubmit={submit} className="space-y-3">
-          {source === "jaopor" && <SnippetBox slug={slug} />}
+          {source === "jaopor" && <SnippetBox projectId={startupId} />}
           <div className="grid gap-3 sm:grid-cols-2">
             {FIELDS[source].map((f) => (
               <Field
@@ -731,9 +740,9 @@ function SourceForm({
 }
 
 /** Design.md §5 VerifyPanel snippet: the one line founders paste before </head>. */
-function SnippetBox({ slug }: { slug: string }) {
+function SnippetBox({ projectId }: { projectId: number }) {
   const t = useTranslations("Sources");
-  const code = `<script defer src="${publicEnv.siteUrl}/v.js" data-project="${slug}"></script>`;
+  const code = `<script defer src="${publicEnv.siteUrl}/v.js" data-project="${projectId}"></script>`;
   return (
     <div className="space-y-2">
       <pre className="overflow-x-auto rounded-lg border bg-card p-3 font-mono text-caption break-all whitespace-pre-wrap">
@@ -753,14 +762,86 @@ function SnippetBox({ slug }: { slug: string }) {
   );
 }
 
-function ConnectedRow({
+/**
+ * Owner verified (Design.md §5): whether our server found the snippet on the website, and a
+ * "check again" for after the founder deploys it. Visits only count once it is found.
+ */
+function OwnerCheck({
   startupId,
-  slug,
-  connection,
+  host,
+  verified,
+  onChecked,
 }: {
   startupId: number;
-  slug: string;
+  host: string | null;
+  verified: boolean;
+  onChecked?: (verified: boolean) => void;
+}) {
+  const t = useTranslations("Sources");
+  const errorText = useErrorText();
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const site = host ?? "";
+
+  async function recheck() {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/startups/${startupId}/sources/jaopor`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        ownerVerified?: boolean;
+        error?: string;
+        detail?: string;
+      };
+      if (res.ok) {
+        onChecked?.(!!body.ownerVerified);
+        if (body.ownerVerified) toast.success(t("jaopor.ownerFoundToast"));
+        else toast.info(t("jaopor.stillMissing", { host: site }));
+        router.refresh();
+      } else
+        toast.error(errorText(body.error ?? "server", "jaopor", body.detail));
+    } catch {
+      toast.error(errorText("server", "jaopor"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (verified)
+    return (
+      <p className="flex items-start gap-2 text-caption text-positive">
+        <ShieldCheckIcon className="mt-px size-4 shrink-0" aria-hidden="true" />
+        {t("jaopor.ownerFound", { host: site })}
+      </p>
+    );
+  return (
+    <div className="space-y-2 rounded-md border border-warning/40 bg-warning/10 p-3 text-caption">
+      <p>{t("jaopor.ownerMissing", { host: site, headTag: "</head>" })}</p>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        disabled={busy}
+        onClick={recheck}
+        className="px-3"
+      >
+        {busy ? t("verifying") : t("jaopor.recheck")}
+      </Button>
+    </div>
+  );
+}
+
+function ConnectedRow({
+  startupId,
+  connection,
+  websiteHost,
+}: {
+  startupId: number;
   connection: ConnectionInfo;
+  websiteHost: string | null;
 }) {
   const t = useTranslations("Sources");
   const errorText = useErrorText();
@@ -848,7 +929,12 @@ function ConnectedRow({
             </button>
           </div>
         </div>
-        <SnippetBox slug={slug} />
+        <OwnerCheck
+          startupId={startupId}
+          host={websiteHost}
+          verified={!!connection.ownerVerified}
+        />
+        <SnippetBox projectId={startupId} />
       </div>
     );
   }

@@ -22,8 +22,10 @@ const jetbrains = JetBrains_Mono({
 });
 
 // JaoPor lists itself: its own visitor snippet (public/v.js) counts unique visitors to this site
-// for the "jaopor" project. Production only; /api/collect ignores hits from any other host.
-const SELF_PROJECT = "jaopor";
+// for the "jaopor" project, identified by its permanent startup id (29), never by its slug, which
+// can change and then be taken by someone else. Production only; /api/collect ignores hits from
+// any other host.
+const SELF_PROJECT = "29";
 
 const plexThai = IBM_Plex_Sans_Thai({
   subsets: ["thai", "latin"],

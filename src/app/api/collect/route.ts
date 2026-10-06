@@ -14,7 +14,10 @@ import {
 // project per day. Always answers 204 with no body, so it never reveals whether a project exists
 // or why a hit was ignored. Nothing about the visitor is stored except two day-scoped HMACs.
 
-const SLUG = /^[a-z0-9](?:[a-z0-9-]{0,48}[a-z0-9])?$/;
+// The snippet names its project by the permanent startup id (never reused), not the slug: a
+// renamed project's old slug could be taken by someone else, who would then pass the owner
+// check on the old project's website and receive its visits.
+const PROJECT_ID = /^[1-9]\d{0,15}$/;
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -32,23 +35,26 @@ export function OPTIONS() {
 export async function POST(req: Request) {
   try {
     const raw = (await req.text()).slice(0, 200);
-    let slug = "";
+    let project = "";
     try {
-      slug = String((JSON.parse(raw) as { p?: unknown }).p ?? "");
+      project = String((JSON.parse(raw) as { p?: unknown }).p ?? "");
     } catch {
       return done();
     }
     const ua = req.headers.get("user-agent");
     const ip = clientIp(req.headers);
-    if (!SLUG.test(slug) || isBot(ua) || !ip) return done();
+    if (!PROJECT_ID.test(project) || isBot(ua) || !ip) return done();
 
     const admin = createAdminClient();
     const { data: startup } = await admin
       .from("startups")
-      .select("id, website_url, is_demo")
-      .eq("slug", slug)
+      .select("id, website_url, is_demo, owner_verified_at")
+      .eq("id", Number(project))
       .maybeSingle();
-    if (!startup || startup.is_demo) return done();
+    // Owner verified: our server has seen this project's snippet on the website. Without it the
+    // Origin check alone could be faked by a non-browser client.
+    if (!startup || startup.is_demo || !startup.owner_verified_at)
+      return done();
     // Only visits from the project's own website count (belongs-to-project proof).
     if (!fromProjectSite(req.headers, websiteHost(startup.website_url)))
       return done();

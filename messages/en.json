@@ -17,7 +17,9 @@
     "optional": "optional",
     "notVerified": "Not verified yet",
     "genericError": "Something went wrong. Please try again.",
-    "verifiedVia": "Verified · {source}"
+    "verifiedVia": "Verified · {source}",
+    "ownerVerified": "Owner verified",
+    "ownerVerifiedHint": "This project's JaoPor code is on its listed web page, so whoever listed it can edit that page. It doesn't verify any numbers."
   },
   "Nav": {
     "startups": "Startups",
@@ -100,7 +102,8 @@
     "revenueShort": "Revenue",
     "visitorsShort": "Visitors",
     "demo": "Demo",
-    "revenueAllTime": "All-time"
+    "revenueAllTime": "All-time",
+    "ownerVerified": "Owner verified"
   },
   "Leaderboard": {
     "rank": "#",
@@ -459,7 +462,7 @@
     "revenuecat": {
       "howTo1": "RevenueCat → Project settings → API keys → + New secret API key → choose V2",
       "howTo2": "Set Charts & metrics → Read only, and every other area → No access",
-      "howTo3": "Copy the sk_… key and the Project ID (in the URL: app.revenuecat.com/projects/<ID>/…)",
+      "howTo3": "Copy the sk_… key and the Project ID (in the URL: app.revenuecat.com/projects/{idTag}/…)",
       "key": "V2 secret key (sk_…)",
       "projectId": "Project ID"
     },
@@ -481,13 +484,18 @@
       "needGithub": "Sign in with GitHub first so we can confirm the repo is yours."
     },
     "jaopor": {
-      "howTo1": "Copy the one line below and paste it before </head> on every page of your site. Works on Vercel, Netlify, GitHub Pages or any host.",
-      "howTo2": "Press \"Start counting\", then open your site once. Counting starts with the first visit. No cookies, no stored IPs.",
+      "howTo1": "Copy the one line below and paste it before {headTag} on every page of your site. Works on Vercel, Netlify, GitHub Pages or any host.",
+      "howTo2": "Press \"Start counting\": we open your site's home page to look for this code. Once found, the project gets the \"Owner verified\" badge and visits start counting. No cookies, no stored IPs.",
       "copy": "Copy code",
       "copied": "Code copied",
       "start": "Start counting",
       "waiting": "Waiting for the first visit from your website…",
-      "since": "Counting since {date}"
+      "since": "Counting since {date}",
+      "ownerFound": "Found the code on {host}. This project is now “Owner verified” and is waiting for its first visit.",
+      "ownerFoundToast": "Found the code on your site",
+      "ownerMissing": "We can't find the code on {host} yet. Put the line below in your home page's HTML (before {headTag}), deploy, then press “Check again”. Visits don't count until then.",
+      "stillMissing": "Still can't find the code on {host}. Check that it's deployed and in your home page's HTML.",
+      "recheck": "Check again"
     },
     "cloudflare": {
       "howTo1": "Cloudflare → My Profile → API Tokens → Create Token → Custom token",

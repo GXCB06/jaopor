@@ -58,7 +58,7 @@ export async function POST(req: Request, ctx: Ctx) {
   try {
     const result = await connectSource(createAdminClient(), { ...auth, data });
     return result.ok
-      ? json({ ok: true })
+      ? json({ ok: true, ownerVerified: result.ownerVerified })
       : json(
           {
             ok: false,
@@ -108,8 +108,10 @@ export async function PATCH(req: Request, ctx: Ctx) {
     );
 
   const result = await syncSource(admin, auth.startupId, auth.source);
+  // A waiting JaoPor snippet has never synced, so this cooldown doesn't apply to it; its "check
+  // again" is rate-limited per project inside syncSource (checkOwner, shared by every instance).
   return result.ok
-    ? json({ ok: true })
+    ? json({ ok: true, ownerVerified: result.ownerVerified })
     : json({ ok: false, error: result.code, message: result.message }, 422);
 }
 

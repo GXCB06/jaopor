@@ -23,6 +23,7 @@ declare
   msg bigint;
   c1 uuid := '00000000-0000-4000-8000-0000000000c1';
   c2 uuid := '00000000-0000-4000-8000-0000000000c2';
+  ov uuid := '00000000-0000-4000-8000-0000000000d1';
   base text := 'https://letfxefyqxxrfujpwtri.supabase.co/storage/v1/object/public/avatars/';
   out text := '';
 begin
@@ -825,6 +826,114 @@ begin
     and allowed_mime_types <@ array['image/webp', 'image/jpeg'];
   out := out || format('T119 screenshot + post-image buckets accept exactly WebP + JPEG: %s (expect 2) | ', n);
 
+  -- owner_verified (round 3): T120–T126. A fresh user so earlier tests can't interfere.
+  execute 'reset role';
+  insert into auth.users (id, email, raw_user_meta_data, aud, role)
+  values (ov, 'rls-ov@test.local', '{"full_name":"Tester OV"}', 'authenticated', 'authenticated');
+  perform set_config('request.jwt.claims', json_build_object('sub', ov, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  insert into public.startups (owner_id, slug, name, website_url)
+  values (ov, 'rls-ov', 'OV', 'https://ov.test') returning id into sid;
+
+  -- T120: the owner can't set the badge or the level themselves (server-only, like verified numbers).
+  begin
+    update public.startups set owner_verified_at = now() + interval '1 year' where id = sid;
+    out := out || 'T120 owner sets owner_verified_at: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T120 owner sets owner_verified_at: denied (good) | ';
+  end;
+  begin
+    insert into public.startups (owner_id, slug, name, website_url, owner_verified_at)
+    values (ov, 'rls-ov-2', 'OV2', 'https://ov2.test', now());
+    out := out || 'T120b owner inserts with owner_verified_at: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T120b owner inserts with owner_verified_at: denied (good) | ';
+  end;
+  begin
+    update public.startups set proof_level = 3 where id = sid;
+    out := out || 'T120c owner sets proof_level: ALLOWED (BAD) | ';
+  exception when insufficient_privilege or generated_always then out := out || 'T120c owner sets proof_level: denied (good) | ';
+  end;
+  out := out || format('T120d client grants insert/update on owner_verified_at, proof_level, visitors_30d, build_commits: %s (expect all f) | ',
+    concat_ws(',',
+      has_column_privilege('authenticated', 'public.startups', 'owner_verified_at', 'INSERT'),
+      has_column_privilege('authenticated', 'public.startups', 'owner_verified_at', 'UPDATE'),
+      has_column_privilege('authenticated', 'public.startups', 'proof_level', 'INSERT'),
+      has_column_privilege('authenticated', 'public.startups', 'proof_level', 'UPDATE'),
+      has_column_privilege('authenticated', 'public.startups', 'visitors_30d', 'UPDATE'),
+      has_column_privilege('authenticated', 'public.startups', 'build_commits', 'UPDATE'),
+      has_column_privilege('anon', 'public.startups', 'owner_verified_at', 'UPDATE')));
+
+  -- T121: proof_level follows the columns: none 0 → owner 1 → visitors only 1 → build 2 → revenue 3; demo 0.
+  execute 'reset role';
+  j := to_jsonb(array[(select proof_level from public.startups where id = sid)]);
+  update public.startups set owner_verified_at = now() where id = sid;
+  j := j || to_jsonb((select proof_level from public.startups where id = sid));
+  update public.startups set owner_verified_at = null, visitors_30d = 100 where id = sid;
+  j := j || to_jsonb((select proof_level from public.startups where id = sid));
+  update public.startups set build_commits = 10 where id = sid;
+  j := j || to_jsonb((select proof_level from public.startups where id = sid));
+  update public.startups set verification_status = 'verified' where id = sid;
+  j := j || to_jsonb((select proof_level from public.startups where id = sid));
+  update public.startups set is_demo = true where id = sid;
+  j := j || to_jsonb((select proof_level from public.startups where id = sid));
+  update public.startups set is_demo = false, verification_status = 'unverified', build_commits = null, visitors_30d = null where id = sid;
+  j := j || to_jsonb((select proof_level from public.startups where id = sid));
+  out := out || format('T121 proof_level none→owner→visitors→build→revenue→demo→cleared: %s (expect [0, 1, 1, 2, 3, 0, 0]) | ', j);
+
+  -- T122: owner edits. Renaming or a new slug keeps the badge (it is tied to the id); a new website clears it.
+  update public.startups set owner_verified_at = now() where id = sid;
+  perform set_config('request.jwt.claims', json_build_object('sub', ov, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  update public.startups set name = 'OV renamed', slug = 'rls-ov-renamed' where id = sid;
+  out := out || format('T122 rename + new slug keeps badge: %s (expect true) | ',
+    (select owner_verified_at is not null from public.startups where id = sid));
+  update public.startups set website_url = 'https://other.test' where id = sid;
+  out := out || format('T122b owner changes website: cleared=%s, proof_level=%s (expect true, 0) | ',
+    (select owner_verified_at is null from public.startups where id = sid),
+    (select proof_level from public.startups where id = sid));
+
+  -- T123: the server (service role) path: any website change clears it, even in the same statement
+  -- that sets the badge, a change back, a trailing slash, letter case, or http→https.
+  execute 'reset role';
+  update public.startups set website_url = 'https://ov.test', owner_verified_at = null where id = sid;
+  j := '[]'::jsonb;
+  update public.startups set website_url = 'https://x.test', owner_verified_at = now() where id = sid;
+  j := j || to_jsonb((select owner_verified_at is null from public.startups where id = sid));
+  update public.startups set owner_verified_at = now() where id = sid;
+  update public.startups set website_url = 'https://ov.test' where id = sid;
+  j := j || to_jsonb((select owner_verified_at is null from public.startups where id = sid));
+  update public.startups set owner_verified_at = now() where id = sid;
+  update public.startups set website_url = 'https://ov.test/' where id = sid;
+  j := j || to_jsonb((select owner_verified_at is null from public.startups where id = sid));
+  update public.startups set owner_verified_at = now() where id = sid;
+  update public.startups set website_url = 'https://OV.test/' where id = sid;
+  j := j || to_jsonb((select owner_verified_at is null from public.startups where id = sid));
+  update public.startups set owner_verified_at = now() where id = sid;
+  update public.startups set website_url = 'http://OV.test/' where id = sid;
+  j := j || to_jsonb((select owner_verified_at is null from public.startups where id = sid));
+  out := out || format('T123 server website changes clear the badge (same-statement, back, slash, case, scheme): %s (expect all true) | ', j);
+  update public.startups set owner_verified_at = now() where id = sid;
+  update public.startups set website_url = website_url, name = 'same site' where id = sid;
+  out := out || format('T123b website set to the same value keeps it: %s (expect true) | ',
+    (select owner_verified_at is not null from public.startups where id = sid));
+
+  -- T124: nobody writes the generated level, not even the server.
+  begin
+    update public.startups set proof_level = 3 where id = sid;
+    out := out || 'T124 server sets proof_level: ALLOWED (BAD) | ';
+  exception when generated_always then out := out || 'T124 server sets proof_level: refused (good) | ';
+  end;
+
+  -- T125: visitors can read the badge and the order key (public profile / lists).
+  out := out || format('T125 anon reads owner_verified_at=%s proof_level=%s (expect true, true) | ',
+    has_column_privilege('anon', 'public.startups', 'owner_verified_at', 'SELECT'),
+    has_column_privilege('anon', 'public.startups', 'proof_level', 'SELECT'));
+
+  -- T126: trigger function: not callable by clients, fixed search_path, fires on website_url only.
+  out := out || format('T126 reset fn callable by authenticated=%s anon=%s (expect false, false); config=%s; trigger=%s | ',
+    has_function_privilege('authenticated', 'private.startups_reset_owner_verified()', 'EXECUTE'),
+    has_function_privilege('anon', 'private.startups_reset_owner_verified()', 'EXECUTE'),
+    (select coalesce(array_to_string(proconfig, ','), 'none') from pg_proc where proname = 'startups_reset_owner_verified'),
+    (select pg_get_triggerdef(oid) from pg_trigger where tgname = 'startups_reset_owner_verified'));
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;
 end $$;

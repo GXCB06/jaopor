@@ -1,3 +1,4 @@
+import { ShieldCheckIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { StartupRow } from "@/lib/data/startups";
@@ -20,6 +21,8 @@ import { categoryName } from "@/lib/config/display";
  * `large` (directory, "More startups"): 36px logo, category chip, 2-line tagline.
  * Metrics: verified revenue → Revenue (30d) · MRR · Growth; else verified traction →
  * Visitors · Growth · Commits; else "Not verified yet".
+ * Round 3 (Design.md §5 StartupCard): a shield for "Owner verified", and a muted (dashed, no
+ * fill) card when there is no proof at all (proof_level 0).
  */
 const compact = (n: number) =>
   new Intl.NumberFormat("en", { notation: "compact" }).format(n);
@@ -87,14 +90,23 @@ function Tag({ startup, large }: { startup: StartupRow; large: boolean }) {
   // Compact cards show the demo label under the name (DemoTag) so the name keeps its width.
   if (startup.is_demo)
     return large ? <CornerTag tone="neutral">{t("demo")}</CornerTag> : null;
-  const verified =
-    startup.verification_status === "verified" || startup.visitors_30d !== null;
-  // Compact cards are narrow: the verified tag shrinks to its check so the name stays readable.
-  if (verified)
+  // Compact cards are narrow: the tags shrink to their icon so the name stays readable.
+  // Unchanged from before round 3: revenue or (counted) visitors. Build proof alone gets no tag.
+  if (
+    startup.verification_status === "verified" ||
+    startup.visitors_30d !== null
+  )
     return (
       <CornerTag tone="positive">
         <span aria-hidden={!large}>✓</span>
         <span className={large ? "ml-1" : "sr-only"}>{t("verified")}</span>
+      </CornerTag>
+    );
+  if (startup.owner_verified_at)
+    return (
+      <CornerTag tone="neutral">
+        <ShieldCheckIcon className="size-3" aria-hidden="true" />
+        <span className={large ? "ml-1" : "sr-only"}>{t("ownerVerified")}</span>
       </CornerTag>
     );
   const ask = startup.looking_for[0] as LookingFor | undefined;
@@ -130,6 +142,7 @@ export function StartupCard({
   const common = useTranslations("Common");
   const metrics = useMetrics(startup, large, thbPerUsd, third);
   const href = `/startup/${startup.slug}`;
+  const muted = !startup.is_demo && startup.proof_level === 0;
 
   const metricRow = (
     <div
@@ -160,7 +173,8 @@ export function StartupCard({
   return (
     <article
       className={cn(
-        "group relative flex flex-col border bg-card transition-colors hover:border-foreground/20",
+        "group relative flex flex-col border transition-colors hover:border-foreground/20",
+        muted ? "border-dashed bg-transparent" : "bg-card",
         large ? "justify-between rounded-xl p-4" : "rounded-lg p-3",
         className,
       )}
