@@ -1,18 +1,21 @@
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { redirect } from "@/i18n/navigation";
-import { requireUserId } from "@/lib/auth";
+import { getUserId } from "@/lib/auth";
 import { myUnreadMessages } from "@/lib/data/chat";
 import { getMyProfile, pendingRequests } from "@/lib/data/me";
 import { createClient } from "@/lib/supabase/server";
 
 // Design.md §5 DashboardShell (Phase 9d): sidebar + content. A signed-in user without a username
-// goes through onboarding first (spec 9e).
+// goes through onboarding first (spec 9e). Signed out: only the page renders, and every dashboard
+// page gates itself with its own path (requireUserId), so sign-in returns to that exact page
+// (a gate here only knows "/dashboard").
 export default async function DashboardLayout({
   children,
   params,
 }: LayoutProps<"/[locale]/dashboard">) {
   const { locale } = await params;
-  const userId = await requireUserId(locale, "/dashboard");
+  const userId = await getUserId();
+  if (!userId) return <>{children}</>;
   const profile = await getMyProfile(userId);
   if (!profile?.handle) redirect({ href: "/onboarding", locale });
 

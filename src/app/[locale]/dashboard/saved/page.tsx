@@ -2,6 +2,7 @@ import { BookmarkIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Card } from "@/components/core/Card";
+import { requireUserId } from "@/lib/auth";
 
 export async function generateMetadata({
   params,
@@ -18,6 +19,7 @@ export default async function SavedPage({
 }: PageProps<"/[locale]/dashboard/saved">) {
   const { locale } = await params;
   setRequestLocale(locale);
+  await requireUserId(locale, "/dashboard/saved");
   const t = await getTranslations("Me");
   return (
     <main className="max-w-3xl space-y-6">

@@ -7,7 +7,7 @@ import {
   UserCheckIcon,
   UserPlusIcon,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { sendRequest, setFollow } from "@/app/actions/social";
@@ -52,6 +52,7 @@ export function ProfileActions({
   openRequest?: boolean;
 }) {
   const t = useTranslations("Builder");
+  const locale = useLocale();
   const router = useRouter();
   const [open, setOpen] = useState(openRequest);
   const [topic, setTopic] = useState<(typeof TOPICS)[number]>("cofounder");
@@ -59,7 +60,7 @@ export function ProfileActions({
   const [busy, start] = useTransition();
   const login = {
     pathname: "/login",
-    query: { next: `/u/${handle}` },
+    query: { next: `/${locale}/u/${handle}` },
   } as const;
 
   if (isOwner)

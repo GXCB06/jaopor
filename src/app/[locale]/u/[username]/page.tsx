@@ -211,7 +211,11 @@ export default async function BuilderProfilePage({
   const ext = "hover:text-foreground hover:underline";
   const contactHref = page.viewer
     ? { pathname: `/u/${profile.handle}`, query: { contact: "1" } }
-    : { pathname: "/login", query: { next: `/u/${profile.handle}` } };
+    : {
+        pathname: "/login",
+        // Back to this profile with the request form open, in the same language.
+        query: { next: `/${locale}/u/${profile.handle}?contact=1` },
+      };
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 pt-6 pb-16">

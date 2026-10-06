@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { setFollow } from "@/app/actions/social";
@@ -20,13 +20,17 @@ export function FollowButton({
   initial?: boolean;
 }) {
   const t = useTranslations("Builder");
+  const locale = useLocale();
   const [following, setFollowing] = useState(initial);
   const [busy, start] = useTransition();
   const cls =
     "inline-flex h-8 shrink-0 items-center rounded-md border px-3 text-caption font-semibold transition-colors hover:bg-accent";
   if (!signedIn)
     return (
-      <Link href={`/login?next=/u/${handle}`} className={cls}>
+      <Link
+        href={{ pathname: "/login", query: { next: `/${locale}/u/${handle}` } }}
+        className={cls}
+      >
         {t("follow")}
       </Link>
     );

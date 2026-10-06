@@ -12,6 +12,23 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-07 — Round 3 deployed; sign-in links return to the exact page (dashboard, profiles, feed)
+
+**Done:**
+
+- **Round 3 pushed and deployed** (`07a849d`). Production renders the id-based snippet (`data-project="29"`), and all main pages answer 200. With this deploy the two live message bugs are fixed too (the snippet step showed the raw key `Sources.jaopor.howTo1`; RevenueCat's step 3 had the same problem).
+- **Sign-in from any dashboard page returned to `/dashboard`:** the dashboard layout gated with a fixed path, which beat each page's own gate. Signed out, the layout now renders only the page, and every dashboard page gates itself with its exact path (`saved` was the one without a gate; added).
+- **Sign-in links without a locale** (follow, contact on a profile, the feed's "following" prompt) brought English users back in Thai. They now carry the locale, and the profile's contact link reopens the request form (`?contact=1`).
+
+**Files:** `src/lib/auth.ts`, `src/app/[locale]/dashboard/{layout.tsx,saved/page.tsx}`, `src/components/builder/{FollowButton,ProfileActions}.tsx`, `src/app/[locale]/{feed,u/[username]}/page.tsx`
+**Verified:**
+- typecheck ✓ · lint ✓ · tests 352 ✓ · build ✓.
+- Local, signed out: `/th/dashboard/29/edit` → `/th/login?next=/th/dashboard/29/edit`; `/en/dashboard/saved` → `/en/login?next=/en/dashboard/saved`; `/th/dashboard/messages` and `/th/new` keep their paths.
+- Production after the round 3 deploy: pages 200; unauthenticated auto-fill → 401; the old slug-based beacon is ignored (204).
+
+**Not verified:** JaoPor's first owner check on production (needs the owner signed in: "รีเฟรช" on JaoPor's visitor source, or the 03:00 cron).
+**Next:** owner presses "รีเฟรช" on JaoPor; the visitor-wording decision (Project.md §7).
+
 ## 2026-10-06 — First-user fixes, round 3: verified first, "Owner verified", and a security pass on every server-side fetch
 
 **Why:** listings without any proof looked the same as verified ones, and a review before applying the migration found that the snippet's visitor counting and the SSRF guard could be abused.

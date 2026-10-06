@@ -81,7 +81,10 @@ export default async function FeedPage({
       <>
         {t("emptyFollowingSignedOut")}{" "}
         <Link
-          href="/login?next=/feed?view=following"
+          href={{
+            pathname: "/login",
+            query: { next: `/${locale}/feed?view=following` },
+          }}
           className="text-brand-text hover:underline"
         >
           {tp("signIn")}
