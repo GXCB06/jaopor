@@ -12,6 +12,31 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-07 — End-to-end tests (Playwright) and a messages check
+
+**Why:** several bugs this week were only caught by clicking around: messages that rendered as raw keys in production, sign-in losing the page, numbers cut off on phones. These checks now run before a push.
+
+**Done:**
+
+- **`src/lib/messages.test.ts` (Vitest):**
+  - Every th / en string is parsed with the same ICU parser next-intl uses (`intl-messageformat` 11.2.15, pinned to next-intl's version). A stray `</head>` or `<ID>` now fails the tests; checked against the two strings that broke production.
+  - th and en have exactly the same keys.
+  - Every message uses the same placeholders and tags in both languages.
+- **Playwright** (`@playwright/test`, `playwright.config.ts`, `e2e/`, `npm run test:e2e`): uses the installed Chrome, so no browser download. Two projects: desktop 1280 and mobile 375. Signed-out flows only (OAuth can't be automated).
+  - `pages.spec.ts`: home, startups, categories, olympics, builders, feed, security, privacy, terms, login, a project page and a builder profile, in th and en. Each must answer with no raw message key on screen, no next-intl / page errors, no Western year after a Thai month on Thai pages, and no horizontal scroll.
+  - `sign-in.spec.ts`: `/new`, dashboard pages and an edit page go to `/login?next=` with the exact path; the header's sign-in link carries the current page; `/new` streams its skeleton.
+  - `numbers.spec.ts`: home card values never cut off; the Thai tab title in ฿; the chart axis in round steps.
+- Local runs reuse the dev server with 2 workers. Builder pages are skipped locally unless the test run has `SUPABASE_SECRET_KEY`. `E2E_BASE_URL=https://jaopor.vercel.app` runs the same checks against production (read-only).
+- CLAUDE.md: commands, a testing note, and a warning not to run `next build` while the dev server runs (it corrupted the dev cache once today: every local page 500).
+
+**Files:** `playwright.config.ts`, `e2e/{helpers,pages.spec,sign-in.spec,numbers.spec}.ts`, `src/lib/messages.test.ts`, `package.json` (+ lock), `.gitignore`, `CLAUDE.md`, `Project.md`
+**Verified:**
+- Production: 74 / 74 passed (37 checks × desktop / 375 px).
+- Local dev server: 64 passed, 10 skipped (builder pages without the key; checks that need data the page lacks).
+- Unit tests 365 ✓ · lint ✓ · typecheck ✓ · build ✓.
+
+**Next:** signed-in flows (Add Startup, verify) need a test-account strategy (e.g. a Supabase test user with a session cookie for a preview environment); not set up.
+
 ## 2026-10-07 — The remaining JaoPor listing becomes the real one (owner decision)
 
 **Why:** the original JaoPor listing (id 29, `jaopor`) was deleted instead of the copy. The copy (id 105, `jaopor-pdt0`) is now the JaoPor listing. Its revenue comes back in full from Stripe.

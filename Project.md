@@ -157,7 +157,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 
 ### Phase 1b — v1.x hardening (weeks 1–4 after launch)
 
-- [ ] Metrics engine unit tests (Vitest) + Playwright happy path
+- [x] (2026-10-07) Metrics engine unit tests (Vitest) + Playwright happy path: signed-out e2e (`npm run test:e2e`, 37 checks × desktop / 375 px) and a messages test that parses every th / en string. Signed-in flows (Add Startup, verify) still need a test account strategy
 - [ ] More providers: Polar, LemonSqueezy (after read-only scope check); App Store Connect downloads; PostHog
 - [x] Traction proof without an analytics tool: JaoPor visitor snippet (2026-09-30; live end-to-end check pending)
 - [x] Traffic leaderboard (visitors, commits) as a metric switch on the leaderboard card; directory filter "looking for" (UI v2, 2026-09-29)

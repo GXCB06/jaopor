@@ -23,13 +23,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 npm run dev            # Next dev server (Turbopack) → http://localhost:3000 (redirects to /th)
-npm run build          # production build
+npm run build          # production build (stop the dev server first: both write .next, and a build under a running dev server corrupts its cache → every page 500s)
 npm run typecheck      # next typegen && tsc --noEmit (typegen is needed after adding/removing routes)
 npm run lint           # eslint
 npm run format         # prettier --write . (sorts Tailwind classes)
 npm run harness:report # summarize tool-call logs in .claude/logs (observability)
 npm test               # vitest run (unit tests: src/**/*.test.ts)
 npx vitest run src/lib/revenue/metrics.test.ts   # one file; add -t "<test name>" for one test
+npm run test:e2e       # Playwright (e2e/*.spec.ts) on the local dev server, desktop + 375 px, installed Chrome
+E2E_BASE_URL=https://jaopor.vercel.app npm run test:e2e   # same checks against production (read-only page loads)
 npx supabase migration new <name>   # new SQL migration in supabase/migrations
 npx shadcn@latest add <component>   # add a shadcn/ui primitive into src/components/ui
 ```
@@ -42,7 +44,7 @@ npx shadcn@latest add <component>   # add a shadcn/ui primitive into src/compone
 4. Run [supabase/tests/rls_smoke.sql](supabase/tests/rls_smoke.sql) via `execute_sql`. Every line must read good/expected. It rolls itself back, so nothing needs resetting.
 5. Regenerate `src/lib/supabase/database.types.ts` (MCP `generate_typescript_types`).
 
-Unit tests use **Vitest** (`vitest.config.mts`; `server-only` is stubbed in tests). Playwright end-to-end tests arrive in Phase 1b.
+Unit tests use **Vitest** (`vitest.config.mts`; `server-only` is stubbed in tests). `src/lib/messages.test.ts` parses every th / en message with the same ICU parser next-intl uses (pinned `intl-messageformat`), so a stray `<` or `{` fails the tests instead of showing a raw key in production. End-to-end tests use **Playwright** (`playwright.config.ts`, `e2e/`): signed-out flows only (OAuth can't be automated): every public page in th / en renders without raw keys or next-intl errors, Thai year on Thai pages, no horizontal scroll at 375 px, sign-in redirects keep the exact page, numbers not cut off, round chart ticks. Run them before pushing UI changes; builder profiles need `SUPABASE_SECRET_KEY` locally.
 
 **Verified numbers** (skill `/add-payment-provider` for any new source):
 
