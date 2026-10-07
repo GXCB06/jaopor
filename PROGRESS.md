@@ -12,6 +12,20 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-07 — The remaining JaoPor listing becomes the real one (owner decision)
+
+**Why:** the original JaoPor listing (id 29, `jaopor`) was deleted instead of the copy. The copy (id 105, `jaopor-pdt0`) is now the JaoPor listing. Its revenue comes back in full from Stripe.
+
+**Done:** the site's own visitor snippet names project **105** (`SELF_PROJECT` in `[locale]/layout.tsx`). The live SSRF test now expects 105 found on jaopor.vercel.app and 29 missing.
+
+**Owner to do:**
+- Rename the listing's link back to `jaopor` on its edit page, so old links (`/startup/jaopor`, now 404) work again.
+- Press "เริ่มนับ" for the website snippet (the owner check will find `data-project="105"`), and reconnect GitHub for build proof.
+- Re-add what was on the old listing (screenshots, founder message, insights) if wanted.
+
+**Lost with the deletion (not recoverable from here):** the founding number #2, visitor history counted by the snippet, posts and milestones of id 29.
+**Verified:** typecheck ✓ · lint ✓ · tests 361 ✓ · build ✓; production after deploy renders `data-project="105"`.
+
 ## 2026-10-07 — Chart back to the smooth area (owner preference), /security and /privacy wording approved
 
 **Done:**

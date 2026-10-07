@@ -22,10 +22,10 @@ const jetbrains = JetBrains_Mono({
 });
 
 // JaoPor lists itself: its own visitor snippet (public/v.js) counts unique visitors to this site
-// for the "jaopor" project, identified by its permanent startup id (29), never by its slug, which
-// can change and then be taken by someone else. Production only; /api/collect ignores hits from
-// any other host.
-const SELF_PROJECT = "29";
+// for the JaoPor listing, identified by its permanent startup id (105 since 2026-10-07: the first
+// listing, 29, was deleted), never by its slug, which can change and then be taken by someone
+// else. Production only; /api/collect ignores hits from any other host.
+const SELF_PROJECT = "105";
 
 const plexThai = IBM_Plex_Sans_Thai({
   subsets: ["thai", "latin"],

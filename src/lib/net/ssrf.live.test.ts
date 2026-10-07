@@ -98,8 +98,11 @@ describe.skipIf(!live)("SSRF guard against the real network", () => {
     );
   });
 
-  it("owner check: our own site carries our snippet only after this change deploys", async () => {
-    // Production still renders data-project="jaopor"; the id-based check must not match it.
+  it("owner check: our own site carries the JaoPor listing's snippet (id 105), nothing else", async () => {
+    expect(await findOwnerSnippet("https://jaopor.vercel.app/th", "105")).toBe(
+      "found",
+    );
+    // The deleted first listing's id must not match any more.
     expect(await findOwnerSnippet("https://jaopor.vercel.app/th", "29")).toBe(
       "missing",
     );
