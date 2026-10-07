@@ -12,6 +12,22 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-07 — Chart back to the smooth area (owner preference), /security and /privacy wording approved
+
+**Done:**
+
+- **Revenue chart:** the owner preferred the earlier look, so the smooth area chart is back for every metric (the bar version from round B is reverted, and trend smooths the line again). The **round axis ticks stay** (฿0 / 250 / 500 / 750 / 1,000, computed in the displayed currency; integers for visitors). They don't change the look and fix the uneven ฿252 / 504 / 755. Design.md §5 RevenueChartCard updated.
+- **Owner-approved wording:**
+  - `/security` intro: "JaoPor แสดงรายได้และผลงานบน GitHub ที่ยืนยันจากระบบที่คุณใช้อยู่ และจำนวนผู้เข้าชมที่นับโดยสคริปต์ของเราหรือ analytics ของคุณ …".
+  - `/privacy` §3 title: "ตัวเลขจากระบบที่เชื่อมต่อ (รายได้ ผลงานบน GitHub และจำนวนผู้เข้าชม)".
+  - English versions to match.
+  - "Last updated" set to 7 ต.ค. 2569 / October 7, 2026 on both.
+  - `/terms` keeps its date with the Thai year (2569, §3 Dates).
+- **Found while checking (not changed):** the original JaoPor listing (id 29, `jaopor`) was deleted; the copy (id 105, `jaopor-pdt0`) remains. `/startup/jaopor` is now a 404. The site's own snippet still names project 29, so JaoPor's visitor counting stops until the owner decides how to continue.
+
+**Files:** `src/components/MetricChart.tsx`, `messages/*.json`, `Design.md`
+**Verified:** typecheck ✓ · lint ✓ · tests 361 ✓ · build ✓. Browser on the live DB (`/th/startup/jaopor-pdt0`): smooth area, ticks ฿0 / ฿250 / ฿500 / ฿750 / ฿1,000, stamp "ยืนยันผ่าน Stripe".
+
 ## 2026-10-07 — Visitor counts say "counted", not "verified" (owner decision)
 
 **Why:** anyone can send events to a snippet or an analytics endpoint, so visitor numbers can be inflated. Revenue read from Stripe / RevenueCat and GitHub build proof can't be faked that way. Owner decision: say "counted" for visitors and keep them on the leaderboard and Olympics.

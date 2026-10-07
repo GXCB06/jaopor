@@ -313,7 +313,7 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 
 ## 7. Open items
 
-- [x] (2026-10-07) **Visitor wording:** owner chose "counted" for visitors (kept on the leaderboard and Olympics); applied everywhere except the owner-approved /security intro and /privacy §3 title, which wait for approval of the proposed lines.
+- [x] (2026-10-07) **Visitor wording:** owner chose "counted" for visitors (kept on the leaderboard and Olympics); applied everywhere; /security intro and /privacy §3 title approved and updated the same day.
 - [ ] Analytics connections keep their last numbers after a failed sync, and changing the website doesn't re-check an analytics domain (existed before round 3; clearing would delete data).
 
 - [x] ~~Restart the Claude Code session so hooks go live~~ → hooks confirmed live 2026-09-29 (quality + progress-gate fired)

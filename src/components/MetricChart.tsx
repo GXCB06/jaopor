@@ -5,9 +5,8 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useId, useState } from "react";
 import {
   Area,
-  Bar,
+  AreaChart,
   CartesianGrid,
-  ComposedChart,
   Line,
   ResponsiveContainer,
   Tooltip,
@@ -101,8 +100,8 @@ function CompactSelect<T extends string | number>({
 
 /**
  * Design.md §5 RevenueChartCard (spec 6.4 step 3): metric × period selects, period total +
- * growth, bars for daily flows / a straight-segment area for MRR, optional previous period and
- * trend overlay, and the selected metric's source stamp. Only metrics with verified data.
+ * growth, area chart with optional previous period and trend, and the selected metric's source
+ * stamp. Only metrics with verified data are offered.
  */
 export function MetricChart({
   series,
@@ -129,20 +128,17 @@ export function MetricChart({
   const w = chartWindow(values, series.start, metric, period);
   const cur = w.points.map((p) => p.value);
   const prev = w.points.map((p) => p.previous);
-  // Trend is an overlay on the real values, never a replacement for them.
-  const trendValues = smooth(cur);
+  const curValues = trend ? smooth(cur) : cur;
+  const prevValues = trend ? smooth(prev) : prev;
   const data = w.points.map((p, i) => ({
     day: p.day,
-    value: cur[i],
-    previous: prev[i],
-    trend: trendValues[i],
+    value: curValues[i],
+    previous: prevValues[i],
   }));
 
   const isMoney = metric !== "visitors";
-  // Flows (money in per day, visitors per day) are bars, so a one-day payment stays on its day;
-  // MRR is a level, drawn with straight segments (Design.md §5 RevenueChartCard).
-  const bars = metric !== "mrr";
-  // Round ticks in the unit people read: baht or dollars (values are USD cents), or visitors.
+  // Round ticks in the unit people read: baht or dollars (values are USD cents), or visitors,
+  // so the axis reads ฿0 / 250 / 500 rather than converted dollar steps like ฿252 / ฿504.
   const unit = isMoney
     ? currency === "thb" && thbPerUsd
       ? thbPerUsd / 100
@@ -150,7 +146,7 @@ export function MetricChart({
     : 1;
   const peak = Math.max(
     0,
-    ...[...cur, ...(compare ? prev : []), ...(trend ? trendValues : [])].filter(
+    ...[...curValues, ...(compare ? prevValues : [])].filter(
       (v): v is number => v !== null,
     ),
   );
@@ -216,12 +212,7 @@ export function MetricChart({
       {compare && (
         <div className="flex gap-4 text-2xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
-            <span
-              className={cn(
-                "bg-chart-1",
-                bars ? "size-2 rounded-sm" : "h-0.5 w-4 rounded",
-              )}
-            />
+            <span className="h-0.5 w-4 rounded bg-chart-1" />
             {periodLabel(period)}
           </span>
           <span className="flex items-center gap-1.5">
@@ -237,7 +228,7 @@ export function MetricChart({
         aria-label={`${metricLabel(metric)} · ${periodLabel(period)}: ${fmt(w.total, true)}`}
       >
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart
+          <AreaChart
             data={data}
             margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
           >
@@ -275,11 +266,7 @@ export function MetricChart({
               tick={{ fill: "var(--faint)", fontSize: 10 }}
             />
             <Tooltip
-              cursor={
-                bars
-                  ? { fill: "var(--accent)", opacity: 0.5 }
-                  : { stroke: "var(--faint)", strokeDasharray: "3 3" }
-              }
+              cursor={{ stroke: "var(--faint)", strokeDasharray: "3 3" }}
               content={({ active, payload }) => {
                 if (!active || !payload?.length) return null;
                 const row = payload[0].payload as (typeof data)[number];
@@ -302,29 +289,9 @@ export function MetricChart({
                 );
               }}
             />
-            {bars ? (
-              <Bar
-                dataKey="value"
-                fill="var(--chart-1)"
-                radius={[3, 3, 0, 0]}
-                maxBarSize={24}
-                isAnimationActive={false}
-              />
-            ) : (
-              <Area
-                type="linear"
-                dataKey="value"
-                stroke="var(--chart-1)"
-                strokeWidth={2}
-                fill={`url(#${gradientId})`}
-                activeDot={{ r: 4, stroke: "var(--card)", strokeWidth: 2 }}
-                connectNulls
-                isAnimationActive={false}
-              />
-            )}
             {compare && (
               <Line
-                type="linear"
+                type="monotone"
                 dataKey="previous"
                 stroke="var(--chart-2)"
                 strokeWidth={2}
@@ -334,18 +301,17 @@ export function MetricChart({
                 isAnimationActive={false}
               />
             )}
-            {trend && (
-              <Line
-                type="monotone"
-                dataKey="trend"
-                stroke="var(--muted-foreground)"
-                strokeWidth={2}
-                dot={false}
-                connectNulls
-                isAnimationActive={false}
-              />
-            )}
-          </ComposedChart>
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke="var(--chart-1)"
+              strokeWidth={2}
+              fill={`url(#${gradientId})`}
+              activeDot={{ r: 4, stroke: "var(--card)", strokeWidth: 2 }}
+              connectNulls
+              isAnimationActive={false}
+            />
+          </AreaChart>
         </ResponsiveContainer>
       </div>
 

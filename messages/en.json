@@ -871,7 +871,7 @@
   "Privacy": {
     "metaTitle": "Privacy policy",
     "title": "JaoPor privacy policy",
-    "updated": "Last updated: October 2, 2026",
+    "updated": "Last updated: October 7, 2026",
     "intro": "JaoPor (jaopor.vercel.app) is a directory of things people build with AI, with numbers verified at the source. This page explains what we collect, why, how long we keep it, and what you control.",
     "contact": "Privacy contact:",
     "email": "jaopordev@gmail.com",
@@ -908,7 +908,7 @@
         ]
       },
       {
-        "title": "3. Verified numbers (revenue, visitors, GitHub activity)",
+        "title": "3. Numbers from connected services (revenue, GitHub activity and visitor counts)",
         "items": [
           {
             "t": "API keys you connect (e.g. Stripe) must be read-only. We encrypt them before storing and decrypt them only on our server when fetching numbers."
@@ -1724,8 +1724,8 @@
   "Security": {
     "metaTitle": "How we handle your key",
     "title": "How we handle your API keys",
-    "updated": "Last updated: October 4, 2026",
-    "intro": "JaoPor shows verified numbers (revenue, visitors, GitHub activity) read from the services you already use. This page explains which keys we accept, how we store them, and how you can revoke them.",
+    "updated": "Last updated: October 7, 2026",
+    "intro": "JaoPor shows revenue and GitHub activity verified from the services you already use, and visitor counts from our script or your analytics. This page explains which keys we accept, how we store them, and how you can revoke them.",
     "contact": "Found a vulnerability or have a security question? Contact:",
     "email": "jaopordev@gmail.com",
     "sections": [
