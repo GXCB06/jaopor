@@ -166,7 +166,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <LeaderboardCard boards={boards} thbPerUsd={thbPerUsd} />
       </div>
       <HomeTeasers thbPerUsd={thbPerUsd} />
-      <QuickSearchSection add={false} chips={false} />
+      <QuickSearchSection chips={false} />
     </main>
   );
 }

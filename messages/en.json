@@ -295,6 +295,7 @@
     "logoHint": "PNG, JPG or WebP, max 1 MB",
     "logoTooBig": "Logo must be 1 MB or smaller.",
     "createAndContinue": "Create & continue",
+    "saveAndContinue": "Save & continue",
     "revenueTitle": "Connect Stripe (read-only)",
     "revenueIntro": "We only accept a read-only Stripe restricted key. It is encrypted, never shown again, and you can revoke it in Stripe any time.",
     "howTo": "How to create the key",

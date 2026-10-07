@@ -295,6 +295,7 @@
     "logoHint": "PNG, JPG หรือ WebP ไม่เกิน 1 MB",
     "logoTooBig": "โลโก้ต้องมีขนาดไม่เกิน 1 MB",
     "createAndContinue": "สร้างและไปต่อ",
+    "saveAndContinue": "บันทึกและไปต่อ",
     "revenueTitle": "เชื่อม Stripe (อ่านอย่างเดียว)",
     "revenueIntro": "เรารับเฉพาะ Restricted key ที่อ่านได้อย่างเดียว คีย์ถูกเข้ารหัส ไม่แสดงซ้ำ และยกเลิกได้ใน Stripe ทุกเมื่อ",
     "howTo": "วิธีสร้างคีย์",

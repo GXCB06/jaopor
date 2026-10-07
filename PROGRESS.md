@@ -12,6 +12,31 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-07 — Owner feedback: full-size live map, Add next to the bottom search, Back in Add Startup
+
+**Done:**
+
+- **Live visitors map:** back to full height (`h-[420px] sm:h-[460px]`) at every count. The round C compact height for 3 or fewer viewers made the map too small to see the pins, and the 4-row activity list covered the stats box.
+- **Bottom search on home:** "+ เพิ่ม Startup" next to it again, so a visitor at the end of the page can add without scrolling back up. The `add` prop of `QuickSearchSection` is removed (every page shows it now).
+- **Add Startup Back button:** step 2 has "← ย้อนกลับ". It returns to step 1 with every field kept, and the button there becomes "บันทึกและไปต่อ". That saves the changes to the same project instead of creating a second one:
+  - link (clearing the old link column when the link type changed), name, one-liner and category;
+  - the logo only when it changed.
+    The verify step stays mounted while hidden, so sources already connected stay marked. The "Already listed" note ignores the project itself.
+- Design.md: LiveVisitorsSection, the Home CTA rule and Add-startup wizard v2 (Step 2 + Back) updated first.
+
+**Files:** `src/components/live/LiveVisitorsSection.tsx`, `src/components/search/QuickSearchSection.tsx`, `src/app/[locale]/page.tsx`, `src/components/wizard/StartupWizard.tsx`, `messages/*.json` (`Wizard.saveAndContinue`), `Design.md`
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit tests 365 ✓ · local e2e 64 passed / 10 skipped.
+- Browser, `/th` at 1280 and 375 px:
+  - the live body is 460 / 420 px and the map 424 / 384 px tall;
+  - the stats box and the activity list don't overlap;
+  - Add sits beside the bottom search;
+  - no horizontal scroll.
+- The wizard's Back flow needs a signed-in user, so it was not clicked through; checked by code review (the same columns the edit page updates, all granted to the owner).
+
+**Next:** the owner tries Back in Add Startup on production after the push.
+
 ## 2026-10-07 — End-to-end tests (Playwright) and a messages check
 
 **Why:** several bugs this week were only caught by clicking around: messages that rendered as raw keys in production, sign-in losing the page, numbers cut off on phones. These checks now run before a push.
@@ -31,6 +56,7 @@
 
 **Files:** `playwright.config.ts`, `e2e/{helpers,pages.spec,sign-in.spec,numbers.spec}.ts`, `src/lib/messages.test.ts`, `package.json` (+ lock), `.gitignore`, `CLAUDE.md`, `Project.md`
 **Verified:**
+
 - Production: 74 / 74 passed (37 checks × desktop / 375 px).
 - Local dev server: 64 passed, 10 skipped (builder pages without the key; checks that need data the page lacks).
 - Unit tests 365 ✓ · lint ✓ · typecheck ✓ · build ✓.
@@ -44,6 +70,7 @@
 **Done:** the site's own visitor snippet names project **105** (`SELF_PROJECT` in `[locale]/layout.tsx`). The live SSRF test now expects 105 found on jaopor.vercel.app and 29 missing.
 
 **Owner to do:**
+
 - Rename the listing's link back to `jaopor` on its edit page, so old links (`/startup/jaopor`, now 404) work again.
 - Press "เริ่มนับ" for the website snippet (the owner check will find `data-project="105"`), and reconnect GitHub for build proof.
 - Re-add what was on the old listing (screenshots, founder message, insights) if wanted.
@@ -87,6 +114,7 @@
 
 **Files:** `messages/*.json`, `src/components/{profile/ProjectBlocks,ProfileBlocks,StartupCard}.tsx`, `src/lib/share{,.test}.ts`, `src/app/[locale]/dashboard/startups/page.tsx`, `Design.md`
 **Verified:**
+
 - typecheck ✓ · lint ✓ · tests 361 ✓ (share test updated) · build ✓.
 - Local server on the live DB, JaoPor page: heading "ตัวเลขจากระบบที่เชื่อมต่อ", visitors "นับโดย JaoPor (สคริปต์ของเรา)", build "ยืนยันผ่าน GitHub", revenue "ยืนยันผ่าน Stripe", visitors chart stamp "นับโดย JaoPor · อัปเดตล่าสุด 7 ต.ค. 2569" with a chart icon. Home: "ตัวเลขจาก:" and the new leaderboard footnote.
 
@@ -104,6 +132,7 @@
 
 **Files:** `src/lib/data/startups.ts`, `src/app/[locale]/categories/page.tsx`, `src/components/{ProviderStrip,live/LiveVisitorsSection}.tsx`, `messages/*.json`, `Design.md`
 **Verified:**
+
 - typecheck ✓ · lint ✓ · tests 361 ✓ · build ✓.
 - Browser on the live DB:
   - `/categories`: one card + 36 chips at 1100 px and 375 px, no horizontal scroll.
@@ -127,6 +156,7 @@
 
 **Files:** `src/app/globals.css`, `src/lib/utils{,.test}.ts`, `src/lib/chart-window{,.test}.ts`, `src/components/MetricChart.tsx`, `src/app/[locale]/{page,startup/[slug]/page,u/[username]/page,dashboard/requests/page}.tsx`, `src/components/{ProfileBlocks,profile/ProjectBlocks,posts/PostCard,posts/CommentThread,chat/ChatThread}.tsx`, `Design.md`
 **Verified:**
+
 - typecheck ✓ · lint ✓ · tests 361 ✓ (new: 4 `niceTicks`, 2 `cn` cases) · build ✓.
 - Browser on the live DB:
   - JaoPor page: description in IBM Plex Sans Thai, 2 bars on 3 and 6 Oct with axis ฿0 / ฿250 / ฿500 / ฿750.
@@ -155,6 +185,7 @@
 
 **Files:** `src/lib/links{,.test}.ts`, `src/lib/sources/sync.ts`, `src/lib/revenue/types.ts`, `src/lib/data/startups.ts`, `src/components/{StartupCard,LeaderboardCard}.tsx`, `src/components/wizard/StartupWizard.tsx`, `src/components/builder/ProfileRevenueChart.tsx`, `src/app/[locale]/{page,olympics/page,u/[username]/page,startup/[slug]/page}.tsx`, `messages/*.json`, `Design.md`
 **Verified:**
+
 - typecheck ✓ · lint ✓ · tests 355 ✓ (new: 3 `sameWebsite` cases) · build ✓.
 - Local server on the live DB: title "฿2,310 MRR", "อันดับ #1", "ฤดูกาล ตุลาคม 2569" / "Season October 2026", the leaderboard links `/th/u/gxcb06` and no X handle appears.
 - Browser:
@@ -176,6 +207,7 @@
 
 **Files:** `src/app/[locale]/new/{page,loading}.tsx`, `src/lib/auth.ts`, `src/lib/data/connections.ts`, `src/components/wizard/StartupWizard.tsx`, `Design.md`
 **Verified:**
+
 - typecheck ✓ · lint ✓ · tests 352 ✓ · build ✓.
 - Signed out on the local server: the redirect to `/th/login?next=%2Fth%2Fnew` is intact (client redirect plus meta-refresh fallback).
 - Browser (temporary page, deleted): the skeleton at desktop and 375 px, no horizontal scroll.
@@ -192,6 +224,7 @@
 
 **Files:** `src/lib/auth.ts`, `src/app/[locale]/dashboard/{layout.tsx,saved/page.tsx}`, `src/components/builder/{FollowButton,ProfileActions}.tsx`, `src/app/[locale]/{feed,u/[username]}/page.tsx`
 **Verified:**
+
 - typecheck ✓ · lint ✓ · tests 352 ✓ · build ✓.
 - Local, signed out: `/th/dashboard/29/edit` → `/th/login?next=/th/dashboard/29/edit`; `/en/dashboard/saved` → `/en/login?next=/en/dashboard/saved`; `/th/dashboard/messages` and `/th/new` keep their paths.
 - Production after the round 3 deploy: pages 200; unauthenticated auto-fill → 401; the old slug-based beacon is ignored (204).
@@ -225,6 +258,7 @@
 - **Messages broken in production (existed before this round):** `Sources.jaopor.howTo1` and `Sources.revenuecat.howTo3` contained a literal `</head>` / `<ID>`. next-intl parses those as tags, so production showed the raw key `Sources.jaopor.howTo1`. They are now passed in as values.
 
 **Files:**
+
 - `supabase/migrations/20261005162816_owner_verified.sql`, `supabase/tests/rls_smoke.sql` (T120–T126)
 - `src/lib/net/{public-url,link-preview}.ts` (+ `public-url.test.ts`, `ssrf.live.test.ts`)
 - `src/lib/traffic/pixel.ts` (+ `owner-snippet.test.ts`)
@@ -234,12 +268,14 @@
 - `src/lib/supabase/database.types.ts`, `messages/*.json`, `Design.md`
 
 **Verified:**
+
 - Rolled-back dry runs on the live DB before applying.
 - After applying: full RLS smoke test T1–T126, every line good. Advisors: no new warning. Live values: JaoPor at level 3, demos at 0. Types regenerated.
 - typecheck ✓ · lint ✓ · tests 352 passed (+17 opt-in live-network SSRF tests passed with `LIVE_NET=1`) · build ✓.
 - Browser (temporary page, deleted), desktop and 375 px: badges, the owner-verified and muted cards, both snippet states, the fixed messages; no horizontal scroll.
 
 **Not verified:**
+
 - A real owner check on production. It needs this deploy: JaoPor's own snippet changes to `data-project="29"`, and counting for JaoPor pauses until the first check ("รีเฟรช" or the 03:00 cron).
 - The 20 s throttle's conditional update through PostgREST (the JSON-field filter) in a live request.
 

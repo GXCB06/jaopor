@@ -7,11 +7,8 @@ import { AddStartupButton, QuickSearch } from "./QuickSearch";
 
 /** Design.md §5 QuickSearch bottom section (spec 6.8): "หาผลงานอื่นต่อ" above the footer. */
 export async function QuickSearchSection({
-  add = true,
   chips = true,
 }: {
-  /** Home hides the Add button (spec 6.2: the CTA appears at most twice per page). */
-  add?: boolean;
   /** Home hides the category chips (its categories teaser already lists them). */
   chips?: boolean;
 } = {}) {
@@ -30,7 +27,7 @@ export async function QuickSearchSection({
         </h2>
         <div className="flex items-start gap-2 text-left">
           <QuickSearch />
-          {add && <AddStartupButton />}
+          <AddStartupButton />
         </div>
         <div
           className={cn(

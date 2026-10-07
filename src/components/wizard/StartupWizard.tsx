@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeftIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
@@ -56,6 +57,12 @@ export async function uploadLogo(userId: string, file: File): Promise<string> {
   return path;
 }
 
+/** Identifies the logo shown on step 1, so going back and saving uploads only a changed logo. */
+function logoKey(file: File | null, auto: string | null): string | null {
+  if (file) return `file:${file.name}:${file.size}:${file.lastModified}`;
+  return auto ? `auto:${auto.length}:${auto.slice(-32)}` : null;
+}
+
 /** The auto-filled logo (a PNG data: URL from /api/startups/preview) as an uploadable file. */
 function dataUrlToPng(dataUrl: string): File {
   const bin = atob(dataUrl.slice(dataUrl.indexOf(",") + 1));
@@ -77,10 +84,13 @@ export function StartupWizard({
   const router = useRouter();
 
   const [step, setStep] = useState<1 | 2>(1);
+  // The project created by step 1. Going back to step 1 edits it instead of creating another.
   const [saved, setSaved] = useState<{
     id: number;
     slug: string;
     website: string | null;
+    column?: LinkColumn;
+    logo?: string | null;
   } | null>(null);
   const [verified, setVerified] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -140,7 +150,9 @@ export function StartupWizard({
   }, [userId]);
   const existing =
     step === 1 && siteUrl
-      ? mine.find((s) => sameWebsite(s.website_url, siteUrl))
+      ? mine.find(
+          (s) => s.id !== saved?.id && sameWebsite(s.website_url, siteUrl),
+        )
       : undefined;
 
   useEffect(() => {
@@ -199,10 +211,45 @@ export function StartupWizard({
     if (logo && logo.file.size > MAX_LOGO_BYTES)
       return setError(t("logoTooBig"));
     const base = slugify(name) || "startup";
+    const key = logoKey(logo?.file ?? null, autoLogo);
     setBusy(true);
     try {
       const supabase = createClient();
       const file = logo?.file ?? (autoLogo ? dataUrlToPng(autoLogo) : null);
+
+      // Back from step 2: save the changes to the same project (no second listing).
+      if (saved) {
+        const links: Partial<Record<LinkColumn, string | null>> = {};
+        if (saved.column && saved.column !== parsed.column)
+          links[saved.column] = null;
+        links[parsed.column] = parsed.url;
+        const logoChanged = key !== (saved.logo ?? null);
+        const { data, error: dbErr } = await supabase
+          .from("startups")
+          .update({
+            name: name.trim(),
+            tagline: tagline.trim() || null,
+            ...links,
+            category,
+            ...(logoChanged
+              ? { logo_path: file ? await uploadLogo(userId, file) : null }
+              : {}),
+          })
+          .eq("id", saved.id)
+          .select("id, slug, website_url")
+          .single();
+        if (dbErr) throw dbErr;
+        setSaved({
+          id: data.id,
+          slug: data.slug,
+          website: data.website_url,
+          column: parsed.column,
+          logo: key,
+        });
+        setStep(2);
+        return;
+      }
+
       const logoPath = file ? await uploadLogo(userId, file) : null;
       // Auto slug; on a clash retry once with a short random suffix (no slug field to fill in).
       for (const slug of [base, `${base.slice(0, 44)}-${randomSuffix()}`]) {
@@ -222,7 +269,13 @@ export function StartupWizard({
           .select("id, slug, website_url")
           .single();
         if (!dbErr) {
-          setSaved({ id: data.id, slug: data.slug, website: data.website_url });
+          setSaved({
+            id: data.id,
+            slug: data.slug,
+            website: data.website_url,
+            column: parsed.column,
+            logo: key,
+          });
           setStep(2);
           return;
         }
@@ -418,13 +471,18 @@ export function StartupWizard({
             </p>
           )}
           <Button type="submit" disabled={busy || !!existing} className="px-4">
-            {busy ? common("loading") : t("createAndContinue")}
+            {busy
+              ? common("loading")
+              : saved
+                ? t("saveAndContinue")
+                : t("createAndContinue")}
           </Button>
         </form>
       )}
 
-      {step === 2 && saved && (
-        <div className="space-y-5">
+      {/* Hidden, not unmounted, on the way back to step 1: sources connected here stay marked. */}
+      {saved && (
+        <div className="space-y-5" hidden={step !== 2}>
           <VerifyPanel
             startupId={saved.id}
             connections={[]}
@@ -432,8 +490,19 @@ export function StartupWizard({
             githubLogin={githubLogin}
             onConnected={() => setVerified(true)}
           />
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-            <p className="text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-3 border-t pt-4">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setError(null);
+                setStep(1);
+              }}
+              className="px-3 text-muted-foreground"
+            >
+              <ArrowLeftIcon aria-hidden="true" />
+              {common("back")}
+            </Button>
+            <p className="flex-1 text-xs text-muted-foreground">
               {verified ? "" : t("verifyLater")}
             </p>
             <Button
