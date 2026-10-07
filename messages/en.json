@@ -62,7 +62,7 @@
     "emptyRecent": "Nothing here yet. Add yours and become Founding JaoPor #1.",
     "headline1": "How far can 1 person + AI go?",
     "headline2": "Real work. Real numbers.",
-    "verifiedBy": "Numbers verified by:",
+    "verifiedBy": "Numbers from:",
     "comingSoon": "coming soon",
     "explore": "Explore all {total} projects",
     "topTraction": "Top traction",
@@ -123,7 +123,7 @@
     "empty": "No verified numbers here yet — be the first on the board.",
     "showAll": "Show all ({count}) ↓",
     "showLess": "Show less ↑",
-    "footer": "Verified numbers only · synced from Stripe, RevenueCat, Plausible, Umami, GitHub",
+    "footer": "Revenue verified via Stripe / RevenueCat · commits via GitHub · visitors counted by the JaoPor script or the project's analytics",
     "demo": "Demo",
     "emptyCta": "Verify your numbers"
   },
@@ -206,7 +206,7 @@
     "location": "Location",
     "ownerBar": "This is your startup's profile — fill in the blanks to stand out.",
     "editProfile": "Edit startup",
-    "traction": "Verified numbers",
+    "traction": "Numbers from connected sources",
     "visitors30d": "Visitors (30d)",
     "activeUsers": "Active users (28d)",
     "buildProof": "Build proof",
@@ -226,7 +226,7 @@
     "demoNotice": "Demo project: all numbers are sample data to show how the site works, not a real business.",
     "sampleShort": "Sample data",
     "viaJaopor": "Counted by JaoPor (our snippet)",
-    "viaCloudflare": "Verified via Cloudflare · counted as visits",
+    "viaCloudflare": "Counted by Cloudflare · visits",
     "detectedStack": "Detected from GitHub",
     "addNamed": "+ Add {label}",
     "connectNamed": "+ Connect {label}",
@@ -254,7 +254,8 @@
     "latestUpdates": "Latest updates",
     "seeFeed": "See the whole feed",
     "unverifiedOwner": "This project has no verified numbers yet. Verify in about a minute so people trust your numbers and you can rank.",
-    "verifyNow": "Verify numbers"
+    "verifyNow": "Verify numbers",
+    "countedBy": "Counted by {source}"
   },
   "Verified": {
     "stamp": "Revenue is verified with <b>{provider}</b> API key.",
@@ -744,7 +745,7 @@
   },
   "Olympics": {
     "title": "Province Olympics",
-    "subtitle": "Which province builds the biggest things with AI? Judged on verified numbers only.",
+    "subtitle": "Which province builds the biggest things with AI? Judged on numbers from real systems, never typed-in figures.",
     "metric": "Metric",
     "metrics": {
       "revenue30d": "Revenue (30d)",
@@ -804,12 +805,12 @@
     "moreProvinces": "+{n} provinces",
     "risingTitle": "Rising this month",
     "howTitle": "How scoring works",
-    "howBody": "Only numbers verified through Stripe, RevenueCat, Plausible, Umami and GitHub count · revenue converted from USD at today's rate · demo projects excluded · province as chosen by the founder · rank changes compare with the previous 30 days",
+    "howBody": "Revenue verified through Stripe and RevenueCat · commits through GitHub · visitors counted by the JaoPor script or analytics (Plausible, Umami, Cloudflare) · revenue converted from USD at today's rate · demo projects excluded · province as chosen by the founder · rank changes compare with the previous 30 days",
     "startupLeaderboard": "See the startup leaderboard"
   },
   "Province": {
     "title": "Startups in {name}",
-    "subtitle": "Verified numbers from {name} · {region}",
+    "subtitle": "Numbers from real systems in {name} · {region}",
     "count": "{count, plural, one {# startup} other {# startups}}",
     "rankLine": "#{rank} in the Province Olympics ({metric})",
     "back": "Back to Province Olympics",

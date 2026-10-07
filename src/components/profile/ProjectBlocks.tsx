@@ -11,7 +11,7 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import type { StartupRow } from "@/lib/data/startups";
 import { growthPct } from "@/lib/format";
 import { projectLinks, type LinkKind } from "@/lib/links";
-import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
+import { SOURCE_KIND, SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { StatCard } from "../ProfileBlocks";
 import { Chip, GrowthValue } from "../StartupBits";
 import { Card } from "../core/Card";
@@ -100,7 +100,10 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
         : source === "cloudflare"
           ? t("viaCloudflare")
           : source && isSource(source)
-            ? t("via", { source: SOURCE_NAME[source] })
+            ? // Visitor counts are counted, not verified (Design.md §3 Verified vs counted).
+              SOURCE_KIND[source] === "traffic"
+              ? t("countedBy", { source: SOURCE_NAME[source] })
+              : t("via", { source: SOURCE_NAME[source] })
             : null;
   const n = (v: number) => format.number(v);
 

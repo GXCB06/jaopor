@@ -33,9 +33,8 @@ export async function generateMetadata({
 /** Any verified source: revenue, visitors or build proof. */
 function hasVerifiedNumbers(s: Tables<"startups">) {
   return (
-    s.verification_status === "verified" ||
-    s.visitors_30d !== null ||
-    s.build_commits !== null
+    // Revenue or build proof; visitor counts are counted, not verified (Design.md §3).
+    s.verification_status === "verified" || s.build_commits !== null
   );
 }
 

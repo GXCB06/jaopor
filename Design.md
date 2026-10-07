@@ -84,6 +84,12 @@ Semantic tokens (never raw `emerald-*`/`red-*`/`amber-*`):
 
 Numbers are always `tabular-nums`. Money is compact on cards (`$4.3k`) and full on the profile (`$14,903`).
 
+### Verified vs counted (2026-10-07, owner decision)
+
+- **"ยืนยัน / Verified"** only for what JaoPor reads from the source and can't be faked by sending events: revenue (Stripe, RevenueCat), build proof (GitHub) and the owner check ("ยืนยันเจ้าของเว็บแล้ว").
+- **Visitor counts are "นับโดย {source}" / "Counted by {source}"** (JaoPor script, Plausible, Umami, Cloudflare): anyone can send events to a snippet or an analytics endpoint. They stay on the leaderboard and the Olympics with that label, never with a check icon, and never alone earn the card's "✓ ยืนยันแล้ว".
+- Neutral wording where both appear: "ตัวเลขจากระบบที่เชื่อมต่อ" / "Numbers from connected sources".
+
 ### Dates (2026-10-07)
 
 - Thai pages show the **Thai (Buddhist) year** everywhere ("ต.ค. 2569"), the default of `th-TH` and of next-intl's formatter; English pages the Western year. Never force `-u-ca-gregory` on Thai (the Olympics season, profile experience and revenue-chart dates used to, so one page said 2026 and the next 2569).
@@ -175,7 +181,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 - `relative rounded-lg border bg-card p-3 hover:border-foreground/20`; logo 24 `rounded-sm`; title 12 semibold; category 10 muted.
 - Metric row `mt-3 border-t pt-2 grid grid-cols-3 gap-1`: label 9 / value 10 bold.
-- **Corner tag** `absolute top-2 right-2 rounded-sm border px-1.5 py-0.5 text-3xs font-bold uppercase tracking-wider`: `✓ Verified` (positive tone; **check only** on compact cards so the name stays readable, label kept for screen readers) when revenue is verified or visitors are counted by a connected source (unchanged rule); else `ShieldCheck` **Owner verified** (neutral tone, icon only on compact cards) when the snippet was found on the site; else the first **looking-for** ask in amber (Figma's FOR SALE slot until the marketplace ships), else none.
+- **Corner tag** `absolute top-2 right-2 rounded-sm border px-1.5 py-0.5 text-3xs font-bold uppercase tracking-wider`: `✓ Verified` (positive tone; **check only** on compact cards so the name stays readable, label kept for screen readers) when **revenue** is verified (visitor counts alone no longer earn it, §3 Verified vs counted); else `ShieldCheck` **Owner verified** (neutral tone, icon only on compact cards) when the snippet was found on the site; else the first **looking-for** ask in amber (Figma's FOR SALE slot until the marketplace ships), else none.
 - Metrics by state (compact cards use the short labels "Revenue" / "Visitors"): verified revenue → Revenue (30d) · MRR · Growth; else traction → Visitors · Growth · Commits; else one muted "Not verified yet" line.
 - **Nothing verified** (`proof_level = 0`, not a demo): the card is muted, `border-dashed bg-transparent` instead of `bg-card`; text keeps its normal tokens (no opacity, contrast stays). Round 3, 2026-10-05.
 - Home rows are a **plain grid, no horizontal scrolling** (user feedback 2026-09-30): `grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3`. Show 6 cards below `lg` and 5 at `lg`. One column on narrow phones (UX review 2026-10-07: at 375 px the third metric column was ~40 px and cut values to "฿119…").
@@ -216,7 +222,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
   - **Levels** (MRR): area with **straight segments** (`type="linear"`), `--chart-1` 2px line, gradient fill (0.25 → 0).
   - Horizontal grid `--border`, axes `text-2xs --faint`. **Y ticks are round numbers in the displayed currency** (0 / 250 / 500 / 750 / 1k), computed in ฿ or $ (not converted from round dollar ticks), integers for visitors.
 - Footer switches: **เทียบช่วงก่อนหน้า** (dashed `--chart-2` line + mini legend) and **Trend**: a 7-point moving average drawn as an **overlay line** (`--muted-foreground`, 2px) on top of the data, never replacing it.
-- Under the plot, inside the card: `text-caption text-muted-foreground` stamp for the **selected metric's** source: check icon (`text-brand-text`) "ยืนยันผ่าน {Source} · อัปเดตล่าสุด {time}" (demo: "ข้อมูลตัวอย่าง").
+- Under the plot, inside the card: `text-caption text-muted-foreground` stamp for the **selected metric's** source: revenue / MRR = check icon (`text-brand-text`) "ยืนยันผ่าน {Source} · อัปเดตล่าสุด {time}"; visitors = `ChartColumn` icon (`text-muted-foreground`) "นับโดย {Source} · อัปเดตล่าสุด {time}" (demo: "ข้อมูลตัวอย่าง").
 - No profit-margin pill: we have no cost data (spec item skipped until a source exists).
 - Nothing verified: the card is hidden for visitors; the owner sees an `EmptyOwnerCard` "+ เชื่อมต่อ Stripe เพื่อแสดงกราฟ".
 
@@ -537,7 +543,7 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 - **VerifyPanel** (manage view; the chooser in §5 Add-startup wizard v2 is shown while nothing is connected): three bordered groups (Revenue: Stripe | RevenueCat · Visitors: **JaoPor snippet** | Plausible | Umami | Cloudflare · Build proof: GitHub), segmented source switch, numbered how-to, one primary "Verify". One source per group.
   - **JaoPor snippet** (no analytics account needed; listed first): a read-only code box (`rounded-lg border bg-card p-3 font-mono text-caption`) with the one-line `<script>` and a Copy button, then the install status: "รอการเข้าชมครั้งแรก" / "Waiting for the first visit" (muted, pulsing dot) → "นับตั้งแต่ {date}" / "Counting since {date}" (positive).
   - **Cloudflare:** API token (Account Analytics: Read only) + account ID. Numbers are **visits** (sessions), labelled so.
-- **TractionTiles source captions:** "นับโดย JaoPor ตั้งแต่ {date}" / "Counted by JaoPor since {date}" for the snippet; "ยืนยันผ่าน Cloudflare · visits" for Cloudflare.
+- **TractionTiles source captions:** visitors are always "counted": "นับโดย JaoPor ตั้งแต่ {date}" for the snippet, "นับโดย {Plausible / Umami}", "นับโดย Cloudflare · การเข้าชม (visits)"; build proof stays "ยืนยันผ่าน GitHub". Section heading "ตัวเลขจากระบบที่เชื่อมต่อ".
 - **Tech stack card (InsightsGrid):** the owner's list; if empty, the stack detected from the connected GitHub repo, captioned "ตรวจพบจาก GitHub" / "Detected from GitHub" (`text-2xs text-faint`). Detection never overwrites the owner's list.
 - **Dashboard startup card:** `rounded-xl border bg-card p-4`, status chip, 3 tiles, completeness bar (`bg-brand`), one primary action + `⋯` menu.
 - **Empty fields (spec 2.4, replaces InfoCard's "always render" rule 2026-09-30):** visitors see only fields with data (InsightsGrid, TractionTiles, build story, tagline/description); the owner sees each empty slot as an `EmptyOwnerCard`; a section with no data at all is owner-only. Owner detection is client-side so the profile stays ISR.
@@ -550,7 +556,7 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 
 | Route              | Structure (top → bottom)                                                                                                                                                                                                                                                                                                                                                          |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/` Home           | Header · Hero (pill, H1, subline, ProviderStrip, SearchBar, links) · **Recently listed** (5 compact cards) · **Top traction** (5 compact cards, by verified visitors/commits; skips projects already in Recently listed and is hidden when fewer than 3 remain, 2026-10-07) · **LeaderboardCard** · **HomeTeasers** (categories + Olympics) · QuickSearch (no Add/chips) · Footer |
+| `/` Home           | Header · Hero (pill, H1, subline, ProviderStrip, SearchBar, links) · **Recently listed** (5 compact cards) · **Top traction** (5 compact cards, by counted visitors / verified commits; skips projects already in Recently listed and is hidden when fewer than 3 remain, 2026-10-07) · **LeaderboardCard** · **HomeTeasers** (categories + Olympics) · QuickSearch (no Add/chips) · Footer |
 | `/startups`        | Header · Hero · FilterSidebar + results header + large card grid + pagination                                                                                                                                                                                                                                                                                                     |
 | `/startup/[slug]`  | Breadcrumb · Profile header (logo, name, description, Share, Visit) · links + LookingFor · StatCards (data only) · RevenueChartCard (Stripe) · VerifiedStamp · TractionTiles · InsightsGrid · More startups                                                                                                                                                                       |
 | `/u/[username]`    | Sidebar (who, actions, info, badges, skills, tools) · looking-for · proof strip · pinned works · heatmap · experience \| recent activity                                                                                                                                                                                                                                          |

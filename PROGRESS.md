@@ -12,6 +12,31 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-07 — Visitor counts say "counted", not "verified" (owner decision)
+
+**Why:** anyone can send events to a snippet or an analytics endpoint, so visitor numbers can be inflated. Revenue read from Stripe / RevenueCat and GitHub build proof can't be faked that way. Owner decision: say "counted" for visitors and keep them on the leaderboard and Olympics.
+
+**Done (Design.md §3 Verified vs counted):**
+
+- **Captions:** visitor tiles say "นับโดย {source}" (JaoPor script, Plausible, Umami, "นับโดย Cloudflare · การเข้าชม (visits)"). Build proof keeps "ยืนยันผ่าน GitHub".
+- **Section heading** over visitors + build proof: "ตัวเลขจากระบบที่เชื่อมต่อ" / "Numbers from connected sources".
+- **Chart stamp:** revenue / MRR keep the check icon and "ยืนยันผ่าน"; visitors get a chart icon and "นับโดย {source}".
+- **Card "✓ ยืนยันแล้ว"** only for verified revenue (visitor counts alone no longer earn it). The dashboard's "ยืนยันแล้ว" status means revenue or build proof.
+- **Share / OG image** "ยืนยันผ่าน …" lists revenue and build sources only.
+- **Footnotes:**
+  - Leaderboard: "รายได้ยืนยันผ่าน Stripe / RevenueCat · commits ผ่าน GitHub · ผู้เข้าชมนับโดยสคริปต์ JaoPor หรือ analytics ของผลงาน".
+  - Olympics subtitle and "how it works" in the same terms.
+  - Province subtitle: "ตัวเลขจากระบบจริง".
+  - Hero label: "ตัวเลขจาก:".
+- **Not changed (owner-approved pages):** `/security` intro and `/privacy` §3 title still say "verified numbers (revenue, visitors, …)". New wording proposed to the owner.
+
+**Files:** `messages/*.json`, `src/components/{profile/ProjectBlocks,ProfileBlocks,StartupCard}.tsx`, `src/lib/share{,.test}.ts`, `src/app/[locale]/dashboard/startups/page.tsx`, `Design.md`
+**Verified:**
+- typecheck ✓ · lint ✓ · tests 361 ✓ (share test updated) · build ✓.
+- Local server on the live DB, JaoPor page: heading "ตัวเลขจากระบบที่เชื่อมต่อ", visitors "นับโดย JaoPor (สคริปต์ของเรา)", build "ยืนยันผ่าน GitHub", revenue "ยืนยันผ่าน Stripe", visitors chart stamp "นับโดย JaoPor · อัปเดตล่าสุด 7 ต.ค. 2569" with a chart icon. Home: "ตัวเลขจาก:" and the new leaderboard footnote.
+
+**Next:** owner approves the /security and /privacy lines.
+
 ## 2026-10-07 — UX review round C: an early-stage site that still looks alive
 
 **Done:**

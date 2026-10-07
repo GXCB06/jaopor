@@ -45,14 +45,15 @@ export function shareMetrics(s: Numbers, max = 3): ShareMetric[] {
   return out.slice(0, max);
 }
 
-/** Names of the sources behind the verified numbers, e.g. ["Stripe", "Plausible", "GitHub"]. */
+/**
+ * Names of the sources behind the verified numbers, e.g. ["Stripe", "GitHub"]. Visitor sources
+ * are counted, not verified (Design.md §3 Verified vs counted), so they are not listed.
+ */
 export function verifiedSources(s: Numbers): string[] {
   if (s.is_demo) return [];
   const ids: SourceId[] = [];
   if (s.verification_status === "verified" && isSource(s.verified_provider))
     ids.push(s.verified_provider);
-  if (s.visitors_30d !== null && isSource(s.traffic_provider))
-    ids.push(s.traffic_provider);
   if (s.build_commits !== null && s.github_repo) ids.push("github");
   return ids.map((id) => SOURCE_NAME[id]);
 }

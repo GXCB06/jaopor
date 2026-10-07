@@ -57,7 +57,8 @@ describe("shareMetrics", () => {
       "revenue30d",
       "visitors30d",
     ]);
-    expect(verifiedSources(s)).toEqual(["Stripe", "Plausible", "GitHub"]);
+    // Visitor sources are counted, not verified (Design.md §3 Verified vs counted).
+    expect(verifiedSources(s)).toEqual(["Stripe", "GitHub"]);
     expect(badgeValue(s)).toMatch(/MRR$/);
   });
 

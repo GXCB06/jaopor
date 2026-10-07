@@ -1,5 +1,6 @@
 import {
   BadgeCheckIcon,
+  ChartColumnIcon,
   Code2Icon,
   DollarSignIcon,
   LandmarkIcon,
@@ -113,8 +114,19 @@ export async function ChartStamp({
   const syncedAt = traffic ? startup.traffic_synced_at : startup.last_synced_at;
   return (
     <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-caption text-muted-foreground">
-      <BadgeCheckIcon className="size-4 text-brand-text" aria-hidden="true" />
-      {t("chartStamp", { source: isSource(source) ? SOURCE_NAME[source] : "" })}
+      {traffic ? (
+        <ChartColumnIcon className="size-4" aria-hidden="true" />
+      ) : (
+        <BadgeCheckIcon className="size-4 text-brand-text" aria-hidden="true" />
+      )}
+      {/* Visitors are counted, not verified (Design.md §3 Verified vs counted). */}
+      {traffic
+        ? t("countedBy", {
+            source: isSource(source) ? SOURCE_NAME[source] : "",
+          })
+        : t("chartStamp", {
+            source: isSource(source) ? SOURCE_NAME[source] : "",
+          })}
       {syncedAt && (
         <span>
           ·{" "}

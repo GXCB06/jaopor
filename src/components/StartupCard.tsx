@@ -91,11 +91,8 @@ function Tag({ startup, large }: { startup: StartupRow; large: boolean }) {
   if (startup.is_demo)
     return large ? <CornerTag tone="neutral">{t("demo")}</CornerTag> : null;
   // Compact cards are narrow: the tags shrink to their icon so the name stays readable.
-  // Unchanged from before round 3: revenue or (counted) visitors. Build proof alone gets no tag.
-  if (
-    startup.verification_status === "verified" ||
-    startup.visitors_30d !== null
-  )
+  // Verified revenue only: visitor counts are counted, not verified (Design.md §3).
+  if (startup.verification_status === "verified")
     return (
       <CornerTag tone="positive">
         <span aria-hidden={!large}>✓</span>
