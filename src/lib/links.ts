@@ -104,3 +104,33 @@ export function projectLinks(
 export function websiteHost(url: string | null): string | null {
   return url ? hostOf(url) : null;
 }
+
+/** Path without trailing slash; "" for the site root or a bare language root ("/th", "/en"). */
+function sitePath(url: string): string {
+  try {
+    const p = new URL(url).pathname.replace(/\/+$/, "").toLowerCase();
+    return /^\/[a-z]{2}$/.test(p) ? "" : p;
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * The same website, for "one business, one listing" (UX review 2026-10-07: one site was listed
+ * twice and its revenue counted twice). Same host (`www.` and case ignored); paths count only when
+ * both are specific, so `you.github.io/app-a` and `you.github.io/app-b` stay different projects,
+ * while `jaopor.vercel.app` and `jaopor.vercel.app/th` are the same.
+ */
+export function sameWebsite(
+  a: string | null | undefined,
+  b: string | null | undefined,
+): boolean {
+  if (!a?.trim() || !b?.trim()) return false;
+  const ua = normalizeUrl(a);
+  const ub = normalizeUrl(b);
+  const ha = hostOf(ua);
+  if (!ha || ha !== hostOf(ub)) return false;
+  const pa = sitePath(ua);
+  const pb = sitePath(ub);
+  return !pa || !pb || pa === pb;
+}

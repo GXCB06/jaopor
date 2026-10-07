@@ -41,7 +41,8 @@ export type ProviderErrorCode =
   | "domain_mismatch" // analytics site is not the project's website
   | "not_owner" // GitHub repo does not belong to the signed-in founder
   | "no_github_identity" // founder did not sign in with GitHub
-  | "no_website"; // traffic proof needs a website link first
+  | "no_website" // traffic proof needs a website link first
+  | "duplicate_listing"; // another of the owner's projects already has this site's numbers
 
 export class ProviderError extends Error {
   constructor(

@@ -51,7 +51,7 @@ import {
   getScreenshots,
   getStartupBySlug,
 } from "@/lib/data/startups";
-import { moneyFull } from "@/lib/format";
+import { money, moneyFull } from "@/lib/format";
 import { projectLinks, websiteHost } from "@/lib/links";
 import { publicEnv } from "@/lib/public-env";
 import {
@@ -82,9 +82,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Demo projects carry sample numbers: never put them in a title that gets shared.
   const verified =
     startup.verification_status === "verified" && !startup.is_demo;
-  const title = verified
-    ? `${startup.name} — ${moneyFull(startup.mrr_cents)} MRR`
-    : startup.name;
+  // Thai pages show baht, like the page itself (it used to say "$69 MRR" above "฿2,310").
+  const thbPerUsd = locale === "th" && verified ? await getThbPerUsd() : null;
+  const mrr = thbPerUsd
+    ? money(startup.mrr_cents, { currency: "thb", thbPerUsd, full: true })
+    : moneyFull(startup.mrr_cents);
+  const title = verified ? `${startup.name} — ${mrr} MRR` : startup.name;
   const description = startup.tagline ?? startup.description?.slice(0, 200);
   // openGraph replaces the layout's object (shallow merge), so repeat siteName/type/locale here.
   return {

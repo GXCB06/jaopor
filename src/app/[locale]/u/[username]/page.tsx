@@ -168,13 +168,10 @@ export default async function BuilderProfilePage({
   });
   const totalActivity = page.activity.reduce((s, a) => s + a.score, 0);
 
-  const dateFmt = new Intl.DateTimeFormat(
-    locale === "th" ? "th-TH-u-ca-gregory" : "en",
-    {
-      month: "short",
-      year: "numeric",
-    },
-  );
+  const dateFmt = new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en", {
+    month: "short",
+    year: "numeric",
+  });
 
   const empty = (section: string, label: string) =>
     isOwner ? (

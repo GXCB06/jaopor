@@ -147,8 +147,12 @@ export function StartupCard({
   const metricRow = (
     <div
       className={cn(
-        "grid grid-cols-3 gap-2 border-t",
-        large ? "mt-4 pt-4" : "mt-3 pt-2",
+        "grid gap-2 border-t",
+        // Compact cards size the three columns to their content, so a full value like "฿119.5k"
+        // fits a 5-across row instead of overflowing an equal third.
+        large
+          ? "mt-4 grid-cols-3 pt-4"
+          : "mt-3 grid-cols-[repeat(3,auto)] justify-between pt-2",
       )}
     >
       {metrics ? (
@@ -157,7 +161,8 @@ export function StartupCard({
             <MetricLabel className={cn("truncate", large && "text-2xs")}>
               {m.label}
             </MetricLabel>
-            <p className="truncate text-2xs font-bold tabular-nums">
+            {/* A value is never cut off (Design.md §5): labels may truncate, numbers don't. */}
+            <p className="text-2xs font-bold whitespace-nowrap tabular-nums">
               {m.value}
             </p>
           </div>

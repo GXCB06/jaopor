@@ -9,7 +9,7 @@ import {
 } from "@/lib/build/github";
 import { decryptSecret, encryptSecret, keyHint } from "@/lib/crypto/keys";
 import { serverEnv } from "@/lib/env";
-import { websiteHost } from "@/lib/links";
+import { sameWebsite, websiteHost } from "@/lib/links";
 import { findOwnerSnippet } from "@/lib/net/link-preview";
 import { fetchPublic } from "@/lib/net/public-url";
 import { fetchUsdRates } from "@/lib/revenue/fx";
@@ -385,9 +385,10 @@ async function checkOwner(
       config: { ...config, ownerCheckedAt: new Date().toISOString() },
     })
     .eq("id", conn.id);
-  const { data: claimed } = await (config.ownerCheckedAt
-    ? claim.eq("config->>ownerCheckedAt", config.ownerCheckedAt)
-    : claim.is("config->>ownerCheckedAt", null)
+  const { data: claimed } = await (
+    config.ownerCheckedAt
+      ? claim.eq("config->>ownerCheckedAt", config.ownerCheckedAt)
+      : claim.is("config->>ownerCheckedAt", null)
   ).select("id");
   if (!claimed?.length) return "throttled";
 
@@ -498,6 +499,42 @@ async function ownedStartup(admin: Admin, startupId: number, userId: string) {
     .maybeSingle();
   if (!data || data.owner_id !== userId) throw new ForbiddenError();
   return data;
+}
+
+/**
+ * One business, one listing (UX review 2026-10-07: the same site and Stripe account were listed
+ * twice, so the leaderboard and the founder's totals counted the revenue twice). Revenue and
+ * visitors can't be connected when another of the owner's projects with the same website already
+ * has that kind connected. Returns that project's name, or null. Build proof is per repo: not
+ * checked here.
+ */
+async function duplicateListing(
+  admin: Admin,
+  startup: { id: number; website_url: string | null },
+  userId: string,
+  kind: SourceKind,
+): Promise<string | null> {
+  if (kind === "build" || !startup.website_url) return null;
+  const { data: others } = await admin
+    .from("startups")
+    .select("id, name, website_url")
+    .eq("owner_id", userId)
+    .neq("id", startup.id)
+    .not("website_url", "is", null);
+  const same = (others ?? []).filter((o) =>
+    sameWebsite(o.website_url, startup.website_url),
+  );
+  if (!same.length) return null;
+  const { data: conns } = await admin
+    .from("provider_connections")
+    .select("startup_id, provider")
+    .in(
+      "startup_id",
+      same.map((o) => o.id),
+    )
+    .in("provider", sourcesOfKind(kind));
+  const hit = same.find((o) => conns?.some((c) => c.startup_id === o.id));
+  return hit?.name ?? null;
 }
 
 async function githubLogin(admin: Admin, userId: string): Promise<string> {
@@ -614,6 +651,20 @@ export async function connectSource(
   },
 ): Promise<SourceResult> {
   const startup = await ownedStartup(admin, input.startupId, input.userId);
+  const duplicate = await duplicateListing(
+    admin,
+    startup,
+    input.userId,
+    SOURCE_KIND[input.source],
+  );
+  if (duplicate)
+    return toResult(
+      new ProviderError(
+        "duplicate_listing",
+        "Another of your projects already has this website's numbers.",
+        duplicate,
+      ),
+    );
   let stored: Stored & { hint: string | null };
   try {
     stored = await prepare(admin, input.source, input.data, {

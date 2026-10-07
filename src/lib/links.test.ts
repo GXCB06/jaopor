@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  sameWebsite,
   detectLinkKind,
   normalizeUrl,
   parseProjectLink,
@@ -80,5 +81,29 @@ describe("projectLinks / websiteHost", () => {
   it("strips www from the website host", () => {
     expect(websiteHost("https://www.MySaaS.ai/pricing")).toBe("mysaas.ai");
     expect(websiteHost(null)).toBe(null);
+  });
+});
+
+describe("sameWebsite (one business, one listing)", () => {
+  it("matches the same site regardless of www, case, scheme, trailing slash or language root", () => {
+    expect(
+      sameWebsite("https://jaopor.vercel.app/th", "jaopor.vercel.app"),
+    ).toBe(true);
+    expect(sameWebsite("https://www.Acme.co.th/", "http://acme.co.th")).toBe(
+      true,
+    );
+    expect(sameWebsite("acme.co.th/en", "acme.co.th/th")).toBe(true);
+    expect(sameWebsite("acme.co.th/pricing", "acme.co.th")).toBe(true);
+  });
+  it("keeps different projects apart", () => {
+    expect(sameWebsite("you.github.io/app-a", "you.github.io/app-b")).toBe(
+      false,
+    );
+    expect(sameWebsite("acme.co.th", "app.acme.co.th")).toBe(false);
+    expect(sameWebsite("acme.co.th", "acme.com")).toBe(false);
+  });
+  it("never matches a missing link", () => {
+    expect(sameWebsite(null, "acme.co.th")).toBe(false);
+    expect(sameWebsite("", "")).toBe(false);
   });
 });

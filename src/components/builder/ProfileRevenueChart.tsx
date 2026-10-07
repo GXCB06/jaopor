@@ -101,7 +101,7 @@ export function ProfileRevenueChart({
       ? `M${x(partialAt - 1).toFixed(1)} ${y(valueAt(partialAt - 1)!).toFixed(1)} L${x(partialAt).toFixed(1)} ${y(valueAt(partialAt)!).toFixed(1)}`
       : "";
 
-  const intl = locale === "th" ? "th-TH-u-ca-gregory" : "en";
+  const intl = locale === "th" ? "th-TH" : "en";
   const dayFmt = new Intl.DateTimeFormat(intl, {
     day: "numeric",
     month: "short",

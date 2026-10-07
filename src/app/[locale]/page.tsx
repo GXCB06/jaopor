@@ -45,9 +45,9 @@ function boardRow(s: StartupRow, metric: BoardMetric): BoardRow {
       : metric === "commits"
         ? null
         : growthPct(s.revenue_30d_cents, s.revenue_prev_30d_cents);
-  const founderName = s.owner?.x_handle
-    ? `@${s.owner.x_handle}`
-    : (s.owner?.display_name ?? null);
+  // The JaoPor profile (Design.md §5 LeaderboardCard), never the X handle.
+  const founderName =
+    s.owner?.display_name ?? (s.owner?.handle ? `@${s.owner.handle}` : null);
   return {
     id: s.id,
     slug: s.slug,
@@ -55,7 +55,11 @@ function boardRow(s: StartupRow, metric: BoardMetric): BoardRow {
     tagline: s.tagline,
     logo: logoUrl(s.logo_path),
     founder: founderName
-      ? { name: founderName, avatar: s.owner?.avatar_url ?? null }
+      ? {
+          name: founderName,
+          avatar: s.owner?.avatar_url ?? null,
+          handle: s.owner?.handle ?? null,
+        }
       : null,
     value,
     cents,
@@ -191,8 +195,9 @@ function CardRow({
       {rows.length === 0 ? (
         empty
       ) : (
-        // Plain grid, no horizontal scrolling (Design.md §5): 6 cards below lg, 5 at lg.
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+        // Plain grid, no horizontal scrolling (Design.md §5): 6 cards below lg, 5 at lg; one
+        // column on narrow phones so the three numbers fit.
+        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {rows.slice(0, 6).map((s, i) => (
             <StartupCard
               key={s.id}

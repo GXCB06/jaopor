@@ -363,7 +363,9 @@
     "logoRemove": "Remove logo",
     "logoFromSite": "Logo from your site",
     "logoNone": "No logo yet",
-    "verifyLater": "You can verify later from your project page."
+    "verifyLater": "You can verify later from your project page.",
+    "alreadyListed": "You already listed this website as “{name}”",
+    "goToExisting": "Go to that project"
   },
   "Errors": {
     "invalid_key": "{source} didn't accept that key or link — check it and paste again.",
@@ -378,7 +380,8 @@
     "domain_mismatch": "The analytics site ({detail}) isn't this project's website.",
     "not_owner": "That repo doesn't belong to the GitHub account you signed in with.",
     "no_github_identity": "Sign in with GitHub at least once so we can confirm the repo is yours.",
-    "no_website": "Add your website link first — visitors are matched to it."
+    "no_website": "Add your website link first — visitors are matched to it.",
+    "duplicate_listing": "Your project “{detail}” already has this website’s numbers connected. One business, one listing: use that project instead."
   },
   "Dashboard": {
     "title": "Your startups",
@@ -1615,7 +1618,7 @@
     "ogFallback": "Product updates on JaoPor",
     "ogCounts": "♥ {likes, number} · {comments, number} comments",
     "milestone": {
-      "verified": "{name} is now verified on JaoPor",
+      "verified": "{name} verified its revenue",
       "mrr": "{name} hit ฿{amount} MRR",
       "revenue": "{name} passed ฿{amount} in total revenue",
       "stars": "{name} reached ★{amount} on GitHub"

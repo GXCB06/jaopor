@@ -270,6 +270,8 @@ export async function getRank(startup: StartupRow): Promise<number | null> {
     .from("startups")
     .select("id", { count: "exact", head: true })
     .eq("verification_status", "verified")
+    // Demo projects carry made-up numbers: they never count towards a real project's rank.
+    .eq("is_demo", false)
     .gt("mrr_cents", startup.mrr_cents);
   if (error) throw error;
   return (count ?? 0) + 1;

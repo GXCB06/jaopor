@@ -12,6 +12,35 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-07 — UX review round A: trust fixes (no double counting, real ranks, full numbers on phones, one calendar)
+
+**Why (UX review, owner-approved plan):** places where the site undercut "ตัวเลขจริง": one business listed twice (same website and Stripe account, so leaderboard #1 and #2, and ฿4.6k on the builder card), a rank counting demo projects ("#4"), numbers cut to "฿119…" on phones, "2026" next to "2569", a "$69 MRR" tab title over a ฿ page, the X handle as the founder's name.
+
+**Done:**
+
+- **One business, one listing:**
+  - Wizard step 1 warns when the website is already one of the owner's projects ("คุณลงเว็บนี้ไว้แล้วในชื่อ … → ไปที่ผลงานเดิม", the oldest listing) and disables create.
+  - `connectSource` refuses revenue or visitors when another of the owner's projects with the same website already has that kind connected (`duplicate_listing`, th / en message naming that project).
+  - New pure `sameWebsite()` (`www`, case, scheme, trailing slash and language roots ignored; specific paths stay separate, e.g. two github.io projects).
+  - The existing duplicate `jaopor-pdt0` is left for the owner to delete (owner decision).
+- **Rank:** `getRank()` ignores demo projects (JaoPor now #1, was #4).
+- **Phone cards:** home rows go to one column below 420 px. Values never truncate, and compact cards size their three columns to the content (no overflow at 5-across).
+- **Dates:** Thai pages use the Thai year everywhere. The three forced Western calendars are gone (Olympics season, profile experience, profile revenue chart). Design.md §3 Dates.
+- **Tab / share title** in the page's currency: "JaoPor(เจ้าพ่อ) — ฿2,310 MRR".
+- **Leaderboard founder:** JaoPor name (fallback @handle) linking to the profile, not the X handle.
+- **Milestone copy:** "{name} ยืนยันรายได้แล้ว" / "{name} verified its revenue" (was "JaoPor ยืนยันตัวเลขกับ JaoPor แล้ว").
+
+**Files:** `src/lib/links{,.test}.ts`, `src/lib/sources/sync.ts`, `src/lib/revenue/types.ts`, `src/lib/data/startups.ts`, `src/components/{StartupCard,LeaderboardCard}.tsx`, `src/components/wizard/StartupWizard.tsx`, `src/components/builder/ProfileRevenueChart.tsx`, `src/app/[locale]/{page,olympics/page,u/[username]/page,startup/[slug]/page}.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+- typecheck ✓ · lint ✓ · tests 355 ✓ (new: 3 `sameWebsite` cases) · build ✓.
+- Local server on the live DB: title "฿2,310 MRR", "อันดับ #1", "ฤดูกาล ตุลาคม 2569" / "Season October 2026", the leaderboard links `/th/u/gxcb06` and no X handle appears.
+- Browser:
+  - Wizard (temporary page, deleted): typing `jaopor.vercel.app` shows the note and disables create.
+  - Home: one column at 375 px with all 36 values in full; no value overflows at 768 or 1024 px; no horizontal scroll.
+
+**Not verified:** the server-side `duplicate_listing` refusal in a real connect (needs a signed-in owner).
+**Next:** owner deletes `jaopor-pdt0`; round B (paragraph font, project header on phones, honest revenue chart, home rows).
+
 ## 2026-10-07 — "Add startup" opens faster: instant skeleton, one Auth round trip
 
 **Why (owner):** going to "เพิ่ม Startup" took noticeably long. Measured: the page's JavaScript was not the cause (209 KB gzip, about 15 KB more than `/startups`, mostly shared and cached). The wait was the server: two Auth round trips one after the other (`getClaims`, then `getUser` for the GitHub login), and no loading state, so a click showed nothing until both finished.

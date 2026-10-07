@@ -82,6 +82,10 @@ Semantic tokens (never raw `emerald-*`/`red-*`/`amber-*`):
 
 Numbers are always `tabular-nums`. Money is compact on cards (`$4.3k`) and full on the profile (`$14,903`).
 
+### Dates (2026-10-07)
+
+- Thai pages show the **Thai (Buddhist) year** everywhere ("ต.ค. 2569"), the default of `th-TH` and of next-intl's formatter; English pages the Western year. Never force `-u-ca-gregory` on Thai (the Olympics season, profile experience and revenue-chart dates used to, so one page said 2026 and the next 2569).
+
 ### Currency (USD / THB)
 
 - Verified revenue is stored in USD cents. Visitors choose **฿ THB** or **$ USD** with the header **CurrencyToggle** (`h-8 rounded-md border bg-card px-2 text-xs font-semibold`, shows the active symbol; `aria-label` from messages). The choice lives in `localStorage.currency`. With nothing stored, `th` pages default to THB and `en` to USD.
@@ -172,7 +176,8 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 - **Corner tag** `absolute top-2 right-2 rounded-sm border px-1.5 py-0.5 text-3xs font-bold uppercase tracking-wider`: `✓ Verified` (positive tone; **check only** on compact cards so the name stays readable, label kept for screen readers) when revenue is verified or visitors are counted by a connected source (unchanged rule); else `ShieldCheck` **Owner verified** (neutral tone, icon only on compact cards) when the snippet was found on the site; else the first **looking-for** ask in amber (Figma's FOR SALE slot until the marketplace ships), else none.
 - Metrics by state (compact cards use the short labels "Revenue" / "Visitors"): verified revenue → Revenue (30d) · MRR · Growth; else traction → Visitors · Growth · Commits; else one muted "Not verified yet" line.
 - **Nothing verified** (`proof_level = 0`, not a demo): the card is muted, `border-dashed bg-transparent` instead of `bg-card`; text keeps its normal tokens (no opacity, contrast stays). Round 3, 2026-10-05.
-- Home rows are a **plain grid, no horizontal scrolling** (user feedback 2026-09-30): `grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3`. Show 6 cards below `lg` (2×3 / 3×2) and 5 at `lg`.
+- Home rows are a **plain grid, no horizontal scrolling** (user feedback 2026-09-30): `grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3`. Show 6 cards below `lg` and 5 at `lg`. One column on narrow phones (UX review 2026-10-07: at 375 px the third metric column was ~40 px and cut values to "฿119…").
+- **Metric values never truncate** (labels may): a number is the point of the card.
 
 ### StartupCard — large (directory grid, "More startups")
 
@@ -180,6 +185,8 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 - Copy-link icon button stays (top right, next to the tag, `opacity-0 group-hover:opacity-100` on desktop).
 
 ### LeaderboardCard
+
+- Founder column (2026-10-07): the JaoPor display name (fallback `@handle`) with the profile photo, linking to `/u/{handle}`; never the X handle (the rest of the site names people by their JaoPor profile).
 
 - One `rounded-xl border bg-card` container with `id="leaderboard"`.
 - Header row `px-5 py-3.5 border-b`: "Leaderboard" (`text-sm font-bold`) + a **LIVE dot** (`size-1.5 rounded-full bg-positive`) + right-side **metric dropdown**: MRR · Revenue (30d) · Visitors (30d) · Commits. Switching is client-side (lists are fetched server-side, page stays ISR).
@@ -372,6 +379,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - **Step labels:** "1. ลงผลงาน" / "List it" · "2. ยืนยันตัวเลข" / "Verify". Same 2-segment `border-t-2` bar.
 - **Step 1, four things, link first:** ลิงก์ผลงาน (full width, autofocus) → ชื่อ · คำโปรย (optional, ≤ 140, counter `text-2xs text-faint tabular-nums`) → หมวดหมู่ · โลโก้. AI tools, looking-for and screenshots moved to the edit page (the profile's "+ เพิ่ม…" cards lead there).
 - **Auto-fill from the link** (website links only): ~600 ms after typing stops, the server reads the page (SSRF-guarded, 3 s, 512 KB) and returns name (`og:site_name`, else the `<title>` part that matches the domain), one-liner (meta description, ≤ 140) and logo (apple-touch-icon, else the largest PNG / SVG / WebP / JPEG icon; resized to 256 px PNG). It fills only fields that are empty or still hold the previous auto value, never what the user typed. Status line under the link (`text-caption`): muted "กำลังอ่านหน้าเว็บ…" → brand "✨ เติมจากเว็บของคุณแล้ว แก้ได้ทุกช่อง" → nothing on failure (fields stay manual).
+- **Already listed (2026-10-07):** when the link is a website that one of the owner's projects already uses (same domain, `www` ignored), a `rounded-md border border-warning/40 bg-warning/10 p-3 text-caption` note under the link: "คุณลงเว็บนี้ไว้แล้วในชื่อ {name}" + `text-brand-text` link "ไปที่ผลงานเดิม →" (`/dashboard/{id}/edit`), and "สร้างและไปต่อ" is disabled. The server also refuses connecting a second revenue / visitor source for the same website (one business, one listing on the boards).
 - **Logo field:** 48 px rounded tile preview (auto or uploaded) + "อัปโหลดเอง" file button + "ลบ" text button; the auto logo is uploaded as PNG on submit.
 - **Step 2:** the VerifyPanel **chooser** (below), then the footer row: muted "ยืนยันทีหลังได้จากหน้าผลงานของคุณ" + outline "ข้ามไปก่อน" (primary "ไปที่หน้าผลงาน" once something is connected).
 
@@ -390,7 +398,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 ### Owner verified + verified first (round 3, 2026-10-05)
 
-- **Proof levels** (`startups.proof_level`, generated in the DB, ordering only, never shown as a number): 3 verified revenue · 2 build proof (GitHub) · 1 site proof (Owner verified, or an analytics account for the site connected) · 0 nothing (demos always 0). Visitor counts never rank above 1: anyone can send events to a snippet or an analytics endpoint, so they are *counted*, not verified. `/startups` and category pages sort by proof level first for every sort except "ใหม่ล่าสุด" (newest stays chronological). Leaderboards never include demo projects.
+- **Proof levels** (`startups.proof_level`, generated in the DB, ordering only, never shown as a number): 3 verified revenue · 2 build proof (GitHub) · 1 site proof (Owner verified, or an analytics account for the site connected) · 0 nothing (demos always 0). Visitor counts never rank above 1: anyone can send events to a snippet or an analytics endpoint, so they are _counted_, not verified. `/startups` and category pages sort by proof level first for every sort except "ใหม่ล่าสุด" (newest stays chronological). Leaderboards never include demo projects.
 - **Owner verified** = our server opened the listed website and found the JaoPor snippet with this project's **permanent id** (never the slug: a renamed slug could be taken by someone else). The page read must be on the listed domain, not a redirect elsewhere. It proves the lister can edit that page; it says nothing about numbers. Checked when the founder presses "เริ่มนับ", on "ตรวจอีกครั้ง" (at most once per 20 s per project, shared by all servers), and nightly; any change to the website URL clears it. The snippet counts visits **only** while it is set (the browser `Origin` header alone can be faked).
 - **Badge** (startup header, via `VerifiedBadge ownerVerified`): when there is no verified revenue, neutral chip `rounded-full border bg-secondary text-caption font-semibold` + `ShieldCheck` "ยืนยันเจ้าของเว็บแล้ว" / "Owner verified", `title` explains it ("พบโค้ด JaoPor ของผลงานนี้บนเว็บไซต์ …").
 - **Snippet status** in VerifyPanel (chooser and manage view), above the code box: found → positive `ShieldCheck` line "พบโค้ดบน {host} แล้ว …"; not found → `rounded-md border border-warning/40 bg-warning/10 p-3 text-caption` "ยังไม่พบโค้ดบน {host} … ระหว่างนี้ยังไม่นับผู้เข้าชม" + outline "ตรวจอีกครั้ง".

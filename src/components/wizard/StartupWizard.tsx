@@ -5,9 +5,14 @@ import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { StartupLogo } from "@/components/StartupBits";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { CATEGORIES, slugify } from "@/lib/catalog";
-import { parseProjectLink, websiteHost, type LinkColumn } from "@/lib/links";
+import {
+  parseProjectLink,
+  sameWebsite,
+  websiteHost,
+  type LinkColumn,
+} from "@/lib/links";
 import type { SiteAutofill } from "@/lib/net/link-preview";
 import { createClient } from "@/lib/supabase/client";
 import { revalidateStartup } from "@/app/actions/revalidate";
@@ -118,9 +123,25 @@ export function StartupWizard({
   const parsed = parseProjectLink(link);
   const siteUrl = parsed?.kind === "website" ? parsed.url : null;
 
+  // One business, one listing (Design.md §5 Add-startup wizard v2 "Already listed"): the owner's
+  // projects, to catch a website they already listed before a second copy is created.
+  const [mine, setMine] = useState<
+    { id: number; name: string; website_url: string | null }[]
+  >([]);
   useEffect(() => {
     void loadVerifyPanel();
-  }, []);
+    void createClient()
+      .from("startups")
+      .select("id, name, website_url")
+      .eq("owner_id", userId)
+      // Oldest first: a match points at the original listing, not a later copy.
+      .order("id")
+      .then(({ data }) => setMine(data ?? []));
+  }, [userId]);
+  const existing =
+    step === 1 && siteUrl
+      ? mine.find((s) => sameWebsite(s.website_url, siteUrl))
+      : undefined;
 
   useEffect(() => {
     if (step !== 1 || !siteUrl) return;
@@ -174,6 +195,7 @@ export function StartupWizard({
     e.preventDefault();
     setError(null);
     if (!parsed) return setError(lt("invalid"));
+    if (existing) return;
     if (logo && logo.file.size > MAX_LOGO_BYTES)
       return setError(t("logoTooBig"));
     const base = slugify(name) || "startup";
@@ -271,7 +293,21 @@ export function StartupWizard({
                 onChange={(e) => setLink(e.target.value)}
                 className={inputClass}
               />
-              {fillState && (
+              {existing && (
+                <p
+                  role="alert"
+                  className="rounded-md border border-warning/40 bg-warning/10 p-3 text-caption"
+                >
+                  {t("alreadyListed", { name: existing.name })}{" "}
+                  <Link
+                    href={`/dashboard/${existing.id}/edit`}
+                    className="font-semibold whitespace-nowrap text-brand-text hover:underline"
+                  >
+                    {t("goToExisting")} →
+                  </Link>
+                </p>
+              )}
+              {fillState && !existing && (
                 <p
                   role="status"
                   className={cn(
@@ -381,7 +417,7 @@ export function StartupWizard({
               {error}
             </p>
           )}
-          <Button type="submit" disabled={busy} className="px-4">
+          <Button type="submit" disabled={busy || !!existing} className="px-4">
             {busy ? common("loading") : t("createAndContinue")}
           </Button>
         </form>

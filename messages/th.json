@@ -363,7 +363,9 @@
     "logoRemove": "ลบโลโก้",
     "logoFromSite": "โลโก้จากเว็บของคุณ",
     "logoNone": "ยังไม่มีโลโก้",
-    "verifyLater": "ยืนยันทีหลังได้จากหน้าผลงานของคุณ"
+    "verifyLater": "ยืนยันทีหลังได้จากหน้าผลงานของคุณ",
+    "alreadyListed": "คุณลงเว็บนี้ไว้แล้วในชื่อ “{name}”",
+    "goToExisting": "ไปที่ผลงานเดิม"
   },
   "Errors": {
     "invalid_key": "{source} ไม่ยอมรับคีย์หรือลิงก์นี้ — ตรวจแล้ววางใหม่อีกครั้ง",
@@ -378,7 +380,8 @@
     "domain_mismatch": "เว็บใน analytics ({detail}) ไม่ใช่เว็บไซต์ของโปรเจคนี้",
     "not_owner": "Repo นี้ไม่ได้เป็นของบัญชี GitHub ที่คุณเข้าสู่ระบบ",
     "no_github_identity": "ต้องเข้าสู่ระบบด้วย GitHub อย่างน้อยหนึ่งครั้ง เพื่อยืนยันว่า repo เป็นของคุณ",
-    "no_website": "เพิ่มลิงก์เว็บไซต์ก่อน — ผู้เข้าชมจะถูกจับคู่กับเว็บไซต์นั้น"
+    "no_website": "เพิ่มลิงก์เว็บไซต์ก่อน — ผู้เข้าชมจะถูกจับคู่กับเว็บไซต์นั้น",
+    "duplicate_listing": "ผลงาน “{detail}” ของคุณเชื่อมตัวเลขของเว็บนี้ไว้แล้ว หนึ่งธุรกิจหนึ่งผลงาน ใช้ผลงานเดิมแทน"
   },
   "Dashboard": {
     "title": "สตาร์ทอัพของคุณ",
@@ -1615,7 +1618,7 @@
     "ogFallback": "อัปเดตผลงานบน JaoPor",
     "ogCounts": "♥ {likes, number} · {comments, number} ความคิดเห็น",
     "milestone": {
-      "verified": "{name} ยืนยันตัวเลขกับ JaoPor แล้ว",
+      "verified": "{name} ยืนยันรายได้แล้ว",
       "mrr": "{name} แตะ ฿{amount} MRR",
       "revenue": "{name} มีรายได้รวมทะลุ ฿{amount}",
       "stars": "{name} ได้ ★{amount} บน GitHub"

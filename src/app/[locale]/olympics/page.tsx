@@ -80,10 +80,10 @@ export default async function OlympicsPage({
   const rising = climbers(national);
   const open = emptyProvinces(board, region);
   const metricName = t(`metrics.${metric}`);
-  const season = new Intl.DateTimeFormat(
-    locale === "th" ? "th-TH-u-ca-gregory" : "en",
-    { month: "long", year: "numeric" },
-  ).format(new Date());
+  const season = new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
   const regionNames = Object.fromEntries(
     REGION_LIST.map((r) => [r.slug, localizedName(r, locale)]),
   ) as Record<Region, string>;

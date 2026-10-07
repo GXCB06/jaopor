@@ -16,7 +16,11 @@ export type BoardRow = {
   name: string;
   tagline: string | null;
   logo: string | null;
-  founder: { name: string; avatar: string | null } | null;
+  founder: {
+    name: string;
+    avatar: string | null;
+    handle: string | null;
+  } | null;
   value: string;
   /** Money metrics: USD cents, shown in the visitor's currency. */
   cents?: number | null;
@@ -143,7 +147,7 @@ export function LeaderboardCard({
                 </td>
                 <td className="hidden px-3 py-3 sm:table-cell">
                   {r.founder ? (
-                    <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+                    <FounderLink handle={r.founder.handle}>
                       <PersonPhoto
                         src={r.founder.avatar}
                         className="size-4 shrink-0 rounded-full object-cover"
@@ -154,7 +158,7 @@ export function LeaderboardCard({
                         }
                       />
                       <span className="truncate">{r.founder.name}</span>
-                    </span>
+                    </FounderLink>
                   ) : (
                     <span className="text-xs text-faint">–</span>
                   )}
@@ -188,5 +192,26 @@ export function LeaderboardCard({
         <p className="text-center text-2xs text-faint">{t("footer")}</p>
       </div>
     </section>
+  );
+}
+
+/** The founder cell: a link to the builder profile when they have a handle. */
+function FounderLink({
+  handle,
+  children,
+}: {
+  handle: string | null;
+  children: React.ReactNode;
+}) {
+  const cls = "flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground";
+  return handle ? (
+    <Link
+      href={`/u/${handle}`}
+      className={`${cls} hover:text-foreground hover:underline`}
+    >
+      {children}
+    </Link>
+  ) : (
+    <span className={cls}>{children}</span>
   );
 }
