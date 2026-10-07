@@ -74,6 +74,8 @@ export async function getTopTraction(limit = 10): Promise<StartupRow[]> {
     .from("startups")
     .select(SELECT)
     .or("visitors_30d.not.is.null,build_commits.not.is.null")
+    // Real projects before demos (Design.md §5 Demo projects).
+    .order("is_demo", { ascending: true })
     .order("visitors_30d", { ascending: false, nullsFirst: false })
     .order("build_commits", { ascending: false, nullsFirst: false })
     .limit(limit);
@@ -114,6 +116,8 @@ export async function getRecent(limit = 12): Promise<StartupRow[]> {
   const { data, error } = await db()
     .from("startups")
     .select(SELECT)
+    // Real projects before demos: once 6 are real, demos leave the home rows by themselves.
+    .order("is_demo", { ascending: true })
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw error;

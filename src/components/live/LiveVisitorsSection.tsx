@@ -166,7 +166,15 @@ export function LiveVisitorsSection() {
         </div>
       </div>
 
-      <div className="relative h-[420px] sm:h-[460px]">
+      <div
+        className={cn(
+          "relative",
+          // Compact while 3 or fewer are viewing (Design.md §5 LiveVisitorsSection).
+          (count ?? 0) <= 3
+            ? "h-[280px] sm:h-[320px]"
+            : "h-[420px] sm:h-[460px]",
+        )}
+      >
         {/* Map */}
         {world ? (
           <WorldMap visitors={all} />

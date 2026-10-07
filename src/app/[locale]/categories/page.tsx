@@ -40,6 +40,10 @@ export default async function CategoriesPage({
     order,
     count: counts[c.slug] ?? 0,
   })).sort((a, b) => b.count - a.count || a.order - b.order);
+  // Empty categories fold into one chip row once any category has projects (Design.md §5).
+  const anyListed = cards.some((c) => c.count > 0);
+  const listed = anyListed ? cards.filter((c) => c.count > 0) : cards;
+  const empty = anyListed ? cards.filter((c) => c.count === 0) : [];
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 pt-8">
@@ -63,7 +67,7 @@ export default async function CategoriesPage({
       </header>
 
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map(({ slug, icon: Icon, count, ...c }) => (
+        {listed.map(({ slug, icon: Icon, count, ...c }) => (
           <li key={slug} className="min-w-0">
             <Link
               href={`/category/${slug}`}
@@ -102,6 +106,38 @@ export default async function CategoriesPage({
           </li>
         ))}
       </ul>
+
+      {empty.length > 0 && (
+        <section className="mt-10 space-y-3">
+          <div className="space-y-1">
+            <h2 className="text-sm font-bold">
+              {t("emptyTitle", { n: empty.length })}
+            </h2>
+            <p className="text-caption text-muted-foreground">
+              {t("emptyHint")}{" "}
+              <Link
+                href="/new"
+                className="font-semibold whitespace-nowrap text-brand-text hover:underline"
+              >
+                {t("addCta")} →
+              </Link>
+            </p>
+          </div>
+          <ul className="flex flex-wrap gap-2">
+            {empty.map(({ slug, icon: Icon, ...c }) => (
+              <li key={slug}>
+                <Link
+                  href={`/category/${slug}`}
+                  className="inline-flex items-center gap-1.5 rounded-full border bg-card px-2.5 py-1 text-caption text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
+                >
+                  <Icon className="size-3.5" aria-hidden="true" />
+                  {localizedName(c, locale)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <QuickSearchSection />
     </main>

@@ -69,7 +69,8 @@ function Tile({
   );
 }
 
-export function ProviderStrip() {
+/** `upcoming`: also show the not-yet-connectable sources, faded (off on the heroes). */
+export function ProviderStrip({ upcoming = false }: { upcoming?: boolean }) {
   const t = useTranslations("Home");
   return (
     <div className="flex flex-col items-center gap-2.5">
@@ -78,7 +79,7 @@ export function ProviderStrip() {
         {LIVE.map((p) => (
           <Tile key={p.id} item={p} soon={false} label={p.name} />
         ))}
-        {UPCOMING.map((p) => (
+        {(upcoming ? UPCOMING : []).map((p) => (
           <Tile
             key={p.id}
             item={p}

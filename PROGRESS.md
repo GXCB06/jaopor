@@ -12,6 +12,25 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-07 — UX review round C: an early-stage site that still looks alive
+
+**Done:**
+
+- **Real projects before demos** on the home rows (`getRecent`, `getTopTraction`). A row shows at most 6 cards, so demos leave the home page by themselves once there are 6 real projects.
+- **Empty categories fold away:** `/categories` gives cards only to categories with projects. The empty ones (36 today) become one chip row, "ยังว่าง {n} หมวด · ลงผลงานเป็นคนแรกในหมวดเหล่านี้ เพิ่ม Startup →". With no projects anywhere, the grid stays as before.
+- **Only working sources on the heroes:** the provider strip shows the 6 connectable sources. The faded "coming soon" logos (Polar, Lemon Squeezy, Paddle, App Store) read as supported; they now sit behind an `upcoming` prop.
+- **Compact live map** (280 / 320 px) while 3 or fewer people are viewing (it was 420 / 460 px for one viewer).
+- **Olympics left as is:** it already invites empty provinces ("ยังไม่มีผลงานจาก {n} จังหวัด").
+
+**Files:** `src/lib/data/startups.ts`, `src/app/[locale]/categories/page.tsx`, `src/components/{ProviderStrip,live/LiveVisitorsSection}.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+- typecheck ✓ · lint ✓ · tests 361 ✓ · build ✓.
+- Browser on the live DB:
+  - `/categories`: one card + 36 chips at 1100 px and 375 px, no horizontal scroll.
+  - Home: 6 provider tiles; the recent row lists both JaoPor listings before the demos; live map 320 px with 1 viewer.
+
+**Next:** owner review, then push rounds A–C together; owner deletes `jaopor-pdt0`; the visitor-wording decision (Project.md §7) is still open.
+
 ## 2026-10-07 — UX review round B: readable paragraphs, project header on phones, an honest revenue chart, no repeated home rows
 
 **Done:**

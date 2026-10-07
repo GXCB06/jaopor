@@ -737,7 +737,10 @@
     "title": "สำรวจหมวดหมู่",
     "subtitle": "สำรวจผลงานใน {n} หมวดหมู่",
     "breadcrumb": "หมวดหมู่",
-    "projects": "{count, plural, other {# ผลงาน}}"
+    "projects": "{count, plural, other {# ผลงาน}}",
+    "emptyTitle": "ยังว่าง {n} หมวด",
+    "emptyHint": "ลงผลงานเป็นคนแรกในหมวดเหล่านี้",
+    "addCta": "เพิ่ม Startup"
   },
   "Olympics": {
     "title": "โอลิมปิกจังหวัด",

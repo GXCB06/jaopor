@@ -141,7 +141,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 ### ProviderStrip ("Numbers verified by")
 
-- Label `text-caption text-muted-foreground`, then one row of **real provider logos** (user request 2026-09-30): `size-8 rounded-lg` tiles in the brand's own colour with the glyph in white (dark glyph on yellow brands), `ring-1 ring-border` so black tiles show on the dark page. Hover/focus shows a tooltip with the name (`bg-popover border rounded-md text-xs`). Upcoming sources are the same tiles at `opacity-40` with "coming soon" in the tooltip.
+- Label `text-caption text-muted-foreground`, then one row of **real provider logos** (user request 2026-09-30): `size-8 rounded-lg` tiles in the brand's own colour with the glyph in white (dark glyph on yellow brands), `ring-1 ring-border` so black tiles show on the dark page. Hover/focus shows a tooltip with the name (`bg-popover border rounded-md text-xs`). Upcoming sources (`upcoming` prop) are the same tiles at `opacity-40` with "coming soon" in the tooltip, **off on the heroes** (2026-10-07, UX review: faded logos read as supported sources).
 - Logos: Simple Icons SVG paths (CC0) in `src/lib/brand-icons.ts`, used only to say which service verifies a number (no endorsement implied). Polar has no Simple Icons entry, so it's a letter tile. Brand colours are the second hex exception after the image renderers.
 
 ### QuickSearch (spec 6.8, Phase 4 — replaces SearchBar)
@@ -299,6 +299,7 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
 - `main max-w-6xl`: centred breadcrumb (JaoPor › หมวดหมู่, `text-caption text-faint`) → centred H1 "สำรวจหมวดหมู่" (`text-2xl md:text-3xl font-bold`) → subtitle.
 - Grid `grid gap-3 sm:grid-cols-2 lg:grid-cols-4` of **one-line CategoryCards**: `rounded-xl border bg-card p-3 flex items-center gap-3` link (hover `border-border-strong`) → 40px icon box (`size-10 rounded-lg bg-background`, icon 18px) · name (`text-sm font-semibold truncate`) + count (`text-2xs font-bold text-brand-text`, "{n} ผลงาน", only when > 0) · description one line (`text-caption text-muted-foreground truncate`).
 - Sorted by count, then config order. Count 0 → icon `opacity-50`, name `text-muted-foreground`.
+- **Empty categories fold away (2026-10-07, UX review: 36 of 37 were empty cards):** when at least one category has projects, only those get cards. The empty ones follow as one compact chip row: heading "ยังว่าง {n} หมวด" (`text-sm font-bold`) + hint "ลงผลงานเป็นคนแรกในหมวดเหล่านี้" with a `text-brand-text` link "เพิ่ม Startup →" (`/new`), then chips `rounded-full border bg-card px-2.5 py-1 text-caption text-muted-foreground` with the 14px icon, each linking to `/category/{slug}`. With no projects anywhere, the card grid stays as it is.
 - Cards (and every category link: footer, QuickSearch, home teaser) open **`/category/{slug}`**.
 
 ### Category page (`/[locale]/category/[slug]`, 2026-09-30)
@@ -329,7 +330,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 ### LiveVisitorsSection (home, Phase 8, "ตอนนี้มีคนดูอยู่")
 
 - `rounded-xl border bg-card` section after the card rows. Header: status dot (positive pulse = live, warning = fallback, faint = connecting) + title; right: "ทั่วโลก / ประเทศไทย" toggle (`h-7 border` button) and × (hides the section, remembered; a small "แสดงคนที่กำลังดู JaoPor" link brings it back).
-- Body `h-[420px] sm:h-[460px]`: Thailand silhouette (`fill-muted-foreground/15`) with one pin per province at its centre (brand circle + DiceBear avatar, positive count badge when > 1); world view = MapLibre (OpenFreeMap dark, loaded on demand) with avatar markers at the coarse coordinates.
+- Body `h-[420px] sm:h-[460px]`; **compact `h-[280px] sm:h-[320px]` while 3 or fewer people are viewing** (2026-10-07: a 460 px map for "1 คนกำลังดู" was mostly empty): Thailand silhouette (`fill-muted-foreground/15`) with one pin per province at its centre (brand circle + DiceBear avatar, positive count badge when > 1); world view = MapLibre (OpenFreeMap dark, loaded on demand) with avatar markers at the coarse coordinates.
 - Overlay top-left (`w-56 rounded-lg border bg-background/85 backdrop-blur`): big count + "คนกำลังดู JaoPor", rows ประเทศ / อุปกรณ์ / หน้า (top 3, fixed section labels only, never slugs), "+n คนจากต่างประเทศ". Fallback shows the count + "แสดงจำนวนโดยประมาณ".
 - Feed bottom-left: last 4 page views as `bg-background/85` rows: avatar, "{ชื่อ} เปิด{หน้า}", "เมื่อสักครู่ / n นาทีที่แล้ว".
 - Footer `border-t text-2xs`: "คุณแสดงเป็น “{ชื่อ}” · ไม่แสดงตัวฉัน" (opt-out; then "คุณไม่ได้แสดงตัว · แสดงตัวอีกครั้ง") + "ไม่ระบุตัวตน · ตำแหน่งระดับจังหวัด/ประเทศ".
@@ -524,6 +525,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - Sample projects that fill the site before launch. Card: corner tag `Demo` (neutral: `border bg-secondary text-muted-foreground`), which replaces the verified/ask tag. Profile: a strip above the stat tiles (`rounded-xl border border-dashed bg-card p-3 text-xs text-muted-foreground`, `FlaskConical` icon): "Demo project: sample numbers for illustration, not a real business." The verified stamp says "Sample data" instead of naming a provider.
 - Demo rows are excluded from share images and the badge (they render "not verified").
 - Remove them all with `delete from startups where is_demo`.
+- Home rows list **real projects before demos** (2026-10-07): a row shows at most 6 cards, so demos drop out of the home page by themselves once there are 6 real projects.
 
 ### ProjectLinks, LookingForBanner, TractionTiles, VerifyPanel, Dashboard card, InfoCard
 
