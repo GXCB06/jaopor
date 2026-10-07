@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { StartupWizard } from "@/components/wizard/StartupWizard";
-import { requireUserId } from "@/lib/auth";
-import { getGithubLogin } from "@/lib/data/connections";
+import { requireUser } from "@/lib/auth";
+import { githubLoginOf } from "@/lib/data/connections";
 
 export async function generateMetadata({
   params,
@@ -17,10 +17,10 @@ export default async function NewStartupPage({
 }: PageProps<"/[locale]/new">) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const userId = await requireUserId(locale, "/new");
-  const [t, githubLogin] = await Promise.all([
+  // One Auth round trip for both the id and the GitHub login (was two in a row).
+  const [user, t] = await Promise.all([
+    requireUser(locale, "/new"),
     getTranslations("Wizard"),
-    getGithubLogin(),
   ]);
 
   return (
@@ -28,7 +28,7 @@ export default async function NewStartupPage({
       <h1 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">
         {t("title")}
       </h1>
-      <StartupWizard userId={userId} githubLogin={githubLogin} />
+      <StartupWizard userId={user.id} githubLogin={githubLoginOf(user)} />
     </main>
   );
 }

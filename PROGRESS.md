@@ -12,6 +12,24 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-07 — "Add startup" opens faster: instant skeleton, one Auth round trip
+
+**Why (owner):** going to "เพิ่ม Startup" took noticeably long. Measured: the page's JavaScript was not the cause (209 KB gzip, about 15 KB more than `/startups`, mostly shared and cached). The wait was the server: two Auth round trips one after the other (`getClaims`, then `getUser` for the GitHub login), and no loading state, so a click showed nothing until both finished.
+
+**Done:**
+
+- **`/new/loading.tsx`:** a skeleton shaped like step 1 (Design.md §7 Loading) appears immediately on click. Next can also prefetch this shell. Signed-out visitors see it briefly, then go to `/login?next=/th/new` (streamed redirect).
+- **One Auth round trip:** `requireUser()` (lib/auth) returns the user and `githubLoginOf(user)` reads the GitHub login from it. It runs in parallel with loading the messages.
+- **Verify step code loads in the background** after step 1 shows (`next/dynamic` + preload). The first screen's JS is 202 KB gzip, down from 209 KB.
+
+**Files:** `src/app/[locale]/new/{page,loading}.tsx`, `src/lib/auth.ts`, `src/lib/data/connections.ts`, `src/components/wizard/StartupWizard.tsx`, `Design.md`
+**Verified:**
+- typecheck ✓ · lint ✓ · tests 352 ✓ · build ✓.
+- Signed out on the local server: the redirect to `/th/login?next=%2Fth%2Fnew` is intact (client redirect plus meta-refresh fallback).
+- Browser (temporary page, deleted): the skeleton at desktop and 375 px, no horizontal scroll.
+
+**Not verified:** signed-in timing on production (no session in the pane). The owner should compare after deploy.
+
 ## 2026-10-07 — Round 3 deployed; sign-in links return to the exact page (dashboard, profiles, feed)
 
 **Done:**

@@ -1,4 +1,5 @@
 import "server-only";
+import type { User } from "@supabase/supabase-js";
 import type { ConnectionInfo } from "@/components/wizard/VerifyPanel";
 import { isSource } from "@/lib/sources/catalog";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -50,7 +51,12 @@ export async function getConnections(
 /** GitHub login of the signed-in user, if they ever signed in with GitHub. */
 export async function getGithubLogin(): Promise<string | null> {
   const { data } = await (await createClient()).auth.getUser();
-  const identity = data.user?.identities?.find((i) => i.provider === "github");
+  return data.user ? githubLoginOf(data.user) : null;
+}
+
+/** GitHub login from a user already loaded (no extra Auth round trip). */
+export function githubLoginOf(user: User): string | null {
+  const identity = user.identities?.find((i) => i.provider === "github");
   const d = identity?.identity_data as
     { user_name?: string; preferred_username?: string } | undefined;
   return d?.user_name ?? d?.preferred_username ?? null;

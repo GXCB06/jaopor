@@ -368,6 +368,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 ### Add-startup wizard v2 (`/new`, 2026-10-05, first-user test: "adding a startup is hard", most skipped verification)
 
+- **Loading (`/new/loading.tsx`, 2026-10-07, owner: "takes longer to open"):** a skeleton shaped like step 1 (title, 2 step bars, intro line, link field, name + category, one-liner, logo tile, button) shows the moment "เพิ่ม Startup" is clicked, while the sign-in check runs. The verify step's code loads in the background after step 1 shows.
 - **Step labels:** "1. ลงผลงาน" / "List it" · "2. ยืนยันตัวเลข" / "Verify". Same 2-segment `border-t-2` bar.
 - **Step 1, four things, link first:** ลิงก์ผลงาน (full width, autofocus) → ชื่อ · คำโปรย (optional, ≤ 140, counter `text-2xs text-faint tabular-nums`) → หมวดหมู่ · โลโก้. AI tools, looking-for and screenshots moved to the edit page (the profile's "+ เพิ่ม…" cards lead there).
 - **Auto-fill from the link** (website links only): ~600 ms after typing stops, the server reads the page (SSRF-guarded, 3 s, 512 KB) and returns name (`og:site_name`, else the `<title>` part that matches the domain), one-liner (meta description, ≤ 140) and logo (apple-touch-icon, else the largest PNG / SVG / WebP / JPEG icon; resized to 256 px PNG). It fills only fields that are empty or still hold the previous auto value, never what the user typed. Status line under the link (`text-caption`): muted "กำลังอ่านหน้าเว็บ…" → brand "✨ เติมจากเว็บของคุณแล้ว แก้ได้ทุกช่อง" → nothing on failure (fields stay manual).

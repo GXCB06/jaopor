@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { StartupLogo } from "@/components/StartupBits";
@@ -13,8 +14,13 @@ import { revalidateStartup } from "@/app/actions/revalidate";
 import { useSessionDraft } from "@/lib/use-session-draft";
 import { cn } from "@/lib/utils";
 import { Field, Select, inputClass } from "./fields";
-import { VerifyPanel } from "./VerifyPanel";
 import { categoryName } from "@/lib/config/display";
+
+// Step 2 only: kept out of the first screen's JavaScript, then fetched in the background as soon as
+// step 1 shows (see the effect below), so it is ready by the time the project is created.
+const loadVerifyPanel = () =>
+  import("./VerifyPanel").then((m) => m.VerifyPanel);
+const VerifyPanel = dynamic(loadVerifyPanel);
 
 // Design.md §5 Add-startup wizard v2 (first-user test 2026-10-05: "adding a startup is hard").
 // 1) List it: the project link first, which auto-fills name, one-liner and logo from the site;
@@ -111,6 +117,10 @@ export function StartupWizard({
 
   const parsed = parseProjectLink(link);
   const siteUrl = parsed?.kind === "website" ? parsed.url : null;
+
+  useEffect(() => {
+    void loadVerifyPanel();
+  }, []);
 
   useEffect(() => {
     if (step !== 1 || !siteUrl) return;
