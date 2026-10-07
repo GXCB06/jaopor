@@ -230,7 +230,8 @@ export default async function StartupPage({ params }: Props) {
         />
 
         <header className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-          <div className="flex min-w-0 items-start gap-5">
+          {/* Phones: logo above the text, so the name and description use the full width. */}
+          <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
             <StartupLogo
               name={startup.name}
               src={logoUrl(startup.logo_path)}
@@ -250,7 +251,7 @@ export default async function StartupPage({ params }: Props) {
                   />
                 )}
               </div>
-              <div className="max-w-2xl space-y-2 text-body text-muted-foreground">
+              <div className="max-w-2xl space-y-2 font-prose text-body text-muted-foreground">
                 {startup.tagline ? (
                   <p>{startup.tagline}</p>
                 ) : (

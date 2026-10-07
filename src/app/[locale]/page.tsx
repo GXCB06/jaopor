@@ -93,6 +93,9 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const dot = <span aria-hidden="true">·</span>;
   const subLink = "hover:text-foreground";
 
+  const shownRecent = new Set(recent.slice(0, 6).map((s) => s.id));
+  const freshTraction = traction.filter((s) => !shownRecent.has(s.id));
+
   return (
     <main className="mx-auto w-full max-w-5xl px-4">
       <section className="flex flex-col items-center pt-10 pb-10 text-center md:pt-12">
@@ -138,6 +141,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </nav>
       </section>
 
+      {/* "ตัวเลขแรงสุด" skips cards already shown above and hides itself when that leaves fewer
+          than 3 (UX review 2026-10-07: with few projects both rows showed the same cards). */}
       <CardRow
         title={t("recent")}
         viewAll={common("viewAll")}
@@ -146,12 +151,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         thbPerUsd={thbPerUsd}
         empty={<EmptyState text={t("emptyRecent")} />}
       />
-      {traction.length > 0 && (
+      {freshTraction.length >= 3 && (
         <CardRow
           title={t("topTraction")}
           viewAll={common("viewAll")}
           sort="visitors"
-          rows={traction}
+          rows={freshTraction}
           thbPerUsd={thbPerUsd}
         />
       )}

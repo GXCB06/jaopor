@@ -154,7 +154,7 @@ export function PostCard({
           "break-words whitespace-pre-line",
           milestone
             ? "text-base leading-snug font-extrabold"
-            : "text-sm leading-relaxed",
+            : "font-prose text-sm leading-relaxed",
         )}
       >
         {body}

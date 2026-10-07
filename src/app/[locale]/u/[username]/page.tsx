@@ -273,7 +273,9 @@ export default async function BuilderProfilePage({
             )}
             <StatusPill status={profile.status} />
             {profile.bio && (
-              <p className="pt-1 text-body leading-relaxed">{profile.bio}</p>
+              <p className="pt-1 font-prose text-body leading-relaxed">
+                {profile.bio}
+              </p>
             )}
             {editLink("basics")}
           </div>

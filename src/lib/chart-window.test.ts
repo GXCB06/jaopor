@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chartWindow, smooth } from "./chart-window";
+import { chartWindow, niceTicks, smooth } from "./chart-window";
 
 const days = (n: number, f: (i: number) => number | null) =>
   Array.from({ length: n }, (_, i) => f(i));
@@ -48,5 +48,23 @@ describe("chartWindow", () => {
 describe("smooth", () => {
   it("averages the trailing 7 values and keeps gaps", () => {
     expect(smooth([7, 7, 14, null])).toEqual([7, 7, 9, null]);
+  });
+});
+
+describe("niceTicks (round axis ticks in the displayed unit)", () => {
+  it("baht: 0 / 250 / 500 / 750 / 1,000 for a ~฿1k peak", () => {
+    expect(niceTicks(1000)).toEqual([0, 250, 500, 750, 1000]);
+    expect(niceTicks(980)).toEqual([0, 250, 500, 750, 1000]);
+  });
+  it("covers the peak with round steps at any size", () => {
+    expect(niceTicks(62_100)).toEqual([0, 20_000, 40_000, 60_000, 80_000]);
+    expect(niceTicks(3.2)).toEqual([0, 1, 2, 3, 4]);
+  });
+  it("visitor counts never get fractional ticks", () => {
+    expect(niceTicks(1, { integer: true })).toEqual([0, 1]);
+    expect(niceTicks(3, { integer: true })).toEqual([0, 1, 2, 3]);
+  });
+  it("no data still gives a usable axis", () => {
+    expect(niceTicks(0)).toEqual([0, 1]);
   });
 });

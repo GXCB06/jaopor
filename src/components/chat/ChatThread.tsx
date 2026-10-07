@@ -311,7 +311,7 @@ export function ChatThread({
                     >
                       <p
                         className={cn(
-                          "rounded-2xl px-3.5 py-2 text-sm leading-relaxed break-words whitespace-pre-line",
+                          "rounded-2xl px-3.5 py-2 font-prose text-sm leading-relaxed break-words whitespace-pre-line",
                           mine
                             ? "rounded-br-md bg-brand text-white"
                             : "rounded-bl-md bg-secondary text-foreground",

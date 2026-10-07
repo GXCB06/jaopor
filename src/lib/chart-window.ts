@@ -78,3 +78,25 @@ export function smooth(values: (number | null)[]): (number | null)[] {
     return Math.round(w.reduce((a, x) => a + x, 0) / w.length);
   });
 }
+
+/**
+ * Round axis ticks from 0 to at least `max` in ~`segments` steps of 1 / 2 / 2.5 / 5 × 10ⁿ
+ * (Design.md §5 RevenueChartCard). Compute them in the unit people read (baht or dollars, not
+ * cents), so ฿ ticks read 0 / 250 / 500 rather than converted dollars like ฿252 / ฿504.
+ * `integer`: never a fractional step (visitor counts).
+ */
+export function niceTicks(
+  max: number,
+  {
+    segments = 4,
+    integer = false,
+  }: { segments?: number; integer?: boolean } = {},
+): number[] {
+  if (!(max > 0)) return [0, 1];
+  const raw = max / segments;
+  const pow = 10 ** Math.floor(Math.log10(raw));
+  let step = [1, 2, 2.5, 5, 10].map((m) => m * pow).find((s) => s >= raw)!;
+  if (integer) step = Math.max(1, Math.ceil(step));
+  const n = Math.ceil(max / step - 1e-9);
+  return Array.from({ length: n + 1 }, (_, i) => Number((i * step).toFixed(6)));
+}

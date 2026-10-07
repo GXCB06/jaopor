@@ -86,7 +86,7 @@ export default async function RequestsPage({
           {r.other?.headline && (
             <p className="text-faint">{r.other.headline}</p>
           )}
-          <p className="mt-1.5 whitespace-pre-line text-muted-foreground">
+          <p className="mt-1.5 font-prose whitespace-pre-line text-muted-foreground">
             {r.message}
           </p>
         </div>

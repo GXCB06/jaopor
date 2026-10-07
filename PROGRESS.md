@@ -12,6 +12,30 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-07 — UX review round B: readable paragraphs, project header on phones, an honest revenue chart, no repeated home rows
+
+**Done:**
+
+- **Paragraph font (owner-approved):** new `font-prose` token (IBM Plex Sans Thai, already loaded with Latin + Thai). It's used for long-form text people write: startup tagline + description on the profile, founder message, build story, insight paragraphs, post and comment bodies, chat messages, builder bio, request messages. Numbers, labels, chips, headings and cards stay monospace. `cn()` registers `font-prose` as a font family, so it's never dropped next to `font-bold` (test added). Design.md §3 Prose.
+- **Project header on phones:** below `sm` the logo sits above the name, so the name and description use the full width (they were squeezed beside a 72 px logo).
+- **Revenue chart:**
+  - Daily revenue and daily visitors are **bars** (a one-day payment stays on its day; the smoothed area drew bell curves over empty days).
+  - MRR is an area with straight segments.
+  - Trend is an overlay line on the real values, never a replacement.
+  - Y ticks are round numbers in the displayed currency (`niceTicks`: ฿0 / 250 / 500 / 750 instead of ฿252 / 504 / 755 from converted dollar ticks; integers for visitors).
+  - The legend swatch matches the mark.
+- **Home rows:** "ตัวเลขแรงสุด" skips projects already shown in "เพิ่มล่าสุด" and hides itself when fewer than 3 remain (both rows showed the same cards).
+
+**Files:** `src/app/globals.css`, `src/lib/utils{,.test}.ts`, `src/lib/chart-window{,.test}.ts`, `src/components/MetricChart.tsx`, `src/app/[locale]/{page,startup/[slug]/page,u/[username]/page,dashboard/requests/page}.tsx`, `src/components/{ProfileBlocks,profile/ProjectBlocks,posts/PostCard,posts/CommentThread,chat/ChatThread}.tsx`, `Design.md`
+**Verified:**
+- typecheck ✓ · lint ✓ · tests 361 ✓ (new: 4 `niceTicks`, 2 `cn` cases) · build ✓.
+- Browser on the live DB:
+  - JaoPor page: description in IBM Plex Sans Thai, 2 bars on 3 and 6 Oct with axis ฿0 / ฿250 / ฿500 / ฿750.
+  - At 375 px the logo stacks above the name; no horizontal scroll.
+  - Home shows "เพิ่มล่าสุด" without the repeated "ตัวเลขแรงสุด" row.
+
+**Next:** round C (cold start).
+
 ## 2026-10-07 — UX review round A: trust fixes (no double counting, real ranks, full numbers on phones, one calendar)
 
 **Why (UX review, owner-approved plan):** places where the site undercut "ตัวเลขจริง": one business listed twice (same website and Stripe account, so leaderboard #1 and #2, and ฿4.6k on the builder card), a rank counting demo projects ("#4"), numbers cut to "฿119…" on phones, "2026" next to "2569", a "$69 MRR" tab title over a ฿ page, the X handle as the founder's name.

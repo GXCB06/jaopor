@@ -63,6 +63,7 @@ Semantic tokens (never raw `emerald-*`/`red-*`/`amber-*`):
 ## 3. Typography
 
 - **Font:** `JetBrains Mono` (Latin, `next/font`, `--font-jetbrains`) → `IBM Plex Sans Thai` (Thai glyphs) → `ui-monospace`. `:lang(th)` line-height 1.6.
+- **Prose (2026-10-07, owner-approved; UX review: long Thai paragraphs in monospace were tiring to read):** long-form text people write uses `font-prose` = `IBM Plex Sans Thai` (Latin + Thai) → `ui-sans-serif`. Applies to: startup tagline + description on the profile, founder message, build story, insight paragraphs, post and comment bodies, chat messages, builder bio, request messages. Everything else stays monospace: numbers, labels, chips, headings, cards, tables, milestone headlines.
 - **Scale:** `html { font-size: 112.5% }` (1rem = 18px; user feedback "too small at 100%"). Figma px sizes are written as rem (px ÷ 16), so the whole Figma layout renders 12.5% larger and stays proportional. Custom steps in `@theme`: `text-3xs` 9px · `text-2xs` 10px · `text-caption` 11px · `text-body` 13px (plus Tailwind `text-xs` 12px, `text-sm` 14px).
 
 | Role                      | Classes (Figma px)                                                                                               |
@@ -79,6 +80,7 @@ Semantic tokens (never raw `emerald-*`/`red-*`/`amber-*`):
 | Tile label / value / note | `text-caption uppercase tracking-wider text-faint` · `text-2xl font-bold` · `text-caption text-muted-foreground` |
 | Chart headline            | `text-3xl font-bold tabular-nums` (30)                                                                           |
 | Body                      | `text-xs` (12) in cards/insights, `text-body` (13) for descriptions                                              |
+| Prose (long-form text)    | `font-prose` + the size above; never on numbers                                                                  |
 
 Numbers are always `tabular-nums`. Money is compact on cards (`$4.3k`) and full on the profile (`$14,903`).
 
@@ -197,7 +199,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 ### Profile header
 
 - Breadcrumb `text-2xs text-faint`: `JaoPor › Startups › {name}` (last item `text-foreground`).
-- Row: logo 72 `rounded-2xl border` · name (`text-2xl font-bold`) + founding badge + `VerifiedBadge` · description paragraph `text-body text-muted-foreground max-w-2xl` (tagline, then the long description); right side actions: **Share** (outline-card button, opens ShareStudio) and **Visit ↗** (primary; the first project link).
+- Row: logo 72 `rounded-2xl border` · name (`text-2xl font-bold`) + founding badge + `VerifiedBadge` · description paragraph `font-prose text-body text-muted-foreground max-w-2xl` (tagline, then the long description). Below `sm` the logo sits **above** the name (`flex-col`, 2026-10-07: beside it, the logo column squeezed the text into a narrow strip on phones). Right side actions: **Share** (outline-card button, opens ShareStudio) and **Visit ↗** (primary; the first project link).
 - Under it: other ProjectLinks (small outline buttons) and the LookingForBanner.
 
 ### StatCard (profile quick stats)
@@ -209,8 +211,11 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 ### RevenueChartCard (spec 6.4 step 3, Phase 2)
 
 - `Card p-4 sm:p-6`. Header left: period total (`text-3xl font-bold tabular-nums`; for **MRR** the latest value) + GrowthPill vs the previous period. Right: two compact selects (`h-7 rounded-lg border bg-secondary text-caption`): **metric** (รายได้ · MRR · ผู้เข้าชม, only those with data) and **period** (7 วัน · 30 วัน · 12 เดือน). 12 months plots weekly points.
-- Plot `h-64`: Recharts area, `--chart-1` 2px line, gradient fill (0.25 → 0), horizontal grid `--border`, axes `text-2xs --faint`. Hover: crosshair + tooltip in text tokens.
-- Footer switches: **เทียบช่วงก่อนหน้า** (dashed `--chart-2` + mini legend) and **Trend** (7-point moving average).
+- Plot `h-64` (2026-10-07, UX review: a smoothed area turned two one-day payments into bell curves over empty days):
+  - **Flows** (daily revenue, daily visitors): **bars** in `--chart-1`, `radius 3` on the top only, `maxBarSize 24`; hover highlights the bar's column (`--accent`).
+  - **Levels** (MRR): area with **straight segments** (`type="linear"`), `--chart-1` 2px line, gradient fill (0.25 → 0).
+  - Horizontal grid `--border`, axes `text-2xs --faint`. **Y ticks are round numbers in the displayed currency** (0 / 250 / 500 / 750 / 1k), computed in ฿ or $ (not converted from round dollar ticks), integers for visitors.
+- Footer switches: **เทียบช่วงก่อนหน้า** (dashed `--chart-2` line + mini legend) and **Trend**: a 7-point moving average drawn as an **overlay line** (`--muted-foreground`, 2px) on top of the data, never replacing it.
 - Under the plot, inside the card: `text-caption text-muted-foreground` stamp for the **selected metric's** source: check icon (`text-brand-text`) "ยืนยันผ่าน {Source} · อัปเดตล่าสุด {time}" (demo: "ข้อมูลตัวอย่าง").
 - No profit-margin pill: we have no cost data (spec item skipped until a source exists).
 - Nothing verified: the card is hidden for visitors; the owner sees an `EmptyOwnerCard` "+ เชื่อมต่อ Stripe เพื่อแสดงกราฟ".
@@ -541,17 +546,17 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 
 ## 6. Page templates
 
-| Route              | Structure (top → bottom)                                                                                                                                                                                                                                                            |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/` Home           | Header · Hero (pill, H1, subline, ProviderStrip, SearchBar, links) · **Recently listed** (5 compact cards) · **Top traction** (5 compact cards, by verified visitors/commits) · **LeaderboardCard** · **HomeTeasers** (categories + Olympics) · QuickSearch (no Add/chips) · Footer |
-| `/startups`        | Header · Hero · FilterSidebar + results header + large card grid + pagination                                                                                                                                                                                                       |
-| `/startup/[slug]`  | Breadcrumb · Profile header (logo, name, description, Share, Visit) · links + LookingFor · StatCards (data only) · RevenueChartCard (Stripe) · VerifiedStamp · TractionTiles · InsightsGrid · More startups                                                                         |
-| `/u/[username]`    | Sidebar (who, actions, info, badges, skills, tools) · looking-for · proof strip · pinned works · heatmap · experience \| recent activity                                                                                                                                            |
-| `/feed`            | Filters (view, type, province, category) · composer + PostCards + โหลดเพิ่ม · right rail (who to follow, most active, waiting for feedback)                                                                                                                                         |
-| `/builders`        | Hero (people search) · filter sidebar (skill, area, status, built with, verified) + BuilderCard grid + pager                                                                                                                                                                        |
-| `/dashboard`       | Title + "+ Add Startup" · Dashboard startup cards                                                                                                                                                                                                                                   |
-| Add-startup wizard | 2 steps: 1) project link (auto-fills name · one-liner · logo) · category → 2) VerifyPanel chooser or skip                                                                                                                                                                           |
-| `/acquire`         | Phase 2: Directory layout + price/multiple filters and FOR SALE tags                                                                                                                                                                                                                |
+| Route              | Structure (top → bottom)                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/` Home           | Header · Hero (pill, H1, subline, ProviderStrip, SearchBar, links) · **Recently listed** (5 compact cards) · **Top traction** (5 compact cards, by verified visitors/commits; skips projects already in Recently listed and is hidden when fewer than 3 remain, 2026-10-07) · **LeaderboardCard** · **HomeTeasers** (categories + Olympics) · QuickSearch (no Add/chips) · Footer |
+| `/startups`        | Header · Hero · FilterSidebar + results header + large card grid + pagination                                                                                                                                                                                                                                                                                                     |
+| `/startup/[slug]`  | Breadcrumb · Profile header (logo, name, description, Share, Visit) · links + LookingFor · StatCards (data only) · RevenueChartCard (Stripe) · VerifiedStamp · TractionTiles · InsightsGrid · More startups                                                                                                                                                                       |
+| `/u/[username]`    | Sidebar (who, actions, info, badges, skills, tools) · looking-for · proof strip · pinned works · heatmap · experience \| recent activity                                                                                                                                                                                                                                          |
+| `/feed`            | Filters (view, type, province, category) · composer + PostCards + โหลดเพิ่ม · right rail (who to follow, most active, waiting for feedback)                                                                                                                                                                                                                                       |
+| `/builders`        | Hero (people search) · filter sidebar (skill, area, status, built with, verified) + BuilderCard grid + pager                                                                                                                                                                                                                                                                      |
+| `/dashboard`       | Title + "+ Add Startup" · Dashboard startup cards                                                                                                                                                                                                                                                                                                                                 |
+| Add-startup wizard | 2 steps: 1) project link (auto-fills name · one-liner · logo) · category → 2) VerifyPanel chooser or skip                                                                                                                                                                                                                                                                         |
+| `/acquire`         | Phase 2: Directory layout + price/multiple filters and FOR SALE tags                                                                                                                                                                                                                                                                                                              |
 
 ## 7. States
 

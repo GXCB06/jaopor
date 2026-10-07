@@ -147,7 +147,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [x] (2026-10-05) Round 2: Add Startup redesign (link-first auto-fill of name / one-liner / logo, "What do you have?" verify chooser, Stripe two-permission guide (no prefill link exists), trust box, owner "not verified yet" prompt)
 - [x] (2026-10-06) Round 3: verified first, muted unverified cards, "Owner verified" via the snippet (permanent-id snippet, migration `owner_verified` applied), plus the security pass (DNS-rebinding-safe fetches, snippet counts only for owner-verified sites, demos off the leaderboard)
 - [x] (2026-10-07) UX review round A: trust fixes (one business one listing, rank without demos, full numbers on phones, Thai year everywhere, ฿ in titles, JaoPor names on the leaderboard, milestone copy)
-- [ ] UX review round B: paragraph font (Plex Sans Thai), project header on phones, honest revenue chart, no duplicate home rows
+- [x] (2026-10-07) UX review round B: paragraph font (Plex Sans Thai), project header on phones, honest revenue chart (bars for flows, round ticks), no repeated home rows
 - [ ] UX review round C: cold start (demo data, empty categories, compact live map / Olympics, only working providers in the hero)
 - [ ] Round 4 (later): per-metric visibility (exact / range / growth only / badge only), masked server-side
 

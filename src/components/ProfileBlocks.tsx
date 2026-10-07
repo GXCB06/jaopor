@@ -144,7 +144,7 @@ const chipList = (items: string[]) =>
 
 const para = (v: string | null) =>
   v ? (
-    <p className="text-xs leading-relaxed whitespace-pre-line text-muted-foreground">
+    <p className="font-prose text-xs leading-relaxed whitespace-pre-line text-muted-foreground">
       {v}
     </p>
   ) : null;
@@ -369,7 +369,7 @@ export async function FounderMessageCard({ startup }: { startup: StartupRow }) {
           <p className="text-2xs font-bold tracking-wider text-faint uppercase">
             {t("founderMessage")}
           </p>
-          <blockquote className="text-base leading-[1.8] whitespace-pre-line">
+          <blockquote className="font-prose text-base leading-[1.8] whitespace-pre-line">
             {startup.founder_message}
           </blockquote>
           <figcaption className="text-sm">

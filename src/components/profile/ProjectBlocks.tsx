@@ -216,7 +216,7 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
           <p className="text-2xs font-bold tracking-wider text-faint uppercase">
             {t("buildStory")}
           </p>
-          <p className="text-xs leading-relaxed whitespace-pre-line">
+          <p className="font-prose text-xs leading-relaxed whitespace-pre-line">
             “{startup.build_story}”
           </p>
         </Card>

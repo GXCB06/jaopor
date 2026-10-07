@@ -137,7 +137,7 @@ export function CommentThread({
                 {timeAgo(c.createdAt, locale, now)}
               </time>
             </p>
-            <p className="text-sm leading-relaxed break-words whitespace-pre-line">
+            <p className="font-prose text-sm leading-relaxed break-words whitespace-pre-line">
               {c.body}
             </p>
           </>
