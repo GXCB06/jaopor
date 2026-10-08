@@ -20,7 +20,14 @@ export async function revalidateStartup(startupId: number): Promise<void> {
     .eq("owner_id", auth.user.id)
     .maybeSingle();
   if (!data) return;
+  // After a rename the old links' cached pages must turn into the redirect (UX audit S-9).
+  const { data: old } = await supabase
+    .from("startup_slug_history")
+    .select("slug")
+    .eq("startup_id", startupId);
   for (const locale of routing.locales) {
+    for (const { slug } of old ?? [])
+      revalidatePath(`/${locale}/startup/${slug}`);
     revalidatePath(`/${locale}/startup/${data.slug}`);
     revalidatePath(`/${locale}`);
     revalidatePath(`/${locale}/startups`);

@@ -1,4 +1,4 @@
-import { getStartupBySlug } from "@/lib/data/startups";
+import { getRenamedSlug, getStartupBySlug } from "@/lib/data/startups";
 import { badgeValue } from "@/lib/share";
 import { logoTileSmallDataUri } from "@/lib/logo";
 import { CARD_THEME } from "@/lib/share-palette";
@@ -45,9 +45,15 @@ export async function GET(
   // Spec 6.5: `/api/badge/{slug}.svg` (what README embeds expect) and plain `/api/badge/{slug}`.
   const slug = (await ctx.params).slug.replace(/\.svg$/, "");
   const light = new URL(req.url).searchParams.get("theme") === "light";
-  const startup = /^[a-z0-9-]{1,50}$/.test(slug)
-    ? await getStartupBySlug(slug).catch(() => null)
-    : null;
+  const find = async (s: string) =>
+    /^[a-z0-9-]{1,50}$/.test(s) ? getStartupBySlug(s).catch(() => null) : null;
+  // A renamed project keeps its badge working in READMEs that embed the old link (UX audit S-9):
+  // served directly, since image embeds don't always follow redirects.
+  let startup = await find(slug);
+  if (!startup) {
+    const moved = await getRenamedSlug(slug).catch(() => null);
+    if (moved) startup = await find(moved);
+  }
   if (!startup) return new Response("Not found", { status: 404 });
 
   const value = badgeValue(startup);

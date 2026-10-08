@@ -26,6 +26,7 @@ declare
   ov uuid := '00000000-0000-4000-8000-0000000000d1';
   base text := 'https://letfxefyqxxrfujpwtri.supabase.co/storage/v1/object/public/avatars/';
   out text := '';
+  old_slug text;
 begin
   insert into auth.users (id, email, raw_user_meta_data, aud, role)
   values (a, 'rls-a@test.local', '{"full_name":"Tester A"}', 'authenticated', 'authenticated'),
@@ -934,6 +935,45 @@ begin
     has_function_privilege('anon', 'private.startups_reset_owner_verified()', 'EXECUTE'),
     (select coalesce(array_to_string(proconfig, ','), 'none') from pg_proc where proname = 'startups_reset_owner_verified'),
     (select pg_get_triggerdef(oid) from pg_trigger where tgname = 'startups_reset_owner_verified'));
+
+  -- T127–T131: editable links keep old links (migration 20261008061335_slug_history).
+  execute 'reset role';
+  out := out || format('T127 the T122 rename remembered the old slug: %s (expect true) | ',
+    exists (select 1 from public.startup_slug_history where startup_id = sid));
+  select slug into old_slug from public.startup_slug_history where startup_id = sid
+    order by renamed_at desc limit 1;
+  -- T128: another owner can't take that old slug (it would receive the old links' traffic).
+  -- cs[3]: a fresh user still present (B was deleted in T104).
+  begin
+    perform set_config('request.jwt.claims', json_build_object('sub', cs[3], 'role', 'authenticated')::text, true);
+    execute 'set local role authenticated';
+    insert into public.startups (owner_id, slug, name, website_url)
+      values (cs[3], old_slug, 'Taker', 'https://taker.test');
+    out := out || 'T128 another owner takes an old slug: ALLOWED (BAD) | ';
+  exception when unique_violation then
+    out := out || 'T128 another owner takes an old slug: refused as taken (good) | ';
+  end;
+  execute 'reset role';
+  -- T129: the owner takes its old slug back: live again, no longer a redirect.
+  perform set_config('request.jwt.claims', json_build_object('sub', ov, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  update public.startups set slug = old_slug where id = sid;
+  execute 'reset role';
+  out := out || format('T129 owner takes back its old slug: live=%s still-in-history=%s (expect true, false) | ',
+    exists (select 1 from public.startups where id = sid and slug = old_slug),
+    exists (select 1 from public.startup_slug_history where slug = old_slug));
+  -- T130: clients never write the history; visitors may read it (old public URLs).
+  out := out || format('T130 authenticated insert=%s update=%s delete=%s (expect false x3); anon select=%s (expect true) | ',
+    has_table_privilege('authenticated', 'public.startup_slug_history', 'INSERT'),
+    has_table_privilege('authenticated', 'public.startup_slug_history', 'UPDATE'),
+    has_table_privilege('authenticated', 'public.startup_slug_history', 'DELETE'),
+    has_table_privilege('anon', 'public.startup_slug_history', 'SELECT'));
+  -- T131: trigger functions not callable by clients, fixed search_path.
+  out := out || format('T131 slug fns callable by authenticated=%s/%s (expect false, false); config=%s | ',
+    has_function_privilege('authenticated', 'private.startups_reserve_old_slugs()', 'EXECUTE'),
+    has_function_privilege('authenticated', 'private.startups_remember_slug()', 'EXECUTE'),
+    (select string_agg(proname || ':' || coalesce(array_to_string(proconfig, ','), 'none'), ' ')
+       from pg_proc where proname in ('startups_reserve_old_slugs', 'startups_remember_slug')));
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;
 end $$;

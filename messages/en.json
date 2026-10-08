@@ -743,7 +743,10 @@
     "stackNothingNew": "Nothing new found in the repo",
     "saved": "Saved",
     "viewPage": "View page",
-    "freeButVerified": "This project has verified revenue, but its price says “Free”. If there is a paid plan, add its price so visitors aren't confused."
+    "freeButVerified": "This project has verified revenue, but its price says “Free”. If there is a paid plan, add its price so visitors aren't confused.",
+    "slugLabel": "Project page link",
+    "slugHint": "Lowercase letters, numbers and - only. Old links redirect to the new one automatically, and your badge keeps working.",
+    "slugInvalid": "Links use lowercase letters, numbers and - only (not at the start or end), up to 50 characters."
   },
   "Search": {
     "placeholder": "Search projects, people, categories or provinces…",

@@ -1108,6 +1108,32 @@ export type Database = {
           },
         ];
       };
+      startup_slug_history: {
+        Row: {
+          renamed_at: string;
+          slug: string;
+          startup_id: number;
+        };
+        Insert: {
+          renamed_at?: string;
+          slug: string;
+          startup_id: number;
+        };
+        Update: {
+          renamed_at?: string;
+          slug?: string;
+          startup_id?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "startup_slug_history_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       startups: {
         Row: {
           active_subscriptions: number | null;

@@ -12,6 +12,31 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-08 — Editable project link that keeps old links working (audit S-9, owner-approved migration)
+
+**Done:**
+
+- **Migration `20261008061335_slug_history`** (applied after owner approval):
+  - `startup_slug_history` (old slug → project, RLS: readable while the project is published, no client writes);
+  - a trigger that remembers every rename;
+  - a trigger that keeps an old slug reserved for its project (refused as "taken", so Add-project's suffix retry handles it).
+  - One hardening change from the reviewed draft: the reserve check is `security definer`, so it also sees old slugs of hidden projects.
+- **App:**
+  - `/startup/{old}` permanently redirects to the current slug;
+  - `/api/badge/{old}` serves the current badge (README image embeds don't always follow redirects);
+  - saving a rename also refreshes the old links' cached pages;
+  - the edit page has "ลิงก์หน้าผลงาน" (prefix `{host}/startup/`, typed lowercase), with a "taken" message in its section.
+
+**Files:** `supabase/migrations/20261008061335_slug_history.sql`, `supabase/tests/rls_smoke.sql` (T127–T131), `src/lib/supabase/database.types.ts`, `src/lib/data/startups.ts` (`getRenamedSlug`), `src/app/[locale]/startup/[slug]/page.tsx`, `src/app/api/badge/[slug]/route.ts`, `src/app/actions/revalidate.ts`, `src/components/wizard/StartupEditForm.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- Advisors: no new findings (the existing leaked-password WARN is an Auth setting).
+- RLS smoke: all 131 lines good, incl. T127 rename remembered, T128 another owner can't take the old slug, T129 the owner can take it back, T130 no client writes, T131 functions locked down.
+- The public REST read of the history works; an anonymous insert gets 401.
+- typecheck ✓ · lint ✓ · unit tests 365 ✓.
+
+**Next:** a real rename on production (the owner, in the edit page) to see the redirect end to end. The one rename made before this table existed (`jaopor-pdt0` → `jaopor`) isn't in the history: backfilling it needs the owner's OK.
+
 ## 2026-10-08 — Audit Phase 3: edit page that keeps you editing, one logo field, weighted completeness, Thai labels
 
 **Done:**

@@ -60,6 +60,7 @@ import { Field, Select, ToggleChips, inputClass } from "./fields";
 import { uploadLogo } from "./StartupWizard";
 import { LogoField } from "./LogoField";
 import { logoUrl } from "@/lib/supabase/logo-url";
+import { publicEnv } from "@/lib/public-env";
 import { ScreenshotsManager } from "./ScreenshotsManager";
 import {
   channelOptions,
@@ -100,6 +101,9 @@ const COUNTRIES = [
   "CA",
 ];
 const MAX_LOGO_BYTES = 1024 * 1024;
+/** Same rule as the startups_slug_check constraint. */
+const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,48}[a-z0-9])?$/;
+const SITE_HOST = publicEnv.siteUrl.replace(/^https?:\/\//, "");
 const LINK_PLACEHOLDER: Record<LinkKind, string> = {
   website: "yourapp.com",
   app_store: "https://apps.apple.com/th/app/…",
@@ -181,6 +185,7 @@ export function StartupEditForm({
       demoVideo: startup.demo_video_url ?? "",
       founderRole: startup.founder_role ?? "",
       founderMessage: startup.founder_message ?? "",
+      slug: startup.slug,
     }),
     [startup],
   );
@@ -431,6 +436,7 @@ export function StartupEditForm({
     ev.preventDefault();
     setError(null);
     if (!f.name.trim()) return fail("basics", t("nameRequired"));
+    if (!SLUG_RE.test(f.slug)) return fail("links", e("slugInvalid"));
     if (logo && logo.size > MAX_LOGO_BYTES)
       return fail("basics", t("logoTooBig"));
     // Each link box only accepts its own kind (a Play link in the LINE box is an error).
@@ -464,6 +470,7 @@ export function StartupEditForm({
         .from("startups")
         .update({
           name: f.name.trim(),
+          slug: f.slug,
           ...links,
           looking_for: f.lookingFor,
           build_story: f.buildStory.trim() || null,
@@ -491,7 +498,11 @@ export function StartupEditForm({
           founder_message: f.founderMessage.trim() || null,
         })
         .eq("id", startup.id);
-      if (dbErr) throw dbErr;
+      if (dbErr) {
+        // The slug is taken (or reserved as another project's old link).
+        if (dbErr.code === "23505") return fail("links", t("slugTaken"));
+        throw dbErr;
+      }
       await revalidateStartup(startup.id);
       clearDraft();
       if (logoPreview) URL.revokeObjectURL(logoPreview);
@@ -503,7 +514,7 @@ export function StartupEditForm({
       toast.success(e("saved"), {
         action: {
           label: e("viewPage"),
-          onClick: () => router.push(`/startup/${startup.slug}`),
+          onClick: () => router.push(`/startup/${f.slug}`),
         },
       });
       router.refresh();
@@ -826,6 +837,37 @@ export function StartupEditForm({
             {section(
               "links",
               <>
+                {/* S-9: editable link; old links redirect (migration slug_history). */}
+                <Field
+                  id="slug"
+                  label={e("slugLabel")}
+                  htmlFor="slug-input"
+                  hint={e("slugHint")}
+                  className="sm:col-span-2"
+                >
+                  <div className="flex min-w-0 items-center rounded-md border border-input bg-input/30 focus-within:ring-3 focus-within:ring-ring/50">
+                    <span className="shrink-0 truncate pl-3 text-sm text-muted-foreground">
+                      {SITE_HOST}/startup/
+                    </span>
+                    <input
+                      id="slug-input"
+                      required
+                      maxLength={50}
+                      spellCheck={false}
+                      autoCapitalize="none"
+                      value={f.slug}
+                      onChange={(ev) =>
+                        set("slug")(
+                          ev.target.value
+                            .toLowerCase()
+                            .replace(/[\s_]+/g, "-")
+                            .replace(/[^a-z0-9-]/g, ""),
+                        )
+                      }
+                      className="h-9 min-w-0 flex-1 bg-transparent pr-3 text-sm focus-visible:outline-none"
+                    />
+                  </div>
+                </Field>
                 <fieldset
                   id="links"
                   className="grid scroll-mt-24 gap-4 sm:col-span-2 sm:grid-cols-2"

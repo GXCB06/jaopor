@@ -5,7 +5,7 @@ import {
   MapPinIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import {
   getFormatter,
   getTranslations,
@@ -49,6 +49,7 @@ import {
   getMoreStartups,
   getProvinceLeaderboard,
   getRank,
+  getRenamedSlug,
   getChartSeries,
   getScreenshots,
   getStartupBySlug,
@@ -123,7 +124,12 @@ export default async function StartupPage({ params }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
   const startup = await getStartupBySlug(slug);
-  if (!startup) notFound();
+  if (!startup) {
+    // A renamed project: its old links (shared posts, QR codes) land on the new page (S-9).
+    const moved = await getRenamedSlug(slug);
+    if (moved) permanentRedirect(`/${locale}/startup/${moved}`);
+    notFound();
+  }
 
   const verified = startup.verification_status === "verified";
   const [

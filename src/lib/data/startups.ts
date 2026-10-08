@@ -209,6 +209,20 @@ export async function getStartupBySlug(
   return data as StartupRow | null;
 }
 
+/**
+ * A renamed project's current slug for one of its old links (UX audit S-9, migration
+ * slug_history), or null. Published projects only (RLS), so a hidden project's old link 404s.
+ */
+export async function getRenamedSlug(oldSlug: string): Promise<string | null> {
+  if (!/^[a-z0-9-]{1,50}$/.test(oldSlug)) return null;
+  const { data } = await db()
+    .from("startup_slug_history")
+    .select("startup:startups(slug)")
+    .eq("slug", oldSlug)
+    .maybeSingle();
+  return data?.startup?.slug ?? null;
+}
+
 export type RevenuePoint = { day: string; revenueCents: number };
 
 /** Zero-filled daily revenue for the `days` UTC days up to yesterday, oldest first. */
