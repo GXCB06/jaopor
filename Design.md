@@ -90,6 +90,19 @@ Numbers are always `tabular-nums`. Money is compact on cards (`$4.3k`) and full 
 - **Visitor counts are "นับโดย {source}" / "Counted by {source}"** (JaoPor script, Plausible, Umami, Cloudflare): anyone can send events to a snippet or an analytics endpoint. They stay on the leaderboard and the Olympics with that label, never with a check icon, and never alone earn the card's "✓ ยืนยันแล้ว".
 - Neutral wording where both appear: "ตัวเลขจากระบบที่เชื่อมต่อ" / "Numbers from connected sources".
 
+### Glossary (2026-10-08, owner decision; UX audit M-7)
+
+One word per concept, in every string:
+
+| Concept                          | Thai                                            | English                   | Never                                                                |
+| -------------------------------- | ----------------------------------------------- | ------------------------- | -------------------------------------------------------------------- |
+| A listed thing                   | **ผลงาน** (+ เพิ่มผลงาน, แก้ไขผลงาน)            | **project** (Add project) | สตาร์ทอัพ / Startup / โปรเจกต์ / โปรดักต์ for it; "work" as its noun |
+| The person                       | คนสร้าง (directory) · ผู้ก่อตั้ง (on a project) | builder · founder         |                                                                      |
+| Proven at the source             | ยืนยัน                                          | verified                  | for visitor counts                                                   |
+| Reported by a script / analytics | นับโดย                                          | counted by                | "verified"                                                           |
+
+- Exceptions: "โปรเจกต์" for past jobs in the profile's work experience (a different concept), "Product" as a skill role, the owner-approved legal pages (/privacy, /terms, /security) until the owner revises them. URLs stay `/startups` and `/startup/{slug}` (old links keep working).
+
 ### Dates (2026-10-07)
 
 - Thai pages show the **Thai (Buddhist) year** everywhere ("ต.ค. 2569"), the default of `th-TH` and of next-intl's formatter; English pages the Western year. Never force `-u-ca-gregory` on Thai (the Olympics season, profile experience and revenue-chart dates used to, so one page said 2026 and the next 2569).
@@ -136,13 +149,13 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 ### SiteHeader (sticky, ledgerly pattern)
 
 - `sticky top-0 z-40 border-b bg-background`, `h-14`, inner `max-w-6xl`, gaps `gap-3` (`md:gap-6`).
-- Left: `BrandLogo` = `<Logo>` (blue app tile 28px + "JaoPor"). **Nav links from `lg`** (`text-xs text-muted-foreground hover:text-foreground`): สตาร์ทอัพ · หมวดหมู่ · โอลิมปิก · กระดานผู้นำ · แดชบอร์ด (`whitespace-nowrap`, `gap-4`/`xl:gap-5`; แดชบอร์ด only from `xl` because five links don't fit at 1024px and it is also in the avatar menu). Right-side gaps `lg:gap-2 xl:gap-3`.
-- Right: **CurrencyToggle** (฿/$; "THB/USD" text from `lg`), **search trigger** (`/` shortcut), primary **"+ เพิ่ม Startup"** (icon-only below `sm`), **HeaderAuth** (signed out: "เข้าสู่ระบบ" from `sm`, a `LogIn` icon button below; signed in: avatar menu), TH/EN (full name from `lg`) and ThemeToggle (both from `sm`), then **MobileNav** below `lg`: a `size-8` `Menu` icon button opening a DropdownMenu with the nav links, and below `sm` also the language switch and the theme switch.
+- Left: `BrandLogo` = `<Logo>` (blue app tile 28px + "JaoPor"). **Nav links from `lg`** (`text-xs text-muted-foreground hover:text-foreground`): ผลงาน · หมวดหมู่ · โอลิมปิก · กระดานผู้นำ · แดชบอร์ด (`whitespace-nowrap`, `gap-4`/`xl:gap-5`; แดชบอร์ด only from `xl` because five links don't fit at 1024px and it is also in the avatar menu). Right-side gaps `lg:gap-2 xl:gap-3`.
+- Right: **CurrencyToggle** (฿/$; "THB/USD" text from `lg`), **search trigger** (`/` shortcut), primary **"+ เพิ่มผลงาน"** (icon-only below `sm`), **HeaderAuth** (signed out: "เข้าสู่ระบบ" from `sm`, a `LogIn` icon button below; signed in: avatar menu), TH/EN (full name from `lg`) and ThemeToggle (both from `sm`), then **MobileNav** below `lg`: a `size-8` `Menu` icon button opening a DropdownMenu with the nav links, and below `sm` also the language switch and the theme switch.
 - Must fit 360px (no horizontal scroll), 768px and 1024px in both languages.
 
 ### Hero (home and directory)
 
-- Centered, `pt-10`: **brand pill** = a link home: the mascot (`public/brand/jaopor-mascot.webp`, the winking fedora with a rising chart line, `size-9`) + "JaoPor" (`text-sm font-bold`), same on home and directory → H1 → subline → ProviderStrip → **SearchBar row** (`max-w-xl`) → secondary links row (`text-caption text-faint`, dot separated: เพิ่ม Startup · กระดานผู้นำ · Dashboard).
+- Centered, `pt-10`: **brand pill** = a link home: the mascot (`public/brand/jaopor-mascot.webp`, the winking fedora with a rising chart line, `size-9`) + "JaoPor" (`text-sm font-bold`), same on home and directory → H1 → subline → ProviderStrip → **SearchBar row** (`max-w-xl`) → secondary links row (`text-caption text-faint`, dot separated: เพิ่มผลงาน · กระดานผู้นำ · Dashboard).
 - Home H1 is two deliberate lines: **"1 คน + AI พีคได้แค่ไหน"** / **"ดูผลงานจริง ตัวเลขจริง"** (EN "How far can 1 person + AI go?" / "Real work. Real numbers."), each a `block` span.
 
 ### ProviderStrip ("Numbers verified by")
@@ -152,9 +165,9 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 ### QuickSearch (spec 6.8, Phase 4 — replaces SearchBar)
 
-- One client component, used in the **hero** (home, directory) and the **bottom section** (home, directory, startup detail; later categories / olympics / province). Input = `h-9 rounded-md border border-input bg-card pl-9 text-xs` + search icon + `kbd "/"` (sm+), inside a GET `form role="search"` to `/startups?q=` (works without JS); "+ เพิ่ม Startup" primary button next to it.
+- One client component, used in the **hero** (home, directory) and the **bottom section** (home, directory, startup detail; later categories / olympics / province). Input = `h-9 rounded-md border border-input bg-card pl-9 text-xs` + search icon + `kbd "/"` (sm+), inside a GET `form role="search"` to `/startups?q=` (works without JS); "+ เพิ่มผลงาน" primary button next to it.
 - Search starts at 1 character, 200 ms debounce, stale requests aborted. `GET /api/search?q=&locale=`.
-- **Panel:** `absolute z-30 w-full rounded-xl border bg-popover shadow-lg max-h-[420px] overflow-y-auto p-1.5`; opens **upward** when less than 440px is left below the input; never off-screen. Groups with `text-3xs uppercase text-faint` headers: **สตาร์ทอัพ** (≤ 6: logo 28 · name with the match in `<mark class="bg-brand/20 text-foreground rounded-sm">` · verified check + source · 1-line tagline) · **หมวดหมู่** (icon + name) · **จังหวัด** (name + region). Empty groups hidden. Last row: "ดูผลลัพธ์ทั้งหมดสำหรับ “{q}” →".
+- **Panel:** `absolute z-30 w-full rounded-xl border bg-popover shadow-lg max-h-[420px] overflow-y-auto p-1.5`; opens **upward** when less than 440px is left below the input; never off-screen. Groups with `text-3xs uppercase text-faint` headers: **ผลงาน** (≤ 6: logo 28 · name with the match in `<mark class="bg-brand/20 text-foreground rounded-sm">` · verified check + source · 1-line tagline) · **หมวดหมู่** (icon + name) · **จังหวัด** (name + region). Empty groups hidden. Last row: "ดูผลลัพธ์ทั้งหมดสำหรับ “{q}” →".
 - Focused + empty: "ยอดนิยม" (5 startups) + 8 category chips. Loading: 3 skeleton rows. No results: "ไม่พบ “{q}” · เพิ่มผลงานของคุณเป็นคนแรก" (link to /new).
 - Keyboard: ↑/↓ (scrolls into view), Enter opens, Esc closes, click outside closes. ARIA combobox + listbox, options have ids for `aria-activedescendant`.
 - **Mobile (< 640px):** focusing opens a full-screen sheet (`fixed inset-0 z-50 bg-background`) with the input pinned at the top, a close button and the same results.
@@ -279,7 +292,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 ### More startups (profile bottom)
 
-- H2 "สตาร์ทอัพอื่น ๆ" + "View all →" link; `grid sm:grid-cols-2 lg:grid-cols-3 gap-3` of large StartupCards (same category first, then same province, then newest; 6 max).
+- H2 "ผลงานอื่น ๆ" + "View all →" link; `grid sm:grid-cols-2 lg:grid-cols-3 gap-3` of large StartupCards (same category first, then same province, then newest; 6 max).
 
 ### ShareStudio (spec 6.5, Phase 3)
 
@@ -303,7 +316,7 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
 - `main max-w-6xl`: centred breadcrumb (JaoPor › หมวดหมู่, `text-caption text-faint`) → centred H1 "สำรวจหมวดหมู่" (`text-2xl md:text-3xl font-bold`) → subtitle.
 - Grid `grid gap-3 sm:grid-cols-2 lg:grid-cols-4` of **one-line CategoryCards**: `rounded-xl border bg-card p-3 flex items-center gap-3` link (hover `border-border-strong`) → 40px icon box (`size-10 rounded-lg bg-background`, icon 18px) · name (`text-sm font-semibold truncate`) + count (`text-2xs font-bold text-brand-text`, "{n} ผลงาน", only when > 0) · description one line (`text-caption text-muted-foreground truncate`).
 - Sorted by count, then config order. Count 0 → icon `opacity-50`, name `text-muted-foreground`.
-- **Empty categories fold away (2026-10-07, UX review: 36 of 37 were empty cards):** when at least one category has projects, only those get cards. The empty ones follow as one compact chip row: heading "ยังว่าง {n} หมวด" (`text-sm font-bold`) + hint "ลงผลงานเป็นคนแรกในหมวดเหล่านี้" with a `text-brand-text` link "เพิ่ม Startup →" (`/new`), then chips `rounded-full border bg-card px-2.5 py-1 text-caption text-muted-foreground` with the 14px icon, each linking to `/category/{slug}`. With no projects anywhere, the card grid stays as it is.
+- **Empty categories fold away (2026-10-07, UX review: 36 of 37 were empty cards):** when at least one category has projects, only those get cards. The empty ones follow as one compact chip row: heading "ยังว่าง {n} หมวด" (`text-sm font-bold`) + hint "ลงผลงานเป็นคนแรกในหมวดเหล่านี้" with a `text-brand-text` link "เพิ่มผลงาน →" (`/new`), then chips `rounded-full border bg-card px-2.5 py-1 text-caption text-muted-foreground` with the 14px icon, each linking to `/category/{slug}`. With no projects anywhere, the card grid stays as it is.
 - Cards (and every category link: footer, QuickSearch, home teaser) open **`/category/{slug}`**.
 
 ### Category page (`/[locale]/category/[slug]`, 2026-09-30)
@@ -315,7 +328,7 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
 ### HomeTeasers (home, spec 6.2, Phase 7)
 
 - After the LeaderboardCard: `grid gap-3 md:grid-cols-2`. Left `Card p-5` "สำรวจหมวดหมู่" + "ดูทั้งหมด ›" (`text-caption text-faint`) → 8 busiest categories as chips (`rounded-full border bg-secondary px-2.5 py-1 text-caption`, lucide icon `size-3.5`, bold count when > 0) → `/startups?category=`. Right `Card p-5` "โอลิมปิกจังหวัด" → top 3 provinces (Medal · ProvinceBadge `h-8 w-11` · name · total) + caption "จัดอันดับจากรายได้ที่ยืนยันแล้ว". No ranked province → the Olympics card is omitted and categories take the full width.
-- Home CTA rule: "+ เพิ่ม Startup" in the header, the hero and next to the bottom search (owner request 2026-10-07: a visitor who scrolled to the end should be able to add without scrolling back up). The hero sub-links are หมวดหมู่ · โอลิมปิก · กระดานผู้นำ; the "Recently added" empty state has no button; the bottom QuickSearch section renders without its chips (`chips={false}`).
+- Home CTA rule: "+ เพิ่มผลงาน" in the header, the hero and next to the bottom search (owner request 2026-10-07: a visitor who scrolled to the end should be able to add without scrolling back up). The hero sub-links are หมวดหมู่ · โอลิมปิก · กระดานผู้นำ; the "Recently added" empty state has no button; the bottom QuickSearch section renders without its chips (`chips={false}`).
 - Hero "ดูผลงานทั้งหมด {n} ชิ้น" shows the number only from 20 projects ("ดูผลงานทั้งหมด" below).
 - LeaderboardCard empty state: "ยังไม่มีตัวเลขที่ยืนยัน… มาเป็นคนแรกบนกระดาน" + `text-brand-text` link "ยืนยันตัวเลขของคุณ →" (/dashboard).
 
@@ -325,7 +338,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 - **Season metric:** รายได้ 30 วัน (default) · MRR · ผู้เข้าชม 30 วัน · Commits. Rank movement (▲/▼/–/ใหม่) and growth % compare with the previous 30 days (revenue30d, visitors only).
 - **Header:** pills "● อัปเดตทุกวัน" (positive dot) + "ฤดูกาล {month year}" (Gregorian year) · H1 `text-3xl md:text-4xl font-extrabold` · subtitle; right: two stat Cards (จังหวัดที่ลงแข่ง n / 77 · "{metric} รวมทั้งประเทศ").
-- **Podium cards** (`md:grid-cols-3`, shown 2-1-3): rank ring (gold / silver / bronze tokens) + "ผู้นำฤดูกาล" on #1 · region dot + name · province `text-2xl` (#1 `text-3xl`) · other-language name + "{n} สตาร์ทอัพ" · total `text-3xl` (#1 `text-4xl`) · top project row under `border-t` ("ตัวท็อป: {name}" + value). #1 card `border-warning/40 bg-warning/5`, taller. Empty place: dashed card "+ ที่ว่าง · ส่งผลงานแทนจังหวัดคุณ" → /new.
+- **Podium cards** (`md:grid-cols-3`, shown 2-1-3): rank ring (gold / silver / bronze tokens) + "ผู้นำฤดูกาล" on #1 · region dot + name · province `text-2xl` (#1 `text-3xl`) · other-language name + "{n} ผลงาน" · total `text-3xl` (#1 `text-4xl`) · top project row under `border-t` ("ตัวท็อป: {name}" + value). #1 card `border-warning/40 bg-warning/5`, taller. Empty place: dashed card "+ ที่ว่าง · ส่งผลงานแทนจังหวัดคุณ" → /new.
 - **Controls:** metric SegmentedControl + region chips (dot + name; horizontal scroll on phones). Both in the URL.
 - **OlympicsBoard** (client): **your-province bar** (`border-brand/40 bg-brand/5`; MapPin "จังหวัดของคุณ" · badge + name · #rank · RankChange · "อีก ฿X จะแซง{ahead}ขึ้นอันดับ #n" or "กำลังนำกระดาน" · "เปลี่ยนจังหวัด"; no pick yet → inline select grouped by region; stored in localStorage `jaopor.myProvince`) · province search (whole board) · **table** from #4: # · change · badge + name (+ "· คุณ") + region · ผลงาน (md+) · value · growth (sm+) · top logos (lg+) · expand chevron → sub-row with top projects (logo, name, share %, value, `h-1` brand bar) + "ดูผลงานทั้งหมดใน{จังหวัด} n ชิ้น →". 10 rows then "ดูอันดับ 14–N ↓". Own row `bg-brand/5` + 3px brand inset edge.
 - **Open provinces** Card: "ยังไม่มีผลงานจาก {n} จังหวัด" + subline + "+ เพิ่มผลงาน", 10 chips then "+N จังหวัด" (expands).
@@ -379,13 +392,13 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 ### Sign-in routing (2026-10-05, first-user test: everyone landed on an empty dashboard)
 
-- Every "เข้าสู่ระบบ" link carries the current page as `next` (header included); gated pages (e.g. "เพิ่ม Startup" → `/new`) already do.
+- Every "เข้าสู่ระบบ" link carries the current page as `next` (header included); gated pages (e.g. "เพิ่มผลงาน" → `/new`) already do.
 - After sign-in: no username yet → onboarding, then `next`. With a username: `next` if given; else users with a startup → `/dashboard`, users without → `/startups?welcome=1`. `next` must be an internal path (no `//`, no backslash) and never `/login` or `/onboarding`.
 - **Welcome banner** on `/startups?welcome=1`: dismissible `rounded-xl border border-brand/30 bg-brand/5 px-4 py-3` row under the hero, "ยินดีต้อนรับสู่ JaoPor 👋 ดูผลงานของคนอื่นก่อนได้ สร้างอะไรด้วย AI อยู่ก็เพิ่มของคุณได้เมื่อพร้อม" + "เพิ่มผลงานของฉัน →" link to `/new` + × close.
 
 ### Add-startup wizard v2 (`/new`, 2026-10-05, first-user test: "adding a startup is hard", most skipped verification)
 
-- **Loading (`/new/loading.tsx`, 2026-10-07, owner: "takes longer to open"):** a skeleton shaped like step 1 (title, 2 step bars, intro line, link field, name + category, one-liner, logo tile, button) shows the moment "เพิ่ม Startup" is clicked, while the sign-in check runs. The verify step's code loads in the background after step 1 shows.
+- **Loading (`/new/loading.tsx`, 2026-10-07, owner: "takes longer to open"):** a skeleton shaped like step 1 (title, 2 step bars, intro line, link field, name + category, one-liner, logo tile, button) shows the moment "เพิ่มผลงาน" is clicked, while the sign-in check runs. The verify step's code loads in the background after step 1 shows.
 - **Step labels:** "1. ลงผลงาน" / "List it" · "2. ยืนยันตัวเลข" / "Verify". Same 2-segment `border-t-2` bar.
 - **Step 1, four things, link first:** ลิงก์ผลงาน (full width, autofocus) → ชื่อ · คำโปรย (optional, ≤ 140, counter `text-2xs text-faint tabular-nums`) → หมวดหมู่ · โลโก้. AI tools, looking-for and screenshots moved to the edit page (the profile's "+ เพิ่ม…" cards lead there).
 - **Auto-fill from the link** (website links only): ~600 ms after typing stops, the server reads the page (SSRF-guarded, 3 s, 512 KB) and returns name (`og:site_name`, else the `<title>` part that matches the domain), one-liner (meta description, ≤ 140) and logo (apple-touch-icon, else the largest PNG / SVG / WebP / JPEG icon; resized to 256 px PNG). It fills only fields that are empty or still hold the previous auto value, never what the user typed. Status line under the link (`text-caption`): muted "กำลังอ่านหน้าเว็บ…" → brand "✨ เติมจากเว็บของคุณแล้ว แก้ได้ทุกช่อง" → nothing on failure (fields stay manual).
@@ -413,6 +426,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - **Owner verified** = our server opened the listed website and found the JaoPor snippet with this project's **permanent id** (never the slug: a renamed slug could be taken by someone else). The page read must be on the listed domain, not a redirect elsewhere. It proves the lister can edit that page; it says nothing about numbers. Checked when the founder presses "เริ่มนับ", on "ตรวจอีกครั้ง" (at most once per 20 s per project, shared by all servers), and nightly; any change to the website URL clears it. The snippet counts visits **only** while it is set (the browser `Origin` header alone can be faked).
 - **Badge** (startup header, via `VerifiedBadge ownerVerified`): when there is no verified revenue, neutral chip `rounded-full border bg-secondary text-caption font-semibold` + `ShieldCheck` "ยืนยันเจ้าของเว็บแล้ว" / "Owner verified", `title` explains it ("พบโค้ด JaoPor ของผลงานนี้บนเว็บไซต์ …").
 - **Snippet status** in VerifyPanel (chooser and manage view), above the code box: found → positive `ShieldCheck` line "พบโค้ดบน {host} แล้ว …"; not found → `rounded-md border border-warning/40 bg-warning/10 p-3 text-caption` "ยังไม่พบโค้ดบน {host} … ระหว่างนี้ยังไม่นับผู้เข้าชม" + outline "ตรวจอีกครั้ง".
+- **No false success (2026-10-08, UX audit M-0):** "เริ่มนับ" toasts "พบโค้ดบนเว็บของคุณแล้ว" only when the code was found, otherwise the info "ยังไม่พบโค้ดบน {host} …"; never the generic "ยืนยันแล้ว! ตัวเลขขึ้นบนโปรไฟล์ของคุณแล้ว". The wizard treats the snippet as verified (primary "ไปที่หน้าผลงาน", profile opens with `?verified=1`) only once the code is found, including after "ตรวจอีกครั้ง".
 
 ### Owner "not verified yet" prompt (startup page)
 
@@ -480,7 +494,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 ### NotificationBell (header, Phase 10c)
 
 - Signed in only, left of the avatar: `size-8` ghost icon button (`BellIcon`) with an unread dot-count (`bg-brand text-white text-3xs rounded-full min-w-4`, "9+" above 9). Opens a dropdown (`w-80 max-h-[420px] overflow-y-auto`) with the latest 15: actor avatar 28 + one line ("{name} ถูกใจโพสต์ของคุณ" / "แสดงความคิดเห็น" / "ส่งคำขอคุย" / "ยอมรับคำขอคุย") + time; unread rows `bg-brand/5`. Opening marks them read. Each row links to the post (`/post/{id}`, `#comments` for comments) or `/dashboard/requests`. Empty: "ยังไม่มีการแจ้งเตือน".
-- Header nav (Figma 160-555): สตาร์ทอัพ · คนสร้าง · ฟีด · หมวดหมู่ · โอลิมปิก. The home-anchor "กระดานผู้นำ" and the xl-only "แดชบอร์ด" links leave the header (the leaderboard is linked from the Olympics page, the mobile menu and the footer; the dashboard from the avatar menu).
+- Header nav (Figma 160-555): ผลงาน · คนสร้าง · ฟีด · หมวดหมู่ · โอลิมปิก. The home-anchor "กระดานผู้นำ" and the xl-only "แดชบอร์ด" links leave the header (the leaderboard is linked from the Olympics page, the mobile menu and the footer; the dashboard from the avatar menu).
 
 ### Chat (`/dashboard/messages`, Phase 11)
 
@@ -513,8 +527,8 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 ### Province page (`/[locale]/province/[slug]`, spec 6.7)
 
-- Breadcrumb JaoPor › โอลิมปิกจังหวัด › {province} → badge + H1 "สตาร์ทอัพจังหวัด{name}" → subtitle "ตัวเลขที่ยืนยันแล้วจาก{name} · {region}" → brand link "อันดับ #X ในโอลิมปิกจังหวัด (รายได้รวม)" (when ranked) → QuickSearch + Add.
-- "{n} สตาร์ทอัพ" then large StartupCards `sm:grid-cols-2 lg:grid-cols-3` with third stat **รวมทั้งหมด** (all-time revenue) instead of growth; demo projects keep their tag. More than 24 → "ดูทั้งหมด {n} ผลงาน →" to `/startups?province=`. None → dashed empty card + Add.
+- Breadcrumb JaoPor › โอลิมปิกจังหวัด › {province} → badge + H1 "ผลงานจากจังหวัด{name}" → subtitle "ตัวเลขที่ยืนยันแล้วจาก{name} · {region}" → brand link "อันดับ #X ในโอลิมปิกจังหวัด (รายได้รวม)" (when ranked) → QuickSearch + Add.
+- "{n} ผลงาน" then large StartupCards `sm:grid-cols-2 lg:grid-cols-3` with third stat **รวมทั้งหมด** (all-time revenue) instead of growth; demo projects keep their tag. More than 24 → "ดูทั้งหมด {n} ผลงาน →" to `/startups?province=`. None → dashed empty card + Add.
 - "← กลับไปโอลิมปิกจังหวัด", "จังหวัดใกล้เคียง" + RegionChip, chips of the other provinces in the region. Unknown slug → 404. OG: "{จังหวัด} / อันดับ #X ในโอลิมปิกจังหวัด" + the map with the region lit.
 - Profile stat card ก่อตั้ง/ที่ตั้ง caption: `MapPin` + "{จังหวัด} · อันดับ #X ในโอลิมปิก" linking to the province page (wraps on phones).
 
@@ -561,7 +575,7 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 | `/u/[username]`    | Sidebar (who, actions, info, badges, skills, tools) · looking-for · proof strip · pinned works · heatmap · experience \| recent activity                                                                                                                                                                                                                                                    |
 | `/feed`            | Filters (view, type, province, category) · composer + PostCards + โหลดเพิ่ม · right rail (who to follow, most active, waiting for feedback)                                                                                                                                                                                                                                                 |
 | `/builders`        | Hero (people search) · filter sidebar (skill, area, status, built with, verified) + BuilderCard grid + pager                                                                                                                                                                                                                                                                                |
-| `/dashboard`       | Title + "+ Add Startup" · Dashboard startup cards                                                                                                                                                                                                                                                                                                                                           |
+| `/dashboard`       | Title + "+ Add project" · Dashboard startup cards                                                                                                                                                                                                                                                                                                                                           |
 | Add-startup wizard | 2 steps: 1) project link (auto-fills name · one-liner · logo) · category → 2) VerifyPanel chooser or skip                                                                                                                                                                                                                                                                                   |
 | `/acquire`         | Phase 2: Directory layout + price/multiple filters and FOR SALE tags                                                                                                                                                                                                                                                                                                                        |
 

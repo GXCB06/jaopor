@@ -12,6 +12,57 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-08 — Owner decisions from the audit: demos deleted, `/startup/jaopor` back, one word "ผลงาน / project"
+
+**Done:**
+
+- **Production database** (owner-approved, one transaction):
+  - deleted the 5 demo projects, with their sample snapshots, member rows and one test post by the owner's second account;
+  - renamed project 105's slug from `jaopor-pdt0` to `jaopor`. The visitor snippet uses the permanent id, so counting is unaffected; the old `jaopor-pdt0` link now returns 404 (it existed for one day).
+- **Glossary (audit M-7):** the listed thing is **ผลงาน** in Thai and **project** in English: 32 Thai and 76 English strings. Examples:
+  - nav "ผลงาน" and "+ เพิ่มผลงาน";
+  - "ผลงานทั้งหมด", "ชื่อผลงาน", "แก้ไขผลงาน", "ผลงานอื่น ๆ", "ผลงานจากจังหวัด{name}";
+  - English "My projects", "Project updates".
+  - Left as they are: past-job "โปรเจกต์" in work experience, the "Product" role, the owner-approved legal pages, and URLs.
+  - Design.md §3 has the glossary, and the old labels in Design.md are updated.
+
+**Files:** `messages/th.json`, `messages/en.json`, `Design.md`
+**Verified:**
+
+- unit tests 365 ✓ (incl. the message parity and ICU check) · typecheck ✓ · lint ✓ · local e2e 64 passed / 10 skipped.
+- Browser, local, 1280 and 375 px: "ผลงานทั้งหมด", "พบ 1 ผลงาน", header "เพิ่มผลงาน", no "สตาร์ทอัพ" / "Startup" left on the project page, no horizontal scroll.
+- Production: `/th/startup/jaopor` 200, `/api/badge/jaopor` 200, `jaopor-pdt0` and the demo pages 404, home without demos.
+
+**Next:** push (the wording is local until then). Then Phase 1 of the audit: honest proof wording (M-4, M-5), MRR definitions (M-3), numbers-first on phones (M-6).
+
+## 2026-10-08 — UX/UI product audit (Add Startup first) + one false-success fix
+
+**Done:**
+
+- **`docs/UX_UI_PRODUCT_AUDIT.md`:** a whole-product audit, deepest on Add Startup → verification → publishing → public profile → editing.
+  - Based on the code, production at 1280 and 375 px (signed-in screens viewed only, nothing submitted) and read-only database counts: 1 real project, 5 demos, 6 profiles.
+  - MUST / SHOULD / COULD / NOT NOW items with impact, frequency, importance and complexity scores; the Add Startup journey, friction map and field-by-field table; a glossary proposal; scores; a 6-phase roadmap.
+  - Main findings:
+    - demo numbers dominate the real ones;
+    - Add Startup publishes without saying so;
+    - project pages on phones show no number in the first screen;
+    - MRR above all-time revenue without a definition;
+    - "LIVE" on daily data and "verified" left on counted visitors;
+    - one object with four names.
+- **Fixed (M-0):** pressing "เริ่มนับ" when the code wasn't on the site showed "ยืนยันแล้ว! ตัวเลขขึ้นบนโปรไฟล์ของคุณแล้ว", and the wizard then opened the profile with the "Verified!" share dialog. Now:
+  - the toast says found / not found, using the existing strings;
+  - the wizard counts the snippet as verified only once the code is found, including after "ตรวจอีกครั้ง".
+- **Correction:** the edit page has **no slug field**, so last entry's owner step "rename the link back to `jaopor`" isn't possible in the product. The options are a one-off DB update with owner approval, or the editable slug (audit S-9).
+
+**Files:** `docs/UX_UI_PRODUCT_AUDIT.md`, `src/components/wizard/VerifyPanel.tsx`, `Design.md` (§5 Owner verified: no false success)
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit tests 365 ✓ · prettier ✓.
+- The "เริ่มนับ" click needs a signed-in account and a real website, so the fix was checked by code review, not clicked through.
+- Not pushed.
+
+**Next:** the owner reviews the audit and picks the Phase 1 items (demos, honest proof wording, MRR definitions, numbers-first on phones, glossary).
+
 ## 2026-10-07 — Owner feedback: full-size live map, Add next to the bottom search, Back in Add Startup
 
 **Done:**

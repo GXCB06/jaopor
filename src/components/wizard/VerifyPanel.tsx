@@ -349,7 +349,10 @@ function VerifyChooser({
                 startupId={startupId}
                 host={websiteHost}
                 verified={owner}
-                onChecked={setOwner}
+                onChecked={(found) => {
+                  setOwner(found);
+                  if (found) onConnected?.("jaopor");
+                }}
               />
               <SnippetBox projectId={startupId} />
             </div>
@@ -373,7 +376,9 @@ function VerifyChooser({
                 s,
               ]);
               if (s === "jaopor") setOwner(!!ownerVerified);
-              onConnected?.(s);
+              // A snippet not found yet proves nothing: the wizard keeps "verify later" and the
+              // profile opens with the "listed" share dialog, not "Verified!".
+              if (s !== "jaopor" || ownerVerified) onConnected?.(s);
             }}
           />
         )}
@@ -625,7 +630,11 @@ function SourceForm({
         ownerVerified?: boolean;
       };
       if (res.ok && body.ok) {
-        toast.success(t("success"));
+        // The snippet is only proof once our server found it on the site: until then it says so,
+        // never "Verified! The numbers are on your profile" (there are none yet).
+        if (source !== "jaopor") toast.success(t("success"));
+        else if (body.ownerVerified) toast.success(t("jaopor.ownerFoundToast"));
+        else toast.info(t("jaopor.stillMissing", { host: websiteHost ?? "" }));
         onConnected?.(source, body.ownerVerified);
         router.refresh();
       } else {
