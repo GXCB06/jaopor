@@ -16,9 +16,13 @@ export function CurrencyToggle() {
       title={t(next === "thb" ? "currencyThb" : "currencyUsd")}
       className="inline-flex h-8 min-w-8 items-center justify-center rounded-md border bg-card px-2 text-xs font-semibold tabular-nums transition-colors hover:bg-accent"
     >
-      {currency === "thb" ? "฿" : "$"}
-      <span className="ml-1 hidden xl:inline">
-        {currency === "thb" ? "THB" : "USD"}
+      {/* Both labels, shown by html[data-currency] like <Money>: no "$" flash on a ฿ page before
+          hydration (UX audit C-5). */}
+      <span className="cur-thb">
+        ฿<span className="ml-1 hidden xl:inline">THB</span>
+      </span>
+      <span className="cur-usd">
+        $<span className="ml-1 hidden xl:inline">USD</span>
       </span>
     </button>
   );

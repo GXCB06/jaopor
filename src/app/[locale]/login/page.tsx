@@ -28,7 +28,12 @@ export default async function LoginPage({
     <main className="mx-auto flex w-full max-w-sm flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center">
       <BrandMark className="size-10" />
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {/* C-9: say why they're here when they came to add a project. */}
+          {next && /^(?:\/(?:th|en))?\/new(?:[?#]|$)/.test(next)
+            ? t("titleAdd")
+            : t("title")}
+        </h1>
         <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
       {sp.error && <p className="text-sm text-destructive">{t("error")}</p>}

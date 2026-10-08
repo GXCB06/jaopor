@@ -955,6 +955,30 @@ export function StartupEditForm({
                     onChange={(ev) => set("founded")(ev.target.value)}
                     className={inputClass}
                   />
+                  {/* C-2: the repo's first commit (build proof) as a one-click founded date. */}
+                  {!f.founded && startup.build_first_commit_at && (
+                    <p className="flex flex-wrap items-center gap-x-2 text-caption text-muted-foreground">
+                      {e("suggestFounded", {
+                        date: new Date(
+                          startup.build_first_commit_at,
+                        ).toLocaleDateString(locale === "th" ? "th-TH" : "en", {
+                          month: "long",
+                          year: "numeric",
+                        }),
+                      })}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          set("founded")(
+                            startup.build_first_commit_at!.slice(0, 7),
+                          )
+                        }
+                        className="font-semibold text-brand-text hover:underline"
+                      >
+                        {e("useFounded")}
+                      </button>
+                    </p>
+                  )}
                 </Field>
               </>,
             )}
@@ -1133,6 +1157,22 @@ export function StartupEditForm({
                     value={f.aiTools}
                     onChange={set("aiTools")}
                   />
+                  {/* C-1: build proof already measured Claude co-authored commits. */}
+                  {(startup.build_ai_commits ?? 0) > 0 &&
+                    !f.aiTools.includes("claude-code") && (
+                      <p className="flex flex-wrap items-center gap-x-2 text-caption text-muted-foreground">
+                        {e("suggestClaude")}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            set("aiTools")([...f.aiTools, "claude-code"])
+                          }
+                          className="font-semibold text-brand-text hover:underline"
+                        >
+                          + {e("addClaudeCode")}
+                        </button>
+                      </p>
+                    )}
                 </Field>
                 <Field
                   id="tech_stack"

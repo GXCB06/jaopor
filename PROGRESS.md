@@ -12,6 +12,37 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-08 — Audit Phase 6: polish
+
+**Done:**
+
+- **C-5:** no "$" flash on Thai pages. The header switch renders both labels via the `<Money>` CSS, and `useCurrency()` assumes ฿ on Thai pages before hydration, so the chart's server HTML now starts in ฿.
+- **C-6:** no dead ends. The "อ้างสิทธิ์ผลงาน (เร็ว ๆ นี้)" tile and the "ที่บันทึกไว้" sidebar item are hidden until they work.
+- **C-9:** signing in to add a project says "เข้าสู่ระบบเพื่อเพิ่มผลงาน".
+- **C-11:** on phones the currency switch moved into the ☰ menu (the header keeps five controls).
+- **Add-project:**
+  - **C-12:** a sticky full-width button on phones;
+  - **C-13:** the 5-project limit shown before typing;
+  - **C-14:** "เราอ่านแค่ชื่อ คำอธิบาย และโลโก้จากหน้าแรกของเว็บ" under the auto-fill status.
+- **Edit-page suggestions from build proof:**
+  - **C-1:** "+ เพิ่ม Claude Code" when Claude co-authored commits exist;
+  - **C-2:** "ใช้เป็นวันที่ก่อตั้ง" from the repo's first commit.
+- **C-8:** the feed composer is one tappable line on phones until opened.
+
+**Files:** `src/components/{CurrencyToggle,MobileNav,SiteHeader}.tsx`, `src/lib/currency.ts`, `src/app/[locale]/{login,dashboard,feed}/page.tsx`, `src/components/dashboard/DashboardSidebar.tsx`, `src/components/wizard/{StartupWizard,StartupEditForm}.tsx`, `src/components/posts/Composer.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit tests 369 ✓ · local e2e 64 passed / 10 skipped (one first-compile timeout passed on its own and in a full rerun) · production build ✓.
+- Local:
+  - `/th/login?next=/th/new` shows the add title;
+  - the 375 px header has five controls and no overflow;
+  - the ☰ menu has "แสดงเป็นดอลลาร์ ($)";
+  - the desktop switch shows only "฿";
+  - the chart's server HTML is in ฿.
+- The signed-in pieces are checked on production after the push.
+
+**Audit status:** Phases 1–6 shipped or ready. Open owner decisions: deduct Stripe coupons from MRR, per-step funnel counts (migration), milestones in ฿ on English pages, the jaopor-pdt0 history backfill, Supabase manual linking (GitHub), and later a shared Badge / ProofMark component.
+
 ## 2026-10-08 — Audit Phase 5: system-wide consistency
 
 **Done:**

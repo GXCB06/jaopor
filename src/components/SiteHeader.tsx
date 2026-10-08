@@ -39,7 +39,10 @@ export function SiteHeader() {
           </Link>
         </nav>
         <div className="ml-auto flex items-center gap-0.5 sm:gap-3 lg:gap-2 xl:gap-3">
-          <CurrencyToggle />
+          {/* Phones: in the menu instead (UX audit C-11: seven controls in 343 px). */}
+          <span className="hidden sm:contents">
+            <CurrencyToggle />
+          </span>
           <SearchShortcut />
           <Link
             href="/new"

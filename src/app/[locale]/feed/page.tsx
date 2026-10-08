@@ -249,6 +249,7 @@ export default async function FeedPage({
 
       <section aria-label={t("title")} className="min-w-0 space-y-4">
         <Composer
+          collapsible
           me={
             me
               ? {

@@ -29,10 +29,13 @@ export function Composer({
   me,
   startups,
   loginHref,
+  collapsible = false,
 }: {
   me: { name: string; avatarUrl: string | null } | null;
   startups: { id: number; name: string }[];
   loginHref: string;
+  /** Feed on phones: one tappable line until opened (UX audit C-8), so posts start higher. */
+  collapsible?: boolean;
 }) {
   const t = useTranslations("Posts");
   const router = useRouter();
@@ -44,6 +47,8 @@ export function Composer({
   const [link, setLink] = useState("");
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const textRef = useRef<HTMLTextAreaElement>(null);
+  const [open, setOpen] = useState(false);
 
   // Free the preview object URLs when they leave the list or the composer unmounts.
   const filesRef = useRef(files);
@@ -142,134 +147,160 @@ export function Composer({
   }
 
   const over = body.length > MAX_POST_BODY - 50;
+  const collapsed = collapsible && !open;
   return (
-    <section
-      aria-label={t("composerLabel")}
-      className="space-y-3 rounded-xl border bg-card p-4"
-    >
-      <div className="flex gap-3">
-        <Avatar name={me.name} src={me.avatarUrl} />
-        <textarea
-          value={body}
-          maxLength={MAX_POST_BODY}
-          rows={3}
-          aria-label={t("bodyLabel")}
-          placeholder={t("placeholder")}
-          onChange={(e) => setBody(e.target.value)}
-          className={cn(
-            inputClass,
-            "h-auto min-w-0 flex-1 resize-y py-2 text-sm",
-          )}
-        />
-      </div>
-
-      {files.length > 0 && (
-        <ul className="flex flex-wrap gap-2 sm:ml-12">
-          {files.map((f, i) => (
-            <li key={f.url} className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element -- local preview */}
-              <img
-                src={f.url}
-                alt={t("imageAlt", { n: i + 1 })}
-                className="size-16 rounded-md border object-cover"
-              />
-              <button
-                type="button"
-                aria-label={t("removeImage", { n: i + 1 })}
-                onClick={() => {
-                  URL.revokeObjectURL(f.url);
-                  setFiles((cur) => cur.filter((x) => x !== f));
-                }}
-                className="absolute -top-1.5 -right-1.5 inline-flex size-5 items-center justify-center rounded-full border bg-background"
-              >
-                <XIcon className="size-3" aria-hidden="true" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {showLink && (
-        <input
-          value={link}
-          inputMode="url"
-          placeholder={t("linkPh")}
-          aria-label={t("linkLabel")}
-          onChange={(e) => setLink(e.target.value)}
-          className={cn(inputClass, "sm:ml-12 sm:w-[calc(100%-3rem)]")}
-        />
-      )}
-
-      <div className="flex flex-wrap items-center gap-2 sm:ml-12">
-        <select
-          value={startupId}
-          aria-label={t("startupLabel")}
-          onChange={(e) => setStartupId(Number(e.target.value))}
-          className={cn(selectCls, "max-w-40")}
-        >
-          {startups.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={type}
-          aria-label={t("typeLabel")}
-          onChange={(e) => setType(e.target.value as ManualPostType)}
-          className={selectCls}
-        >
-          {MANUAL_POST_TYPES.map((x) => (
-            <option key={x} value={x}>
-              {t(`types.${x}`)}
-            </option>
-          ))}
-        </select>
-        <input
-          ref={fileRef}
-          type="file"
-          accept={SCREENSHOT_TYPES.join(",")}
-          multiple
-          hidden
-          onChange={(e) => {
-            pick(e.target.files);
-            e.target.value = "";
+    <>
+      {collapsed && (
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(true);
+            requestAnimationFrame(() => textRef.current?.focus());
           }}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          aria-label={t("addImage")}
-          disabled={files.length >= MAX_POST_IMAGES}
-          onClick={() => fileRef.current?.click()}
+          className="flex w-full items-center gap-3 rounded-xl border bg-card p-3 text-left text-sm text-muted-foreground hover:bg-accent sm:hidden"
         >
-          <ImagePlusIcon aria-hidden="true" />
-        </Button>
-        <Button
-          type="button"
-          variant={showLink ? "secondary" : "outline"}
-          size="icon"
-          aria-label={t("addLink")}
-          aria-pressed={showLink}
-          onClick={() => setShowLink((v) => !v)}
-        >
-          <LinkIcon aria-hidden="true" />
-        </Button>
-        <span
-          className={cn(
-            "ml-auto text-2xs tabular-nums",
-            over ? "text-warning" : "text-faint",
-          )}
-        >
-          {body.length} / {MAX_POST_BODY}
-        </span>
-        <Button type="button" onClick={submit} disabled={busy || !body.trim()}>
-          {busy && <Loader2Icon className="animate-spin" aria-hidden="true" />}
-          {t("post")}
-        </Button>
-      </div>
-      <p className="text-2xs text-faint sm:ml-12">{t("rules")}</p>
-    </section>
+          <Avatar name={me.name} src={me.avatarUrl} />
+          <span className="min-w-0 flex-1 truncate">{t("placeholder")}</span>
+        </button>
+      )}
+      <section
+        aria-label={t("composerLabel")}
+        className={cn(
+          "space-y-3 rounded-xl border bg-card p-4",
+          collapsed && "max-sm:hidden",
+        )}
+      >
+        <div className="flex gap-3">
+          <Avatar name={me.name} src={me.avatarUrl} />
+          <textarea
+            ref={textRef}
+            value={body}
+            maxLength={MAX_POST_BODY}
+            rows={3}
+            aria-label={t("bodyLabel")}
+            placeholder={t("placeholder")}
+            onChange={(e) => setBody(e.target.value)}
+            className={cn(
+              inputClass,
+              "h-auto min-w-0 flex-1 resize-y py-2 text-sm",
+            )}
+          />
+        </div>
+
+        {files.length > 0 && (
+          <ul className="flex flex-wrap gap-2 sm:ml-12">
+            {files.map((f, i) => (
+              <li key={f.url} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element -- local preview */}
+                <img
+                  src={f.url}
+                  alt={t("imageAlt", { n: i + 1 })}
+                  className="size-16 rounded-md border object-cover"
+                />
+                <button
+                  type="button"
+                  aria-label={t("removeImage", { n: i + 1 })}
+                  onClick={() => {
+                    URL.revokeObjectURL(f.url);
+                    setFiles((cur) => cur.filter((x) => x !== f));
+                  }}
+                  className="absolute -top-1.5 -right-1.5 inline-flex size-5 items-center justify-center rounded-full border bg-background"
+                >
+                  <XIcon className="size-3" aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {showLink && (
+          <input
+            value={link}
+            inputMode="url"
+            placeholder={t("linkPh")}
+            aria-label={t("linkLabel")}
+            onChange={(e) => setLink(e.target.value)}
+            className={cn(inputClass, "sm:ml-12 sm:w-[calc(100%-3rem)]")}
+          />
+        )}
+
+        <div className="flex flex-wrap items-center gap-2 sm:ml-12">
+          <select
+            value={startupId}
+            aria-label={t("startupLabel")}
+            onChange={(e) => setStartupId(Number(e.target.value))}
+            className={cn(selectCls, "max-w-40")}
+          >
+            {startups.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={type}
+            aria-label={t("typeLabel")}
+            onChange={(e) => setType(e.target.value as ManualPostType)}
+            className={selectCls}
+          >
+            {MANUAL_POST_TYPES.map((x) => (
+              <option key={x} value={x}>
+                {t(`types.${x}`)}
+              </option>
+            ))}
+          </select>
+          <input
+            ref={fileRef}
+            type="file"
+            accept={SCREENSHOT_TYPES.join(",")}
+            multiple
+            hidden
+            onChange={(e) => {
+              pick(e.target.files);
+              e.target.value = "";
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label={t("addImage")}
+            disabled={files.length >= MAX_POST_IMAGES}
+            onClick={() => fileRef.current?.click()}
+          >
+            <ImagePlusIcon aria-hidden="true" />
+          </Button>
+          <Button
+            type="button"
+            variant={showLink ? "secondary" : "outline"}
+            size="icon"
+            aria-label={t("addLink")}
+            aria-pressed={showLink}
+            onClick={() => setShowLink((v) => !v)}
+          >
+            <LinkIcon aria-hidden="true" />
+          </Button>
+          <span
+            className={cn(
+              "ml-auto text-2xs tabular-nums",
+              over ? "text-warning" : "text-faint",
+            )}
+          >
+            {body.length} / {MAX_POST_BODY}
+          </span>
+          <Button
+            type="button"
+            onClick={submit}
+            disabled={busy || !body.trim()}
+          >
+            {busy && (
+              <Loader2Icon className="animate-spin" aria-hidden="true" />
+            )}
+            {t("post")}
+          </Button>
+        </div>
+        <p className="text-2xs text-faint sm:ml-12">{t("rules")}</p>
+      </section>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 // Client side of the currency switch (Design.md §3 Currency): the toggle and client charts read
 // html[data-currency], which the <head> script in currency-script.ts sets before paint.
+import { useLocale } from "next-intl";
 import { useSyncExternalStore } from "react";
 import { CURRENCY_STORAGE_KEY, type Currency } from "./currency-script";
 
@@ -22,9 +23,12 @@ function subscribe(onChange: () => void) {
 }
 
 export function useCurrency(): Currency {
+  // Before hydration, assume the page language's default (the <head> script's default too): a
+  // Thai page's chart used to render "$59" for a moment before switching to ฿ (UX audit C-5).
+  const locale = useLocale();
   return useSyncExternalStore(
     subscribe,
     () => (document.documentElement.dataset.currency === "thb" ? "thb" : "usd"),
-    () => "usd",
+    () => (locale === "th" ? "thb" : "usd"),
   );
 }

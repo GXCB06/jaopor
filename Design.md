@@ -131,6 +131,7 @@ Where the warmth goes: welcome moments, empty states, Add-project intro, the pos
 ### Currency (USD / THB)
 
 - Verified revenue is stored in USD cents. Visitors choose **฿ THB** or **$ USD** with the header **CurrencyToggle** (`h-8 rounded-md border bg-card px-2 text-xs font-semibold`, shows the active symbol; `aria-label` from messages). The choice lives in `localStorage.currency`. With nothing stored, `th` pages default to THB and `en` to USD.
+- **The header switch and client charts never flash the wrong currency (2026-10-08, UX audit C-5):** the switch renders both labels in `.cur-thb` / `.cur-usd` spans like `<Money>`; `useCurrency()` assumes the page language's default before hydration (Thai → ฿), the same default as the `<head>` script. Below `sm` the switch lives in the ☰ menu ("แสดงเป็นดอลลาร์ ($)" / "แสดงเป็นเงินบาท (฿)", C-11), so the phone header keeps five controls.
 - No flash, ISR-safe: the server renders **both** values (`<Money>` → `.cur-usd` + `.cur-thb` spans), an inline `<head>` script sets `html[data-currency]`, and CSS hides the other one. Client charts read the same attribute (`useCurrency()`).
 - THB = USD × the day's ECB rate (Frankfurter, cached 6 h). The THB span has a `title` "≈ at 1 USD = {rate} THB". If the rate can't be fetched, only USD is rendered.
 - Formats: `฿62K` compact, `฿62,350` full (Latin digits, no decimals).
@@ -418,6 +419,14 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - Connections: followers / following lists (avatar, name, @handle · headline).
 - Settings: per-field visibility as 3-way segmented radios (สาธารณะ / สมาชิก / ซ่อน), directory checkbox, a `border-negative/30` delete-account card (email request until self-service).
 - Saved: honest placeholder (no bookmarks table yet).
+
+### Phase 6 polish (2026-10-08, UX audit)
+
+- **No dead ends:** the dashboard has no "อ้างสิทธิ์ผลงาน · เร็ว ๆ นี้" tile and the sidebar no "ที่บันทึกไว้" until those exist (C-6; `/dashboard/saved` still answers).
+- **Login says why (C-9):** with `next` = Add-project the title is "เข้าสู่ระบบเพื่อเพิ่มผลงาน".
+- **Add-project (C-12 / C-13 / C-14):** on phones the primary button sits in a sticky bottom bar (full width, `border-t bg-background/95 backdrop-blur`); an owner at the 5-project limit sees the amber note and a disabled button before typing anything; under the auto-fill status one faint line says what is read ("เราอ่านแค่ชื่อ คำอธิบาย และโลโก้จากหน้าแรกของเว็บ").
+- **Edit-page suggestions from build proof (C-1 / C-2):** "พบ commit ที่เขียนร่วมกับ Claude… + เพิ่ม Claude Code" under AI tools when Claude co-authored commits exist and it is not ticked; "commit แรกของ repo: {month year} · ใช้เป็นวันที่ก่อตั้ง" under Founded while it is empty. Both are one-click and only fill, never overwrite.
+- **Feed composer on phones (C-8):** one tappable line (avatar + "อัปเดตอะไรในผลงานของคุณวันนี้?") that opens the full composer and focuses the text; from `sm` the full composer as before. The dashboard keeps the full composer.
 
 ### Onboarding (`/onboarding`, spec 9e)
 

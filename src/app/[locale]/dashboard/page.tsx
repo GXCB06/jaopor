@@ -2,7 +2,6 @@ import {
   ArrowRightIcon,
   ArrowUpRightIcon,
   CheckIcon,
-  KeyRoundIcon,
   PencilIcon,
   PlugIcon,
   PlusIcon,
@@ -365,7 +364,7 @@ export default async function DashboardPage({
               </tbody>
             </table>
           )}
-          <div className="grid gap-3 p-5 sm:grid-cols-2">
+          <div className="grid gap-3 p-5">
             <Link
               href="/new"
               className="flex gap-3 rounded-xl border border-dashed p-4 transition-colors hover:border-brand/60"
@@ -382,25 +381,8 @@ export default async function DashboardPage({
                 </span>
               </span>
             </Link>
-            <div
-              aria-disabled="true"
-              className="flex gap-3 rounded-xl border border-dashed p-4 opacity-70"
-            >
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-background">
-                <KeyRoundIcon className="size-4" aria-hidden="true" />
-              </span>
-              <span>
-                <span className="flex items-center gap-2 text-xs font-semibold">
-                  {t("claimWork")}
-                  <span className="rounded-full border px-1.5 text-3xs font-normal text-faint">
-                    {t("soon")}
-                  </span>
-                </span>
-                <span className="mt-0.5 block text-2xs text-muted-foreground">
-                  {t("claimWorkHint")}
-                </span>
-              </span>
-            </div>
+            {/* The "claim a project" tile (coming soon) is hidden until the claim flow exists:
+                a disabled tile in the main column was a dead end (UX audit C-6). */}
           </div>
           {owned.length === 0 && dash.startups.length === 0 && (
             <p className="px-5 pb-5 text-caption text-muted-foreground">

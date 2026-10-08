@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CoinsIcon,
   GlobeIcon,
   LayoutGridIcon,
   MedalIcon,
@@ -24,10 +25,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { applyTheme, useThemeMode } from "@/lib/theme";
+import { applyCurrency, useCurrency } from "@/lib/currency";
 
 /**
  * Design.md §5 SiteHeader MobileNav: below `lg` the nav links live in this menu; below `sm` it
- * also holds the language and theme switches (the header row must fit 360px).
+ * also holds the currency, language and theme switches (the header row must fit 360px).
  */
 export function MobileNav() {
   const t = useTranslations("Nav");
@@ -36,6 +38,7 @@ export function MobileNav() {
   const pathname = usePathname();
   const params = useParams();
   const mode = useThemeMode();
+  const currency = useCurrency();
   const nextMode = mode === "dark" ? "light" : "dark";
 
   return (
@@ -102,6 +105,14 @@ export function MobileNav() {
         >
           <GlobeIcon aria-hidden="true" />
           <span lang={locale === "th" ? "en" : "th"}>{t("language")}</span>
+        </DropdownMenuItem>
+        {/* C-11: on phones the currency switch lives here, not in the header row. */}
+        <DropdownMenuItem
+          className="sm:hidden"
+          onSelect={() => applyCurrency(currency === "thb" ? "usd" : "thb")}
+        >
+          <CoinsIcon aria-hidden="true" />
+          {currency === "thb" ? t("currencyUsd") : t("currencyThb")}
         </DropdownMenuItem>
         <DropdownMenuItem
           className="sm:hidden"

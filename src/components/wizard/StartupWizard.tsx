@@ -180,6 +180,8 @@ export function StartupWizard({
       .order("id")
       .then(({ data }) => setMine(data ?? []));
   }, [userId]);
+  // The database allows 5 projects per owner; going back to edit this one is always allowed.
+  const atLimit = !saved && mine.length >= 5;
   const existing =
     step === 1 && siteUrl
       ? mine.find(
@@ -411,6 +413,10 @@ export function StartupWizard({
                   {fillState === "done"
                     ? t("autofillDone")
                     : t("autofillReading")}
+                  {/* C-14: what we read, at the moment we read it. */}
+                  <span className="block text-2xs text-faint">
+                    {t("autofillPrivacy")}
+                  </span>
                 </p>
               )}
             </Field>
@@ -521,13 +527,35 @@ export function StartupWizard({
               {error}
             </p>
           )}
-          <Button type="submit" disabled={busy || !!existing} className="px-4">
-            {busy
-              ? common("loading")
-              : saved
-                ? t("saveAndContinue")
-                : t("createAndContinue")}
-          </Button>
+          {/* C-13: the 5-project limit up front, not after filling everything in. */}
+          {atLimit && (
+            <p
+              role="note"
+              className="rounded-md border border-warning/40 bg-warning/10 p-3 text-caption"
+            >
+              {t("limitAhead")}{" "}
+              <Link
+                href="/dashboard/startups"
+                className="font-semibold whitespace-nowrap text-brand-text hover:underline"
+              >
+                →
+              </Link>
+            </p>
+          )}
+          {/* C-12: on phones the button stays reachable while the keyboard is open. */}
+          <div className="max-sm:sticky max-sm:bottom-0 max-sm:-mx-4 max-sm:border-t max-sm:bg-background/95 max-sm:px-4 max-sm:py-3 max-sm:backdrop-blur">
+            <Button
+              type="submit"
+              disabled={busy || !!existing || atLimit}
+              className="px-4 max-sm:w-full"
+            >
+              {busy
+                ? common("loading")
+                : saved
+                  ? t("saveAndContinue")
+                  : t("createAndContinue")}
+            </Button>
+          </div>
         </form>
       )}
 

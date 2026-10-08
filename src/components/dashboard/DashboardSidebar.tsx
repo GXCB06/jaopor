@@ -2,7 +2,6 @@
 
 import {
   ArrowLeftIcon,
-  BookmarkIcon,
   LayoutGridIcon,
   LogOutIcon,
   MessageSquareIcon,
@@ -78,7 +77,7 @@ export function DashboardSidebar({
       icon: MessagesSquareIcon,
       badge: messages,
     },
-    { href: "/dashboard/saved", key: "saved", icon: BookmarkIcon },
+    // "ที่บันทึกไว้" (saved) stays out of the menu until bookmarks exist (UX audit C-6); the page itself still answers.
     { href: "/dashboard/connections", key: "connections", icon: PlugIcon },
     {
       href: "/dashboard/settings",

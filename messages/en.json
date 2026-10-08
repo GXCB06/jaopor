@@ -294,7 +294,8 @@
     "google": "Continue with Google",
     "github": "Continue with GitHub",
     "error": "Sign-in failed. Please try again.",
-    "legal": "By continuing you agree to our Terms and Privacy Policy."
+    "legal": "By continuing you agree to our Terms and Privacy Policy.",
+    "titleAdd": "Sign in to add your project"
   },
   "Wizard": {
     "title": "Add your project",
@@ -396,7 +397,9 @@
     "categoryPlaceholder": "Choose a category…",
     "provinceHint": "Used for the Province Olympics. Taken from your profile; you can change it.",
     "previewLabel": "How it looks in the project list",
-    "previewHint": "Verify your numbers in the next step and the card shows revenue or GitHub activity."
+    "previewHint": "Verify your numbers in the next step and the card shows revenue or GitHub activity.",
+    "autofillPrivacy": "We only read the name, description and logo from your home page",
+    "limitAhead": "You already have 5 projects (the maximum). Edit or delete one in My projects."
   },
   "Errors": {
     "invalid_key": "{source} didn't accept that key or link — check it and paste again.",
@@ -778,7 +781,11 @@
     "slugLabel": "Project page link",
     "slugHint": "Lowercase letters, numbers and - only. Old links redirect to the new one automatically, and your badge keeps working.",
     "slugInvalid": "Links use lowercase letters, numbers and - only (not at the start or end), up to 50 characters.",
-    "instantSave": "Images and connections in this section save right away; no need to press Save."
+    "instantSave": "Images and connections in this section save right away; no need to press Save.",
+    "suggestClaude": "Commits co-written with Claude found in your repo",
+    "addClaudeCode": "Add Claude Code",
+    "suggestFounded": "The repo's first commit: {date}",
+    "useFounded": "Use as the founded date"
   },
   "Search": {
     "placeholder": "Search projects, people, categories or provinces…",
