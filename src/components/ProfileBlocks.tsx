@@ -40,18 +40,24 @@ export function StatCard({
   label,
   value,
   caption,
+  help,
   className,
 }: {
   label: string;
   value: React.ReactNode;
   caption?: React.ReactNode;
+  /** Design.md §5 MetricHelp: an info button explaining what the number counts. */
+  help?: React.ReactNode;
   className?: string;
 }) {
   return (
     <Card className={cn("min-w-0 space-y-2 p-4", className)}>
-      <p className="truncate text-caption font-semibold tracking-wider text-faint uppercase">
-        {label}
-      </p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="truncate text-caption font-semibold tracking-wider text-faint uppercase">
+          {label}
+        </p>
+        {help}
+      </div>
       <div className="truncate text-2xl font-bold tracking-tight tabular-nums">
         {value}
       </div>

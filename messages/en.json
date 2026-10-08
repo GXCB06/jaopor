@@ -112,7 +112,6 @@
     "mrr": "MRR",
     "growth": "Growth",
     "title": "Leaderboard",
-    "live": "Live",
     "metric": "Rank by",
     "metrics": {
       "mrr": "MRR",
@@ -125,7 +124,8 @@
     "showLess": "Show less ↑",
     "footer": "Revenue verified via Stripe / RevenueCat · commits via GitHub · visitors counted by the JaoPor script or the project's analytics",
     "demo": "Demo",
-    "emptyCta": "Verify your numbers"
+    "emptyCta": "Verify your numbers",
+    "updatedDaily": "Updated daily"
   },
   "Directory": {
     "title": "All projects",
@@ -255,7 +255,13 @@
     "seeFeed": "See the whole feed",
     "unverifiedOwner": "Next step: verify your numbers from the tools you already use (1–2 minutes). Your project then gets the verified badge and can rank.",
     "verifyNow": "Verify numbers",
-    "countedBy": "Counted by {source}"
+    "countedBy": "Counted by {source}",
+    "help": "What is {label}?",
+    "allTimeHelp": "All money actually received since the first sale, minus refunds, read directly from {source}.",
+    "mrrHelp": "The monthly value of subscriptions active right now (yearly plans divided by 12), as reported by {source}. It's what the project expects to earn each month, not money already received, so it can differ from revenue.",
+    "mrrHelpStripe": "Stripe: counted from plan prices, including overdue subscriptions; coupons aren't deducted yet.",
+    "readMore": "Read more",
+    "readLess": "Show less"
   },
   "Verified": {
     "stamp": "Revenue is verified with <b>{provider}</b> API key.",
@@ -456,7 +462,7 @@
     "replaceNote": "Connecting {source} replaces {current}.",
     "lastSync": "Last sync {time}",
     "neverSynced": "Never synced",
-    "success": "Verified! The numbers are on your profile now.",
+    "success": "Verified! The numbers are on your project page now.",
     "open": "Open {source} settings",
     "openTest": "test mode",
     "stripe": {
@@ -546,7 +552,7 @@
         "traffic": [
           "Visitors in the last 30 days",
           "Daily figures for the chart",
-          "Which service verified it"
+          "Which service counted them"
         ]
       },
       "never": {
@@ -563,7 +569,8 @@
       },
       "revoke": "Disconnect at any time: the key and that source's numbers are deleted immediately.",
       "more": "How we handle your key"
-    }
+    },
+    "successCounted": "Connected! Visitors counted by {source} are on your project page now."
   },
   "Share": {
     "share": "Share",
@@ -628,7 +635,8 @@
     "tabs": "Card type",
     "lineColor": "Line colour",
     "glyphColor": "{symbol} colour",
-    "copyReadme": "Copy README code"
+    "copyReadme": "Copy README code",
+    "studioTitleProject": "Share this project"
   },
   "ShareCard": {
     "verifiedBy": "Verified on JaoPor",

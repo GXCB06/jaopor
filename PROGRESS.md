@@ -12,6 +12,37 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-08 — Audit Phase 1: numbers first on phones, MRR / revenue explained, no overclaiming
+
+**Done:**
+
+- **M-6, numbers first:** on the project page the stat tiles (or the traction tiles) come right under the header at every width; links, the "กำลังหา" banner and the demo strip follow them. At 375 px the first screen now shows ฿1,980 / ฿2,310 (before: no number). Long descriptions show 4 lines on phones with "อ่านต่อ". The "ก่อตั้ง" value wraps instead of cutting to "กันยายน 25…".
+- **M-3, MetricHelp:** an ⓘ button on "รายได้ทั้งหมด" and "MRR" opens a full-width note:
+  - **revenue** = money received since the first sale, minus refunds, read from the source;
+  - **MRR** = the monthly value of subscriptions active now (yearly ÷ 12), expected not received, so it can differ from revenue;
+  - for Stripe also: "counted from plan prices, includes overdue subscriptions, coupons not deducted yet". That is literally what `metrics.ts` does.
+- **M-4:** the leaderboard says "● อัปเดตทุกวัน" instead of "LIVE".
+- **M-5, counted ≠ verified:**
+  - analytics connections toast "เชื่อมแล้ว! จำนวนผู้เข้าชมที่นับโดย {source} …";
+  - the trust box says "ชื่อระบบที่นับ";
+  - after Add-project, the "Verified!" share dialog opens only for revenue or build proof;
+  - ShareStudio's own title is "แชร์ผลงานนี้" when nothing is verified.
+- **Found, not changed:**
+  - **MRR ignores Stripe coupons** (`stripe.ts` reads the plan's `unit_amount`), so a discounted subscription is counted at full price. The note now says so; deducting discounts is a metrics change for the owner to approve.
+  - The currency button and the chart show "$" for a moment while a ฿ page loads (audit C-5).
+
+**Files:** `src/app/[locale]/startup/[slug]/page.tsx`, `src/components/core/MetricHelp.tsx` (new), `src/components/profile/ClampedText.tsx` (new), `src/components/ProfileBlocks.tsx`, `src/components/LeaderboardCard.tsx`, `src/components/share/ShareStudio.tsx`, `src/components/wizard/{StartupWizard,VerifyPanel}.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit tests 365 ✓ · local e2e 64 passed / 10 skipped.
+- Browser, local, live DB:
+  - 375 px: tiles in the first screen, the MRR note opens full width (339 px) and closes, no horizontal scroll;
+  - 1280 px: header → 4 tiles with ⓘ → GitHub → looking-for → chart;
+  - home leaderboard "อัปเดตทุกวัน".
+- The wizard and toast paths need a signed-in account and real keys, so they were checked by code review.
+
+**Next:** push; then the owner decides on deducting coupons from MRR, and Phase 2 (Add-project: shorter onboarding, no default category, province in step 1, card preview, the "3 ขั้นต่อไป" panel).
+
 ## 2026-10-08 — Voice rewrite from the launch philosophy ("สถานีขนส่งฝัน")
 
 **Done:**

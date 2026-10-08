@@ -80,6 +80,7 @@ export function ShareStudio({
   badgeMarkdown,
   badgeSrc,
   currencySymbol,
+  proven,
 }: {
   slug: string;
   /** Absolute profile URL. */
@@ -95,6 +96,8 @@ export function ShareStudio({
   badgeSrc: string;
   /** "฿" or "$": the calendar heatmap glyph for this project. */
   currencySymbol: string;
+  /** Has a verified number (revenue or build proof): only then do titles say "verified". */
+  proven: boolean;
 }) {
   const t = useTranslations("Share");
   const locale = useLocale();
@@ -181,11 +184,13 @@ export function ShareStudio({
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="text-sm font-bold">
-            {auto === "verified"
+            {auto === "verified" && proven
               ? t("titleVerified")
-              : auto === "new"
+              : auto
                 ? t("titleNew")
-                : t("studioTitle")}
+                : proven
+                  ? t("studioTitle")
+                  : t("studioTitleProject")}
           </DialogTitle>
           <DialogDescription className="text-caption">
             {tab === "post" ? t("body") : t("studioBody")}

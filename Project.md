@@ -314,7 +314,7 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 ## 7. Open items
 
 - [x] (2026-10-07) **Visitor wording:** owner chose "counted" for visitors (kept on the leaderboard and Olympics); applied everywhere; /security intro and /privacy §3 title approved and updated the same day.
-- [ ] (2026-10-08) **UX/UI audit review** ([docs/UX_UI_PRODUCT_AUDIT.md](docs/UX_UI_PRODUCT_AUDIT.md)): owner decided on 2026-10-08: demos deleted, slug renamed to `jaopor` in the DB, glossary ผลงาน / project (applied). Next: Phase 1 (M-3 MRR definitions, M-4 / M-5 honest wording, M-6 numbers-first on phones).
+- [ ] (2026-10-08) **UX/UI audit review** ([docs/UX_UI_PRODUCT_AUDIT.md](docs/UX_UI_PRODUCT_AUDIT.md)): owner decided on 2026-10-08: demos deleted, slug renamed to `jaopor` in the DB, glossary ผลงาน / project (applied). Phase 1 done 2026-10-08 (M-3, M-4, M-5, M-6). Open: deduct Stripe coupons from MRR (owner decision), Phase 2.
 - [ ] Analytics connections keep their last numbers after a failed sync, and changing the website doesn't re-check an analytics domain (existed before round 3; clearing would delete data).
 
 - [x] ~~Restart the Claude Code session so hooks go live~~ → hooks confirmed live 2026-09-29 (quality + progress-gate fired)

@@ -33,6 +33,8 @@ import {
 import { Card } from "@/components/core/Card";
 import { MetricChart } from "@/components/MetricChart";
 import { ScreenshotGallery } from "@/components/profile/ScreenshotGallery";
+import { ClampedText } from "@/components/profile/ClampedText";
+import { MetricHelp } from "@/components/core/MetricHelp";
 import { ShareStudio } from "@/components/share/ShareStudio";
 import { FoundingBadge, Money, StartupLogo } from "@/components/StartupBits";
 import { QuickSearchSection } from "@/components/search/QuickSearchSection";
@@ -262,7 +264,11 @@ export default async function StartupPage({ params }: Props) {
                   />
                 )}
                 {startup.description ? (
-                  <p className="whitespace-pre-line">{startup.description}</p>
+                  <ClampedText
+                    text={startup.description}
+                    more={t("readMore")}
+                    less={t("readLess")}
+                  />
                 ) : (
                   <EmptyOwnerCard
                     field="description"
@@ -283,6 +289,9 @@ export default async function StartupPage({ params }: Props) {
               badgeMarkdown={badgeMarkdown(url, badgeSrc, startup.name)}
               badgeSrc={badgeSrc}
               currencySymbol={projectCurrencySymbol(startup)}
+              proven={
+                (verified && !startup.is_demo) || startup.build_commits !== null
+              }
             />
             {primary && (
               <a
@@ -298,25 +307,16 @@ export default async function StartupPage({ params }: Props) {
           </div>
         </header>
 
-        <ProjectLinks startup={startup} skipFirst />
         <LiveViewersPill />
-        <LookingForBanner startup={startup} />
-        {startup.is_demo && (
-          <p className="flex items-start gap-2 rounded-xl border border-dashed bg-card p-3 text-xs text-muted-foreground">
-            <FlaskConicalIcon
-              className="mt-0.5 size-3.5 shrink-0"
-              aria-hidden="true"
-            />
-            {t("demoNotice")}
-          </p>
-        )}
 
-        {/* A project without verified revenue leads with the numbers it does have (visitors, build). */}
+        {/* Numbers first, at every width (Design.md §5 Profile header; on a phone the first screen
+            used to hold no number). A project without verified revenue leads with the numbers it does have (visitors, build). */}
         {tractionFirst && <TractionTiles startup={startup} />}
 
         {/* Spec 2.4: only tiles that have data; unverified numbers collapse into one muted line. */}
         <section className="space-y-3">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
+          {/* relative: MetricHelp opens across the whole row, not inside one narrow tile. */}
+          <div className="relative grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
             {verified && (
               <StatCard
                 label={t("allTime")}
@@ -328,6 +328,13 @@ export default async function StartupPage({ params }: Props) {
                   />
                 }
                 caption={rank ? t("rank", { rank }) : undefined}
+                help={
+                  verifiedSource && (
+                    <MetricHelp label={t("help", { label: t("allTime") })}>
+                      {t("allTimeHelp", { source: verifiedSource })}
+                    </MetricHelp>
+                  )
+                }
               />
             )}
             {verified && (
@@ -339,6 +346,18 @@ export default async function StartupPage({ params }: Props) {
                 caption={t("subscriptions", {
                   count: startup.active_subscriptions ?? 0,
                 })}
+                help={
+                  verifiedSource && (
+                    <MetricHelp label={t("help", { label: t("mrr") })}>
+                      <span className="block">
+                        {t("mrrHelp", { source: verifiedSource })}
+                      </span>
+                      {startup.verified_provider === "stripe" && (
+                        <span className="block">{t("mrrHelpStripe")}</span>
+                      )}
+                    </MetricHelp>
+                  )
+                }
               />
             )}
             {ownerName && (
@@ -369,14 +388,14 @@ export default async function StartupPage({ params }: Props) {
                 label={startup.founded_on ? t("founded") : t("location")}
                 value={
                   startup.founded_on ? (
-                    <span className="text-lg">
+                    <span className="block text-lg leading-snug whitespace-normal">
                       {format.dateTime(new Date(startup.founded_on), {
                         month: "long",
                         year: "numeric",
                       })}
                     </span>
                   ) : (
-                    <span className="text-lg">
+                    <span className="block text-lg leading-snug whitespace-normal">
                       {[
                         provinceName(startup.province, locale),
                         countryName(startup.country, locale),
@@ -401,6 +420,18 @@ export default async function StartupPage({ params }: Props) {
             <UnverifiedLine items={[t("allTime"), t("mrr")]} />
           )}
         </section>
+
+        <ProjectLinks startup={startup} skipFirst />
+        <LookingForBanner startup={startup} />
+        {startup.is_demo && (
+          <p className="flex items-start gap-2 rounded-xl border border-dashed bg-card p-3 text-xs text-muted-foreground">
+            <FlaskConicalIcon
+              className="mt-0.5 size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+            {t("demoNotice")}
+          </p>
+        )}
 
         {/* Spec 6.4 step 3: chart card; nothing verified → owner-only prompt. */}
         {chartMetrics.length > 0 ? (

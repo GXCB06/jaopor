@@ -58,9 +58,10 @@ export function LeaderboardCard({
       <div className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-5">
         <h2 className="flex items-center gap-2 text-sm font-bold">
           {t("title")}
-          <span className="inline-flex items-center gap-1 text-3xs font-bold tracking-wider text-positive uppercase">
+          {/* The numbers sync once a day: never "LIVE" (Design.md §5 LeaderboardCard). */}
+          <span className="inline-flex items-center gap-1 text-2xs font-normal text-muted-foreground">
             <span className="size-1.5 rounded-full bg-positive" aria-hidden />
-            {t("live")}
+            {t("updatedDaily")}
           </span>
         </h2>
         <label className="relative">

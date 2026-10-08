@@ -15,6 +15,7 @@ import {
   type LinkColumn,
 } from "@/lib/links";
 import type { SiteAutofill } from "@/lib/net/link-preview";
+import { SOURCE_KIND } from "@/lib/sources/catalog";
 import { createClient } from "@/lib/supabase/client";
 import { revalidateStartup } from "@/app/actions/revalidate";
 import { useSessionDraft } from "@/lib/use-session-draft";
@@ -92,7 +93,10 @@ export function StartupWizard({
     column?: LinkColumn;
     logo?: string | null;
   } | null>(null);
+  // Something connected (the footer's primary button) vs. a proven number (revenue or build proof):
+  // only the latter opens the profile with the "Verified!" share dialog (Design.md §3 Moments).
   const [verified, setVerified] = useState(false);
+  const [proven, setProven] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -297,7 +301,7 @@ export function StartupWizard({
     router.push({
       pathname: `/startup/${saved.slug}`,
       // Post-listing share moment (Design.md §9): the profile opens the share dialog.
-      query: verified ? { verified: "1" } : { new: "1" },
+      query: proven ? { verified: "1" } : { new: "1" },
     });
   };
 
@@ -488,7 +492,10 @@ export function StartupWizard({
             connections={[]}
             websiteHost={websiteHost(saved.website)}
             githubLogin={githubLogin}
-            onConnected={() => setVerified(true)}
+            onConnected={(source) => {
+              setVerified(true);
+              if (SOURCE_KIND[source] !== "traffic") setProven(true);
+            }}
           />
           <div className="flex flex-wrap items-center gap-3 border-t pt-4">
             <Button

@@ -632,7 +632,13 @@ function SourceForm({
       if (res.ok && body.ok) {
         // The snippet is only proof once our server found it on the site: until then it says so,
         // never "Verified! The numbers are on your profile" (there are none yet).
-        if (source !== "jaopor") toast.success(t("success"));
+        // Analytics counts are "counted", not "verified" (Design.md §3 Verified vs counted).
+        if (source !== "jaopor")
+          toast.success(
+            SOURCE_KIND[source] === "traffic"
+              ? t("successCounted", { source: SOURCE_NAME[source] })
+              : t("success"),
+          );
         else if (body.ownerVerified) toast.success(t("jaopor.ownerFoundToast"));
         else toast.info(t("jaopor.stillMissing", { host: websiteHost ?? "" }));
         onConnected?.(source, body.ownerVerified);
