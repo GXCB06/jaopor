@@ -12,6 +12,25 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-08 — Old `jaopor-pdt0` link restored; Add-project analytics designed (not built)
+
+**Done:**
+
+- **Owner request:** one row in `startup_slug_history` (`jaopor-pdt0` → project 105). `/th|en/startup/jaopor-pdt0` now 308-redirects to `/startup/jaopor`, and `/api/badge/jaopor-pdt0` serves the badge. Checked on production.
+- **`docs/ADD_STARTUP_ANALYTICS_DESIGN.md`:**
+  - the real Add-project steps and error states from the code;
+  - 6 events (5 client via one silent, whitelisted, owner-checked RPC; `verify_result` server-side);
+  - one table in an unexposed `analytics` schema;
+  - a privacy model (no IP / contents / verification details, cascade on account delete, 180-day retention via the daily cron);
+  - RLS (no client access);
+  - performance (fire-and-forget, never blocks);
+  - options A / B / C (recommend B);
+  - the migration SQL draft, smoke tests T137–T143, and report queries.
+- **Not applied, not implemented:** waiting for the owner's approval (and a /privacy bullet the owner must approve).
+
+**Files:** `docs/ADD_STARTUP_ANALYTICS_DESIGN.md`
+**Verified:** curl on production (308 for th / en, badge 200).
+
 ## 2026-10-08 — Audit Phase 6: polish
 
 **Done:**
