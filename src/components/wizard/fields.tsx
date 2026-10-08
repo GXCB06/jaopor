@@ -36,7 +36,7 @@ export function Field({
     >
       {label}
       {optional && (
-        <span className="text-[10px] font-normal text-muted-foreground">
+        <span className="text-2xs font-normal text-muted-foreground">
           ({optional})
         </span>
       )}
@@ -56,7 +56,7 @@ export function Field({
         labelEl
       )}
       {children}
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-caption text-muted-foreground">{hint}</p>}
     </div>
   );
 }
@@ -67,16 +67,20 @@ export function Select({
   onChange,
   options,
   placeholder,
+  required,
 }: {
   id: string;
   value: string;
   onChange: (v: string) => void;
   options: Array<{ value: string; label: string }>;
   placeholder?: string;
+  /** With a placeholder: the browser refuses to submit until a real option is chosen. */
+  required?: boolean;
 }) {
   return (
     <select
       id={id}
+      required={required}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className={inputClass}

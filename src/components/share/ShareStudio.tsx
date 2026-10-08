@@ -108,11 +108,9 @@ export function ShareStudio({
     () => "",
   );
   const params = new URLSearchParams(search);
-  const auto = params.has("verified")
-    ? "verified"
-    : params.has("new")
-      ? "new"
-      : null;
+  // Only a proven number opens the dialog by itself; a fresh listing gets the owner's "3 steps"
+  // panel instead (Design.md §5 OwnerBar), and shares once the page is worth sharing.
+  const auto = params.has("verified") && proven ? "verified" : null;
   const [dismissed, setDismissed] = useState(false);
   const [manual, setManual] = useState(false);
   const open = manual || (auto !== null && !dismissed);
@@ -184,13 +182,11 @@ export function ShareStudio({
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="text-sm font-bold">
-            {auto === "verified" && proven
+            {auto
               ? t("titleVerified")
-              : auto
-                ? t("titleNew")
-                : proven
-                  ? t("studioTitle")
-                  : t("studioTitleProject")}
+              : proven
+                ? t("studioTitle")
+                : t("studioTitleProject")}
           </DialogTitle>
           <DialogDescription className="text-caption">
             {tab === "post" ? t("body") : t("studioBody")}

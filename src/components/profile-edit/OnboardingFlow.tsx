@@ -21,14 +21,18 @@ const STEPS = ["handle", "about", "status", "skills"] as const;
  * Design.md §6 Onboarding (spec 9e): username (live check) → headline + province → status →
  * skills (skippable), then `done`: the page they signed in from, else the dashboard (has a startup)
  * or the startups list (Design.md §6 Sign-in routing).
+ * `quick` (they came to add a project, UX audit M-8): one screen, username + province, then
+ * straight to Add-project; the rest waits for the dashboard checklist.
  */
 export function OnboardingFlow({
   suggestedHandle,
   name,
   done,
+  quick = false,
 }: {
   suggestedHandle: string;
   name: string;
+  quick?: boolean;
   /** Full path including the locale. */
   done: string;
 }) {
@@ -42,7 +46,8 @@ export function OnboardingFlow({
   const [status, setStatus] = useState("networking");
   const [skills, setSkills] = useState<PickedSkill[]>([]);
   const [saving, start] = useTransition();
-  const current = STEPS[step];
+  const steps = quick ? STEPS.slice(0, 1) : STEPS;
+  const current = steps[step];
 
   const finish = (withSkills: boolean) =>
     start(async () => {
@@ -73,10 +78,15 @@ export function OnboardingFlow({
   return (
     <Card className="space-y-6 p-6">
       <div className="space-y-3">
-        <p className="text-2xs font-semibold tracking-wider text-faint uppercase">
-          {t("onb.step", { n: step + 1, of: STEPS.length })}
-        </p>
-        <div className="flex gap-1.5" aria-hidden="true">
+        {!quick && (
+          <p className="text-2xs font-semibold tracking-wider text-faint uppercase">
+            {t("onb.step", { n: step + 1, of: STEPS.length })}
+          </p>
+        )}
+        <div
+          className={cn("flex gap-1.5", quick && "hidden")}
+          aria-hidden="true"
+        >
           {STEPS.map((s, i) => (
             <span
               key={s}
@@ -88,10 +98,14 @@ export function OnboardingFlow({
           ))}
         </div>
         <h1 className="text-xl font-bold tracking-tight">
-          {step === 0 ? t("onb.welcome", { name }) : t(`onb.${current}Title`)}
+          {quick
+            ? t("onb.quickTitle")
+            : step === 0
+              ? t("onb.welcome", { name })
+              : t(`onb.${current}Title`)}
         </h1>
         <p className="text-caption text-muted-foreground">
-          {t(`onb.${current}Hint`)}
+          {quick ? t("onb.quickHint") : t(`onb.${current}Hint`)}
         </p>
       </div>
 
@@ -102,6 +116,16 @@ export function OnboardingFlow({
             value={handle}
             onChange={setHandle}
             onState={setHandleState}
+          />
+        </Field>
+      )}
+      {quick && (
+        <Field label={t("f.province")} htmlFor="onb-province">
+          <ProvinceField
+            id="onb-province"
+            value={province}
+            onChange={setProvince}
+            suggest
           />
         </Field>
       )}
@@ -166,6 +190,7 @@ export function OnboardingFlow({
           variant="ghost"
           onClick={() => setStep(step - 1)}
           disabled={step === 0 || saving}
+          className={cn(quick && "invisible")}
         >
           <ArrowLeftIcon aria-hidden="true" />
           {t("back")}
@@ -181,7 +206,19 @@ export function OnboardingFlow({
               {t("onb.skip")}
             </Button>
           )}
-          {current === "skills" ? (
+          {quick ? (
+            <Button
+              type="button"
+              onClick={() => finish(false)}
+              disabled={!canNext || saving}
+            >
+              {saving && (
+                <Loader2Icon className="animate-spin" aria-hidden="true" />
+              )}
+              {t("onb.quickFinish")}
+              <ArrowRightIcon aria-hidden="true" />
+            </Button>
+          ) : current === "skills" ? (
             <Button
               type="button"
               onClick={() => finish(true)}

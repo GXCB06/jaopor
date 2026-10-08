@@ -4,7 +4,7 @@ import { Link } from "@/i18n/navigation";
 import type { StartupRow } from "@/lib/data/startups";
 import type { LookingFor } from "@/lib/links";
 import { growthPct } from "@/lib/format";
-import { logoUrl } from "@/lib/supabase/public";
+import { logoUrl } from "@/lib/supabase/logo-url";
 import { cn } from "@/lib/utils";
 import { CopyLinkButton } from "./CopyLinkButton";
 import {
@@ -24,13 +24,35 @@ import { categoryName } from "@/lib/config/display";
  * Round 3 (Design.md §5 StartupCard): a shield for "Owner verified", and a muted (dashed, no
  * fill) card when there is no proof at all (proof_level 0).
  */
+/** The fields a card reads: any listing row fits, and the Add-project preview builds one. */
+export type CardStartup = Pick<
+  StartupRow,
+  | "build_commits"
+  | "category"
+  | "is_demo"
+  | "logo_path"
+  | "looking_for"
+  | "mrr_cents"
+  | "name"
+  | "owner_verified_at"
+  | "proof_level"
+  | "revenue_30d_cents"
+  | "revenue_all_time_cents"
+  | "revenue_prev_30d_cents"
+  | "slug"
+  | "tagline"
+  | "verification_status"
+  | "visitors_30d"
+  | "visitors_prev_30d"
+>;
+
 const compact = (n: number) =>
   new Intl.NumberFormat("en", { notation: "compact" }).format(n);
 
 type Metric = { label: string; value: React.ReactNode };
 
 function useMetrics(
-  s: StartupRow,
+  s: CardStartup,
   large: boolean,
   thbPerUsd: number | null,
   third: "growth" | "allTime",
@@ -84,7 +106,7 @@ function useMetrics(
   return null;
 }
 
-function Tag({ startup, large }: { startup: StartupRow; large: boolean }) {
+function Tag({ startup, large }: { startup: CardStartup; large: boolean }) {
   const t = useTranslations("Card");
   const lf = useTranslations("LookingFor");
   // Compact cards show the demo label under the name (DemoTag) so the name keeps its width.
@@ -126,14 +148,20 @@ export function StartupCard({
   thbPerUsd = null,
   third = "growth",
   className,
+  preview = false,
+  logoSrc,
 }: {
-  startup: StartupRow;
+  startup: CardStartup;
   large?: boolean;
   /** Third revenue stat: growth (default) or all-time revenue (province page, spec 6.7). */
   third?: "growth" | "allTime";
   /** THB per USD for the currency switch (Design.md §3 Currency); null = USD only. */
   thbPerUsd?: number | null;
   className?: string;
+  /** Add-project preview (Design.md §5 wizard): not a link, no copy button. */
+  preview?: boolean;
+  /** A logo not uploaded yet (preview): an object or data URL instead of logo_path. */
+  logoSrc?: string | null;
 }) {
   const locale = useLocale();
   const common = useTranslations("Common");
@@ -181,16 +209,18 @@ export function StartupCard({
         className,
       )}
     >
-      <Link
-        href={href}
-        className="absolute inset-0"
-        aria-label={startup.name}
-      />
+      {!preview && (
+        <Link
+          href={href}
+          className="absolute inset-0"
+          aria-label={startup.name}
+        />
+      )}
       <div>
         <div className="flex items-start gap-2.5">
           <StartupLogo
             name={startup.name}
-            src={logoUrl(startup.logo_path)}
+            src={logoSrc !== undefined ? logoSrc : logoUrl(startup.logo_path)}
             size={large ? 36 : 24}
             className={large ? "rounded-lg" : undefined}
           />
@@ -217,7 +247,7 @@ export function StartupCard({
             )}
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            {large && <CopyLinkButton path={href} />}
+            {large && !preview && <CopyLinkButton path={href} />}
             <Tag startup={startup} large={large} />
           </div>
         </div>

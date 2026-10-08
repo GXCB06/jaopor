@@ -313,7 +313,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 ### ShareStudio (spec 6.5, Phase 3)
 
-Dialog `sm:max-w-xl rounded-xl bg-popover`, title "แชร์ตัวเลขที่ยืนยันแล้ว" (listing/verify moments keep their celebratory titles); × / Esc / backdrop close.
+Dialog `sm:max-w-xl rounded-xl bg-popover`, title "แชร์ตัวเลขที่ยืนยันแล้ว" (only the verify moment opens it by itself, with "ยืนยันแล้ว!"; "แชร์ผลงานนี้" when nothing is verified); × / Esc / backdrop close.
 
 1. **ลิงก์ผลงาน**: read-only input + `คัดลอก` outline button that turns into "คัดลอกแล้ว ✓" for 2 s (no toast).
 2. **Tabs** = `SegmentedControl`: **Badge · กราฟรายได้ · ปฏิทิน · โพสต์** (Post = JaoPor's ready-to-paste thread text; spec lists the first three).
@@ -405,7 +405,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 ### Onboarding (`/onboarding`, spec 9e)
 
-- `max-w-lg` Card: "ขั้นที่ n จาก 4" + 4-segment brand progress, title, hint; steps: username (live check, suggestion from the display name) → headline + province → status tiles → SkillPicker (skippable). Back / ถัดไป; the last step has "ข้ามไปก่อน" + "เสร็จสิ้น" → back to the page the user signed in from (`next`), else `/startups` with the welcome banner.
+- `max-w-lg` Card: "ขั้นที่ n จาก 4" + 4-segment brand progress, title, hint; steps: username (live check, suggestion from the display name) → headline + province → status tiles → SkillPicker (skippable). Back / ถัดไป; the last step has "ข้ามไปก่อน" + "เสร็จสิ้น" → back to the page the user signed in from (`next`), else `/startups` with the welcome banner. **Quick mode (2026-10-08, UX audit M-8):** when `next` is `/new` (they came to add a project) it is one screen: "ตั้งชื่อผู้ใช้ แล้วไปเพิ่มผลงานกัน" + username + province (suggested from location, reused as the project's province) + "ไปเพิ่มผลงาน →"; no step counter, no Back. Headline, status and skills wait for the dashboard checklist.
 
 ### Sign-in routing (2026-10-05, first-user test: everyone landed on an empty dashboard)
 
@@ -416,8 +416,8 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 ### Add-startup wizard v2 (`/new`, 2026-10-05, first-user test: "adding a startup is hard", most skipped verification)
 
 - **Loading (`/new/loading.tsx`, 2026-10-07, owner: "takes longer to open"):** a skeleton shaped like step 1 (title, 2 step bars, intro line, link field, name + category, one-liner, logo tile, button) shows the moment "เพิ่มผลงาน" is clicked, while the sign-in check runs. The verify step's code loads in the background after step 1 shows.
-- **Step labels:** "1. ลงผลงาน" / "List it" · "2. ยืนยันตัวเลข" / "Verify". Same 2-segment `border-t-2` bar.
-- **Step 1, four things, link first:** ลิงก์ผลงาน (full width, autofocus) → ชื่อ · คำโปรย (optional, ≤ 140, counter `text-2xs text-faint tabular-nums`) → หมวดหมู่ · โลโก้. AI tools, looking-for and screenshots moved to the edit page (the profile's "+ เพิ่ม…" cards lead there).
+- **Step labels:** "1. ลงผลงาน" / "List it" · "2. ยืนยันตัวเลข" / "Verify". Same 2-segment `border-t-2` bar; labels `text-caption font-semibold`, no uppercase (2026-10-08: the 10 px uppercase labels were hard to read in Thai).
+- **Step 1, four things, link first:** ลิงก์ผลงาน (full width, autofocus) → ชื่อ · คำโปรย (optional, ≤ 140, counter `text-2xs text-faint tabular-nums`) → หมวดหมู่ · โลโก้. AI tools, looking-for and screenshots moved to the edit page (the profile's "+ เพิ่ม…" cards lead there). **2026-10-08 (UX audit M-9, M-10, S-2):** หมวดหมู่ has **no default** ("เลือกหมวดหมู่…", required; a preselected "AI" silently miscategorised projects); **จังหวัด** is asked here (the province combobox without "ไม่ระบุ", required, prefilled from the founder's profile province, hint "ใช้จัดอันดับโอลิมปิกจังหวัด…"), saved with country TH, so the edit page no longer blocks the first save on it; once a name is typed, a **live card preview** (the large `StartupCard` in `preview` mode: not a link, local logo, the muted "not verified" card a new listing really gets) under "หน้าตาในหน้าผลงานทั้งหมด" + hint "ยืนยันตัวเลขในขั้นถัดไปแล้ว การ์ดจะแสดงรายได้หรือผลงานบน GitHub".
 - **Auto-fill from the link** (website links only): ~600 ms after typing stops, the server reads the page (SSRF-guarded, 3 s, 512 KB) and returns name (`og:site_name`, else the `<title>` part that matches the domain), one-liner (meta description, ≤ 140) and logo (apple-touch-icon, else the largest PNG / SVG / WebP / JPEG icon; resized to 256 px PNG). It fills only fields that are empty or still hold the previous auto value, never what the user typed. Status line under the link (`text-caption`): muted "กำลังอ่านหน้าเว็บ…" → brand "✨ เติมจากเว็บของคุณแล้ว แก้ได้ทุกช่อง" → nothing on failure (fields stay manual).
 - **Already listed (2026-10-07):** when the link is a website that one of the owner's projects already uses (same domain, `www` ignored), a `rounded-md border border-warning/40 bg-warning/10 p-3 text-caption` note under the link: "คุณลงเว็บนี้ไว้แล้วในชื่อ {name}" + `text-brand-text` link "ไปที่ผลงานเดิม →" (`/dashboard/{id}/edit`), and "สร้างและไปต่อ" is disabled. The server also refuses connecting a second revenue / visitor source for the same website (one business, one listing on the boards).
 - **Logo field:** 48 px rounded tile preview (auto or uploaded) + "อัปโหลดเอง" file button + "ลบ" text button; the auto logo is uploaded as PNG on submit.
@@ -445,9 +445,9 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - **Snippet status** in VerifyPanel (chooser and manage view), above the code box: found → positive `ShieldCheck` line "พบโค้ดบน {host} แล้ว …"; not found → `rounded-md border border-warning/40 bg-warning/10 p-3 text-caption` "ยังไม่พบโค้ดบน {host} … ระหว่างนี้ยังไม่นับผู้เข้าชม" + outline "ตรวจอีกครั้ง".
 - **No false success (2026-10-08, UX audit M-0):** "เริ่มนับ" toasts "พบโค้ดบนเว็บของคุณแล้ว" only when the code was found, otherwise the info "ยังไม่พบโค้ดบน {host} …"; never the generic "ยืนยันแล้ว! ตัวเลขขึ้นบนโปรไฟล์ของคุณแล้ว". The wizard treats the snippet as verified (primary "ไปที่หน้าผลงาน", profile opens with `?verified=1`) only once the code is found, including after "ตรวจอีกครั้ง".
 
-### Owner "not verified yet" prompt (startup page)
+### OwnerBar "3 ขั้นต่อไป" (startup page, 2026-10-08, UX audit S-1; replaces the "not verified yet" prompt)
 
-- When the project has no verified number at all (no revenue, visitors or build proof) and is not a demo, the owner's `OwnerBar` turns warning-tone: `border-warning/40 bg-warning/10`, `ShieldAlert` icon, "ผลงานนี้ยังไม่มีตัวเลขที่ยืนยัน ยืนยันใน 1 นาทีเพื่อให้คนเชื่อตัวเลขและติดอันดับ" + primary "ยืนยันตัวเลข" (→ `/dashboard/{id}/edit#verify`) + outline "แก้ไขโปรไฟล์". Visitors never see it. The dashboard keeps its existing unverified row banner.
+- Owner-only. Until the page has a **story** (description), a **screenshot** (or demo video) and a **number from a connected source** (revenue, build proof, owner check or visitors), the bar is a checklist `rounded-xl border border-brand/40 bg-brand/5 p-4`: title "อีก n ขั้น หน้าผลงานนี้ก็พร้อมแชร์" (+ "ผลงานของคุณขึ้น JaoPor แล้ว!" above it right after Add-project, `?new=1`), outline "แก้ไขผลงาน" on the right, then `sm:grid-cols-3` items linking to the editor (`#description`, `#screenshots`, `#verify`): number ring or positive `CheckCircle2` (done items `text-faint line-through`, no hint), the first open one `border-brand bg-brand/10` with `aria-current="step"`. All done → the plain bar ("นี่คือหน้าผลงานของคุณ…" + primary edit). Visitors never see it. After Add-project the share dialog no longer opens by itself (it did on a page with nothing to show yet); it opens automatically only with a verified number (`?verified=1`).
 
 ### Builder profile v2 (`/u/[username]`, also `/@username`; Phase 10e, Figma "Founder Prfile 2nd" 160-2)
 

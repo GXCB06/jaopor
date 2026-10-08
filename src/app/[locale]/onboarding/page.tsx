@@ -47,6 +47,8 @@ export default async function OnboardingPage({
         suggestedHandle={suggestHandle(name)}
         name={name.split(" ")[0]}
         done={done}
+        // Came to add a project: one screen, then straight to Add-project (UX audit M-8).
+        quick={/^\/(th|en)\/new(?:[?#]|$)/.test(done)}
       />
     </main>
   );

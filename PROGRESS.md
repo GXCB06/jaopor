@@ -12,6 +12,31 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-08 — Audit Phase 2: Add-project shorter, better data, a "3 steps" panel instead of an early share dialog
+
+**Done:**
+
+- **M-8, shorter onboarding:** when a new account came to add a project (`next=/new`), onboarding is one screen (username + province, then "ไปเพิ่มผลงาน →"), not four steps. Headline, status and skills wait for the dashboard checklist.
+- **M-9, category:** no preselected "AI"; "เลือกหมวดหมู่…" is required.
+- **M-10, province in step 1:** the province picker (required, no "ไม่ระบุ") is prefilled from the founder's profile and saved with country TH. New projects appear in the Olympics at once, and the edit page no longer blocks the first save on a field that was never asked.
+- **S-2, live card preview:** once a name is typed, the large card exactly as the list will show it (the muted "not verified" card) + "ยืนยันตัวเลขในขั้นถัดไปแล้ว การ์ดจะแสดงรายได้หรือผลงานบน GitHub". `StartupCard` got a `preview` mode and a `CardStartup` type (the 17 fields it reads).
+- **S-1, OwnerBar "3 ขั้นต่อไป":** until the page has a description, a screenshot and a number from a connected source, the owner sees an ordered checklist linking to the exact editor field; the first open step is highlighted. Right after Add-project it opens with "ผลงานของคุณขึ้น JaoPor แล้ว!".
+  - It replaces the amber "not verified yet" bar (its step 3).
+  - The share dialog no longer opens by itself on a fresh listing, only with a verified number.
+- **Readability:** wizard step labels are `text-caption` without uppercase; the shared field labels / hints use tokens instead of `text-[10px]` / `text-[11px]`.
+- **Bug caught before push:**
+  - Using `StartupCard` in the wizard pulled a `server-only` module into the browser bundle, so every local page returned 500.
+  - `logoUrl` now lives in a browser-safe `lib/supabase/logo-url.ts`, re-exported from `public.ts`.
+  - The production build confirms it.
+
+**Files:** `src/components/wizard/{StartupWizard,fields}.tsx`, `src/app/[locale]/new/page.tsx`, `src/components/profile-edit/{OnboardingFlow,ProvinceField}.tsx`, `src/app/[locale]/onboarding/page.tsx`, `src/components/profile/Owner.tsx`, `src/components/StartupCard.tsx`, `src/components/share/ShareStudio.tsx`, `src/app/[locale]/startup/[slug]/page.tsx`, `src/lib/supabase/{logo-url,public}.ts`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit tests 365 ✓ · local e2e 64 passed / 10 skipped · production build ✓.
+- The new screens are signed-in only, and the local preview has no session, so they get checked on production right after the push (view only, nothing submitted).
+
+**Next:** push, check `/new`, the onboarding code path and the JaoPor owner panel on production. Then Phase 3 (save in place, one logo field, one completeness model, editable slug).
+
 ## 2026-10-08 — Audit Phase 1: numbers first on phones, MRR / revenue explained, no overclaiming
 
 **Done:**

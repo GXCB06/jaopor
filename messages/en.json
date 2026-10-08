@@ -253,15 +253,24 @@
     "provinceRank": "{province} · #{rank} in the Olympics",
     "latestUpdates": "Latest updates",
     "seeFeed": "See the whole feed",
-    "unverifiedOwner": "Next step: verify your numbers from the tools you already use (1–2 minutes). Your project then gets the verified badge and can rank.",
-    "verifyNow": "Verify numbers",
     "countedBy": "Counted by {source}",
     "help": "What is {label}?",
     "allTimeHelp": "All money actually received since the first sale, minus refunds, read directly from {source}.",
     "mrrHelp": "The monthly value of subscriptions active right now (yearly plans divided by 12), as reported by {source}. It's what the project expects to earn each month, not money already received, so it can differ from revenue.",
     "mrrHelpStripe": "Stripe: counted from plan prices, including overdue subscriptions; coupons aren't deducted yet.",
     "readMore": "Read more",
-    "readLess": "Show less"
+    "readLess": "Show less",
+    "steps": {
+      "listed": "Your project is on JaoPor!",
+      "title": "{n, plural, one {One more step and this page is ready to share} other {# more steps and this page is ready to share}}",
+      "story": "Tell its story",
+      "storyHint": "Who it helps and what it solves",
+      "shots": "Add screenshots",
+      "shotsHint": "Screenshots sell a project best",
+      "proof": "Verify your numbers",
+      "proofHint": "From the tools you already use, about 1–2 minutes",
+      "done": "Done"
+    }
   },
   "Verified": {
     "stamp": "Revenue is verified with <b>{provider}</b> API key.",
@@ -374,7 +383,11 @@
     "verifyLater": "Not ready yet? That's fine. Verify later from your project page.",
     "alreadyListed": "You already listed this website as “{name}”",
     "goToExisting": "Go to that project",
-    "founderMessagePlaceholder": "Why did you build this, and who is it for? Tell it the way you'd tell a friend."
+    "founderMessagePlaceholder": "Why did you build this, and who is it for? Tell it the way you'd tell a friend.",
+    "categoryPlaceholder": "Choose a category…",
+    "provinceHint": "Used for the Province Olympics. Taken from your profile; you can change it.",
+    "previewLabel": "How it looks in the project list",
+    "previewHint": "Verify your numbers in the next step and the card shows revenue or GitHub activity."
   },
   "Errors": {
     "invalid_key": "{source} didn't accept that key or link — check it and paste again.",
@@ -581,7 +594,6 @@
     "x": "X",
     "copyBadge": "Copy badge HTML",
     "badgeCopied": "Badge code copied — paste it into your site or README.",
-    "titleNew": "Your project is on JaoPor! Share it with your people",
     "titleVerified": "Verified! Show the group your real numbers",
     "body": "Copy this and comment it on the Claude Thailand “show your project” post. The card with your numbers appears automatically.",
     "copyPost": "Copy text",
@@ -1295,7 +1307,10 @@
       "skillsTitle": "Your skills",
       "skillsHint": "You can skip this and add them later",
       "skip": "Skip for now",
-      "finish": "Finish"
+      "finish": "Finish",
+      "quickTitle": "Pick a username, then add your project",
+      "quickHint": "Skills, status and a short intro can wait: add them to your profile later.",
+      "quickFinish": "Add my project"
     },
     "back": "Back",
     "next": "Next",

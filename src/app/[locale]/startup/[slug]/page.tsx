@@ -223,12 +223,20 @@ export default async function StartupPage({ params }: Props) {
         </nav>
 
         <OwnerBar
-          unverified={
-            !verified &&
-            !startup.is_demo &&
-            startup.visitors_30d === null &&
-            startup.build_commits === null
-          }
+          done={{
+            story: Boolean(startup.description) || startup.is_demo,
+            shots:
+              shots.length > 0 ||
+              Boolean(startup.demo_video_url) ||
+              startup.is_demo,
+            // Any number from a connected source counts (revenue, build proof, owner check, visitors).
+            proof:
+              verified ||
+              startup.build_commits !== null ||
+              startup.visitors_30d !== null ||
+              startup.owner_verified_at !== null ||
+              startup.is_demo,
+          }}
         />
 
         <header className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">

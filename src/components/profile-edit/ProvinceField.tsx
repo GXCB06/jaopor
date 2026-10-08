@@ -8,7 +8,8 @@ import { POPULAR_PROVINCES, isProvince } from "@/lib/config/provinces";
 
 /**
  * Design.md §5 province picker: searchable (Thai / English / aliases such as "กทม", "bkk"),
- * popular provinces first, "ไม่ระบุ" first because the profile province is optional.
+ * popular provinces first, "ไม่ระบุ" first because the profile province is optional (`required`:
+ * no "ไม่ระบุ", for a project's province in Add-project).
  * `suggest` pre-fills an empty field from the visitor's approximate location (the live map's
  * /api/live/whoami: nearest province, Thailand only), shown as a hint; nothing is saved until the
  * form is.
@@ -18,21 +19,27 @@ export function ProvinceField({
   value,
   onChange,
   suggest = false,
+  required = false,
 }: {
   id: string;
   value: string;
   onChange: (slug: string) => void;
   suggest?: boolean;
+  required?: boolean;
 }) {
   const t = useTranslations("Me");
   const locale = useLocale();
   const [suggested, setSuggested] = useState(false);
   const options = useMemo(
     () => [
-      { value: "", label: t("f.provinceNone"), keywords: "none ไม่ระบุ" },
+      ...(required
+        ? []
+        : [
+            { value: "", label: t("f.provinceNone"), keywords: "none ไม่ระบุ" },
+          ]),
       ...provinceOptions(locale),
     ],
-    [locale, t],
+    [locale, t, required],
   );
 
   useEffect(() => {

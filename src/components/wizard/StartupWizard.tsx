@@ -6,6 +6,8 @@ import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { StartupLogo } from "@/components/StartupBits";
+import { StartupCard, type CardStartup } from "@/components/StartupCard";
+import { ProvinceField } from "@/components/profile-edit/ProvinceField";
 import { Link, useRouter } from "@/i18n/navigation";
 import { CATEGORIES, slugify } from "@/lib/catalog";
 import {
@@ -37,6 +39,27 @@ const VerifyPanel = dynamic(loadVerifyPanel);
 const MAX_LOGO_BYTES = 1024 * 1024;
 const LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];
 const TAGLINE_MAX = 140;
+
+/** A new listing as the card shows it: nothing verified yet, so the muted "not verified" card. */
+const PREVIEW_BASE: CardStartup = {
+  build_commits: null,
+  category: "other",
+  is_demo: false,
+  logo_path: null,
+  looking_for: [],
+  mrr_cents: null,
+  name: "",
+  owner_verified_at: null,
+  proof_level: 0,
+  revenue_30d_cents: null,
+  revenue_all_time_cents: null,
+  revenue_prev_30d_cents: null,
+  slug: "preview",
+  tagline: null,
+  verification_status: "unverified",
+  visitors_30d: null,
+  visitors_prev_30d: null,
+};
 
 /** 4 random base-36 chars for a slug clash (kept outside render for react-hooks/purity). */
 function randomSuffix(): string {
@@ -74,9 +97,12 @@ function dataUrlToPng(dataUrl: string): File {
 export function StartupWizard({
   userId,
   githubLogin,
+  defaultProvince,
 }: {
   userId: string;
   githubLogin: string | null;
+  /** The founder's profile province: the project's starts the same (UX audit M-10). */
+  defaultProvince: string;
 }) {
   const t = useTranslations("Wizard");
   const common = useTranslations("Common");
@@ -103,7 +129,9 @@ export function StartupWizard({
   const [link, setLink] = useState("");
   const [name, setName] = useState("");
   const [tagline, setTagline] = useState("");
-  const [category, setCategory] = useState("ai");
+  // No default: a preselected "AI" silently miscategorised projects (UX audit M-9).
+  const [category, setCategory] = useState("");
+  const [province, setProvince] = useState(defaultProvince);
   // An uploaded logo and its object URL for the preview tile.
   const [logo, setLogo] = useState<{ file: File; url: string } | null>(null);
   const [autoLogo, setAutoLogo] = useState<string | null>(null);
@@ -123,14 +151,15 @@ export function StartupWizard({
   // the created project, so step 2 doesn't fall back to step 1 and create a duplicate.
   const clearDraft = useSessionDraft(
     "jaopor:draft:new-startup",
-    { step, saved, name, link, tagline, category },
+    { step, saved, name, link, tagline, category, province },
     (d) => {
       setStep(d.step);
       setSaved(d.saved);
       setName(d.name ?? "");
       setLink(d.link ?? "");
       setTagline(d.tagline ?? "");
-      setCategory(d.category ?? "ai");
+      setCategory(d.category ?? "");
+      setProvince(d.province ?? defaultProvince);
     },
   );
 
@@ -212,6 +241,7 @@ export function StartupWizard({
     setError(null);
     if (!parsed) return setError(lt("invalid"));
     if (existing) return;
+    if (!province) return setError(t("provinceRequired"));
     if (logo && logo.file.size > MAX_LOGO_BYTES)
       return setError(t("logoTooBig"));
     const base = slugify(name) || "startup";
@@ -235,6 +265,8 @@ export function StartupWizard({
             tagline: tagline.trim() || null,
             ...links,
             category,
+            country: "TH",
+            province,
             ...(logoChanged
               ? { logo_path: file ? await uploadLogo(userId, file) : null }
               : {}),
@@ -268,6 +300,8 @@ export function StartupWizard({
               Record<LinkColumn, string>
             >),
             category,
+            country: "TH",
+            province,
             logo_path: logoPath,
           })
           .select("id, slug, website_url")
@@ -312,7 +346,8 @@ export function StartupWizard({
           <li
             key={label}
             className={cn(
-              "flex-1 border-t-2 pt-2 text-[10px] font-semibold tracking-wider uppercase",
+              // Readable in Thai: no uppercase, no 10 px (Design.md §3 Typography).
+              "flex-1 border-t-2 pt-2 text-caption font-semibold",
               i + 1 <= step
                 ? "border-brand text-foreground"
                 : "border-border text-muted-foreground",
@@ -393,8 +428,10 @@ export function StartupWizard({
             <Field label={t("category")} htmlFor="category">
               <Select
                 id="category"
+                required
                 value={category}
                 onChange={setCategory}
+                placeholder={t("categoryPlaceholder")}
                 options={CATEGORIES.map((c) => ({
                   value: c,
                   label: categoryName(c, locale),
@@ -419,6 +456,19 @@ export function StartupWizard({
                 value={tagline}
                 onChange={(e) => setTagline(e.target.value)}
                 className={inputClass}
+              />
+            </Field>
+            <Field
+              label={t("province")}
+              htmlFor="wizard-province"
+              hint={t("provinceHint")}
+              className="sm:col-span-2"
+            >
+              <ProvinceField
+                id="wizard-province"
+                value={province}
+                onChange={setProvince}
+                required
               />
             </Field>
             <Field
@@ -469,6 +519,27 @@ export function StartupWizard({
               </div>
             </Field>
           </div>
+          {/* S-2: the card as it will look in the list, updating as they type (not a link). */}
+          {name.trim() && (
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium">{t("previewLabel")}</p>
+              <StartupCard
+                preview
+                large
+                logoSrc={shownLogo}
+                className="max-w-sm"
+                startup={{
+                  ...PREVIEW_BASE,
+                  name: name.trim(),
+                  tagline: tagline.trim() || null,
+                  category: category || "other",
+                }}
+              />
+              <p className="text-caption text-muted-foreground">
+                {t("previewHint")}
+              </p>
+            </div>
+          )}
           {error && (
             <p role="alert" className="text-sm text-destructive">
               {error}
