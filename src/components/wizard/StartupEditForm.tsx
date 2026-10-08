@@ -58,6 +58,8 @@ import { useSessionDraft } from "@/lib/use-session-draft";
 import { cn } from "@/lib/utils";
 import { Field, Select, ToggleChips, inputClass } from "./fields";
 import { uploadLogo } from "./StartupWizard";
+import { LogoField } from "./LogoField";
+import { logoUrl } from "@/lib/supabase/logo-url";
 import { ScreenshotsManager } from "./ScreenshotsManager";
 import {
   channelOptions,
@@ -187,7 +189,17 @@ export function StartupEditForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [f, setF] = useState<Form>(initial);
+  // After an in-place save the server sends the saved row (new updated_at): take it as the new
+  // baseline, so trimmed / normalised values don't leave the form looking unsaved.
+  const [baseline, setBaseline] = useState(startup.updated_at);
+  if (baseline !== startup.updated_at) {
+    setBaseline(startup.updated_at);
+    setF(initial);
+  }
   const [logo, setLogo] = useState<File | null>(null);
+  // LogoField (Design.md §5): a local preview of the picked file, or the stored logo removed.
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoRemoved, setLogoRemoved] = useState(false);
   const [active, setActive] = useState<SectionId>("basics");
   const [shotCount, setShotCount] = useState(screenshots.length);
   const topRef = useRef<HTMLDivElement>(null);
@@ -207,7 +219,10 @@ export function StartupEditForm({
     <K extends keyof Form>(k: K) =>
     (v: Form[K]) =>
       setF((s) => ({ ...s, [k]: v }));
-  const dirty = logo !== null || JSON.stringify(f) !== JSON.stringify(initial);
+  const dirty =
+    logo !== null ||
+    logoRemoved ||
+    JSON.stringify(f) !== JSON.stringify(initial);
 
   const go = (id: SectionId) => {
     setActive(id);
@@ -251,7 +266,7 @@ export function StartupEditForm({
       Boolean(f.name.trim()),
       Boolean(f.tagline.trim()),
       Boolean(f.description.trim()),
-      Boolean(logo || startup.logo_path),
+      Boolean(logo || (startup.logo_path && !logoRemoved)),
     ],
     links: [
       hasLink,
@@ -279,9 +294,32 @@ export function StartupEditForm({
     ],
     verify: [connections.length > 0],
   };
-  const all = Object.values(done).flat();
-  const pct = Math.round((all.filter(Boolean).length / all.length) * 100);
-  const nextMissing = SECTIONS.find((s) => done[s.id].some((d) => !d));
+  // One completeness model (UX audit S-6): what visitors use most weighs most. Verification 30,
+  // screenshots 20, description 15, province 10; the other fields share the remaining 25.
+  const keyItems: [SectionId, boolean, number][] = [
+    ["basics", Boolean(f.description.trim()), 15],
+    ["media", shotCount > 0, 20],
+    ["verify", connections.length > 0, 30],
+    ["links", f.country !== "TH" || Boolean(f.province), 10],
+  ];
+  const rest = [
+    ...done.basics.filter((_, i) => i !== 2), // description is a key item
+    done.links[0],
+    done.links[2], // province is a key item
+    ...done.story,
+    ...done.stack,
+    done.media[1], // screenshots are a key item
+    ...done.founder,
+  ];
+  const pct = Math.round(
+    keyItems.reduce((sum, [, ok, w]) => sum + (ok ? w : 0), 0) +
+      (rest.filter(Boolean).length / rest.length) * 25,
+  );
+  // "Next": the owner checklist's order first (story → screenshots → verify, then province), never
+  // the section already open (it used to say "next: basics" while on basics).
+  const nextMissing =
+    keyItems.find(([s, ok]) => !ok && s !== active)?.[0] ??
+    SECTIONS.find((s) => s.id !== active && done[s.id].some((d) => !d))?.id;
 
   // ---- AI / website autofill ------------------------------------------------------------------
   const [filling, setFilling] = useState(false);
@@ -419,7 +457,9 @@ export function StartupEditForm({
     try {
       const logoPath = logo
         ? await uploadLogo(userId, logo)
-        : startup.logo_path;
+        : logoRemoved
+          ? null
+          : startup.logo_path;
       const { error: dbErr } = await createClient()
         .from("startups")
         .update({
@@ -454,8 +494,18 @@ export function StartupEditForm({
       if (dbErr) throw dbErr;
       await revalidateStartup(startup.id);
       clearDraft();
-      toast.success(common("save") + " ✓");
-      router.push(`/startup/${startup.slug}`);
+      if (logoPreview) URL.revokeObjectURL(logoPreview);
+      setLogo(null);
+      setLogoPreview(null);
+      setLogoRemoved(false);
+      // Stay in the editor (UX audit S-3: leaving after every save cut sessions short); the page is
+      // one click away in the toast.
+      toast.success(e("saved"), {
+        action: {
+          label: e("viewPage"),
+          onClick: () => router.push(`/startup/${startup.slug}`),
+        },
+      });
       router.refresh();
     } catch {
       setError(common("genericError"));
@@ -562,10 +612,10 @@ export function StartupEditForm({
           {nextMissing && (
             <button
               type="button"
-              onClick={() => go(nextMissing.id)}
+              onClick={() => go(nextMissing)}
               className="text-brand-text hover:underline"
             >
-              {e("nextStep", { section: e(`section.${nextMissing.id}`) })} →
+              {e("nextStep", { section: e(`section.${nextMissing}`) })} →
             </button>
           )}
         </div>
@@ -710,6 +760,22 @@ export function StartupEditForm({
                     onChange={(ev) => set("description")(ev.target.value)}
                   />
                 </Field>
+                {/* The banner at the top of the profile, so it belongs with the basics (UX audit S-8). */}
+                <Field
+                  id="looking_for"
+                  label={t("lookingFor")}
+                  optional={common("optional")}
+                  className="sm:col-span-2"
+                >
+                  <ToggleChips
+                    options={LOOKING_FOR.map((x) => ({
+                      value: x,
+                      label: lf(x),
+                    }))}
+                    value={f.lookingFor}
+                    onChange={set("lookingFor")}
+                  />
+                </Field>
                 <Field
                   id="logo"
                   label={t("logo")}
@@ -718,12 +784,25 @@ export function StartupEditForm({
                   optional={common("optional")}
                   className="sm:col-span-2"
                 >
-                  <input
+                  <LogoField
                     id="logo-input"
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    onChange={(ev) => setLogo(ev.target.files?.[0] ?? null)}
-                    className="text-xs text-muted-foreground file:mr-3 file:rounded-md file:border file:bg-input/30 file:px-3 file:py-1.5 file:text-xs file:text-foreground"
+                    name={f.name}
+                    src={
+                      logoPreview ??
+                      (logoRemoved ? null : logoUrl(startup.logo_path))
+                    }
+                    onPick={(file) => {
+                      if (logoPreview) URL.revokeObjectURL(logoPreview);
+                      setLogo(file);
+                      setLogoPreview(URL.createObjectURL(file));
+                      setLogoRemoved(false);
+                    }}
+                    onRemove={() => {
+                      if (logoPreview) URL.revokeObjectURL(logoPreview);
+                      setLogo(null);
+                      setLogoPreview(null);
+                      setLogoRemoved(true);
+                    }}
                   />
                 </Field>
               </>,
@@ -955,6 +1034,16 @@ export function StartupEditForm({
                       className={inputClass}
                     />
                   </Field>
+                  {/* C-3: "Free" next to verified revenue reads as an error to visitors. */}
+                  {f.pricingPeriod === "free" &&
+                    startup.verification_status === "verified" && (
+                      <p
+                        role="note"
+                        className="rounded-md border border-warning/40 bg-warning/10 p-3 text-caption sm:col-span-3"
+                      >
+                        {e("freeButVerified")}
+                      </p>
+                    )}
                 </fieldset>
                 <Field
                   id="funding"
@@ -1077,21 +1166,6 @@ export function StartupEditForm({
                     customLabel={(text) => t("addCustom", { text })}
                     describeCustom={(v) => channelLabel(v, locale)}
                     labels={comboLabels}
-                  />
-                </Field>
-                <Field
-                  id="looking_for"
-                  label={t("lookingFor")}
-                  optional={common("optional")}
-                  className="sm:col-span-2"
-                >
-                  <ToggleChips
-                    options={LOOKING_FOR.map((x) => ({
-                      value: x,
-                      label: lf(x),
-                    }))}
-                    value={f.lookingFor}
-                    onChange={set("lookingFor")}
                   />
                 </Field>
               </>,

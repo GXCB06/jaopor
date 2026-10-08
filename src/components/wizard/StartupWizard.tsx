@@ -5,7 +5,6 @@ import { useLocale, useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { StartupLogo } from "@/components/StartupBits";
 import { StartupCard, type CardStartup } from "@/components/StartupCard";
 import { ProvinceField } from "@/components/profile-edit/ProvinceField";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -23,6 +22,7 @@ import { revalidateStartup } from "@/app/actions/revalidate";
 import { useSessionDraft } from "@/lib/use-session-draft";
 import { cn } from "@/lib/utils";
 import { Field, Select, inputClass } from "./fields";
+import { LogoField } from "./LogoField";
 import { categoryName } from "@/lib/config/display";
 
 // Step 2 only: kept out of the first screen's JavaScript, then fetched in the background as soon as
@@ -37,7 +37,6 @@ const VerifyPanel = dynamic(loadVerifyPanel);
 // AI tools, looking-for, screenshots and the rest are added later on /dashboard/[id]/edit.
 
 const MAX_LOGO_BYTES = 1024 * 1024;
-const LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];
 const TAGLINE_MAX = 140;
 
 /** A new listing as the card shows it: nothing verified yet, so the muted "not verified" card. */
@@ -484,39 +483,16 @@ export function StartupWizard({
               }
               className="sm:col-span-2"
             >
-              <div className="flex flex-wrap items-center gap-3">
-                <StartupLogo
-                  name={name.trim() || "?"}
-                  src={shownLogo}
-                  size={48}
-                  className="rounded-xl"
-                />
-                <label
-                  htmlFor="logo"
-                  className="inline-flex h-8 cursor-pointer items-center rounded-md border bg-input/30 px-3 text-xs focus-within:ring-2 focus-within:ring-ring hover:bg-accent"
-                >
-                  {t("logoUpload")}
-                  <input
-                    id="logo"
-                    type="file"
-                    accept={LOGO_TYPES.join(",")}
-                    onChange={(e) => pickLogo(e.target.files?.[0] ?? null)}
-                    className="sr-only"
-                  />
-                </label>
-                {shownLogo && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      pickLogo(null);
-                      setAutoLogo(null);
-                    }}
-                    className="text-xs text-muted-foreground hover:text-destructive"
-                  >
-                    {t("logoRemove")}
-                  </button>
-                )}
-              </div>
+              <LogoField
+                id="logo"
+                name={name}
+                src={shownLogo}
+                onPick={pickLogo}
+                onRemove={() => {
+                  pickLogo(null);
+                  setAutoLogo(null);
+                }}
+              />
             </Field>
           </div>
           {/* S-2: the card as it will look in the list, updating as they type (not a link). */}

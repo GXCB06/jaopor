@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { StartupWizard } from "@/components/wizard/StartupWizard";
 import { requireUser } from "@/lib/auth";
 import { githubLoginOf } from "@/lib/data/connections";
-import { createClient } from "@/lib/supabase/server";
+import { getMyProfile } from "@/lib/data/me";
 
 export async function generateMetadata({
   params,
@@ -23,14 +23,10 @@ export default async function NewStartupPage({
     requireUser(locale, "/new"),
     getTranslations("Wizard"),
   ]);
-  // The project's province starts as the founder's own (Olympics; UX audit M-10).
-  const { data: me } = await (
-    await createClient()
-  )
-    .from("profiles")
-    .select("province")
-    .eq("id", user.id)
-    .maybeSingle();
+  // The project's province starts as the founder's own (Olympics; UX audit M-10). `province` is a
+  // visibility-controlled column clients can't select, so it's read server-side like the dashboard
+  // does; an empty field (the founder picks) if that fails.
+  const me = await getMyProfile(user.id).catch(() => null);
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8">

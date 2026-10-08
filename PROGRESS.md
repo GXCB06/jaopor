@@ -12,6 +12,31 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-08 — Audit Phase 3: edit page that keeps you editing, one logo field, weighted completeness, Thai labels
+
+**Done:**
+
+- **Fix found while checking Phase 2 on production:** the Add-project province was empty although the hint says it comes from the profile. `province` is a visibility-controlled column clients can't select, so the page now reads it server-side like the dashboard (`getMyProfile`), with an empty field if that fails.
+- **S-3:** saving the edit page stays on the page, with a "บันทึกแล้ว" toast + "ดูหน้าผลงาน" action; the saved row becomes the new baseline.
+- **S-4:** `LogoField` (shared by Add-project and the edit page): the current logo in a 48 px tile, "อัปโหลดเอง", "ลบโลโก้". This replaces the browser's "Choose File / No file chosen" on the edit page, which also had no preview and no remove.
+- **S-6:** the edit progress is weighted (verification 30, screenshots 20, description 15, province 10, the rest 25). "ต่อไป" follows the owner-checklist order and never names the open section (C-7).
+- **S-8:** "กำลังหาอะไรอยู่?" moved to ข้อมูลหลัก.
+- **C-3:** price "ฟรี" next to verified revenue shows a note asking for the paid plan's price (JaoPor's own page has this mismatch).
+- **S-12:** Thai pages say คอมมิต, แนวโน้ม, ก้าวสำคัญ, ผู้สร้าง / ผู้ร่วมสร้าง and คนสร้างที่ยืนยันแล้ว instead of English labels.
+- **Not done, waiting for the owner:**
+  - **S-9, the editable project link:** a migration draft (slug history + redirects + old slugs reserved against takeover) is shown to the owner; not applied.
+  - **S-13, milestones in ฿ on English pages:** deferred; converting gives odd amounts, and the rate would have to reach the client feed.
+
+**Files:** `src/app/[locale]/new/page.tsx`, `src/components/wizard/{LogoField,StartupWizard,StartupEditForm}.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit tests 365 ✓ · local e2e 64 passed / 10 skipped · production build ✓.
+- Local `/th/startup/jaopor` + `/th/feed`: "แนวโน้ม" / "ก้าวสำคัญ", no English labels.
+- The edit page and Add-project are signed-in only, so they get checked on production after the push (view only).
+- Phase 2 on production (owner view): the JaoPor checklist shows "อีก 1 ขั้น…" with เล่าเรื่องผลงาน next, and no auto share dialog; `/new` at 375 px shows the category placeholder, province and readable step labels.
+
+**Next:** push; the owner approves or edits the slug-history migration; then Phase 4 (GitHub account linking, snippet platform guides, evidence ladder, owner hide toggle).
+
 ## 2026-10-08 — Audit Phase 2: Add-project shorter, better data, a "3 steps" panel instead of an early share dialog
 
 **Done:**

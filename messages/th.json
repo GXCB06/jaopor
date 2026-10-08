@@ -97,7 +97,7 @@
     "linkCopied": "คัดลอกลิงก์แล้ว",
     "foundingBadge": "เจ้าพ่อรุ่นบุกเบิก #{n}",
     "visitors": "ผู้เข้าชม 30 วัน",
-    "commits": "Commits",
+    "commits": "คอมมิต",
     "verified": "ยืนยันแล้ว",
     "revenueShort": "รายได้",
     "visitorsShort": "ผู้เข้าชม",
@@ -117,7 +117,7 @@
       "mrr": "MRR",
       "revenue30d": "รายได้ 30 วัน",
       "visitors": "ผู้เข้าชม 30 วัน",
-      "commits": "Commits"
+      "commits": "คอมมิต"
     },
     "empty": "ยังไม่มีตัวเลขที่ยืนยันในหมวดนี้ — มาเป็นคนแรกบนกระดานกัน",
     "showAll": "ดูทั้งหมด ({count}) ↓",
@@ -221,7 +221,7 @@
     "range": "ช่วงเวลา",
     "lastDays": "{days} วันล่าสุด",
     "prevPeriod": "ช่วงก่อนหน้า",
-    "trend": "Trend",
+    "trend": "แนวโน้ม",
     "moreStartups": "ผลงานอื่น ๆ",
     "demoNotice": "ผลงานตัวอย่าง: ตัวเลขทั้งหมดเป็นข้อมูลสมมติเพื่อแสดงหน้าตาเว็บ ไม่ใช่ธุรกิจจริง",
     "sampleShort": "ข้อมูลตัวอย่าง",
@@ -608,7 +608,7 @@
       "revenue30d": "รายได้ 30 วัน",
       "visitors30d": "ผู้เข้าชม 30 วัน",
       "activeUsers": "ผู้ใช้แอคทีฟ",
-      "commits": "Commits"
+      "commits": "คอมมิต"
     },
     "studioTitle": "แชร์ตัวเลขที่ยืนยันแล้ว",
     "studioBody": "เลือกแบบการ์ด แล้วดาวน์โหลดไปโพสต์ได้เลย",
@@ -658,7 +658,7 @@
       "revenue30d": "รายได้ 30 วัน",
       "visitors30d": "ผู้เข้าชม 30 วัน",
       "activeUsers": "ผู้ใช้แอคทีฟ",
-      "commits": "Commits",
+      "commits": "คอมมิต",
       "revenueAllTime": "รายได้ทั้งหมด"
     },
     "lastDays": "{n} วันล่าสุด",
@@ -740,7 +740,10 @@
     "stackRepoNotFound": "ไม่พบ repo สาธารณะนี้บน GitHub (repo ส่วนตัวอ่านไม่ได้)",
     "stackSlowDown": "GitHub ให้รอสักครู่ ลองใหม่อีกครั้ง",
     "stackDetectFailed": "ดึงข้อมูลจาก GitHub ไม่สำเร็จ",
-    "stackNothingNew": "ไม่พบเทคโนโลยีใหม่เพิ่มจาก repo"
+    "stackNothingNew": "ไม่พบเทคโนโลยีใหม่เพิ่มจาก repo",
+    "saved": "บันทึกแล้ว",
+    "viewPage": "ดูหน้าผลงาน",
+    "freeButVerified": "ผลงานนี้มีรายได้ที่ยืนยันแล้ว แต่ราคาตั้งเป็น “ฟรี” ถ้ามีแพ็กเกจเสียเงิน ใส่ราคาไว้ คนที่เข้ามาดูจะได้ไม่สับสน"
   },
   "Search": {
     "placeholder": "ค้นหาผลงาน คน หมวดหมู่ หรือจังหวัด…",
@@ -773,7 +776,7 @@
       "revenue30d": "รายได้ 30 วัน",
       "mrr": "MRR",
       "visitors": "ผู้เข้าชม 30 วัน",
-      "commits": "Commits"
+      "commits": "คอมมิต"
     },
     "region": "ภาค",
     "allRegions": "ทั้งหมด",
@@ -1451,8 +1454,8 @@
     "roleLabel": {
       "founder": "Founder",
       "cofounder": "Co-founder",
-      "maker": "Maker",
-      "contributor": "Contributor"
+      "maker": "ผู้สร้าง",
+      "contributor": "ผู้ร่วมสร้าง"
     },
     "perMonthShort": "/ด",
     "commits": "{n, number} commits",
@@ -1486,7 +1489,7 @@
     },
     "badge": {
       "pioneer": "รุ่นบุกเบิก #{n}",
-      "verified": "Verified Builder",
+      "verified": "คนสร้างที่ยืนยันแล้ว",
       "mrr": "MRR ฿{amount}",
       "streak": "สร้างติด {n} วัน"
     },
@@ -1576,7 +1579,7 @@
       "launch": "เปิดตัว",
       "lesson": "บทเรียน",
       "feedback": "ขอ Feedback",
-      "milestone": "Milestone"
+      "milestone": "ก้าวสำคัญ"
     },
     "byline": "<name></name> บน <startup></startup>",
     "auto": "อัตโนมัติจากตัวเลขที่ยืนยัน",

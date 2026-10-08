@@ -102,6 +102,7 @@ One word per concept, in every string:
 | Proven at the source             | ยืนยัน                                          | verified                  | for visitor counts                                                   |
 | Reported by a script / analytics | นับโดย                                          | counted by                | "verified"                                                           |
 
+- Thai pages carry no English UI words except brand names, MRR, LINE / X / AI (2026-10-08, UX audit S-12): คอมมิต (Commits), แนวโน้ม (Trend), ก้าวสำคัญ (Milestone), ผู้สร้าง / ผู้ร่วมสร้าง (Maker / Contributor), คนสร้างที่ยืนยันแล้ว (Verified Builder).
 - Exceptions: "โปรเจกต์" for past jobs in the profile's work experience (a different concept), "Product" as a skill role, the owner-approved legal pages (/privacy, /terms, /security) until the owner revises them. URLs stay `/startups` and `/startup/{slug}` (old links keep working).
 
 ### Voice (2026-10-08, owner-approved; from the launch post "สถานีขนส่งฝัน")
@@ -286,14 +287,17 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 ### Edit page (`/dashboard/[id]/edit`, redesign 2026-09-30, user feedback "too much at once")
 
-- **One section at a time.** Seven sections, each a `Card p-5 space-y-4` with a title (`text-sm font-bold`) and one helper line (`text-caption text-muted-foreground`): 1 ข้อมูลหลัก (name, tagline, description, category, logo) · 2 ลิงก์และที่ตั้ง (links, country, province, founded) · 3 เล่าเรื่องผลงาน (value, problem, audience, pricing, team, funding) · 4 เทคโนโลยีและการตลาด (built with, stack, channels, looking for) · 5 ภาพและวิดีโอ (screenshots, demo video) · 6 ผู้ก่อตั้ง (message, role, build story) · 7 ยืนยันตัวเลข (VerifyPanel).
+- **One section at a time.** Seven sections, each a `Card p-5 space-y-4` with a title (`text-sm font-bold`) and one helper line (`text-caption text-muted-foreground`): 1 ข้อมูลหลัก (name, tagline, description, category, logo) · 2 ลิงก์และที่ตั้ง (links, country, province, founded) · 3 เล่าเรื่องผลงาน (value, problem, audience, pricing, team, funding) · 4 เทคโนโลยีและการตลาด (built with, stack, channels, looking for) · 5 ภาพและวิดีโอ (screenshots, demo video) · 6 ผู้ก่อตั้ง (message, role, build story) · 7 ยืนยันตัวเลข (VerifyPanel). **2026-10-08 (UX audit S-8):** "กำลังหาอะไรอยู่?" moved from section 4 to 1 ข้อมูลหลัก (it is the banner at the top of the profile).
 - **Section nav:** `lg` = sticky left column (`w-56`), each item icon + name + state (`CheckCircle2` positive when complete, else "2/5" `text-faint`); mobile = horizontal scroll chips under the title. Active item `bg-secondary font-semibold`.
-- **Progress header:** "ข้อมูลครบ {pct}%" + thin bar (`h-1.5 rounded-full bg-secondary` / fill `bg-brand`) + the next missing item as a link.
+- **Progress header:** "ข้อมูลครบ {pct}%" + thin bar (`h-1.5 rounded-full bg-secondary` / fill `bg-brand`) + "ต่อไป: {section} →". **Weighted (2026-10-08, UX audit S-6):** verification 30, screenshots 20, description 15, province 10, the other fields share 25. "ต่อไป" follows the OwnerBar order (story → screenshots → verify → province), then the first incomplete section, and never names the section already open.
 - **Footer of each section:** "← ก่อนหน้า" / "ถัดไป →" ghost buttons.
-- **Sticky save bar** (`sticky bottom-0 border-t bg-background/95 backdrop-blur py-3`): left "มีการเปลี่ยนแปลงที่ยังไม่บันทึก" (warning dot) or "บันทึกแล้ว"; right Cancel + Save (primary). Saves the whole form from any section; a validation error jumps to its section.
+- **Sticky save bar** (`sticky bottom-0 border-t bg-background/95 backdrop-blur py-3`): left "มีการเปลี่ยนแปลงที่ยังไม่บันทึก" (warning dot) or "บันทึกแล้ว"; right Cancel + Save (primary). Saves the whole form from any section; a validation error jumps to its section. **Saving stays on the page (2026-10-08, UX audit S-3):** toast "บันทึกแล้ว" with the action "ดูหน้าผลงาน"; the saved row becomes the new baseline (bar back to "บันทึกแล้วทั้งหมด"). It used to jump to the public page after every save.
 - Deep links (`#field`, `#verify-*`, `#screenshots`) open the right section, then scroll + highlight the field.
 - **✨ ช่วยเติมจากเว็บไซต์** (outline button, section 1 header): reads the project's website (+ GitHub README) and fills only **empty** fields, then shows "เติมให้ {n} ช่อง — ตรวจแล้วกดบันทึก · เลิกทำ". Uses a free Gemini key when configured, otherwise the page's own title/description/structured data.
 - **ดึงจาก GitHub** (outline `sm` button with `GitBranch` icon above the stack combobox, 2026-09-30): reads the **public** repo in the GitHub link box (unsaved value allowed) — languages, root files (vercel.json, Dockerfile, fly.toml…) and manifests (package.json, requirements.txt, pyproject.toml, composer.json, Gemfile, pubspec.yaml, go.mod) — and shows the found items in the dashed "ตรวจพบจาก GitHub: … · เพิ่มทั้งหมด" strip. Disabled with a hint when there is no GitHub link. Private repos → "ไม่พบ repo สาธารณะ".
+
+- **LogoField (2026-10-08, UX audit S-4):** the one logo control for Add-project and the edit page: 48 px `rounded-xl` tile (current logo, or the first letter), "อัปโหลดเอง" (a styled `label` around a hidden file input, never the browser's "Choose File" text) and "ลบโลโก้". On the edit page the tile shows the stored logo; remove clears it on save.
+- **"ฟรี" next to verified revenue (2026-10-08, C-3):** in เล่าเรื่องผลงาน, choosing ฟรี while revenue is verified shows a `rounded-md border border-warning/40 bg-warning/10 p-3 text-caption` note (`role="note"`) asking for the paid plan's price.
 
 ### ScreenshotsManager (edit form, spec 6.9)
 

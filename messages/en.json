@@ -740,7 +740,10 @@
     "stackRepoNotFound": "No public GitHub repo found (private repos can't be read)",
     "stackSlowDown": "GitHub asked us to wait. Try again shortly",
     "stackDetectFailed": "Couldn't read the GitHub repo",
-    "stackNothingNew": "Nothing new found in the repo"
+    "stackNothingNew": "Nothing new found in the repo",
+    "saved": "Saved",
+    "viewPage": "View page",
+    "freeButVerified": "This project has verified revenue, but its price says “Free”. If there is a paid plan, add its price so visitors aren't confused."
   },
   "Search": {
     "placeholder": "Search projects, people, categories or provinces…",
