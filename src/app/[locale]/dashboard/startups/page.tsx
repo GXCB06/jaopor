@@ -155,8 +155,13 @@ export default async function DashboardStartupsPage({
                       </span>
                       <FoundingBadge n={s.founding_number} />
                       {s.status === "hidden" && (
-                        <span className="text-[10px] text-warning">
+                        <span className="text-2xs text-warning">
                           {t("hidden")}
+                        </span>
+                      )}
+                      {s.status === "private" && (
+                        <span className="inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-2xs text-muted-foreground">
+                          {t("private")}
                         </span>
                       )}
                     </div>
@@ -167,6 +172,7 @@ export default async function DashboardStartupsPage({
                     name={s.name}
                     refreshSource={refreshSource(s)}
                     verified={verified}
+                    status={s.status}
                   />
                 </div>
 

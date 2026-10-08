@@ -441,7 +441,15 @@
     "mrr": "MRR",
     "revenue30d": "Revenue (30d)",
     "lastSyncLabel": "Last sync",
-    "deleteTitle": "Delete {name}?"
+    "deleteTitle": "Delete {name}?",
+    "hide": "Hide for now",
+    "hideTitle": "Hide {name} for now?",
+    "hideBody": "It disappears from public pages, search, the leaderboard and the Olympics; only you see it. Connected numbers keep updating, and you can publish it again any time.",
+    "hideConfirm": "Hide",
+    "publish": "Publish again",
+    "hiddenToast": "Hidden. Only you can see it now",
+    "publishedToast": "Published. Everyone can see this project again",
+    "private": "Hidden · only you"
   },
   "Links": {
     "website": "Website",

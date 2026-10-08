@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  EyeIcon,
+  EyeOffIcon,
   LinkIcon,
   MoreHorizontalIcon,
   PencilIcon,
@@ -20,7 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { SourceId } from "@/lib/sources/catalog";
-import { revalidateDeleted } from "@/app/actions/revalidate";
+import { revalidateDeleted, revalidateStartup } from "@/app/actions/revalidate";
 import { useConfirm } from "@/components/core/useConfirm";
 import { createClient } from "@/lib/supabase/client";
 
@@ -31,6 +33,7 @@ export function DashboardActions({
   name,
   refreshSource,
   verified,
+  status,
 }: {
   id: number;
   slug: string;
@@ -38,6 +41,8 @@ export function DashboardActions({
   /** Source re-synced by "Refresh" (null = nothing connected). */
   refreshSource: SourceId | null;
   verified: boolean;
+  /** published · private (owner's "hide for now") · hidden (moderators; no toggle). */
+  status: string;
 }) {
   const t = useTranslations("Dashboard");
   const errors = useTranslations("Errors");
@@ -111,12 +116,41 @@ export function DashboardActions({
     router.refresh();
   }
 
+  // S-10 (migration owner_private_status): the owner hides a project for now or publishes it again.
+  async function setVisibility(next: "published" | "private") {
+    if (next === "private") {
+      const ok = await confirm({
+        title: t("hideTitle", { name }),
+        body: t("hideBody"),
+        confirmLabel: t("hideConfirm"),
+      });
+      if (!ok) return;
+    }
+    setBusy(true);
+    const { error } = await createClient()
+      .from("startups")
+      .update({ status: next })
+      .eq("id", id);
+    setBusy(false);
+    if (error) return toast.error(errors("server"));
+    await revalidateStartup(id);
+    toast.success(next === "private" ? t("hiddenToast") : t("publishedToast"));
+    router.refresh();
+  }
+
+  const isPublic = status === "published";
+
   return (
     <div className="flex items-center gap-2">
       {confirmDialog}
-      {verified ? (
+      {verified && isPublic ? (
         <Button asChild size="sm" className="px-4">
           <Link href={`/startup/${slug}`}>{t("viewProfile")}</Link>
+        </Button>
+      ) : verified ? (
+        // A private project has no public page to view.
+        <Button asChild size="sm" className="px-4">
+          <Link href={`/dashboard/${id}/edit`}>{t("edit")}</Link>
         </Button>
       ) : (
         <Button asChild size="sm" className="px-4">
@@ -135,7 +169,7 @@ export function DashboardActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-44">
-          {!verified && (
+          {!verified && isPublic && (
             <DropdownMenuItem asChild>
               <Link href={`/startup/${slug}`}>{t("viewProfile")}</Link>
             </DropdownMenuItem>
@@ -156,6 +190,18 @@ export function DashboardActions({
             <LinkIcon />
             {t("copyLink")}
           </DropdownMenuItem>
+          {status === "published" && (
+            <DropdownMenuItem onSelect={() => setVisibility("private")}>
+              <EyeOffIcon />
+              {t("hide")}
+            </DropdownMenuItem>
+          )}
+          {status === "private" && (
+            <DropdownMenuItem onSelect={() => setVisibility("published")}>
+              <EyeIcon />
+              {t("publish")}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={remove}>
             <Trash2Icon />

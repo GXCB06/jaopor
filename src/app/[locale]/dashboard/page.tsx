@@ -58,9 +58,10 @@ export default async function DashboardPage({
   setRequestLocale(locale);
   const userId = await requireUserId(locale, "/dashboard");
 
-  const [t, profile, dash, skills, requests, thbPerUsd, postable] =
+  const [t, dt, profile, dash, skills, requests, thbPerUsd, postable] =
     await Promise.all([
       getTranslations("Me"),
+      getTranslations("Dashboard"),
       getMyProfile(userId),
       getDashboard(userId),
       getMySkills(userId),
@@ -267,11 +268,21 @@ export default async function DashboardPage({
                           />
                           <span className="min-w-0">
                             <Link
-                              href={`/startup/${s.slug}`}
+                              // A private project has no public page: open the editor instead (S-10).
+                              href={
+                                s.status === "published"
+                                  ? `/startup/${s.slug}`
+                                  : `/dashboard/${s.id}/edit`
+                              }
                               className="block truncate text-xs font-semibold hover:underline"
                             >
                               {s.name}
                             </Link>
+                            {s.status === "private" && (
+                              <span className="block text-2xs text-muted-foreground">
+                                {dt("private")}
+                              </span>
+                            )}
                             {verified ? (
                               <span className="block truncate text-2xs text-positive">
                                 ✓ {t("verified")}
@@ -337,18 +348,22 @@ export default async function DashboardPage({
                               />
                             </Link>
                           )}
-                          <CopyWorkLink slug={s.slug} name={s.name} />
-                          <Link
-                            href={`/startup/${s.slug}`}
-                            aria-label={t("viewWork", { name: s.name })}
-                            title={t("view")}
-                            className={iconBtn}
-                          >
-                            <ArrowUpRightIcon
-                              className="size-3.5"
-                              aria-hidden="true"
-                            />
-                          </Link>
+                          {s.status === "published" && (
+                            <>
+                              <CopyWorkLink slug={s.slug} name={s.name} />
+                              <Link
+                                href={`/startup/${s.slug}`}
+                                aria-label={t("viewWork", { name: s.name })}
+                                title={t("view")}
+                                className={iconBtn}
+                              >
+                                <ArrowUpRightIcon
+                                  className="size-3.5"
+                                  aria-hidden="true"
+                                />
+                              </Link>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

@@ -974,6 +974,50 @@ begin
     has_function_privilege('authenticated', 'private.startups_remember_slug()', 'EXECUTE'),
     (select string_agg(proname || ':' || coalesce(array_to_string(proconfig, ','), 'none'), ' ')
        from pg_proc where proname in ('startups_reserve_old_slugs', 'startups_remember_slug')));
+
+  -- T132–T136: owner "hide for now" (migration 20261008063754_owner_private_status).
+  perform set_config('request.jwt.claims', json_build_object('sub', ov, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  update public.startups set status = 'private' where id = sid;
+  get diagnostics n = row_count;
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  execute 'set local role anon';
+  out := out || format('T132 owner makes it private: %s row (expect 1); anon sees it: %s (expect 0) | ',
+    n, (select count(*) from public.startups where id = sid));
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', ov, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  out := out || format('T132b owner still sees own private project: %s (expect 1) | ',
+    (select count(*) from public.startups where id = sid));
+  update public.startups set status = 'published' where id = sid;
+  get diagnostics n = row_count;
+  out := out || format('T133 owner publishes it again: %s row (expect 1) | ', n);
+  begin
+    update public.startups set status = 'hidden' where id = sid;
+    out := out || 'T134 owner sets moderation hidden: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T134 owner sets moderation hidden: denied (good) | ';
+  end;
+  execute 'reset role';
+  update public.startups set status = 'hidden' where id = sid; -- a moderator (service role)
+  perform set_config('request.jwt.claims', json_build_object('sub', ov, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  begin
+    update public.startups set status = 'published' where id = sid;
+    out := out || 'T135 owner undoes a moderator hide: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T135 owner undoes a moderator hide: denied (good) | ';
+  end;
+  execute 'reset role';
+  update public.startups set status = 'published' where id = sid;
+  perform set_config('request.jwt.claims', json_build_object('sub', cs[3], 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  update public.startups set status = 'private' where id = sid;
+  get diagnostics n = row_count;
+  out := out || format('T136 another user hides it: %s rows (expect 0) | ', n);
+  execute 'reset role';
+  out := out || format('T136b status fn callable by authenticated=%s (expect false); config=%s | ',
+    has_function_privilege('authenticated', 'private.startups_owner_status()', 'EXECUTE'),
+    (select coalesce(array_to_string(proconfig, ','), 'none') from pg_proc where proname = 'startups_owner_status'));
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;
 end $$;

@@ -12,6 +12,25 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-08 — Owner "hide for now" (audit S-10, owner-approved migration)
+
+**Done:**
+
+- **Migration `20261008063754_owner_private_status`** (applied after owner approval): a third status `private`; owners may switch published ↔ private (column grant + a guard trigger) but never set or undo a moderator's `hidden`. Every public query and policy already filters `status = 'published'`, so private projects drop out everywhere public with no other change.
+- **Dashboard:**
+  - "ซ่อนไว้ก่อน" (with a confirm that says what disappears) / "เผยแพร่อีกครั้ง" in the project ⋯ menu;
+  - a "ซ่อนอยู่ · เห็นแค่คุณ" chip;
+  - view / copy-link hidden for private projects, whose name opens the editor;
+  - the caches are refreshed on every change.
+
+**Files:** `supabase/migrations/20261008063754_owner_private_status.sql`, `supabase/tests/rls_smoke.sql` (T132–T136b), `src/components/DashboardActions.tsx`, `src/app/[locale]/dashboard/{page,startups/page}.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- Advisors: nothing new.
+- RLS smoke: all 138 lines good, incl. T132 private (anon 0, owner 1), T133 publish again, T134 / T135 the owner can't set or undo `hidden`, T136 another user can't, T136b function locked down.
+- typecheck ✓ · lint ✓ · unit tests 365 ✓.
+- The toggle needs a signed-in owner, so it was checked by code review; production check after push.
+
 ## 2026-10-08 — Audit Phase 4: GitHub without a GitHub sign-in, snippet help, evidence ladder
 
 **Done:**
