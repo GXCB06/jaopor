@@ -59,6 +59,7 @@ import { cn } from "@/lib/utils";
 import { Field, Select, ToggleChips, inputClass } from "./fields";
 import { uploadLogo } from "./StartupWizard";
 import { LogoField } from "./LogoField";
+import { completenessPct } from "@/lib/completeness";
 import { logoUrl } from "@/lib/supabase/logo-url";
 import { publicEnv } from "@/lib/public-env";
 import { ScreenshotsManager } from "./ScreenshotsManager";
@@ -301,11 +302,12 @@ export function StartupEditForm({
   };
   // One completeness model (UX audit S-6): what visitors use most weighs most. Verification 30,
   // screenshots 20, description 15, province 10; the other fields share the remaining 25.
-  const keyItems: [SectionId, boolean, number][] = [
-    ["basics", Boolean(f.description.trim()), 15],
-    ["media", shotCount > 0, 20],
-    ["verify", connections.length > 0, 30],
-    ["links", f.country !== "TH" || Boolean(f.province), 10],
+  // The key items in the owner checklist's order (story → screenshots → verify → province).
+  const keyItems: [SectionId, boolean][] = [
+    ["basics", Boolean(f.description.trim())],
+    ["media", shotCount > 0],
+    ["verify", connections.length > 0],
+    ["links", f.country !== "TH" || Boolean(f.province)],
   ];
   const rest = [
     ...done.basics.filter((_, i) => i !== 2), // description is a key item
@@ -316,10 +318,14 @@ export function StartupEditForm({
     done.media[1], // screenshots are a key item
     ...done.founder,
   ];
-  const pct = Math.round(
-    keyItems.reduce((sum, [, ok, w]) => sum + (ok ? w : 0), 0) +
-      (rest.filter(Boolean).length / rest.length) * 25,
-  );
+  // The same model as the dashboard cards (lib/completeness.ts).
+  const pct = completenessPct({
+    verified: connections.length > 0,
+    screenshots: shotCount > 0,
+    description: Boolean(f.description.trim()),
+    province: f.country !== "TH" || Boolean(f.province),
+    rest,
+  });
   // "Next": the owner checklist's order first (story → screenshots → verify, then province), never
   // the section already open (it used to say "next: basics" while on basics).
   const nextMissing =
@@ -580,6 +586,10 @@ export function StartupEditForm({
             <p className="text-caption text-muted-foreground">
               {e(`hint.${id}`)}
             </p>
+            {/* DS-3: these two save on their own; everything else waits for the save bar. */}
+            {(id === "media" || id === "verify") && (
+              <p className="text-2xs text-faint">{e("instantSave")}</p>
+            )}
           </div>
           {action}
         </div>

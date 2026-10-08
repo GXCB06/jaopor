@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowLeftIcon,
   BookmarkIcon,
   LayoutGridIcon,
   LogOutIcon,
@@ -148,13 +149,29 @@ export function DashboardSidebar({
 
   return (
     <>
-      {/* Phones / tablets: one scrollable row */}
-      <nav
-        aria-label={t("navLabel")}
-        className="-mx-4 flex gap-1 overflow-x-auto border-b px-4 pb-2 lg:hidden"
-      >
-        {main.map(row)}
-      </nav>
+      {/* Phones / tablets: one scrollable row. On a project's edit page, one way back instead: the
+          editor has its own section chips, and two rows left half the screen for the form (S-17). */}
+      {/^\/dashboard\/\d+\/edit/.test(pathname) ? (
+        <nav
+          aria-label={t("navLabel")}
+          className="-mx-4 border-b px-4 pb-2 lg:hidden"
+        >
+          <Link
+            href="/dashboard/startups"
+            className="inline-flex items-center gap-1.5 rounded-lg px-1 py-2 text-caption text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeftIcon className="size-4" aria-hidden="true" />
+            {t("nav.startups")}
+          </Link>
+        </nav>
+      ) : (
+        <nav
+          aria-label={t("navLabel")}
+          className="-mx-4 flex gap-1 overflow-x-auto border-b px-4 pb-2 lg:hidden"
+        >
+          {main.map(row)}
+        </nav>
+      )}
 
       {/* Desktop sidebar */}
       <aside className="sticky top-20 hidden h-[calc(100dvh-6rem)] w-60 shrink-0 flex-col lg:flex">

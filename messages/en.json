@@ -777,7 +777,8 @@
     "freeButVerified": "This project has verified revenue, but its price says “Free”. If there is a paid plan, add its price so visitors aren't confused.",
     "slugLabel": "Project page link",
     "slugHint": "Lowercase letters, numbers and - only. Old links redirect to the new one automatically, and your badge keeps working.",
-    "slugInvalid": "Links use lowercase letters, numbers and - only (not at the start or end), up to 50 characters."
+    "slugInvalid": "Links use lowercase letters, numbers and - only (not at the start or end), up to 50 characters.",
+    "instantSave": "Images and connections in this section save right away; no need to press Save."
   },
   "Search": {
     "placeholder": "Search projects, people, categories or provinces…",
@@ -1378,7 +1379,11 @@
     "photoHint": "JPG, PNG or WebP. We crop it to a square from the center and remove location data before upload.",
     "photoUpdated": "Profile photo updated",
     "photoUsingProvider": "Now using your {provider} photo",
-    "photoRemoved": "Profile photo removed"
+    "photoRemoved": "Profile photo removed",
+    "weekNoCounting": "Your projects aren't counting visitors yet. Add the JaoPor snippet or connect analytics to start.",
+    "profileViews": "Profile views",
+    "requestsReceived": "Requests received",
+    "noPendingRequests": "No requests waiting"
   },
   "Builder": {
     "editProfile": "Edit profile",

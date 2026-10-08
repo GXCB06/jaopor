@@ -17,7 +17,7 @@ export function CurrencyToggle() {
       className="inline-flex h-8 min-w-8 items-center justify-center rounded-md border bg-card px-2 text-xs font-semibold tabular-nums transition-colors hover:bg-accent"
     >
       {currency === "thb" ? "฿" : "$"}
-      <span className="ml-1 hidden lg:inline">
+      <span className="ml-1 hidden xl:inline">
         {currency === "thb" ? "THB" : "USD"}
       </span>
     </button>

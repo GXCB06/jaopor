@@ -1,5 +1,6 @@
 import { stackCount } from "@/lib/config/display";
 import { hasPricing } from "@/lib/pricing";
+import { completenessPct } from "@/lib/completeness";
 import type { Metadata } from "next";
 import {
   getFormatter,
@@ -45,13 +46,16 @@ function refreshSource(s: Tables<"startups">): SourceId | null {
   return found ?? (s.github_repo ? "github" : null);
 }
 
-/** Fields that make a profile "complete" (Design.md §5 Dashboard startup card). */
-function completeness(s: Tables<"startups">) {
-  const checks = [
-    hasVerifiedNumbers(s),
-    Boolean(s.logo_path),
+/**
+ * The shared completeness model (lib/completeness.ts, UX audit S-6): the same percentage as the
+ * edit page header.
+ */
+function completeness(s: Tables<"startups">, shots: number) {
+  const rest = [
+    Boolean(s.name),
     Boolean(s.tagline),
-    Boolean(s.description),
+    Boolean(s.logo_path),
+    true, // a project always has a link (database check)
     Boolean(s.founded_on),
     Boolean(s.value_proposition),
     Boolean(s.problem_solved),
@@ -59,15 +63,29 @@ function completeness(s: Tables<"startups">) {
     hasPricing(s),
     Boolean(s.team_size),
     Boolean(s.funding),
+    s.ai_tools.length > 0,
     stackCount(s.tech_stack) > 0,
     s.marketing_channels.length > 0,
+    Boolean(s.demo_video_url),
     Boolean(s.founder_message),
+    Boolean(s.founder_role),
     Boolean(s.build_story),
   ];
-  const done = checks.filter(Boolean).length;
+  const key = {
+    verified:
+      s.verification_status === "verified" ||
+      s.build_commits !== null ||
+      s.traffic_provider !== null ||
+      s.owner_verified_at !== null,
+    screenshots: shots > 0,
+    description: Boolean(s.description),
+    province: s.country !== "TH" || Boolean(s.province),
+  };
   return {
-    pct: Math.round((done / checks.length) * 100),
-    missing: checks.length - done,
+    pct: completenessPct({ ...key, rest }),
+    missing:
+      Object.values(key).filter((ok) => !ok).length +
+      rest.filter((ok) => !ok).length,
   };
 }
 
@@ -86,6 +104,16 @@ export default async function DashboardStartupsPage({
     .select("*")
     .eq("owner_id", userId)
     .order("created_at", { ascending: false });
+
+  const ids = (startups ?? []).map((s) => s.id);
+  const { data: shotRows } = ids.length
+    ? await supabase
+        .from("startup_screenshots")
+        .select("startup_id")
+        .in("startup_id", ids)
+    : { data: [] as { startup_id: number }[] };
+  const shotsOf = (id: number) =>
+    (shotRows ?? []).filter((r) => r.startup_id === id).length;
 
   const [t, nav, p, format, thbPerUsd] = await Promise.all([
     getTranslations("Dashboard"),
@@ -128,7 +156,7 @@ export default async function DashboardStartupsPage({
               : s.verification_status === "error"
                 ? "statusError"
                 : "statusUnverified";
-            const { pct, missing } = completeness(s);
+            const { pct, missing } = completeness(s, shotsOf(s.id));
             return (
               <li key={s.id} className="space-y-4 rounded-lg border p-4">
                 <div className="flex items-start gap-3">
@@ -142,8 +170,9 @@ export default async function DashboardStartupsPage({
                     <div className="mt-1 flex flex-wrap items-center gap-2">
                       <span
                         className={cn(
-                          "rounded-md border px-1.5 py-0.5 text-[10px] font-bold",
-                          verified && "border-brand/40 text-brand-text",
+                          "rounded-md border px-1.5 py-0.5 text-2xs font-bold",
+                          // One meaning per colour (DS-1): verified is positive everywhere.
+                          verified && "border-positive/40 text-positive",
                           status === "statusError" &&
                             "border-warning/40 text-warning",
                           status === "statusUnverified" &&

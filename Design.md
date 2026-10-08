@@ -91,6 +91,14 @@ Numbers are always `tabular-nums`. Money is compact on cards (`$4.3k`) and full 
 - Neutral wording where both appear: "ตัวเลขจากระบบที่เชื่อมต่อ" / "Numbers from connected sources".
 - **Moments (2026-10-08, UX audit M-5):** connecting Plausible / Umami / Cloudflare toasts "เชื่อมแล้ว! จำนวนผู้เข้าชมที่นับโดย {source} ขึ้นบนหน้าผลงานแล้ว", never "ยืนยันแล้ว!"; the trust box lists "ชื่อระบบที่นับ" for visitors; after Add-project the profile opens the **"Verified!"** share dialog only when revenue or build proof was connected (owner check and visitor counts open the "listed" one); ShareStudio's own title is "แชร์ตัวเลขที่ยืนยันแล้ว" only when the project has a verified number, else "แชร์ผลงานนี้".
 
+### Consistency rules (2026-10-08, UX audit Phase 5)
+
+- **One meaning per colour:** verified is `positive` everywhere (chips on the overview and on ผลงานของฉัน alike); brand is JaoPor / selection / links.
+- **No raw sizes:** text uses the type steps (`text-3xs` … `text-sm`), never `text-[Npx]` (the one exception is SVG text inside the live map, scaled with the drawing).
+- **One completeness model** (`lib/completeness.ts`): verified 30 · screenshots 20 · description 15 · province 10 · the other 18 fields share 25. The edit page header and the dashboard cards show the same number.
+- **Save convention:** forms save with the sticky bar; sections whose controls save on their own (ภาพและวิดีโอ, ยืนยันตัวเลข) say so under their hint ("…บันทึกทันที ไม่ต้องกดบันทึก").
+- **What the browser receives:** every message namespace except the legal pages' long texts (Privacy, Security, Terms render on the server; the live-map opt-out keeps its four Privacy strings).
+
 ### Glossary (2026-10-08, owner decision; UX audit M-7)
 
 One word per concept, in every string:
@@ -163,7 +171,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 - `sticky top-0 z-40 border-b bg-background`, `h-14`, inner `max-w-6xl`, gaps `gap-3` (`md:gap-6`).
 - Left: `BrandLogo` = `<Logo>` (blue app tile 28px + "JaoPor"). **Nav links from `lg`** (`text-xs text-muted-foreground hover:text-foreground`): ผลงาน · หมวดหมู่ · โอลิมปิก · กระดานผู้นำ · แดชบอร์ด (`whitespace-nowrap`, `gap-4`/`xl:gap-5`; แดชบอร์ด only from `xl` because five links don't fit at 1024px and it is also in the avatar menu). Right-side gaps `lg:gap-2 xl:gap-3`.
-- Right: **CurrencyToggle** (฿/$; "THB/USD" text from `lg`), **search trigger** (`/` shortcut), primary **"+ เพิ่มผลงาน"** (icon-only below `sm`), **HeaderAuth** (signed out: "เข้าสู่ระบบ" from `sm`, a `LogIn` icon button below; signed in: avatar menu), TH/EN (full name from `lg`) and ThemeToggle (both from `sm`), then **MobileNav** below `lg`: a `size-8` `Menu` icon button opening a DropdownMenu with the nav links, and below `sm` also the language switch and the theme switch.
+- Right: **CurrencyToggle** (฿/$; "THB/USD" text from `xl`), **search trigger** (`/` shortcut), primary **"+ เพิ่มผลงาน"** (icon-only below `sm`), **HeaderAuth** (signed out: "เข้าสู่ระบบ" from `sm`, a `LogIn` icon button below; signed in: avatar menu), TH/EN (full name from `xl`; both moved from `lg` on 2026-10-08: the English header overflowed 1024 px by about 45 px) and ThemeToggle (both from `sm`), then **MobileNav** below `lg`: a `size-8` `Menu` icon button opening a DropdownMenu with the nav links, and below `sm` also the language switch and the theme switch.
 - Must fit 360px (no horizontal scroll), 768px and 1024px in both languages.
 
 ### Hero (home and directory)
@@ -381,12 +389,13 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 - `max-w-7xl` row: **sidebar** `w-60` (from `lg`, sticky under the header) + content. Items: ภาพรวม · ผลงานของฉัน (count) · โปรไฟล์ของฉัน · คำขอคุย (brand badge = unread notifications) · ที่บันทึกไว้ · การเชื่อมต่อ · ตั้งค่า; "คอมมูนิตี้": คนสร้าง, หา Co-founder (both `aria-disabled` with a "เร็ว ๆ นี้" chip until Phase 9c). Item `rounded-lg px-3 py-2 text-caption`; active `bg-secondary font-semibold`.
 - Bottom **user card** `rounded-xl border bg-card p-3`: avatar 36 + name + @handle (links to the public profile), then 3 equal bordered buttons: theme, language, sign out.
-- Below `lg`: the main items become one horizontal scroll row (`border-b`) above the content.
+- Below `lg`: the main items become one horizontal scroll row (`border-b`) above the content. On a project's edit page that row is replaced by one "← ผลงานของฉัน" link (2026-10-08, UX audit S-17): the editor has its own section chips, and two rows left about half a 375 px screen for the form.
 - A user without a username is sent to /onboarding first.
 
 ### Dashboard overview (`/dashboard`)
 
 - Header: "สวัสดี, {ชื่อ}" `text-2xl font-bold` + "ผลงานของคุณมีคนเข้าชม {n} ครั้งในสัปดาห์นี้"; right: outline "ดูโปรไฟล์สาธารณะ ↗" + primary "+ เพิ่มผลงาน".
+- **Order (2026-10-08, UX audit S-11):** header → setup checklist (while incomplete) → ผลงานของฉัน + side cards → the post composer last (it used to come first and push the founder's own work below the first screen). **Counters say what they count (S-14):** the header line reads "ผลงานของคุณยังไม่ได้นับผู้เข้าชม…" when no project counts visitors (instead of "0 ครั้ง"); the side card says "คนดูโปรไฟล์คุณ" / "คำขอคุยที่ได้รับ"; the requests card's empty line is "ไม่มีคำขอคุยที่รอตอบ".
 - **Setup checklist** Card (hidden when all 6 are done): title + "3 / 6" + `h-1.5` brand bar + hint; `sm:grid-cols-2 lg:grid-cols-3` items: done = check circle (positive) + faint text; the next undone item `border-brand bg-brand/10 font-semibold`; undone items link to the place that completes them.
 - `xl:grid-cols-[1fr_320px]`: **ผลงานของฉัน** table (ผลงาน: logo 36 + name + "✓ ยืนยันแล้ว · Stripe · GitHub" positive or "ยังไม่ยืนยันตัวเลข" warning · ผู้เข้าชม 7 วัน · อันดับ · MRR · icon buttons edit / copy link / view with aria-labels). Unverified owned rows get an inline banner `border-warning/40 bg-warning/10` "เชื่อมต่อเพื่อขึ้นกระดานผู้นำและโอลิมปิกจังหวัด" + primary "เชื่อมต่อ Stripe" + outline "ตัวเลือกอื่น". Under the table two dashed tiles: "เพิ่มผลงานใหม่" (/new) and "อ้างสิทธิ์ผลงาน" (disabled, "เร็ว ๆ นี้", claim flow not built).
 - Right: **คำขอคุย** card (2 latest pending: avatar, name · topic, 2-line message, ยอมรับ / ข้าม; footer "LINE / อีเมลจะแสดงหลังกดยอมรับเท่านั้น") and **โปรไฟล์ 7 วันที่ผ่านมา** (views, requests). No "ค้นหาเจอ" stat until search impressions are logged.

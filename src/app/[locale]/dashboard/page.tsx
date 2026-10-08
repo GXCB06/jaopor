@@ -104,7 +104,10 @@ export default async function DashboardPage({
             {t("hello", { name: firstName })}
           </h1>
           <p className="mt-1 text-caption text-muted-foreground">
-            {t("weekViews", { n: dash.weekVisitors })}
+            {/* S-14: "0 visits" when nothing counts visitors read as broken. */}
+            {dash.startups.some((s) => s.traffic_provider)
+              ? t("weekViews", { n: dash.weekVisitors })
+              : t("weekNoCounting")}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -124,16 +127,6 @@ export default async function DashboardPage({
           </Link>
         </div>
       </header>
-
-      {/* Phase 10b: post a product update (also on /feed from 10c). */}
-      <Composer
-        me={{
-          name: profile?.display_name ?? profile?.handle ?? "",
-          avatarUrl: profile?.avatar_url ?? null,
-        }}
-        startups={postable}
-        loginHref="/login"
-      />
 
       {/* Setup checklist */}
       {doneCount < SETUP_STEPS.length && (
@@ -430,7 +423,7 @@ export default async function DashboardPage({
             </div>
             {pending.length === 0 ? (
               <p className="px-5 py-6 text-caption text-muted-foreground">
-                {t("noRequests")}
+                {t("noPendingRequests")}
               </p>
             ) : (
               <ul>
@@ -478,18 +471,29 @@ export default async function DashboardPage({
                 <dd className="text-xl font-bold tabular-nums">
                   {dash.views7d}
                 </dd>
-                <dt className="text-2xs text-faint">{t("views")}</dt>
+                <dt className="text-2xs text-faint">{t("profileViews")}</dt>
               </div>
               <div>
                 <dd className="text-xl font-bold tabular-nums">
                   {dash.requests7d}
                 </dd>
-                <dt className="text-2xs text-faint">{t("requestsCount")}</dt>
+                <dt className="text-2xs text-faint">{t("requestsReceived")}</dt>
               </div>
             </dl>
           </Card>
         </div>
       </div>
+
+      {/* Phase 10b: post a project update (also on /feed). Below the founder's own work since
+          the UX audit (S-11): it used to push "ผลงานของฉัน" below the first screen. */}
+      <Composer
+        me={{
+          name: profile?.display_name ?? profile?.handle ?? "",
+          avatarUrl: profile?.avatar_url ?? null,
+        }}
+        startups={postable}
+        loginHref="/login"
+      />
     </main>
   );
 }

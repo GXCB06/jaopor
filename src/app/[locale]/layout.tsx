@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { IBM_Plex_Sans_Thai, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import {
+  getMessages,
+  getTranslations,
+  setRequestLocale,
+} from "next-intl/server";
 import { LivePresenceProvider } from "@/components/live/LivePresence";
 import { PrefsSync } from "@/components/PrefsSync";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -61,6 +65,24 @@ export async function generateMetadata({
   };
 }
 
+/**
+ * The legal pages render on the server only, so the browser gets every message except their long
+ * texts (UX audit S-16: about 25 KB less on every page). The live-map opt-out on /privacy is the one
+ * client component that reads Privacy; it keeps its four strings.
+ */
+const SERVER_ONLY = new Set(["Privacy", "Security", "Terms"]);
+const PRIVACY_CLIENT = ["liveHidden", "liveShown", "optIn", "optOut"];
+
+function clientMessages(all: Awaited<ReturnType<typeof getMessages>>) {
+  const privacy = all.Privacy as Record<string, unknown>;
+  return {
+    ...Object.fromEntries(
+      Object.entries(all).filter(([k]) => !SERVER_ONLY.has(k)),
+    ),
+    Privacy: Object.fromEntries(PRIVACY_CLIENT.map((k) => [k, privacy[k]])),
+  } as typeof all;
+}
+
 export default async function LocaleLayout({
   children,
   params,
@@ -68,6 +90,7 @@ export default async function LocaleLayout({
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
+  const messages = await getMessages();
 
   return (
     // The inline script sets data-theme/data-currency before hydration; React owns neither, so a language
@@ -89,7 +112,7 @@ export default async function LocaleLayout({
         />
       </head>
       <body className="flex min-h-full flex-col">
-        <NextIntlClientProvider>
+        <NextIntlClientProvider messages={clientMessages(messages)}>
           <LivePresenceProvider>
             <PrefsSync />
             <SiteHeader />

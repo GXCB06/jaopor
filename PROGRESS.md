@@ -12,6 +12,33 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-08 — Audit Phase 5: system-wide consistency
+
+**Done:**
+
+- **S-16, page weight:** the browser no longer receives the legal pages' long texts with every page (Privacy, Security, Terms render on the server; the live-map opt-out keeps its four strings). About 25 KB of the 128 KB messages bundle. Checked: the privacy intro is in `/th/privacy` only, not in `/th` or a project page (before: on every page).
+- **S-11, dashboard order:** checklist → ผลงานของฉัน + side cards → the post composer last.
+- **S-14, counters say what they count:**
+  - "ผลงานของคุณยังไม่ได้นับผู้เข้าชม…" when nothing counts visitors (was "0 ครั้ง");
+  - "คนดูโปรไฟล์คุณ" and "คำขอคุยที่ได้รับ" on the profile card;
+  - "ไม่มีคำขอคุยที่รอตอบ" on the requests card.
+- **S-17, phone edit page:** the dashboard tab row becomes one "← ผลงานของฉัน" link there, so the form gets the screen.
+- **S-6, one completeness model (`lib/completeness.ts` + 4 tests):** the edit page and the ผลงานของฉัน cards show the same weighted percentage. The cards now also count screenshots and any connected source.
+- **DS-1:** verified is `positive` on ผลงานของฉัน too (was brand).
+- **DS-4:** no raw `text-[Npx]` left outside the live map's SVG.
+- **DS-3:** ภาพและวิดีโอ and ยืนยันตัวเลข say they save instantly.
+- **Not done (bigger refactors, proposed for later):** one shared Badge / ProofMark component to replace about seven pill styles (DS-1 / DS-5).
+
+**Files:** `src/app/[locale]/layout.tsx`, `src/app/[locale]/dashboard/{page,startups/page}.tsx`, `src/components/dashboard/DashboardSidebar.tsx`, `src/components/wizard/StartupEditForm.tsx`, `src/lib/completeness.ts` (+ test), `messages/*.json`, `Design.md`
+
+- **Header fit (found by the width sweep):** in English the 1024 px header overflowed by about 45 px. The currency code and the language name now show from `xl` (the symbol and "TH/EN" below that).
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit tests 369 ✓ (incl. 4 for completeness) · local e2e 64 passed / 10 skipped · production build ✓.
+- Width sweep (/th, /en, project, directory, feed, categories at 1440 / 1024 / 768 / 430 / 390): 35 combinations, the only overflow was the English 1024 px header, now 0 at 1024 / 1100 / 1280.
+- The dashboard and edit-page changes are signed-in only, so they get checked on production after the push.
+
 ## 2026-10-08 — Owner "hide for now" (audit S-10, owner-approved migration)
 
 **Done:**
