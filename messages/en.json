@@ -270,6 +270,15 @@
       "proof": "Verify your numbers",
       "proofHint": "From the tools you already use, about 1–2 minutes",
       "done": "Done"
+    },
+    "ladder": {
+      "button": "How do these proofs differ?",
+      "title": "Where the numbers on JaoPor come from",
+      "revenue": "Verified revenue: read directly from Stripe or RevenueCat with a read-only key",
+      "build": "Build proof: commits from the owner's public GitHub repo",
+      "owner": "Owner verified: JaoPor's code was found on the website. It proves ownership, not numbers",
+      "counted": "Counted by: visitors from a script or analytics, sent by browsers, so they're “counted”, not “verified”",
+      "has": "This project has"
     }
   },
   "Verified": {
@@ -506,7 +515,10 @@
       "howTo1": "The repo must be public and belong to the GitHub account you signed in with (or an org where your membership is public).",
       "howTo2": "We ask for no permissions — we only read the repo's public data.",
       "repo": "GitHub repo link",
-      "needGithub": "Sign in with GitHub first so we can confirm the repo is yours."
+      "needGithub": "Connect your GitHub account first, so we can confirm the repo is yours.",
+      "link": "Connect GitHub account",
+      "linkHint": "We only use your GitHub username to confirm the repo is yours, never access to your code, then bring you back here.",
+      "linkFailed": "GitHub can't be connected from here right now. If your GitHub email matches this account, sign out and sign in with GitHub instead."
     },
     "jaopor": {
       "howTo1": "Copy the one line below and paste it before {headTag} on every page of your site. Works on Vercel, Netlify, GitHub Pages or any host.",
@@ -520,7 +532,18 @@
       "ownerFoundToast": "Found the code on your site",
       "ownerMissing": "We can't find the code on {host} yet. Put the line below in your home page's HTML (before {headTag}), deploy, then press “Check again”. Visits don't count until then.",
       "stillMissing": "Still can't find the code on {host}. Check that it's deployed and in your home page's HTML.",
-      "recheck": "Check again"
+      "recheck": "Check again",
+      "whereTitle": "Where do I paste it? (Next.js, Lovable, Framer, WordPress…)",
+      "where": {
+        "nextjs": "Next.js: in app/layout.tsx, put the script tag inside the html head (a plain script, not next/script)",
+        "vite": "Lovable, Bolt, v0 or a Vite / React site: in index.html before {headTag}, or ask the AI to “add this script to the head of index.html”",
+        "framer": "Framer: Site Settings → General → Custom Code → End of head tag",
+        "webflow": "Webflow: Site settings → Custom code → Head code",
+        "wordpress": "WordPress: a plugin such as WPCode → Header, or header.php before {headTag}",
+        "wix": "Wix: Settings → Custom Code → Head (needs a plan with your own domain)",
+        "html": "Plain HTML: before {headTag} on every page"
+      },
+      "causes": "Common causes: not deployed yet · the home page redirects to another domain · added through Google Tag Manager or by JavaScript (we read the home page's HTML directly) · the site still serves a cached old page"
     },
     "cloudflare": {
       "howTo1": "Cloudflare → My Profile → API Tokens → Create Token → Custom token",

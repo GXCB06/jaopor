@@ -14,11 +14,12 @@ import {
   XIcon,
   type LucideIcon,
 } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { createClient } from "@/lib/supabase/client";
 import {
   SOURCE_KIND,
   SOURCE_NAME,
@@ -691,9 +692,7 @@ function SourceForm({
         </div>
       )}
       {blocked ? (
-        <p className="text-sm text-muted-foreground">
-          {t("github.needGithub")}
-        </p>
+        <LinkGithub />
       ) : (
         <form onSubmit={submit} className="space-y-3">
           {source === "jaopor" && <SnippetBox projectId={startupId} />}
@@ -754,6 +753,62 @@ function SourceForm({
   );
 }
 
+/**
+ * Build proof needs a GitHub identity on the account (the repo must be the user's). Someone who
+ * signed in with Google links GitHub here instead of hitting a dead end (UX audit M-11): Supabase
+ * `linkIdentity` → GitHub → our callback → back to this page (the wizard restores its step).
+ * Requires "manual linking" in the Supabase Auth settings; if it is off, explain the fallback.
+ */
+function LinkGithub() {
+  const t = useTranslations("Sources");
+  const locale = useLocale();
+  const pathname = usePathname();
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  async function link() {
+    setBusy(true);
+    setFailed(false);
+    const callback = new URL("/api/auth/callback", window.location.origin);
+    callback.searchParams.set("locale", locale);
+    callback.searchParams.set("next", pathname);
+    const { error } = await createClient().auth.linkIdentity({
+      provider: "github",
+      options: { redirectTo: callback.toString() },
+    });
+    // On success the browser is already leaving for GitHub.
+    if (error) {
+      setFailed(true);
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">{t("github.needGithub")}</p>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        onClick={link}
+        disabled={busy}
+        className="px-3"
+      >
+        <GitBranchIcon aria-hidden="true" />
+        {t("github.link")}
+      </Button>
+      <p className="text-caption text-muted-foreground">
+        {t("github.linkHint")}
+      </p>
+      {failed && (
+        <p role="alert" className="text-caption text-warning">
+          {t("github.linkFailed")}
+        </p>
+      )}
+    </div>
+  );
+}
+
 /** Design.md §5 VerifyPanel snippet: the one line founders paste before </head>. */
 function SnippetBox({ projectId }: { projectId: number }) {
   const t = useTranslations("Sources");
@@ -773,9 +828,30 @@ function SnippetBox({ projectId }: { projectId: number }) {
         <CopyIcon />
         {t("jaopor.copy")}
       </Button>
+      {/* S-18: where the line goes on the tools founders actually use. */}
+      <details className="rounded-lg border bg-card text-caption">
+        <summary className="cursor-pointer px-3 py-2 font-semibold">
+          {t("jaopor.whereTitle")}
+        </summary>
+        <ul className="space-y-1.5 border-t px-3 py-2 text-muted-foreground">
+          {WHERE.map((w) => (
+            <li key={w}>{t(`jaopor.where.${w}`, { headTag: "</head>" })}</li>
+          ))}
+        </ul>
+      </details>
     </div>
   );
 }
+
+const WHERE = [
+  "nextjs",
+  "vite",
+  "framer",
+  "webflow",
+  "wordpress",
+  "wix",
+  "html",
+] as const;
 
 /**
  * Owner verified (Design.md §5): whether our server found the snippet on the website, and a
@@ -835,6 +911,7 @@ function OwnerCheck({
   return (
     <div className="space-y-2 rounded-md border border-warning/40 bg-warning/10 p-3 text-caption">
       <p>{t("jaopor.ownerMissing", { host: site, headTag: "</head>" })}</p>
+      <p className="text-muted-foreground">{t("jaopor.causes")}</p>
       <Button
         type="button"
         size="sm"

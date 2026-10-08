@@ -270,6 +270,15 @@
       "proof": "ยืนยันตัวเลข",
       "proofHint": "จากระบบที่คุณใช้อยู่ ประมาณ 1–2 นาที",
       "done": "เสร็จแล้ว"
+    },
+    "ladder": {
+      "button": "หลักฐานแต่ละแบบต่างกันอย่างไร",
+      "title": "ตัวเลขบน JaoPor มาจากไหน",
+      "revenue": "ยืนยันรายได้: อ่านตรงจาก Stripe หรือ RevenueCat ด้วยคีย์อ่านอย่างเดียว",
+      "build": "หลักฐานการสร้าง: commit จาก repo สาธารณะบน GitHub ของเจ้าของผลงาน",
+      "owner": "ยืนยันเจ้าของเว็บ: พบโค้ดของ JaoPor บนเว็บไซต์ ยืนยันว่าเป็นเจ้าของ แต่ไม่ได้ยืนยันตัวเลข",
+      "counted": "นับโดย: ผู้เข้าชมจากสคริปต์หรือ analytics ส่งเข้ามาจากเบราว์เซอร์ จึงเรียกว่า “นับ” ไม่ใช่ “ยืนยัน”",
+      "has": "ผลงานนี้มี"
     }
   },
   "Verified": {
@@ -506,7 +515,10 @@
       "howTo1": "Repo ต้องเป็นสาธารณะ และเป็นของบัญชี GitHub ที่คุณใช้เข้าสู่ระบบ (หรือ org ที่คุณเป็นสมาชิกแบบเปิดเผย)",
       "howTo2": "เราไม่ขอสิทธิ์ใด ๆ — อ่านข้อมูลสาธารณะของ repo เท่านั้น",
       "repo": "ลิงก์ GitHub repo",
-      "needGithub": "ต้องเข้าสู่ระบบด้วย GitHub ก่อน เพื่อยืนยันว่า repo เป็นของคุณ"
+      "needGithub": "เชื่อมบัญชี GitHub ของคุณก่อน เพื่อยืนยันว่า repo เป็นของคุณ",
+      "link": "เชื่อมบัญชี GitHub",
+      "linkHint": "เราใช้แค่ชื่อบัญชี GitHub เพื่อยืนยันว่า repo เป็นของคุณ ไม่ขอสิทธิ์เข้าถึงโค้ด แล้วจะพากลับมาหน้านี้",
+      "linkFailed": "ตอนนี้ยังเชื่อมบัญชี GitHub จากหน้านี้ไม่ได้ ถ้าอีเมลบน GitHub ตรงกับบัญชีนี้ ออกจากระบบแล้วเข้าสู่ระบบด้วย GitHub แทนได้"
     },
     "jaopor": {
       "howTo1": "คัดลอกโค้ดหนึ่งบรรทัดด้านล่าง แล้ววางไว้ก่อน {headTag} ของทุกหน้าในเว็บของคุณ ใช้ได้กับ Vercel, Netlify, GitHub Pages หรือโฮสต์ไหนก็ได้",
@@ -520,7 +532,18 @@
       "ownerFoundToast": "พบโค้ดบนเว็บของคุณแล้ว",
       "ownerMissing": "ยังไม่พบโค้ดบน {host} วางโค้ดด้านล่างไว้ใน HTML ของหน้าแรก (ก่อน {headTag}) แล้ว deploy จากนั้นกด “ตรวจอีกครั้ง” ระหว่างนี้ยังไม่นับผู้เข้าชม",
       "stillMissing": "ยังไม่พบโค้ดบน {host} ตรวจว่า deploy แล้ว และโค้ดอยู่ใน HTML ของหน้าแรก",
-      "recheck": "ตรวจอีกครั้ง"
+      "recheck": "ตรวจอีกครั้ง",
+      "whereTitle": "วางโค้ดที่ไหน? (Next.js, Lovable, Framer, WordPress…)",
+      "where": {
+        "nextjs": "Next.js: ใน app/layout.tsx วางแท็ก script ไว้ในส่วน head ของ html (ใช้ script ธรรมดา ไม่ใช่ next/script)",
+        "vite": "Lovable, Bolt, v0 หรือเว็บ Vite / React: วางในไฟล์ index.html ก่อน {headTag} หรือบอก AI ว่า “ใส่ script นี้ใน head ของ index.html”",
+        "framer": "Framer: Site Settings → General → Custom Code → End of head tag",
+        "webflow": "Webflow: Site settings → Custom code → Head code",
+        "wordpress": "WordPress: ใช้ปลั๊กอินอย่าง WPCode → Header หรือใส่ใน header.php ก่อน {headTag}",
+        "wix": "Wix: Settings → Custom Code → Head (ต้องเป็นแพ็กเกจที่ต่อโดเมนเอง)",
+        "html": "HTML ธรรมดา: วางก่อน {headTag} ในทุกหน้า"
+      },
+      "causes": "สาเหตุที่พบบ่อย: ยังไม่ได้ deploy · หน้าแรกพาไปโดเมนอื่น · ใส่ผ่าน Google Tag Manager หรือเพิ่มด้วย JavaScript (เราอ่านจาก HTML ของหน้าแรกโดยตรง) · เว็บยังแสดงหน้าเก่าจากแคช"
     },
     "cloudflare": {
       "howTo1": "Cloudflare → My Profile → API Tokens → Create Token → Custom token",

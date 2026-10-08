@@ -12,6 +12,28 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-08 — Audit Phase 4: GitHub without a GitHub sign-in, snippet help, evidence ladder
+
+**Done:**
+
+- **M-11:** the GitHub option no longer dead-ends for Google sign-ins. "เชื่อมบัญชี GitHub" links GitHub to the same account (Supabase `linkIdentity`) and returns to the same page; Add-project restores its step from the session draft.
+  - This **needs "Manual linking" enabled in Supabase Auth** (owner, dashboard).
+  - Until then, the button shows the fallback (sign out and in with GitHub when the emails match).
+- **S-18:** every snippet code box has "วางโค้ดที่ไหน?" with one line per tool (Next.js, Lovable / Bolt / v0 / Vite, Framer, Webflow, WordPress, Wix, HTML). The "not found" box lists the common causes (not deployed, redirect to another domain, GTM / JavaScript injection, cached page).
+- **C-4:** an ⓘ beside the project's badges explains the four kinds of proof (verified revenue, build proof, owner verified, counted), with this project's marked ✓.
+- **Freshness:** already covered (the chart stamp turns amber when a sync is stale), so no change.
+- **S-10, the owner "hide for now":** needs a migration (a `private` status that only owners may set, never undoing a moderator's `hidden`). The draft is shown to the owner; not applied.
+- **Caught by the messages test before commit:** a literal `<head>` in two new strings would have broken rendering; reworded.
+
+**Files:** `src/components/wizard/VerifyPanel.tsx`, `src/app/[locale]/startup/[slug]/page.tsx`, `messages/*.json`, `Design.md`
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit tests 365 ✓ (incl. messages parse) · local e2e 64 passed / 10 skipped · production build ✓.
+- Local 375 px: the ladder opens full width (339 px) with ✓ on verified revenue, no horizontal scroll.
+- The GitHub link button needs a signed-in Google account and the Supabase setting, so it's checked by code review.
+
+**Next:** push; the owner enables manual linking and decides on the `private` status migration.
+
 ## 2026-10-08 — Editable project link that keeps old links working (audit S-9, owner-approved migration)
 
 **Done:**

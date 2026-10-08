@@ -57,6 +57,7 @@ import {
 import { money, moneyFull } from "@/lib/format";
 import { projectLinks, websiteHost } from "@/lib/links";
 import { publicEnv } from "@/lib/public-env";
+import { cn } from "@/lib/utils";
 import {
   badgeHtml,
   badgeMarkdown,
@@ -255,7 +256,8 @@ export default async function StartupPage({ params }: Props) {
               className="rounded-2xl"
             />
             <div className="min-w-0 space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
+              {/* relative: the evidence-ladder note opens across this row (MetricHelp). */}
+              <div className="relative flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold tracking-tight">
                   {startup.name}
                 </h1>
@@ -265,6 +267,35 @@ export default async function StartupPage({ params }: Props) {
                     source={verifiedSource}
                     ownerVerified={startup.owner_verified_at !== null}
                   />
+                )}
+                {!startup.is_demo && (
+                  // C-4: what each kind of proof means, with this project's marked ✓.
+                  <MetricHelp label={t("ladder.button")}>
+                    <span className="block font-semibold text-foreground">
+                      {t("ladder.title")}
+                    </span>
+                    {(
+                      [
+                        ["revenue", verified],
+                        ["build", startup.build_commits !== null],
+                        ["owner", startup.owner_verified_at !== null],
+                        ["counted", startup.visitors_30d !== null],
+                      ] as const
+                    ).map(([id, has]) => (
+                      <span key={id} className="flex gap-2">
+                        <span
+                          aria-label={has ? t("ladder.has") : undefined}
+                          className={cn(
+                            "w-3 shrink-0",
+                            has ? "text-positive" : "text-faint",
+                          )}
+                        >
+                          {has ? "✓" : "·"}
+                        </span>
+                        <span>{t(`ladder.${id}`)}</span>
+                      </span>
+                    ))}
+                  </MetricHelp>
                 )}
               </div>
               <div className="max-w-2xl space-y-2 font-prose text-body text-muted-foreground">
