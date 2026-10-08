@@ -12,6 +12,41 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-08 — Voice rewrite from the launch philosophy ("สถานีขนส่งฝัน")
+
+**Done:**
+
+- **Design.md §3 Voice:** four principles from the owner's launch post:
+  - start with one;
+  - Thai builders from every province;
+  - honest about every number;
+  - we build it together.
+
+  Warmth goes in welcome moments, empty states, intros and story prompts; never on buttons, numbers, errors or legal pages.
+
+- **17 strings rewritten in th + en:**
+  - the footer tagline: "สถานีขนส่งฝันของคนไทยที่สร้างด้วย AI…" replaces "ดินแดนมาเฟีย…";
+  - the home subline, which no longer claims verified users;
+  - the login subtitle (first 100 projects get the founding badge);
+  - the welcome banner;
+  - the Add-project intro, which now says the page goes live and can be edited or deleted;
+  - the CTA "เผยแพร่และไปต่อ" / "Publish & continue";
+  - "ยังไม่พร้อมก็ไม่เป็นไร…";
+  - the listed share title;
+  - the owner bar;
+  - the unverified prompt as "ขั้นต่อไป…";
+  - Olympics / province empty states ("ส่งผลงานแทนจังหวัดของคุณ", no "ขึ้นกระดานทันที");
+  - the dashboard setup hint (no "ถูกค้นเจอบ่อยกว่า" without data).
+- **A new hint in the founder-message box:** "ทำไมคุณถึงสร้างสิ่งนี้ และสร้างให้ใคร? เล่าแบบที่คุณเล่าให้เพื่อนฟัง".
+
+**Files:** `messages/th.json`, `messages/en.json`, `Design.md`, `src/components/wizard/StartupEditForm.tsx`
+**Verified:**
+
+- unit tests 365 ✓ · typecheck ✓ · lint ✓ · local e2e 64 passed / 10 skipped.
+- Browser `/th` at 375 px: the new footer and hero line render, no horizontal scroll.
+
+**Next:** the owner reviews the wording, then push. Then Phase 1 (M-3, M-4, M-5, M-6).
+
 ## 2026-10-08 — Owner decisions from the audit: demos deleted, `/startup/jaopor` back, one word "ผลงาน / project"
 
 **Done:**

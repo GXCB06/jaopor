@@ -1132,6 +1132,7 @@ export function StartupEditForm({
                     id="msg-input"
                     maxLength={600}
                     rows={5}
+                    placeholder={t("founderMessagePlaceholder")}
                     value={f.founderMessage}
                     onChange={(ev) => set("founderMessage")(ev.target.value)}
                     aria-describedby="msg-count"

@@ -103,6 +103,17 @@ One word per concept, in every string:
 
 - Exceptions: "โปรเจกต์" for past jobs in the profile's work experience (a different concept), "Product" as a skill role, the owner-approved legal pages (/privacy, /terms, /security) until the owner revises them. URLs stay `/startups` and `/startup/{slug}` (old links keep working).
 
+### Voice (2026-10-08, owner-approved; from the launch post "สถานีขนส่งฝัน")
+
+JaoPor is a place that carries Thai builders' work further. Four principles for every string:
+
+1. **Start with one.** One project, one builder is enough. Small and early is welcome; never imply a project must be big or finished.
+2. **Thai builders from anywhere.** Every province, not only Bangkok; the Olympics and province pages say "represent your province".
+3. **Honest about every number.** "ยืนยัน" only for what is proven at the source, "นับโดย" for counts; never promise outcomes we can't show (no "ติดอันดับทันที", no "ถูกค้นเจอบ่อยกว่า" without data).
+4. **We build it together.** Invite, encourage, ask for feedback; a missing step is "ขั้นต่อไป", not a failure.
+
+Where the warmth goes: welcome moments, empty states, Add-project intro, the post-listing moment, prompts that ask for the founder's story, the footer. Where it doesn't: buttons, numbers, labels, errors, legal pages (plain and exact there). Metaphors ("สถานีขนส่งฝัน") only in the footer and the founder's own words, never on controls.
+
 ### Dates (2026-10-07)
 
 - Thai pages show the **Thai (Buddhist) year** everywhere ("ต.ค. 2569"), the default of `th-TH` and of next-intl's formatter; English pages the Western year. Never force `-u-ca-gregory` on Thai (the Olympics season, profile experience and revenue-chart dates used to, so one page said 2026 and the next 2569).
