@@ -12,6 +12,108 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-09 — Pre-launch hardening pass (live map off, th/en 404 and error pages, launch checklists)
+
+**Code changes:**
+
+- **Live map off by default (gate B-2):**
+  - `LIVE_ENABLED` now needs `NEXT_PUBLIC_LIVE_VISITORS=1`. The Vercel env couldn't be set from here, so the flag's default was flipped.
+  - No Realtime presence or broadcast, heartbeat or geo lookup from the provider.
+  - `/api/live/ping` and `/api/live/count` answer without touching the database.
+  - The feature, the `live_pings` table and the /privacy wording are kept. Re-enable with the variable + a redeploy.
+- **Thai / English 404 and error pages (H-4):**
+  - `[locale]/not-found.tsx` + a `[locale]/[...rest]` catch-all;
+  - `[locale]/error.tsx` (retry, home, opaque reference only);
+  - `app/global-error.tsx` (loads only its language's messages, lazily);
+  - shared `ErrorScreen`;
+  - `ErrorPage` messages in th / en;
+  - a Design.md pattern;
+  - `e2e/not-found.spec.ts`.
+- **`.gitignore`:** database dumps can't be committed.
+- **`eslint.config.mjs`:** ignores `.claude/worktrees/**`. An old worktree's `.next` made lint report 39 k problems that weren't in this checkout.
+
+**Documentation:** `docs/LAUNCH_HARDENING.md`:
+
+- Vercel plan (Hobby; commercial-use terms; Pro recommended before the post);
+- Supabase usage table (measured: DB 16 MB, storage 6.9 MB, MAU 8, Edge Functions 0; egress and Realtime need a dashboard login);
+- exact backup commands (Docker or PostgreSQL 17 tools are needed; the project isn't linked locally; what's inside; how to store it);
+- Google secret and Gemini key rotation checklists;
+- OAuth / allowlist checklist;
+- uptime monitors (`/api/search?q=jaopor` keyword + `/api/health` + `/th`);
+- anonymous-write review with the smallest mitigation (proposed, not built) and a /privacy profile-view bullet for approval;
+- the 10-minute daily operator checklist;
+- JaoPor's own launch tasks.
+
+**Manual account changes:** none made. All are listed in `docs/LAUNCH_HARDENING.md` §E, §F, §J.
+
+**Not changed (owner instructions):**
+
+- the analytics migration (not applied);
+- MRR semantics;
+- demo projects;
+- homepage positioning.
+
+**Files:**
+
+- `src/lib/live/identity.ts`
+- `src/app/api/live/{ping,count}/route.ts`
+- `src/app/[locale]/{not-found,error}.tsx`
+- `src/app/[locale]/[...rest]/page.tsx`
+- `src/app/global-error.tsx`
+- `src/components/ErrorScreen.tsx`
+- `messages/*.json`
+- `Design.md`
+- `e2e/not-found.spec.ts`
+- `.gitignore`
+- `eslint.config.mjs`
+- `docs/LAUNCH_HARDENING.md`
+
+**Verified:**
+
+- **Gate:** typecheck ✓ · lint ✓ · unit tests 369 passed / 17 skipped ✓ · local e2e 72 passed / 10 skipped (incl. 8 new 404 checks) ✓ · production build ✓.
+- **RLS smoke on production:** all checks good, rolled back.
+- **Secret scans** (repo, history, build output): clean.
+- **Browser:**
+  - the Thai and English 404 inside the layout, with links keeping `/th` / `/en`, at 375 px with no overflow;
+  - the error page from a temporary throwing route (deleted afterwards): Thai text, retry, home, reference, header kept;
+  - home: no live section, no `/api/live/*` or Realtime requests.
+- **The global error chunk:** messages load lazily (no page HTML references them).
+- **Production checks** after the push are logged in the next entry.
+
+## 2026-10-08 — Launch-readiness assessment (read-only) + final analytics migration for review
+
+**Done:**
+
+- **`docs/LAUNCH_READINESS_REPORT.md`:** a read-only review of production covering:
+  - security;
+  - cost and abuse;
+  - Supabase Free / Vercel Hobby limits against 100 / 500 / 1,000 online and 5,000+ users;
+  - reliability, observability, the new-user journey, OAuth;
+  - privacy-page accuracy;
+  - recovery paths;
+  - the launch gate (3 BLOCKER, 9 HIGH, 12 MEDIUM).
+- **Main findings:**
+  - Realtime presence (the live map) passes Free-plan limits at about 50 online and can use the monthly 2 M messages in a day;
+  - no backups on the Free plan;
+  - Google shows the Supabase domain and GitHub shows "MRRMafia" at sign-in;
+  - default English 404 / error pages;
+  - unbounded anonymous writes to `profile_views`;
+  - profile-view counting isn't disclosed on /privacy.
+- **`docs/ADD_STARTUP_ANALYTICS_MIGRATION.md`:** the final SQL, event schema, stored data, RLS model, duplicate handling, failure isolation, tests T137–T145 and the /privacy wording (th + en).
+  - It fixes a draft bug: the server can't write to an unexposed schema through the Data API, so writes and cleanup now go through service-role-only functions.
+- **Nothing was changed** in production, the database or the code.
+
+**Files:** `docs/LAUNCH_READINESS_REPORT.md`, `docs/ADD_STARTUP_ANALYTICS_MIGRATION.md`, `docs/ADD_STARTUP_ANALYTICS_DESIGN.md` (pointer)
+**Verified:**
+
+- production e2e 74 / 74 ✓;
+- Supabase advisors (0 WARN except leaked-password protection, which only matters while Email sign-in is on);
+- read-only SQL on grants, policies, storage and functions;
+- curl of the OAuth redirects, the GitHub app name, headers and 404s;
+- the Google sign-in page in the browser pane.
+
+**Next:** owner decisions (gate items B-1–B-3, H-1–H-9) and approval of the analytics SQL and privacy wording.
+
 ## 2026-10-08 — Old `jaopor-pdt0` link restored; Add-project analytics designed (not built)
 
 **Done:**

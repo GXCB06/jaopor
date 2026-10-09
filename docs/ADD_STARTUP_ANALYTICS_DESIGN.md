@@ -2,6 +2,8 @@
 
 Date: 2026-10-08 · Status: **design only, waiting for the owner's approval.** No migration has been applied and no code has been written.
 
+> **The SQL to approve is in [ADD_STARTUP_ANALYTICS_MIGRATION.md](ADD_STARTUP_ANALYTICS_MIGRATION.md)**, which supersedes the §9 draft below. The draft's direct server writes would have failed, because the Data API doesn't expose the `analytics` schema; the final version uses service-role-only functions instead.
+
 Goal: learn, from behaviour rather than opinion, where founders drop out of Add-project and whether they come back to add proof. The method is first-party, minimal, and privacy-preserving.
 
 **What exists today:** 1 real project and 6 profiles. The value of this system is in the weeks after the launch post, not today, so it should be live before the post goes out.

@@ -417,6 +417,18 @@
     "no_website": "Add your website link first — visitors are matched to it.",
     "duplicate_listing": "Your project “{detail}” already has this website’s numbers connected. One business, one listing: use that project instead."
   },
+  "ErrorPage": {
+    "notFoundCode": "404",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "The link may have a typo, or the page was moved or deleted.",
+    "errorCode": "500",
+    "errorTitle": "Something went wrong",
+    "errorBody": "This page didn't load. Try again or go back home. If it keeps happening, tell us at jaopordev@gmail.com.",
+    "home": "Back to home",
+    "browse": "Browse all projects",
+    "retry": "Try again",
+    "reference": "Reference: {digest}"
+  },
   "Dashboard": {
     "title": "Your projects",
     "empty": "You haven't added a project yet.",

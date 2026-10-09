@@ -52,3 +52,9 @@ next-env.d.ts
 # Playwright
 /test-results
 /playwright-report
+
+# Database dumps (launch readiness B-3): never commit; they contain account data.
+/backups/
+*.dump
+*backup*.sql
+*backup*.sql.gz

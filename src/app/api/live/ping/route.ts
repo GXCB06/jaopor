@@ -1,7 +1,7 @@
 import { createHmac, hkdfSync } from "node:crypto";
 import { geolocation } from "@vercel/functions";
 import { serverEnv } from "@/lib/env";
-import { isIdentity } from "@/lib/live/identity";
+import { LIVE_ENABLED, isIdentity } from "@/lib/live/identity";
 import { coarseGeo } from "@/lib/live/geo";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -17,6 +17,8 @@ const done = () =>
   new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
 
 export async function POST(req: Request) {
+  // Live map off (the default since 2026-10-09): accept and drop, no database write.
+  if (!LIVE_ENABLED) return done();
   try {
     const body = (await req.json().catch(() => null)) as {
       id?: unknown;

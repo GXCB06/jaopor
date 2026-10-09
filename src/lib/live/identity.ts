@@ -163,7 +163,12 @@ export function parseVisitor(raw: unknown): LiveVisitor | null {
 }
 
 /**
- * Phase 8 kill switch. On since the /privacy wording was approved (2026-10-01); set
- * NEXT_PUBLIC_LIVE_VISITORS=0 in Vercel to turn the live map off without a code change.
+ * Phase 8 switch. **Off by default since 2026-10-09** (launch-readiness B-2): one Supabase Realtime
+ * presence channel for the whole site sends every page change to every open tab, which passes the
+ * Free plan's 100 messages/s at about 50 people online and can use the monthly 2 M messages in a
+ * launch day. Off means no Realtime connection, no heartbeat and no geo lookup from this provider;
+ * the API routes answer without touching the database. The feature, its tables and the /privacy
+ * wording are kept: set NEXT_PUBLIC_LIVE_VISITORS=1 in Vercel and redeploy to turn it back on
+ * (after a redesign or a plan with higher Realtime limits).
  */
-export const LIVE_ENABLED = process.env.NEXT_PUBLIC_LIVE_VISITORS !== "0";
+export const LIVE_ENABLED = process.env.NEXT_PUBLIC_LIVE_VISITORS === "1";

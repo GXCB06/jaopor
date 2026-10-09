@@ -384,7 +384,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - Overlay top-left (`w-56 rounded-lg border bg-background/85 backdrop-blur`): big count + "คนกำลังดู JaoPor", rows ประเทศ / อุปกรณ์ / หน้า (top 3, fixed section labels only, never slugs), "+n คนจากต่างประเทศ". Fallback shows the count + "แสดงจำนวนโดยประมาณ".
 - Feed bottom-left: last 4 page views as `bg-background/85` rows: avatar, "{ชื่อ} เปิด{หน้า}", "เมื่อสักครู่ / n นาทีที่แล้ว".
 - Footer `border-t text-2xs`: "คุณแสดงเป็น “{ชื่อ}” · ไม่แสดงตัวฉัน" (opt-out; then "คุณไม่ได้แสดงตัว · แสดงตัวอีกครั้ง") + "ไม่ระบุตัวตน · ตำแหน่งระดับจังหวัด/ประเทศ".
-- Names only from the fixed word lists (EN "Color Animal", TH "สัตว์สี"); every received payload is validated. Production waits for the approved /privacy page (`LIVE_ENABLED`).
+- Names only from the fixed word lists (EN "Color Animal", TH "สัตว์สี"); every received payload is validated. **Off by default since 2026-10-09** (launch readiness B-2: Realtime Free-plan limits): `LIVE_ENABLED` is true only with `NEXT_PUBLIC_LIVE_VISITORS=1`. When off, the section, the LiveViewersPill and every Realtime connection, heartbeat and geo lookup from the provider are gone, and `/api/live/ping|count` answer without touching the database.
 
 ### DashboardShell (Phase 9d, docs/design/dashboard.png)
 
@@ -607,6 +607,25 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 ### Footer
 
 - `border-t mt-16`: 4 columns (brand + tagline · Navigation · Browse startups by category · About/legal), headings `text-3xs uppercase text-faint`, links `text-caption text-faint`; bottom line centered `text-2xs text-faint`: "© 2026 JaoPor · Built with JaoPor.dev in Thailand".
+
+### Not-found and error pages (2026-10-09, launch readiness H-4)
+
+- **Where:**
+  - `[locale]/not-found.tsx` covers `notFound()` calls and every unmatched URL (via the `[locale]/[...rest]` catch-all);
+  - `[locale]/error.tsx` covers render errors under the layout;
+  - `app/global-error.tsx` covers a failure of the root layout itself.
+
+  The first two render inside the normal layout (header, footer, current language).
+
+- **Layout:** the Login page's centred column: `main mx-auto flex max-w-sm flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center`.
+  - `BrandMark size-10`;
+  - a small faint code line (`404` / `500`, `font-mono tabular-nums text-faint text-caption`);
+  - `h1 text-2xl font-bold`;
+  - one `text-sm text-muted-foreground` sentence;
+  - a button row: primary "กลับหน้าแรก" + outline "ดูผลงานทั้งหมด" (404) or primary "ลองอีกครั้ง" + outline "กลับหน้าแรก" (error).
+- **Never shown:** the error message or stack. Only Next's opaque `digest` appears, as "รหัสอ้างอิง" (`text-2xs text-faint`), so a founder can quote it and we can find the server log.
+- **Links** go through `@/i18n/navigation`, so the language is kept.
+- **The global error** has no layout: it renders its own `<html class="dark">` with `globals.css`, reads the language from the first path segment and loads only that language's messages when it appears.
 
 ## 6. Page templates
 
