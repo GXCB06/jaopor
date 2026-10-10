@@ -10,9 +10,10 @@ import { ProvinceField } from "@/components/profile-edit/ProvinceField";
 import { Link, useRouter } from "@/i18n/navigation";
 import { CATEGORIES, slugify } from "@/lib/catalog";
 import {
-  parseProjectLink,
+  checkProjectLink,
+  ownWebsiteHost,
   sameWebsite,
-  websiteHost,
+  type LinkChoice,
   type LinkColumn,
 } from "@/lib/links";
 import type { SiteAutofill } from "@/lib/net/link-preview";
@@ -21,6 +22,8 @@ import { createClient } from "@/lib/supabase/client";
 import { revalidateStartup } from "@/app/actions/revalidate";
 import { useSessionDraft } from "@/lib/use-session-draft";
 import { cn } from "@/lib/utils";
+import { LinkTypeStatus } from "./LinkTypeStatus";
+import { linkProblemText } from "./link-text";
 import { Field, Select, inputClass } from "./fields";
 import { LogoField } from "./LogoField";
 import { categoryName } from "@/lib/config/display";
@@ -126,6 +129,8 @@ export function StartupWizard({
   const [error, setError] = useState<string | null>(null);
 
   const [link, setLink] = useState("");
+  // A1.2: the detected link type can be corrected (null = use the detection).
+  const [linkChoice, setLinkChoice] = useState<LinkChoice | null>(null);
   const [name, setName] = useState("");
   const [tagline, setTagline] = useState("");
   // No default: a preselected "AI" silently miscategorised projects (UX audit M-9).
@@ -162,8 +167,12 @@ export function StartupWizard({
     },
   );
 
-  const parsed = parseProjectLink(link);
-  const siteUrl = parsed?.kind === "website" ? parsed.url : null;
+  const check = checkProjectLink(link, linkChoice);
+  const parsed = check?.ok ? check : null;
+  // Any general link (own site or platform page) for "already listed"; only the project's own
+  // site is read for auto-fill (A1.2: a Facebook page isn't the project's website).
+  const generalUrl = parsed?.kind === "website" ? parsed.url : null;
+  const siteUrl = generalUrl && !parsed?.platform ? generalUrl : null;
 
   // One business, one listing (Design.md §5 Add-startup wizard v2 "Already listed"): the owner's
   // projects, to catch a website they already listed before a second copy is created.
@@ -183,9 +192,9 @@ export function StartupWizard({
   // The database allows 5 projects per owner; going back to edit this one is always allowed.
   const atLimit = !saved && mine.length >= 5;
   const existing =
-    step === 1 && siteUrl
+    step === 1 && generalUrl
       ? mine.find(
-          (s) => s.id !== saved?.id && sameWebsite(s.website_url, siteUrl),
+          (s) => s.id !== saved?.id && sameWebsite(s.website_url, generalUrl),
         )
       : undefined;
 
@@ -240,7 +249,7 @@ export function StartupWizard({
   async function create(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!parsed) return setError(lt("invalid"));
+    if (!parsed) return setError(linkProblemText(lt, check, linkChoice));
     if (existing) return;
     if (!province) return setError(t("provinceRequired"));
     if (logo && logo.file.size > MAX_LOGO_BYTES)
@@ -367,13 +376,7 @@ export function StartupWizard({
               label={t("projectLink")}
               htmlFor="link"
               className="sm:col-span-2"
-              hint={
-                link.trim()
-                  ? parsed
-                    ? lt("detected", { kind: lt(parsed.kind) })
-                    : lt("invalid")
-                  : t("projectLinkHint")
-              }
+              hint={link.trim() ? undefined : t("projectLinkHint")}
             >
               <input
                 id="link"
@@ -383,9 +386,19 @@ export function StartupWizard({
                 placeholder="yourapp.com · @yourbot"
                 maxLength={300}
                 value={link}
-                onChange={(e) => setLink(e.target.value)}
+                onChange={(e) => {
+                  setLink(e.target.value);
+                  setLinkChoice(null);
+                }}
                 className={inputClass}
               />
+              {check && (
+                <LinkTypeStatus
+                  check={check}
+                  choice={linkChoice}
+                  onChoice={setLinkChoice}
+                />
+              )}
               {existing && (
                 <p
                   role="alert"
@@ -565,7 +578,7 @@ export function StartupWizard({
           <VerifyPanel
             startupId={saved.id}
             connections={[]}
-            websiteHost={websiteHost(saved.website)}
+            websiteHost={ownWebsiteHost(saved.website)}
             githubLogin={githubLogin}
             onConnected={(source) => {
               setVerified(true);

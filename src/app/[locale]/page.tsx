@@ -19,13 +19,17 @@ import {
 } from "@/lib/data/startups";
 import { getThbPerUsd } from "@/lib/data/fx";
 import { growthPct } from "@/lib/format";
+import { boardValue, rankBoard } from "@/lib/leaderboard";
 import { logoUrl } from "@/lib/supabase/public";
 
 export const revalidate = 60;
 
 const int = (n: number | null) => (n === null ? "–" : n.toLocaleString("en"));
 
-function boardRow(s: StartupRow, metric: BoardMetric): BoardRow {
+function boardRow(
+  s: StartupRow & { rank: number; tied: boolean },
+  metric: BoardMetric,
+): BoardRow {
   // Money metrics keep raw cents so the client can show them in the visitor's currency.
   const cents =
     metric === "mrr"
@@ -65,6 +69,8 @@ function boardRow(s: StartupRow, metric: BoardMetric): BoardRow {
     cents,
     growth,
     demo: s.is_demo,
+    rank: s.rank,
+    tied: s.tied,
   };
 }
 
@@ -87,7 +93,15 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     ...BOARD_METRICS.map((m) => getBoard(m, 50)),
   ]);
   const boards = Object.fromEntries(
-    BOARD_METRICS.map((m, i) => [m, lists[i].map((s) => boardRow(s, m))]),
+    BOARD_METRICS.map((m, i) => [
+      m,
+      // A1.3: competition ranks (equal values share a rank), ties listed by name.
+      rankBoard(
+        lists[i],
+        (s) => boardValue(s, m),
+        (s) => s.name,
+      ).map((s) => boardRow(s, m)),
+    ]),
   ) as Record<BoardMetric, BoardRow[]>;
 
   const dot = <span aria-hidden="true">·</span>;

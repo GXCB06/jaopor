@@ -1,5 +1,7 @@
 import type { Screenshot } from "@/lib/media";
 import "server-only";
+import type { BoardMetric } from "@/lib/leaderboard";
+import { BOARD_DEFINITIONS, isBoardEligible } from "@/lib/leaderboard";
 import type { AiTool, Category } from "@/lib/catalog";
 import type { Region } from "@/lib/config/provinces";
 import type { LookingFor } from "@/lib/links";
@@ -31,26 +33,14 @@ function db() {
 }
 
 /** Design.md §5 LeaderboardCard metrics: each ranks only verified numbers. */
-export const BOARD_METRICS = [
-  "mrr",
-  "revenue30d",
-  "visitors",
-  "commits",
-] as const;
-export type BoardMetric = (typeof BOARD_METRICS)[number];
-
-const BOARD_COLUMN = {
-  mrr: "mrr_cents",
-  revenue30d: "revenue_30d_cents",
-  visitors: "visitors_30d",
-  commits: "build_commits",
-} as const;
+// Leaderboard rules live in lib/leaderboard (A1.3): one definition for the board, the data and tests.
+export { BOARD_METRICS, type BoardMetric } from "@/lib/leaderboard";
 
 export async function getBoard(
   metric: BoardMetric,
   limit = 50,
 ): Promise<StartupRow[]> {
-  const column = BOARD_COLUMN[metric];
+  const { column, verifiedRevenueOnly } = BOARD_DEFINITIONS[metric];
   // Demo projects never rank (their numbers are made up; the Olympics board excludes them too).
   let query = db()
     .from("startups")
@@ -58,14 +48,16 @@ export async function getBoard(
     .not(column, "is", null)
     .eq("is_demo", false);
   // Revenue columns only count once the provider connection is verified.
-  if (metric === "mrr" || metric === "revenue30d")
-    query = query.eq("verification_status", "verified");
+  if (verifiedRevenueOnly) query = query.eq("verification_status", "verified");
   const { data, error } = await query
     .order(column, { ascending: false })
-    .order("created_at", { ascending: false })
+    // A1.3: within equal values, a neutral visible order (name), never the creation date.
+    .order("name", { ascending: true })
     .limit(limit);
   if (error) throw error;
-  return data as StartupRow[];
+  // The same rules again in code (published, not demo, has a value, verified revenue), so the
+  // board can't show a row the definition excludes even if a query filter changes.
+  return (data as StartupRow[]).filter((s) => isBoardEligible(s, metric));
 }
 
 /** Projects with verified traffic or build proof, strongest first (home "Top traction" row). */

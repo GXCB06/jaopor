@@ -49,14 +49,16 @@ import {
   LINK_COLUMN,
   LINK_KINDS,
   LOOKING_FOR,
-  parseProjectLink,
-  websiteHost,
+  checkProjectLink,
+  isOwnWebsite,
+  ownWebsiteHost,
   type LinkKind,
   type LookingFor,
 } from "@/lib/links";
 import { useSessionDraft } from "@/lib/use-session-draft";
 import { cn } from "@/lib/utils";
 import { Field, Select, ToggleChips, inputClass } from "./fields";
+import { linkProblemText } from "./link-text";
 import { uploadLogo } from "./StartupWizard";
 import { LogoField } from "./LogoField";
 import { completenessPct } from "@/lib/completeness";
@@ -141,6 +143,18 @@ export function StartupEditForm({
   const e = useTranslations("Edit");
   const p = useTranslations("Profile");
   const lt = useTranslations("Links");
+  // A1.2: what a link box will do with what's typed: a platform page is fine as the main link but
+  // can't count visitors; a short link or a link of another kind is explained before saving.
+  const linkFieldHint = (kind: LinkKind, value: string) => {
+    const raw = value.trim();
+    if (!raw) return undefined;
+    const check = checkProjectLink(raw);
+    if (!check?.ok || check.kind !== kind)
+      return linkProblemText(lt, check, kind);
+    return check.platform
+      ? lt("platformNote", { platform: lt(`platforms.${check.platform}`) })
+      : undefined;
+  };
   const lf = useTranslations("LookingFor");
   const common = useTranslations("Common");
   const cat = useTranslations("Catalog");
@@ -449,9 +463,11 @@ export function StartupEditForm({
     const links: Record<string, string | null> = {};
     for (const kind of LINK_KINDS) {
       const raw = f.links[kind].trim();
-      const parsed = raw ? parseProjectLink(raw) : null;
-      if (raw && parsed?.kind !== kind) return fail("links", lt("invalid"));
-      links[LINK_COLUMN[kind]] = parsed?.url ?? null;
+      const check = raw ? checkProjectLink(raw) : null;
+      // A1.2: say why (short link, wrong box, malformed for this kind), not just "invalid".
+      if (raw && (!check?.ok || check.kind !== kind))
+        return fail("links", linkProblemText(lt, check, kind));
+      links[LINK_COLUMN[kind]] = check?.ok ? check.url : null;
     }
     if (Object.values(links).every((v) => !v))
       return fail("links", lt("needOne"));
@@ -832,8 +848,12 @@ export function StartupEditForm({
                 variant="outline"
                 size="sm"
                 onClick={autofill}
-                disabled={filling || !startup.website_url}
-                title={startup.website_url ? undefined : e("autofillNoSite")}
+                disabled={filling || !isOwnWebsite(startup.website_url)}
+                title={
+                  isOwnWebsite(startup.website_url)
+                    ? undefined
+                    : e("autofillNoSite")
+                }
               >
                 {filling ? (
                   <Loader2Icon className="animate-spin" aria-hidden="true" />
@@ -889,9 +909,10 @@ export function StartupEditForm({
                     <Field
                       key={kind}
                       id={LINK_COLUMN[kind]}
-                      label={lt(kind)}
+                      label={kind === "website" ? lt("websiteField") : lt(kind)}
                       htmlFor={`${kind}-input`}
                       optional={common("optional")}
+                      hint={linkFieldHint(kind, f.links[kind])}
                     >
                       <input
                         id={`${kind}-input`}
@@ -1347,7 +1368,7 @@ export function StartupEditForm({
               <VerifyPanel
                 startupId={startup.id}
                 connections={connections}
-                websiteHost={websiteHost(startup.website_url)}
+                websiteHost={ownWebsiteHost(startup.website_url)}
                 githubLogin={githubLogin}
               />
             </div>,

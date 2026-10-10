@@ -8,6 +8,7 @@ import {
   parseDraft,
   type AutofillDraft,
 } from "@/lib/autofill";
+import { isOwnWebsite } from "@/lib/links";
 import { fetchHtml } from "@/lib/net/link-preview";
 import { createClient } from "@/lib/supabase/server";
 
@@ -64,7 +65,8 @@ export async function POST(
     .maybeSingle();
   if (!startup)
     return NextResponse.json({ error: "not_found" }, { status: 404 });
-  if (!startup.website_url)
+  // A1.2: only the project's own website is read (not a Facebook / YouTube page).
+  if (!startup.website_url || !isOwnWebsite(startup.website_url))
     return NextResponse.json({ error: "no_website" }, { status: 400 });
 
   const now = Date.now();

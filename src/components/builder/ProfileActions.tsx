@@ -22,9 +22,8 @@ import {
 } from "@/components/ui/dialog";
 import { inputClass } from "@/components/wizard/fields";
 import { Link, useRouter } from "@/i18n/navigation";
+import { REQUEST_TOPICS, type RequestTopic } from "@/lib/looking-for";
 import { cn } from "@/lib/utils";
-
-const TOPICS = ["cofounder", "job", "collab", "other"] as const;
 
 /**
  * Design.md §5 Builder profile actions: "ติดต่อ" (contact request dialog; "ส่งข้อความ" into the chat once
@@ -40,6 +39,7 @@ export function ProfileActions({
   following,
   requestStatus,
   openRequest = false,
+  initialTopic = "cofounder",
 }: {
   profileId: string;
   handle: string;
@@ -49,13 +49,21 @@ export function ProfileActions({
   following: boolean;
   /** Latest request between us, if any: pending / accepted / declined / blocked. */
   requestStatus: string | null;
+  /** Arrived from a contact link (`?contact=1`, e.g. a project's "กำลังหา" box). */
   openRequest?: boolean;
+  /** Preselected topic from that link (`&topic=`). */
+  initialTopic?: RequestTopic;
 }) {
   const t = useTranslations("Builder");
   const locale = useLocale();
   const router = useRouter();
-  const [open, setOpen] = useState(openRequest);
-  const [topic, setTopic] = useState<(typeof TOPICS)[number]>("cofounder");
+  // A pending, accepted or blocked request can't take a new one: show its state instead of a
+  // form that would only fail (A1.1).
+  const contactDisabled =
+    requestStatus === "pending" || requestStatus === "blocked";
+  const canRequest = !contactDisabled && requestStatus !== "accepted";
+  const [open, setOpen] = useState(openRequest && signedIn && canRequest);
+  const [topic, setTopic] = useState<RequestTopic>(initialTopic);
   const [message, setMessage] = useState("");
   const [busy, start] = useTransition();
   const login = {
@@ -91,10 +99,22 @@ export function ProfileActions({
       } else toast.error(t(`errors.${res.error}`));
     });
 
-  const contactDisabled =
-    requestStatus === "pending" || requestStatus === "blocked";
+  const arrival =
+    openRequest && signedIn && !canRequest && requestStatus
+      ? t(`arrival.${requestStatus as "pending" | "accepted" | "blocked"}`, {
+          name,
+        })
+      : null;
   return (
     <div className="grid grid-cols-2 gap-2">
+      {arrival && (
+        <p
+          role="status"
+          className="col-span-2 rounded-md border bg-secondary px-3 py-2 text-caption text-muted-foreground"
+        >
+          {arrival}
+        </p>
+      )}
       {signedIn && requestStatus === "accepted" ? (
         <Link
           href={`/dashboard/messages?with=${profileId}`}
@@ -164,7 +184,7 @@ export function ProfileActions({
               aria-label={t("topic")}
               className="flex flex-wrap gap-1.5"
             >
-              {TOPICS.map((tp) => (
+              {REQUEST_TOPICS.map((tp) => (
                 <button
                   key={tp}
                   type="button"

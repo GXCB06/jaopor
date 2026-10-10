@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  checkProjectLink,
   sameWebsite,
   detectLinkKind,
+  isOwnWebsite,
+  linkPlatform,
   normalizeUrl,
+  ownWebsiteHost,
   parseProjectLink,
   projectLinks,
   websiteHost,
@@ -41,6 +45,7 @@ describe("parseProjectLink", () => {
       kind: "website",
       column: "website_url",
       url: "https://mysaas.ai",
+      platform: null,
     });
   });
   it("trims GitHub links to owner/repo", () => {
@@ -105,5 +110,164 @@ describe("sameWebsite (one business, one listing)", () => {
   it("never matches a missing link", () => {
     expect(sameWebsite(null, "acme.co.th")).toBe(false);
     expect(sameWebsite("", "")).toBe(false);
+  });
+});
+
+// UX master audit A1.2: platform pages, short links and the type the founder can correct.
+describe("linkPlatform / isOwnWebsite", () => {
+  it.each([
+    ["https://www.facebook.com/mypage", "facebook"],
+    ["https://m.facebook.com/mypage", "facebook"],
+    ["https://web.facebook.com/profile.php?id=1", "facebook"],
+    ["fb.me/mypage", "facebook"],
+    ["https://www.youtube.com/@chan", "youtube"],
+    ["https://youtu.be/abc", "youtube"],
+    ["https://www.tiktok.com/@shop", "tiktok"],
+    ["https://linktr.ee/me", "linktree"],
+    ["https://x.com/me", "x"],
+    ["https://twitter.com/me", "x"],
+    ["https://instagram.com/me", "instagram"],
+    ["https://www.linkedin.com/company/x", "linkedin"],
+    ["https://me.notion.site/Page-1", "notion"],
+    ["https://docs.google.com/document/d/1", "google_docs"],
+    ["https://sites.google.com/view/x", "google_sites"],
+    ["https://testflight.apple.com/join/abc", "testflight"],
+    ["https://liff.line.me/123-abc", "line_liff"],
+  ])("%s → %s, not an own website", (url, platform) => {
+    expect(linkPlatform(url)).toBe(platform);
+    expect(isOwnWebsite(url)).toBe(false);
+    expect(ownWebsiteHost(url)).toBe(null);
+  });
+  it("own websites stay own websites (incl. look-alikes and github.io)", () => {
+    for (const url of [
+      "https://mysaas.ai",
+      "notfacebook.com",
+      "facebook.com.evil.example",
+      "https://you.github.io/app",
+      "https://shop.co.th/th",
+    ]) {
+      expect(linkPlatform(url)).toBe(null);
+      expect(isOwnWebsite(url)).toBe(true);
+    }
+    expect(ownWebsiteHost("https://www.MySaaS.ai/x")).toBe("mysaas.ai");
+  });
+  it("store, LINE and GitHub links are not websites at all", () => {
+    expect(isOwnWebsite("https://github.com/me/r")).toBe(false);
+    expect(isOwnWebsite("@shop")).toBe(false);
+    expect(isOwnWebsite(null)).toBe(false);
+  });
+});
+
+describe("checkProjectLink", () => {
+  it("detects a platform page as 'other', stored in the website column", () => {
+    const r = checkProjectLink("facebook.com/mypage");
+    expect(r).toMatchObject({
+      ok: true,
+      kind: "website",
+      column: "website_url",
+      platform: "facebook",
+      detected: "other",
+      url: "https://facebook.com/mypage",
+    });
+  });
+  it("refuses short links (the destination is hidden)", () => {
+    expect(checkProjectLink("https://bit.ly/abc")).toMatchObject({
+      ok: false,
+      problem: "short_link",
+    });
+    expect(parseProjectLink("bit.ly/abc")).toBe(null);
+  });
+  it("won't call a platform page the project's own website", () => {
+    expect(
+      checkProjectLink("https://facebook.com/mypage", "website"),
+    ).toMatchObject({
+      ok: false,
+      problem: "not_own_site",
+      platform: "facebook",
+    });
+  });
+  it("'other' for an unknown domain can't be stored as a platform page", () => {
+    expect(checkProjectLink("https://mysaas.ai", "other")).toMatchObject({
+      ok: false,
+      problem: "unknown_platform",
+      detected: "website",
+    });
+  });
+  it("'other' on a supported link keeps its real kind", () => {
+    expect(checkProjectLink("lin.ee/abc", "other")).toMatchObject({
+      ok: true,
+      kind: "line",
+    });
+  });
+  it("a correction to a kind the link doesn't fit is an error for that kind", () => {
+    expect(checkProjectLink("https://mysaas.ai", "line")).toMatchObject({
+      ok: false,
+      problem: "invalid",
+      expected: "line",
+    });
+    expect(
+      checkProjectLink("https://play.google.com/store/search?q=x"),
+    ).toMatchObject({ ok: false, problem: "invalid", expected: "play_store" });
+  });
+  it("keeps paths and query strings (except GitHub, trimmed to owner/repo)", () => {
+    expect(checkProjectLink("shop.co.th/p/1?ref=fb&lang=th")).toMatchObject({
+      ok: true,
+      url: "https://shop.co.th/p/1?ref=fb&lang=th",
+    });
+    expect(
+      checkProjectLink(
+        "https://play.google.com/store/apps/details?id=a.b&hl=th",
+      ),
+    ).toMatchObject({
+      ok: true,
+      url: "https://play.google.com/store/apps/details?id=a.b&hl=th",
+    });
+    expect(
+      checkProjectLink("https://www.youtube.com/watch?v=xyz"),
+    ).toMatchObject({ ok: true, url: "https://www.youtube.com/watch?v=xyz" });
+  });
+  it("a LINE ID stays LINE; empty input is null", () => {
+    expect(checkProjectLink("@calbot")).toMatchObject({
+      ok: true,
+      kind: "line",
+      detected: "line",
+    });
+    expect(checkProjectLink("   ")).toBe(null);
+  });
+});
+
+describe("sameWebsite for platform pages", () => {
+  it("two different pages on the same platform are different projects", () => {
+    expect(sameWebsite("facebook.com/shop-a", "facebook.com/shop-b")).toBe(
+      false,
+    );
+    expect(
+      sameWebsite(
+        "https://www.facebook.com/profile.php?id=1",
+        "https://www.facebook.com/profile.php?id=2",
+      ),
+    ).toBe(false);
+    expect(
+      sameWebsite("youtube.com/watch?v=a", "https://youtube.com/watch?v=b"),
+    ).toBe(false);
+    expect(sameWebsite("facebook.com", "facebook.com/shop-a")).toBe(false);
+  });
+  it("the same page matches across www / m. / case / trailing slash / tracking params", () => {
+    expect(
+      sameWebsite(
+        "https://m.facebook.com/Shop-A/?fbclid=xyz",
+        "https://www.facebook.com/shop-a",
+      ),
+    ).toBe(true);
+    expect(
+      sameWebsite(
+        "https://www.youtube.com/watch?v=a&si=123",
+        "https://youtube.com/watch?v=a",
+      ),
+    ).toBe(true);
+  });
+  it("a platform page never matches an own website or another platform", () => {
+    expect(sameWebsite("facebook.com/shop", "shop.co.th")).toBe(false);
+    expect(sameWebsite("tiktok.com/@shop", "instagram.com/shop")).toBe(false);
   });
 });

@@ -9,7 +9,7 @@ import {
 } from "@/lib/build/github";
 import { decryptSecret, encryptSecret, keyHint } from "@/lib/crypto/keys";
 import { serverEnv } from "@/lib/env";
-import { sameWebsite, websiteHost } from "@/lib/links";
+import { isOwnWebsite, ownWebsiteHost, sameWebsite } from "@/lib/links";
 import { findOwnerSnippet } from "@/lib/net/link-preview";
 import { fetchPublic } from "@/lib/net/public-url";
 import { fetchUsdRates } from "@/lib/revenue/fx";
@@ -397,7 +397,8 @@ async function checkOwner(
     .select("website_url, owner_verified_at")
     .eq("id", startupId)
     .maybeSingle();
-  if (!s?.website_url) return false;
+  // A platform page (Facebook…, A1.2) can never carry our code: nothing to look for.
+  if (!s?.website_url || !isOwnWebsite(s.website_url)) return false;
   const was = s.owner_verified_at !== null;
   try {
     const found = await findOwnerSnippet(s.website_url, String(startupId));
@@ -552,11 +553,12 @@ async function githubLogin(admin: Admin, userId: string): Promise<string> {
 }
 
 function requireWebsite(website: string | null): string {
-  const host = websiteHost(website);
+  // The project's own site only: visitors can't be counted on a Facebook or YouTube page (A1.2).
+  const host = ownWebsiteHost(website);
   if (!host)
     throw new ProviderError(
       "no_website",
-      "Add your website link first: visitors are matched to it.",
+      "Add your own website link first (not a social page): visitors are matched to it.",
     );
   return host;
 }

@@ -235,7 +235,18 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 - Header row `px-5 py-3.5 border-b`: "Leaderboard" (`text-sm font-bold`) + **"● อัปเดตทุกวัน" / "Updated daily"** (`size-1.5 rounded-full bg-positive` dot + `text-2xs text-muted-foreground`, no uppercase; was "LIVE" until 2026-10-08, but the numbers sync daily, UX audit M-4) + right-side **metric dropdown**: MRR · Revenue (30d) · Visitors (30d) · Commits. Switching is client-side (lists are fetched server-side, page stays ISR).
 - Table (shadcn `Table`): header `text-2xs uppercase text-faint`; rows `border-b hover:bg-accent/40`, `py-3`:
   - `#` (`Medal` rings 1–3, then number, `text-faint`) · logo 24 + name (`text-xs font-semibold`) over tagline (`text-2xs text-faint truncate`) · founder (avatar 16 round + name `text-xs text-muted-foreground`, hidden below `sm`) · value (right, `text-xs font-bold`) · growth (right, `text-xs`, hidden below `sm` for commits).
-- Shows 10 rows, then "Show all (n) ↓" text button reveals up to 50. Footer line centered `text-2xs text-faint`: "Only verified numbers · synced from Stripe, RevenueCat, Plausible, Umami, GitHub".
+- Shows 10 rows, then "Show all (n) ↓" text button reveals up to 50.
+- **Rules (A1.3, 2026-10-10; `lib/leaderboard.ts`, the single definition):**
+  - **What each board ranks:**
+    - **MRR ปัจจุบัน** (current MRR at the last daily sync, verified);
+    - **รายได้ 30 วัน** (trailing 30 days, verified);
+    - **ผู้เข้าชม 30 วัน** (trailing 30 days, **counted**);
+    - **Commits ทั้งหมด** (all-time, default branch, GitHub).
+  - **Labels carry the period**, in the select and the column header.
+  - **Eligible:** published, not a demo, has a value (no data ≠ 0); revenue boards also need `verification_status = 'verified'` (a broken key sets "error" and drops the project).
+  - **Ties:** equal values share a competition rank (1, 1, 3), shown as the rank (or medal) + a small "=" and `sr-only` "อันดับเท่ากับผลงานอื่น", and listed by name, never by creation date. The project page's "อันดับ #X" (`getRank`) counts the same way.
+  - **Footer:** the selected board's definition line (`Leaderboard.basis.{metric}`: source, period, and what "เติบโต" compares; on the MRR board growth is **revenue** growth, said explicitly). When the board has a tie, a second line: "ค่าเท่ากันได้อันดับเดียวกัน (=) และเรียงตามชื่อ".
+  - **Not yet:** a dedicated `/leaderboard` page and Movers (later phase; rank history isn't stored).
 
 ### Profile header
 
@@ -445,6 +456,19 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - **Step 1, four things, link first:** ลิงก์ผลงาน (full width, autofocus) → ชื่อ · คำโปรย (optional, ≤ 140, counter `text-2xs text-faint tabular-nums`) → หมวดหมู่ · โลโก้. AI tools, looking-for and screenshots moved to the edit page (the profile's "+ เพิ่ม…" cards lead there). **2026-10-08 (UX audit M-9, M-10, S-2):** หมวดหมู่ has **no default** ("เลือกหมวดหมู่…", required; a preselected "AI" silently miscategorised projects); **จังหวัด** is asked here (the province combobox without "ไม่ระบุ", required, prefilled from the founder's profile province, hint "ใช้จัดอันดับโอลิมปิกจังหวัด…"), saved with country TH, so the edit page no longer blocks the first save on it; once a name is typed, a **live card preview** (the large `StartupCard` in `preview` mode: not a link, local logo, the muted "not verified" card a new listing really gets) under "หน้าตาในหน้าผลงานทั้งหมด" + hint "ยืนยันตัวเลขในขั้นถัดไปแล้ว การ์ดจะแสดงรายได้หรือผลงานบน GitHub".
 - **Auto-fill from the link** (website links only): ~600 ms after typing stops, the server reads the page (SSRF-guarded, 3 s, 512 KB) and returns name (`og:site_name`, else the `<title>` part that matches the domain), one-liner (meta description, ≤ 140) and logo (apple-touch-icon, else the largest PNG / SVG / WebP / JPEG icon; resized to 256 px PNG). It fills only fields that are empty or still hold the previous auto value, never what the user typed. Status line under the link (`text-caption`): muted "กำลังอ่านหน้าเว็บ…" → brand "✨ เติมจากเว็บของคุณแล้ว แก้ได้ทุกช่อง" → nothing on failure (fields stay manual).
 - **Already listed (2026-10-07):** when the link is a website that one of the owner's projects already uses (same domain, `www` ignored), a `rounded-md border border-warning/40 bg-warning/10 p-3 text-caption` note under the link: "คุณลงเว็บนี้ไว้แล้วในชื่อ {name}" + `text-brand-text` link "ไปที่ผลงานเดิม →" (`/dashboard/{id}/edit`), and "สร้างและไปต่อ" is disabled. The server also refuses connecting a second revenue / visitor source for the same website (one business, one listing on the boards).
+- **Link type (A1.2, 2026-10-10):** under the link, `LinkTypeStatus`:
+  - **"ประเภทลิงก์" select** (`h-8 rounded-md border`): เว็บไซต์ของผลงาน · App Store · Google Play · LINE OA · GitHub · ลิงก์อื่น (เพจโซเชียล ลิงก์รวม). It's preset from the link, with faint "ตรวจจากลิงก์ เปลี่ยนได้ถ้าไม่ถูก", and resets when the link changes.
+  - **Platform pages** (Facebook, Instagram, TikTok, YouTube, X, Threads, LinkedIn, Linktree, Notion, Google Docs / Sites, TestFlight, LINE LIFF, `lib/links.ts` `linkPlatform`):
+    - detected as "ลิงก์อื่น" and stored in the website column;
+    - a muted note says the page isn't the project's own site: no auto-fill, no JaoPor visitor counter (the verify chooser hides the "มีเว็บไซต์" tile; the server refuses traffic sources and the owner check for them);
+    - verify with Stripe / RevenueCat / GitHub instead.
+  - **Problems** show as `role="alert" text-destructive`, with one sentence each:
+    - short links (bit.ly…) are refused (paste the full link);
+    - a platform page chosen as "เว็บไซต์ของผลงาน";
+    - "ลิงก์อื่น" for an unknown domain (we can't store it as a platform page);
+    - a per-kind format message.
+  - **"Already listed"** compares a platform page by the page itself (path + identifying query such as `profile.php?id=` or `watch?v=`, tracking parameters dropped), so two Facebook pages are two projects.
+  - **The edit page:** the website box is labelled "เว็บไซต์หรือเพจของผลงาน" and shows the same note / problem under each box.
 - **Logo field:** 48 px rounded tile preview (auto or uploaded) + "อัปโหลดเอง" file button + "ลบ" text button; the auto logo is uploaded as PNG on submit.
 - **Step 2:** the VerifyPanel **chooser** (below), then the footer row: ghost "← ย้อนกลับ" (left) · muted "ยืนยันทีหลังได้จากหน้าผลงานของคุณ" · outline "ข้ามไปก่อน" (primary "ไปที่หน้าผลงาน" once something is connected).
 - **Back (2026-10-07, owner: "I could not return to the previous step"):** "ย้อนกลับ" returns to step 1 with every field kept. The project already exists, so the button reads "บันทึกและไปต่อ" and saves the changes to the same project (link, name, one-liner, category; the logo only when it changed). It never creates a second listing, and the "Already listed" note ignores the project itself.
@@ -593,8 +617,18 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 Unchanged behaviour (see git history of this file for the full spec); restyle only through tokens:
 
-- **ProjectLinks:** one link lists a project (website / App Store / Play / LINE OA / GitHub); outline `size="sm"` buttons with lucide `Globe`/`Smartphone`/`MessageCircle`/`Code`.
-- **LookingForBanner:** `rounded-xl border border-warning/30 bg-warning/5 p-3 text-xs` with `HandHelping` icon, asks as chips, primary "Try it" link.
+- **ProjectLinks:** one link lists a project (website / App Store / Play / LINE OA / GitHub); outline `size="sm"` buttons with lucide `Globe`/`Smartphone`/`MessageCircle`/`Code`. A platform page in the website column is labelled with its platform ("Facebook", "YouTube"…), never "เว็บไซต์" (A1.2).
+- **LookingForBanner** (A1.1, 2026-10-10): `rounded-xl border border-warning/30 bg-warning/5 p-3 text-xs`.
+  - **Asks:** a `HandHelping` icon + "กำลังหา:" + the asks as **plain text joined by " · "** (not pills: pills read as tabs and did nothing).
+  - **Actions** (`lib/looking-for.ts`), each a real button `min-h-9 rounded-md`:
+    - **co-founder** → primary "สนใจร่วมก่อตั้ง? ส่งคำขอคุย ›" to `/u/{founder}?contact=1&topic=cofounder`;
+    - **investor / buyer** → "ติดต่อผู้ก่อตั้ง ›" (`topic=other`);
+    - **users / feedback / testers** → "ลองใช้เลย ›" to the product link (outline when a contact button is present, else primary).
+  - **The contact button** is hidden from the owner (`VisitorOnly`); the owner sees "ผู้เข้าชมจะเห็นปุ่มส่งคำขอถึงคุณตรงนี้". Visitors see "ส่งคำขอถึง {name}… เมื่อเขารับ คุณจะคุยกันในแชตได้".
+  - **The profile page:**
+    - signed-out visitors with `?contact=1` go through sign-in (title "เข้าสู่ระบบเพื่อส่งคำขอคุย") and come back;
+    - the dialog opens on the linked topic;
+    - with a pending / accepted / blocked request it doesn't open; a `role="status"` line says why.
 - **TractionTiles:** StatCard row (only metrics with data; owner sees EmptyOwnerCards) "Verified traction": Visitors (30d) · Active users · Build proof (commits, % co-authored by Claude, first commit). Never convert users into revenue; self-typed numbers never appear.
 - **VerifyPanel** (manage view; the chooser in §5 Add-startup wizard v2 is shown while nothing is connected): three bordered groups (Revenue: Stripe | RevenueCat · Visitors: **JaoPor snippet** | Plausible | Umami | Cloudflare · Build proof: GitHub), segmented source switch, numbered how-to, one primary "Verify". One source per group.
   - **JaoPor snippet** (no analytics account needed; listed first): a read-only code box (`rounded-lg border bg-card p-3 font-mono text-caption`) with the one-line `<script>` and a Copy button, then the install status: "รอการเข้าชมครั้งแรก" / "Waiting for the first visit" (muted, pulsing dot) → "นับตั้งแต่ {date}" / "Counting since {date}" (positive).

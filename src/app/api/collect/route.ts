@@ -1,5 +1,5 @@
 import { serverEnv } from "@/lib/env";
-import { websiteHost } from "@/lib/links";
+import { ownWebsiteHost } from "@/lib/links";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   NET_CAP,
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     if (!startup || startup.is_demo || !startup.owner_verified_at)
       return done();
     // Only visits from the project's own website count (belongs-to-project proof).
-    if (!fromProjectSite(req.headers, websiteHost(startup.website_url)))
+    if (!fromProjectSite(req.headers, ownWebsiteHost(startup.website_url)))
       return done();
 
     const { data: conn } = await admin

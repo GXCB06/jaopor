@@ -4,18 +4,22 @@ import {
   GlobeIcon,
   HandHelpingIcon,
   MessageCircleIcon,
+  MessageSquareIcon,
   SmartphoneIcon,
   type LucideIcon,
 } from "lucide-react";
 import { getFormatter, getTranslations } from "next-intl/server";
 import type { StartupRow } from "@/lib/data/startups";
 import { growthPct } from "@/lib/format";
-import { projectLinks, type LinkKind } from "@/lib/links";
+import { Link } from "@/i18n/navigation";
+import { linkPlatform, projectLinks, type LinkKind } from "@/lib/links";
+import { lookingForActions } from "@/lib/looking-for";
 import { SOURCE_KIND, SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { StatCard } from "../ProfileBlocks";
-import { Chip, GrowthValue } from "../StartupBits";
+import { GrowthValue } from "../StartupBits";
 import { Card } from "../core/Card";
-import { EmptyOwnerCard, OwnerOnly } from "./Owner";
+import { cn } from "@/lib/utils";
+import { EmptyOwnerCard, OwnerOnly, VisitorOnly } from "./Owner";
 
 // Design.md §5 ProjectLinks · LookingForBanner · TractionTiles + BuildProof.
 
@@ -51,7 +55,10 @@ export async function ProjectLinks({
             className="inline-flex h-7 items-center gap-1.5 rounded-md border bg-card px-2.5 text-caption font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             <Icon className="size-3.5" aria-hidden="true" />
-            {t(kind)}
+            {/* A1.2: a Facebook / YouTube page is named as such, never "website". */}
+            {kind === "website" && linkPlatform(url)
+              ? t(`platforms.${linkPlatform(url)!}`)
+              : t(kind)}
             <ExternalLinkIcon className="size-3" aria-hidden="true" />
           </a>
         );
@@ -63,25 +70,73 @@ export async function ProjectLinks({
 export async function LookingForBanner({ startup }: { startup: StartupRow }) {
   if (!startup.looking_for.length) return null;
   const t = await getTranslations("LookingFor");
-  const primary = projectLinks(startup)[0];
+  const founder = startup.owner;
+  const founderName = founder?.display_name ?? founder?.handle ?? "";
+  // UX master audit A1.1: the asks are labels; each action is a real button. Co-founder (and
+  // investor / buyer) open a contact request to the founder, never the product's website.
+  const actions = lookingForActions(startup.looking_for, {
+    founderHandle: founder?.handle ?? null,
+    productUrl: projectLinks(startup)[0]?.url ?? null,
+  });
+  const contact = actions.find((a) => a.kind === "contact");
+  const tryIt = actions.find((a) => a.kind === "try");
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-warning/30 bg-warning/5 p-3 text-xs">
-      <HandHelpingIcon className="size-4 text-warning" aria-hidden="true" />
-      <span className="font-semibold">{t("title")}:</span>
-      {startup.looking_for.map((x) => (
-        <Chip key={x}>{t(x as "users")}</Chip>
-      ))}
-      {primary &&
-        startup.looking_for.some((x) => x !== "buyer" && x !== "investor") && (
-          <a
-            href={primary.url}
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            className="ml-auto inline-flex h-7 items-center rounded-md bg-primary px-3 text-caption font-semibold text-primary-foreground hover:opacity-90"
-          >
-            {t("tryIt")} ›
-          </a>
-        )}
+    <div className="space-y-3 rounded-xl border border-warning/30 bg-warning/5 p-3 text-xs">
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <HandHelpingIcon
+          className="size-4 shrink-0 text-warning"
+          aria-hidden="true"
+        />
+        <span className="font-semibold">{t("title")}:</span>
+        <span className="text-foreground/90">
+          {startup.looking_for.map((x) => t(x as "users")).join(" · ")}
+        </span>
+      </p>
+      {(contact || tryIt) && (
+        <div className="flex flex-wrap gap-2">
+          {contact?.kind === "contact" && (
+            <VisitorOnly>
+              <Link
+                href={contact.href}
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-caption font-semibold text-primary-foreground hover:opacity-90"
+              >
+                <MessageSquareIcon className="size-3.5" aria-hidden="true" />
+                {contact.topic === "cofounder"
+                  ? t("contactCofounder")
+                  : t("contactFounder")}{" "}
+                ›
+              </Link>
+            </VisitorOnly>
+          )}
+          {tryIt && (
+            <a
+              href={tryIt.href}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className={cn(
+                "inline-flex min-h-9 items-center rounded-md px-3 py-1.5 text-caption font-semibold",
+                contact
+                  ? "border bg-card hover:bg-accent"
+                  : "bg-primary text-primary-foreground hover:opacity-90",
+              )}
+            >
+              {t("tryIt")} ›
+            </a>
+          )}
+        </div>
+      )}
+      {contact && founderName && (
+        <>
+          <VisitorOnly>
+            <p className="text-2xs text-muted-foreground">
+              {t("contactHint", { name: founderName })}
+            </p>
+          </VisitorOnly>
+          <OwnerOnly>
+            <p className="text-2xs text-muted-foreground">{t("ownerHint")}</p>
+          </OwnerOnly>
+        </>
+      )}
     </div>
   );
 }

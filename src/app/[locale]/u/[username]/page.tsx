@@ -27,7 +27,7 @@ import { toolbarButton } from "@/components/builder/toolbar";
 import { Card } from "@/components/core/Card";
 import { PostCard } from "@/components/posts/PostCard";
 import { GrowthValue, Money, StartupLogo } from "@/components/StartupBits";
-import { Link } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 import { PersonPhoto } from "@/components/PersonPhoto";
 import {
   badges,
@@ -54,6 +54,7 @@ import { listPosts } from "@/lib/data/posts";
 import { getThbPerUsd } from "@/lib/data/fx";
 import { getProvinceLeaderboard } from "@/lib/data/startups";
 import { growthPct } from "@/lib/format";
+import { isRequestTopic } from "@/lib/looking-for";
 import { DEFAULT_METRIC, provinceRank } from "@/lib/olympics";
 import { renderNow } from "@/lib/posts";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
@@ -111,6 +112,21 @@ export default async function BuilderProfilePage({
     listPosts({ authorId: profile.id, limit: 4 }),
   ]);
   const { isOwner, works } = page;
+  // A contact link (e.g. a project's "กำลังหา" box, A1.1): signed-out visitors sign in first and
+  // come back to this same link, with the request form open on the same topic.
+  const wantsContact = sp.contact === "1";
+  const topicParam = Array.isArray(sp.topic) ? sp.topic[0] : sp.topic;
+  const requestTopic = isRequestTopic(topicParam) ? topicParam : undefined;
+  if (wantsContact && !page.viewer)
+    redirect({
+      href: {
+        pathname: "/login",
+        query: {
+          next: `/${locale}/u/${profile.handle}?contact=1${requestTopic ? `&topic=${requestTopic}` : ""}`,
+        },
+      },
+      locale,
+    });
   const revenue = await getBuilderRevenue(works);
   const now = renderNow();
   const name = profile.display_name ?? profile.handle;
@@ -288,7 +304,8 @@ export default async function BuilderProfilePage({
             isOwner={isOwner}
             following={page.following}
             requestStatus={page.lastRequest?.status ?? null}
-            openRequest={sp.contact === "1" && Boolean(page.viewer) && !isOwner}
+            openRequest={wantsContact && Boolean(page.viewer) && !isOwner}
+            initialTopic={requestTopic}
           />
 
           <p className="flex items-center gap-2 text-caption text-muted-foreground">

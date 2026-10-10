@@ -114,18 +114,25 @@
     "title": "กระดานผู้นำ",
     "metric": "จัดอันดับตาม",
     "metrics": {
-      "mrr": "MRR",
+      "mrr": "MRR ปัจจุบัน",
       "revenue30d": "รายได้ 30 วัน",
       "visitors": "ผู้เข้าชม 30 วัน",
-      "commits": "คอมมิต"
+      "commits": "Commits ทั้งหมด"
     },
     "empty": "ยังไม่มีตัวเลขที่ยืนยันในหมวดนี้ — มาเป็นคนแรกบนกระดานกัน",
     "showAll": "ดูทั้งหมด ({count}) ↓",
     "showLess": "ย่อ ↑",
-    "footer": "รายได้ยืนยันผ่าน Stripe / RevenueCat · commits ผ่าน GitHub · ผู้เข้าชมนับโดยสคริปต์ JaoPor หรือ analytics ของผลงาน",
     "demo": "ตัวอย่าง",
     "emptyCta": "ยืนยันตัวเลขของคุณ",
-    "updatedDaily": "อัปเดตทุกวัน"
+    "updatedDaily": "อัปเดตทุกวัน",
+    "basis": {
+      "mrr": "MRR ปัจจุบัน ณ การอัปเดตล่าสุด (วันละครั้ง) ยืนยันผ่าน Stripe / RevenueCat · “เติบโต” = รายได้ 30 วันล่าสุดเทียบ 30 วันก่อนหน้า",
+      "revenue30d": "รายได้ 30 วันล่าสุด ยืนยันผ่าน Stripe / RevenueCat · “เติบโต” = เทียบ 30 วันก่อนหน้า",
+      "visitors": "ผู้เข้าชม 30 วันล่าสุด นับโดยสคริปต์ JaoPor หรือ analytics ของผลงาน (เป็นตัวเลขที่นับ ไม่ใช่ยืนยัน) · “เติบโต” = เทียบ 30 วันก่อนหน้า",
+      "commits": "Commits ทั้งหมดบน branch หลักของ repo สาธารณะ ยืนยันผ่าน GitHub"
+    },
+    "ties": "ค่าเท่ากันได้อันดับเดียวกัน (=) และเรียงตามชื่อ",
+    "tied": "อันดับเท่ากับผลงานอื่น"
   },
   "Directory": {
     "title": "ผลงานทั้งหมด",
@@ -295,7 +302,8 @@
     "github": "ดำเนินการต่อด้วย GitHub",
     "error": "เข้าสู่ระบบไม่สำเร็จ กรุณาลองอีกครั้ง",
     "legal": "เมื่อดำเนินการต่อ ถือว่าคุณยอมรับข้อกำหนดการใช้งานและนโยบายความเป็นส่วนตัว",
-    "titleAdd": "เข้าสู่ระบบเพื่อเพิ่มผลงาน"
+    "titleAdd": "เข้าสู่ระบบเพื่อเพิ่มผลงาน",
+    "titleContact": "เข้าสู่ระบบเพื่อส่งคำขอคุย"
   },
   "Wizard": {
     "title": "เพิ่มผลงานของคุณ",
@@ -414,7 +422,7 @@
     "domain_mismatch": "เว็บใน analytics ({detail}) ไม่ใช่เว็บไซต์ของโปรเจคนี้",
     "not_owner": "Repo นี้ไม่ได้เป็นของบัญชี GitHub ที่คุณเข้าสู่ระบบ",
     "no_github_identity": "ต้องเข้าสู่ระบบด้วย GitHub อย่างน้อยหนึ่งครั้ง เพื่อยืนยันว่า repo เป็นของคุณ",
-    "no_website": "เพิ่มลิงก์เว็บไซต์ก่อน — ผู้เข้าชมจะถูกจับคู่กับเว็บไซต์นั้น",
+    "no_website": "ต้องมีเว็บไซต์ของผลงานเอง (ไม่ใช่หน้า Facebook หรือ YouTube) ผู้เข้าชมจะถูกจับคู่กับเว็บไซต์นั้น",
     "duplicate_listing": "ผลงาน “{detail}” ของคุณเชื่อมตัวเลขของเว็บนี้ไว้แล้ว หนึ่งธุรกิจหนึ่งผลงาน ใช้ผลงานเดิมแทน"
   },
   "ErrorPage": {
@@ -474,7 +482,40 @@
     "github": "GitHub",
     "detected": "ตรวจพบ: {kind}",
     "invalid": "ลิงก์นี้ใช้ไม่ได้ — ลิงก์ Google Play ต้องเป็นหน้าแอป และ GitHub ต้องเป็น github.com/ชื่อ/repo",
-    "needOne": "ใส่ลิงก์อย่างน้อย 1 ลิงก์"
+    "needOne": "ใส่ลิงก์อย่างน้อย 1 ลิงก์",
+    "websiteOwn": "เว็บไซต์ของผลงาน",
+    "websiteField": "เว็บไซต์หรือเพจของผลงาน",
+    "other": "ลิงก์อื่น (เพจโซเชียล ลิงก์รวม)",
+    "type": "ประเภทลิงก์",
+    "autoDetected": "ตรวจจากลิงก์ เปลี่ยนได้ถ้าไม่ถูก",
+    "platformNote": "หน้า {platform} ไม่ใช่เว็บไซต์ของผลงานเอง เราจึงไม่ดึงข้อมูลจากหน้านี้ และนับผู้เข้าชมด้วยโค้ด JaoPor ไม่ได้ ยืนยันตัวเลขด้วย Stripe, RevenueCat หรือ GitHub ได้",
+    "platforms": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "youtube": "YouTube",
+      "x": "X",
+      "threads": "Threads",
+      "linkedin": "LinkedIn",
+      "linktree": "Linktree",
+      "notion": "Notion",
+      "google_docs": "Google Docs / Drive",
+      "google_sites": "Google Sites",
+      "testflight": "TestFlight (เวอร์ชันทดสอบ)",
+      "line_liff": "LINE LIFF"
+    },
+    "problems": {
+      "short_link": "ลิงก์ย่อ (เช่น bit.ly) ใช้ไม่ได้ เพราะไม่เห็นว่าพาไปที่ไหน วางลิงก์เต็มของผลงานแทน",
+      "not_own_site": "ลิงก์นี้เป็นหน้า {platform} ไม่ใช่เว็บไซต์ของผลงานเอง เลือก “ลิงก์อื่น” หรือใส่เว็บไซต์ของผลงาน",
+      "unknown_platform": "เรายังไม่รู้จักแพลตฟอร์มนี้ ถ้าลิงก์นี้ไม่ใช่เว็บไซต์ของผลงานเอง ใส่เว็บไซต์ แอป LINE OA หรือ GitHub แทน (หรือหน้า Facebook, YouTube, TikTok, Linktree)"
+    },
+    "invalidKind": {
+      "website": "ใส่ลิงก์เว็บไซต์ เช่น yourapp.com หรือ https://yourapp.com",
+      "app_store": "ลิงก์ App Store ต้องเป็น apps.apple.com/…",
+      "play_store": "ลิงก์ Google Play ต้องเป็นหน้าแอป (play.google.com/store/apps/details?id=…)",
+      "line": "ลิงก์ LINE OA ต้องเป็น lin.ee/…, line.me/… หรือ @ไอดี",
+      "github": "ลิงก์ GitHub ต้องเป็น github.com/ชื่อ หรือ github.com/ชื่อ/repo"
+    }
   },
   "LookingFor": {
     "title": "กำลังหา",
@@ -485,7 +526,11 @@
     "buyer": "ผู้ซื้อกิจการ",
     "investor": "นักลงทุน",
     "tryIt": "ลองใช้เลย",
-    "tag": "กำลังหา{what}"
+    "tag": "กำลังหา{what}",
+    "contactCofounder": "สนใจร่วมก่อตั้ง? ส่งคำขอคุย",
+    "contactFounder": "ติดต่อผู้ก่อตั้ง",
+    "contactHint": "ส่งคำขอถึง {name} ผ่าน JaoPor เมื่อเขารับ คุณจะคุยกันในแชตได้",
+    "ownerHint": "ผู้เข้าชมจะเห็นปุ่มส่งคำขอถึงคุณตรงนี้"
   },
   "Sources": {
     "title": "ยืนยันตัวเลข",
@@ -780,7 +825,7 @@
     "autofillDone": "เติมให้ {n} ช่องจากเว็บไซต์ของคุณ — ตรวจแล้วกดบันทึก",
     "undo": "เลิกทำ",
     "autofillNothing": "ไม่มีช่องว่างให้เติม หรือไม่พบข้อมูลในเว็บไซต์",
-    "autofillNoSite": "ใส่ลิงก์เว็บไซต์ก่อน แล้วค่อยให้ช่วยเติม",
+    "autofillNoSite": "ช่วยเติมได้เฉพาะเว็บไซต์ของผลงานเอง (ไม่ใช่หน้า Facebook หรือ YouTube)",
     "autofillFailed": "อ่านเว็บไซต์ไม่สำเร็จ ลองอีกครั้งภายหลัง",
     "stackFromGithub": "ดึงจาก GitHub",
     "stackRepoNotFound": "ไม่พบ repo สาธารณะนี้บน GitHub (repo ส่วนตัวอ่านไม่ได้)",
@@ -1422,6 +1467,11 @@
       "blocked": "ส่งคำขอไม่ได้",
       "accepted": "ยอมรับแล้ว",
       "declined": "อีกฝ่ายข้ามคำขอ"
+    },
+    "arrival": {
+      "pending": "คุณส่งคำขอถึง {name} แล้ว รอเขาตอบรับ",
+      "accepted": "{name} รับคำขอของคุณแล้ว คุยกันต่อในแชตได้เลย",
+      "blocked": "ส่งคำขอถึง {name} ไม่ได้"
     },
     "contact": "ติดต่อ",
     "follow": "ติดตาม",

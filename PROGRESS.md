@@ -12,6 +12,77 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-10 — UX master audit phase A1: co-founder request, link types, leaderboard rules
+
+**Done:**
+
+- **A1.1 Co-founder request** (`lib/looking-for.ts` + tests, `LookingForBanner`, `ProfileActions`, the profile and login pages):
+  - The "กำลังหา" asks are plain text (no tab-like pills).
+  - **Each action is a real button:**
+    - co-founder → "สนใจร่วมก่อตั้ง? ส่งคำขอคุย ›" opens the founder's existing request flow on the `cofounder` topic (`/u/{handle}?contact=1&topic=cofounder`);
+    - investor / buyer → "ติดต่อผู้ก่อตั้ง ›" (`topic=other`);
+    - product asks → "ลองใช้เลย ›".
+  - **Signed out:** visitors are sent through sign-in (title "เข้าสู่ระบบเพื่อส่งคำขอคุย") and come back with the dialog open on that topic.
+  - **An existing pending / accepted / blocked request** no longer opens a form that would fail; a status line says why.
+  - **The owner** sees a hint instead of the button.
+- **A1.2 Link types** (`lib/links.ts` + tests, `LinkTypeStatus`, `link-text.ts`, wizard, edit form, VerifyPanel callers, server routes):
+  - Platform pages (Facebook, Instagram, TikTok, YouTube, X, Threads, LinkedIn, Linktree, Notion, Google Docs / Sites, TestFlight, LINE LIFF) are detected by host and labelled "ลิงก์อื่น". Detection by host, so there's no migration and no stored flag.
+  - **Short links are refused.**
+  - **The wizard shows a "ประเภทลิงก์" control** to correct the detection. A wrong choice is explained (platform page as own site, "other" for an unknown domain, per-kind format).
+  - **Only the project's own website gets** auto-fill, the visitor counter, the owner check and analytics matching. Enforced in the UI and on the server: `requireWebsite`, the owner check, `/api/startups/preview`, `/autofill`, `/api/collect`.
+  - **Duplicates:** platform pages compare the page itself (path + identifying query, tracking parameters dropped).
+  - **Paths and queries are kept.** Instagram is detected only as a project link; profile social links are unchanged (they need a migration).
+- **A1.3 Leaderboard** (`lib/leaderboard.ts` + tests, `getBoard`, home rows, `LeaderboardCard`):
+  - **Documented definitions:**
+    - MRR current (daily);
+    - revenue 30 days;
+    - visitors 30 days (counted);
+    - commits all-time.
+  - **Labels carry the period.** A per-board footer defines the source, the period, and what "เติบโต" compares (revenue growth on the MRR board).
+  - **Ties:** equal values share a competition rank (1, 1, 3) with "=", listed by name. This replaces newest-first creation order, and now matches the project page's rank.
+  - **Eligibility in one place:** published, not demo, has a value, verified revenue for revenue boards. Applied to the query and again in code.
+  - **No new page or Movers view** (later phase).
+
+**Not changed:**
+
+- no migration;
+- no production data or settings;
+- MRR semantics;
+- homepage positioning.
+
+**Not pushed:** waiting for the owner's review.
+
+**Files:**
+
+- **New:**
+  - `src/lib/looking-for.ts` (+ test)
+  - `src/lib/leaderboard.ts` (+ test)
+  - `src/components/wizard/LinkTypeStatus.tsx`
+  - `src/components/wizard/link-text.ts`
+  - `e2e/a1.spec.ts`
+- **Modified:**
+  - `src/lib/links.ts` (+ test)
+  - `src/lib/next-path.ts` (+ test)
+  - `src/lib/data/startups.ts`
+  - `src/lib/sources/sync.ts`
+  - `src/app/api/{collect,startups/preview,startups/[id]/autofill}/route.ts`
+  - `src/app/[locale]/{page,login/page,u/[username]/page}.tsx`
+  - `src/components/{LeaderboardCard,builder/ProfileActions,profile/ProjectBlocks,profile/Owner,wizard/StartupWizard,wizard/StartupEditForm}.tsx`
+  - `messages/*.json`
+  - `Design.md`
+
+**Verified:**
+
+- **Gate:** typecheck ✓ · lint ✓ · unit 424 passed / 17 skipped (was 369; +55: looking-for 9, next-path 3, links 29, leaderboard 14) · local e2e 76 passed / 12 skipped (the A1 contact-link test needs the server key, so it runs on production) · production build ✓.
+- **Browser** (local, desktop + 375 px):
+  - the "กำลังหา" variants (co-founder, mixed, investor, product-only), from a temporary page deleted afterwards;
+  - buttons 41 px tall, no overflow;
+  - link-type states (Facebook note, platform-as-own-site error, unknown-domain "other" error, short link, Play format, LINE ID);
+  - leaderboard labels + footer.
+- **RLS smoke:** not rerun (no database change).
+
+**Next:** owner review of A1 → push → production e2e → A2.
+
 ## 2026-10-10 — Master UX/UI audit (Phase 1, audit only) + hardening pass verified on production
 
 **Done:**

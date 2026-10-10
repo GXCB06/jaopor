@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { PersonPhoto } from "@/components/PersonPhoto";
-import type { BoardMetric } from "@/lib/data/startups";
+import type { BoardMetric } from "@/lib/leaderboard";
 import { CornerTag, GrowthValue, Money, StartupLogo } from "./StartupBits";
 
 /** One leaderboard row, formatted on the server (slim: only what the table shows). */
@@ -27,6 +27,10 @@ export type BoardRow = {
   growth: number | null;
   /** Sample project (Design.md §5 Demo projects). */
   demo: boolean;
+  /** Competition rank (lib/leaderboard): equal values share it. */
+  rank: number;
+  /** Another row has the same value. */
+  tied: boolean;
 };
 
 const COLLAPSED = 10;
@@ -115,13 +119,25 @@ export function LeaderboardCard({
             </tr>
           </thead>
           <tbody>
-            {shown.map((r, i) => (
+            {shown.map((r) => (
               <tr
                 key={r.id}
                 className="group border-b transition-colors last:border-b-0 hover:bg-accent/50"
               >
-                <td className="py-3 pl-4 text-xs text-faint tabular-nums">
-                  {i < 3 ? <Medal rank={i + 1} /> : i + 1}
+                <td
+                  className="py-3 pl-4 text-xs text-faint tabular-nums"
+                  title={r.tied ? t("tied") : undefined}
+                >
+                  {/* A1.3: equal values share a rank, marked "=" (not hidden by age). */}
+                  <span className="inline-flex items-center gap-0.5">
+                    {r.rank <= 3 ? <Medal rank={r.rank} /> : r.rank}
+                    {r.tied && (
+                      <span aria-hidden="true" className="text-2xs">
+                        =
+                      </span>
+                    )}
+                    {r.tied && <span className="sr-only">{t("tied")}</span>}
+                  </span>
                 </td>
                 <td className="px-3 py-3">
                   <Link
@@ -190,7 +206,13 @@ export function LeaderboardCard({
             {expanded ? t("showLess") : t("showAll", { count: rows.length })}
           </button>
         )}
-        <p className="text-center text-2xs text-faint">{t("footer")}</p>
+        {/* A1.3: what this board ranks, over which period, and how ties work. */}
+        <p className="text-center text-2xs text-faint">
+          {t(`basis.${metric}`)}
+        </p>
+        {rows.some((r) => r.tied) && (
+          <p className="text-center text-2xs text-faint">{t("ties")}</p>
+        )}
       </div>
     </section>
   );

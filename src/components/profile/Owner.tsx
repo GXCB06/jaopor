@@ -44,6 +44,12 @@ export function OwnerOnly({ children }: { children: React.ReactNode }) {
   return isOwner ? <>{children}</> : null;
 }
 
+/** The inverse of OwnerOnly: visitors (and the signed-out) only. Hidden until we know it isn't the owner. */
+export function VisitorOnly({ children }: { children: React.ReactNode }) {
+  const { isOwner } = useContext(Ctx);
+  return isOwner ? null : <>{children}</>;
+}
+
 /** Deep link into the editor: "revenue" / "verify-*" open the VerifyPanel group. */
 function useEditHref(field: string) {
   const { startupId } = useContext(Ctx);

@@ -38,3 +38,20 @@ export function afterOnboardingPath(
 ): string {
   return hasStartups ? `/${locale}/dashboard` : `/${locale}/startups?welcome=1`;
 }
+
+/**
+ * Why someone is on the sign-in page, from `next`, so the title can say it (C-9, A1.1):
+ * "add" = adding a project, "contact" = a contact request to a builder (`/u/{handle}?contact=1`).
+ */
+export function loginReason(next: string | null): "add" | "contact" | null {
+  const safe = safeNextPath(next);
+  if (!safe) return null;
+  const [path, query = ""] = safe.split("#")[0].split("?");
+  if (/^(?:\/(?:th|en))?\/new\/?$/.test(path)) return "add";
+  if (
+    /^(?:\/(?:th|en))?\/u\/[^/]+\/?$/.test(path) &&
+    new URLSearchParams(query).get("contact") === "1"
+  )
+    return "contact";
+  return null;
+}

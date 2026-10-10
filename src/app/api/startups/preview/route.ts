@@ -28,7 +28,8 @@ export async function POST(req: Request) {
 
   const { link } = (await req.json().catch(() => ({}))) as { link?: unknown };
   const parsed = typeof link === "string" ? parseProjectLink(link) : null;
-  if (!parsed || parsed.kind !== "website")
+  // A1.2: a platform page (Facebook…) isn't read: it isn't the project's own site.
+  if (!parsed || parsed.kind !== "website" || parsed.platform)
     return NextResponse.json({ error: "not_website" }, { status: 400 });
 
   const site = await getSiteAutofill(parsed.url);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { postLoginPath, safeNextPath } from "./next-path";
+import { loginReason, postLoginPath, safeNextPath } from "./next-path";
 
 describe("safeNextPath", () => {
   it("accepts internal paths, with query", () => {
@@ -56,5 +56,26 @@ describe("postLoginPath", () => {
     expect(postLoginPath({ ...base, next: "//evil.example" })).toBe(
       "/th/startups?welcome=1",
     );
+  });
+});
+
+describe("loginReason", () => {
+  it("adding a project", () => {
+    expect(loginReason("/th/new")).toBe("add");
+    expect(loginReason("/new?x=1")).toBe("add");
+    expect(loginReason("/th/newsletter")).toBeNull();
+  });
+  it("a contact request to a builder", () => {
+    expect(loginReason("/th/u/gxcb06?contact=1&topic=cofounder")).toBe(
+      "contact",
+    );
+    expect(loginReason("/en/u/gxcb06?contact=1")).toBe("contact");
+    expect(loginReason("/th/u/gxcb06")).toBeNull();
+    expect(loginReason("/th/u/gxcb06?contact=0")).toBeNull();
+  });
+  it("nothing for unsafe or other paths", () => {
+    expect(loginReason("//evil.example/u/x?contact=1")).toBeNull();
+    expect(loginReason(null)).toBeNull();
+    expect(loginReason("/th/startups")).toBeNull();
   });
 });
