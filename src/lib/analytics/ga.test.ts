@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { analyticsEnabled, gaInitScript, gaMeasurementId } from "./ga";
+import {
+  analyticsEnabled,
+  DEFAULT_MEASUREMENT_ID,
+  gaInitScript,
+  gaMeasurementId,
+} from "./ga";
 
 describe("gaMeasurementId", () => {
-  it("is off when the var is unset (no built-in default)", () => {
-    expect(gaMeasurementId(undefined)).toBeNull();
+  it("falls back to JaoPor's default when unset", () => {
+    expect(gaMeasurementId(undefined)).toBe("G-JYPJ2RFH4N");
+    expect(gaMeasurementId(undefined)).toBe(DEFAULT_MEASUREMENT_ID);
   });
 
   it("uses an override and trims whitespace", () => {
@@ -19,13 +25,14 @@ describe("gaMeasurementId", () => {
 });
 
 describe("analyticsEnabled", () => {
-  it("is on in production only when an id is set", () => {
+  it("is on in production with an id, and on by default when unset", () => {
     expect(analyticsEnabled("production", "G-ABC123")).toBe(true);
+    expect(analyticsEnabled("production", undefined)).toBe(true);
   });
 
-  it("stays off when unset, outside production (dev, test), or disabled", () => {
-    expect(analyticsEnabled("production", undefined)).toBe(false);
+  it("stays off outside production (dev, test) or when disabled", () => {
     expect(analyticsEnabled("development", "G-ABC123")).toBe(false);
+    expect(analyticsEnabled("development", undefined)).toBe(false);
     expect(analyticsEnabled("test", "G-ABC123")).toBe(false);
     expect(analyticsEnabled("production", "off")).toBe(false);
   });

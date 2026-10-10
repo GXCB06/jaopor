@@ -12,14 +12,28 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-11 — GA4 re-enabled: `G-JYPJ2RFH4N` restored as the built-in default
+
+**Done:**
+
+- **Owner reversed the same-day GA-off decision:** the tag `G-JYPJ2RFH4N` is back as the built-in default in `src/lib/analytics/ga.ts` (`DEFAULT_MEASUREMENT_ID`), so a production build renders GA with **no env var set**. `NEXT_PUBLIC_GA_ID` still overrides the ID; empty / `"off"` / `"false"` / `"0"` / `"no"` disables it without a code change. **Production-only**, unchanged (dev/e2e never send hits).
+- **/privacy restored (th + en):** §6 now discloses the Google Analytics `_ga` cookies (keeping the no-advertising / no-cross-site-tracking-**for-ads** promise, and noting JaoPor's counter and Vercel's Web Analytics stay cookie-free); §8 lists Google Analytics again; date → 2026-10-11.
+- **`.env.example` reworded:** GA is on by default (JaoPor's property); the var is commented out (optional override), so copying the file can't accidentally disable it.
+
+**Verified:** `npx vitest run src/lib/analytics/ga.test.ts` → 6 passed; `npm run typecheck` ✓; `npm run lint` ✓; `npm run build` ✓; `.next/server/app/th.html` carries both `https://www.googletagmanager.com/gtag/js?id=G-JYPJ2RFH4N` and the inline `gtag("config", …)` boot.
+
+**Still open:** **no consent banner** — GA loads before any PDPA opt-in (owner decision, unchanged); Vercel Web Analytics still to be enabled in the dashboard.
+
+**Next:** resume the master audit at B2 (charts / settings).
+
 ## 2026-10-11 — Launch measurement: first-party add funnel + Vercel Web Analytics (GA4 off)
 
 **Done:**
 
 - **Owner picked Option 3 + Option 2** (rejected GA4 + a consent banner): a first-party, cookie-free add-project funnel in Supabase, plus Vercel Web Analytics for landing/traffic pageviews (Hobby plan: pageviews only, no custom events).
-- **GA4 is now off by default** — the hardcoded `G-JYPJ2RFH4N` default is gone; `src/lib/analytics/ga.ts` returns `null` unless `NEXT_PUBLIC_GA_ID` is set, so a production build can't silently enable it. This **supersedes** the 2026-10-10 GA4 entry below.
+- **GA4 is now off by default** — the hardcoded `G-JYPJ2RFH4N` default is gone; `src/lib/analytics/ga.ts` returns `null` unless `NEXT_PUBLIC_GA_ID` is set, so a production build can't silently enable it. This **supersedes** the 2026-10-10 GA4 entry below. *(**Reversed the same day** — GA is on again with the default restored; see the GA4 re-enable entry above.)*
 - **First-party funnel** (migration `20261011120000_add_funnel_events.sql`, **not applied**): new `analytics.funnel_events` table; browser events `add_opened → add_created → verify_chose → add_finished → add_failed` logged from the wizard through a thin `public.log_add_event` invoker; server-only `public.log_verify_result` (from the sources POST in `after()`) and `public.prune_funnel_events` (nightly cron, 180-day retention). Caps 100 client events/user/day + 50 verify results/project/day; every function fails closed.
-- **/privacy updated (th + en):** §2 adds the funnel bullet; §6/§8 drop the GA `_ga` cookies and name Vercel's cookie-free Web Analytics; date bumped to 2026-10-11.
+- **/privacy updated (th + en):** §2 adds the funnel bullet; §6/§8 drop the GA `_ga` cookies and name Vercel's cookie-free Web Analytics; date bumped to 2026-10-11. *(§6/§8 GA disclosure **restored later the same day** — see the GA4 re-enable entry above.)*
 
 **Files:** `supabase/migrations/20261011120000_add_funnel_events.sql`, `supabase/tests/rls_smoke.sql` (T137–T145), `src/lib/analytics/{funnel-types,add-funnel,ga}.ts`, `src/components/wizard/{StartupWizard,VerifyPanel}.tsx`, `src/app/api/startups/[id]/sources/[source]/route.ts`, `src/app/api/cron/sync/route.ts`, `src/app/[locale]/layout.tsx`, `src/lib/supabase/database.types.ts`, `.env.example`, `package.json`
 **Verified:** `npx vitest run` → 445 passed / 17 skipped; `npm run typecheck` ✓; `npm run lint` ✓; `npm run build` ✓; `npx playwright test` → 108 passed / 16 skipped / 0 failed; `.next/server/app/th.html` has no `googletagmanager`.

@@ -142,7 +142,7 @@ export default async function LocaleLayout({
           </LivePresenceProvider>
         </NextIntlClientProvider>
         {/* Option 2: Vercel Web Analytics — cookie-free, anonymous pageviews (Hobby plan: no custom
-            events). No-ops outside Vercel production. GA4 above stays off unless NEXT_PUBLIC_GA_ID. */}
+            events). No-ops outside Vercel production. GA4 above is on by default (see ga.ts). */}
         <Analytics />
         {process.env.NODE_ENV === "production" && (
           <script defer src="/v.js" data-project={SELF_PROJECT} />

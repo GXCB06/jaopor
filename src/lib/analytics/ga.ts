@@ -1,19 +1,25 @@
-// Google Analytics 4 (gtag). Off by default: the tag renders only when NEXT_PUBLIC_GA_ID holds a
-// measurement ID. There is deliberately no built-in default, so a production deploy can never turn
-// analytics on silently — the ID is set explicitly (in Vercel) if and when GA is wanted.
+// Google Analytics 4 (gtag) for JaoPor's property. On by default: the tag renders in production
+// whenever gaMeasurementId() returns an id (the built-in default below, or NEXT_PUBLIC_GA_ID).
+// Set NEXT_PUBLIC_GA_ID to another measurement ID to override, or to "off" (also "", "false",
+// "0", "no") to disable analytics without a code change.
 //
 // Analytics load in production only, mirroring the /v.js self-counter in the root layout: local dev
 // and e2e runs then never send hits to the real property. Read as a literal `process.env.X` so Next
 // can inline it (see src/lib/public-env.ts).
 
+/** JaoPor's GA4 property (G-JYPJ2RFH4N). Used when NEXT_PUBLIC_GA_ID is unset. */
+export const DEFAULT_MEASUREMENT_ID = "G-JYPJ2RFH4N";
+
 /**
  * GA4 measurement ID, or null to render nothing.
- * Leave NEXT_PUBLIC_GA_ID unset (or empty, or "off") to keep analytics off.
+ * Unset NEXT_PUBLIC_GA_ID → JaoPor's default. Set it to a value to override, or to
+ * empty / "off" / "false" / "0" / "no" to turn analytics off.
  */
 export function gaMeasurementId(
   raw: string | undefined = process.env.NEXT_PUBLIC_GA_ID,
 ): string | null {
-  const value = (raw ?? "").trim();
+  if (raw === undefined) return DEFAULT_MEASUREMENT_ID;
+  const value = raw.trim();
   if (!value || /^(off|false|0|no)$/i.test(value)) return null;
   return value;
 }

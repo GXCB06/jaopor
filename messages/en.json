@@ -1006,7 +1006,7 @@
   "Privacy": {
     "metaTitle": "Privacy policy",
     "title": "JaoPor privacy policy",
-    "updated": "Last updated: October 10, 2026",
+    "updated": "Last updated: October 11, 2026",
     "intro": "JaoPor (jaopor.vercel.app) is a directory of things people build with AI, with numbers verified at the source. This page explains what we collect, why, how long we keep it, and what you control.",
     "contact": "Privacy contact:",
     "email": "jaopordev@gmail.com",
@@ -1107,7 +1107,7 @@
       },
       {
         "title": "6. What's stored in your browser",
-        "body": "We don't use advertising cookies or cross-site tracking cookies for ads. We use no analytics cookies: JaoPor's visitor counter and our host's Web Analytics (Vercel) run cookie-free. Stored on your device: the sign-in cookie (signed-in users only), theme, currency, the province you picked in the Olympics, the live map's anonymous ID, and your hide/opt-out choices. You can clear them in your browser settings."
+        "body": "We don't use advertising cookies or cross-site tracking cookies for ads. We use Google Analytics cookies (named _ga) to see aggregate traffic; JaoPor's own visitor counter and our host's Web Analytics (Vercel) run cookie-free. Stored on your device: the sign-in cookie (signed-in users only), theme, currency, the province you picked in the Olympics, the live map's anonymous ID, your hide/opt-out choices, and Google Analytics cookies. You can clear them in your browser settings."
       },
       {
         "title": "7. Messages (chat)",
@@ -1128,7 +1128,7 @@
       },
       {
         "title": "8. Services we use",
-        "body": "Vercel (hosting; also cookie-free Web Analytics with no personal data), Supabase (database, sign-in, realtime), Google and GitHub (sign-in), OpenFreeMap (world map images, only when you open it), Google Gemini (when a project owner presses \"Fill from website\", public text from that project's website is sent for a summary), Frankfurter (exchange rates, server-side, no user data)."
+        "body": "Vercel (hosting; also cookie-free Web Analytics), Supabase (database, sign-in, realtime), Google and GitHub (sign-in), Google Analytics (traffic statistics, loaded on page view), OpenFreeMap (world map images, only when you open it), Google Gemini (when a project owner presses \"Fill from website\", public text from that project's website is sent for a summary), Frankfurter (exchange rates, server-side, no user data)."
       },
       {
         "title": "9. Deleting your data",
