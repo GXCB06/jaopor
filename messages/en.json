@@ -354,6 +354,8 @@
     "limitReached": "You can list up to 5 projects.",
     "choose": "Choose…",
     "basicsIntro": "Start with one link: we fill in the name, one-liner and logo from your site, and you can edit every field. Your project page goes live as soon as you publish, and you can edit or delete it any time.",
+    "selfReportedNote": "What you type shows as “owner-stated”; verified numbers come from the next step.",
+    "nextVerifyHint": "Next: verify numbers (optional) — with Stripe, GitHub or a visitor counter.",
     "openStripe": "Open Stripe key page",
     "openStripeTest": "test mode",
     "writeAccessOn": "This key still has write access for: {resources}. Change those to Read or None, then paste it again.",
@@ -621,23 +623,30 @@
       "key": "API token (Account Analytics: Read)"
     },
     "choose": {
-      "title": "What do you have? Pick one to start",
-      "hint": "About a minute. Every option is read-only, and you can add more sources later.",
-      "website": "A website",
-      "websiteHint": "Count real visitors with one line of JaoPor code",
-      "stripe": "Paid through Stripe",
-      "stripeHint": "Verify revenue and MRR",
-      "revenuecat": "A mobile app on RevenueCat",
-      "revenuecatHint": "App revenue from the App Store and Google Play",
-      "github": "Code on GitHub",
-      "githubHint": "Commits, and how much was co-written with Claude",
-      "analytics": "Analytics you already use",
-      "analyticsHint": "Plausible, Umami or Cloudflare",
       "noKey": "No key needed",
       "readKey": "Read-only key",
       "change": "Change method",
       "addAnother": "Add another source",
       "connected": "Connected"
+    },
+    "getStrip": [
+      "✓ on your card",
+      "ranked on the leaderboard",
+      "a badge for your site"
+    ],
+    "stripeReadOnlyNote": "Read-only · totals only · revoke any time",
+    "metric": {
+      "title": "What do you want to prove? Pick one to start",
+      "hint": "About a minute. Every option is read-only, and you can add more sources later.",
+      "revenue": "Revenue / MRR",
+      "revenueHint": "Money received and recurring revenue",
+      "revenueNote": "You get ✓ verified revenue and revenue-board ranking · Omise / 2C2P not supported yet",
+      "traffic": "Visitors",
+      "trafficHint": "Unique visitors per day and the 30-day total",
+      "trafficNote": "These are “counted”, not audited · Google Analytics not supported yet",
+      "build": "Build proof",
+      "buildHint": "Commits on a public repo, and how much was co-written with Claude",
+      "buildNote": "Public repos owned by your GitHub account"
     },
     "stripeGuide": {
       "label": "Permissions to set on the key",

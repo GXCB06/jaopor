@@ -12,6 +12,28 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-10 — UX master audit phase A2: verification clarity
+
+**Done:**
+
+- **Item 4 — metric-first verify chooser (P0)** (`lib/sources/catalog.ts` + test, `VerifyPanel.tsx`):
+  - The chooser asks what a founder wants to prove, not which tool they own: three **metric rows** — รายได้ / MRR (Stripe · RevenueCat), ผู้เข้าชม (JaoPor snippet · Plausible · Umami · Cloudflare), การสร้าง / build proof (GitHub).
+  - Each row shows what it measures, its sources, what you get, the limits, and the "ไม่ต้องใช้คีย์" / "คีย์อ่านอย่างเดียว" chip. Choosing a row reveals its sources as a segmented switch, then only the chosen connector.
+  - The mapping is a unit-tested `METRICS` in `catalog.ts`, so Google Analytics can never appear (no connector) and issue 7's chart can reuse it. Deep-link anchors `#verify-revenue` / `#verify-traffic` / `#verify-build` are preserved. The snippet row still hides without a website.
+- **Item 3 — expectation copy** (`StartupWizard.tsx`, `VerifyPanel.tsx`): a "ต่อไป: ยืนยันตัวเลข (ไม่บังคับ)…" hint under the step-1 button; a "what you get" strip (✓ on your card · leaderboard · badge) at the top of the chooser; a "อ่านอย่างเดียว · เห็นแค่ยอดรวม · ยกเลิกได้ทุกเมื่อ" line above the Stripe key field.
+- **Item 8 — Add Startup clarity** (`StartupWizard.tsx`): an owner-stated vs verified line in step 1 ("ข้อมูลที่คุณกรอกจะแสดงเป็น “เจ้าของบอก”…"). Optional fields (tagline, logo) were already labelled "(ไม่บังคับ)". **New projects stay public on create** (owner decision 2026-10-10) — the expectation is already stated in `basicsIntro`, so no RLS/funnel change.
+
+**Not changed:**
+
+- no migration; no production data or settings; no auth change;
+- the connector/sync internals, the manage view for connected sources, and the edit page's grouped view.
+
+**Verified:** `npx vitest run` → 431 passed / 17 skipped (incl. new `catalog.test.ts` metric mapping and `messages.test.ts` th↔en parity); `npm run typecheck`; `npm run lint`; `npm run build`. The chooser is behind sign-in (wizard step 2 / edit page), so it is covered by the unit tests and build rather than a browser pass.
+
+**Files:** `src/lib/sources/catalog.ts` (+ `catalog.test.ts`) · `src/components/wizard/VerifyPanel.tsx` · `src/components/wizard/StartupWizard.tsx` · `messages/th.json` · `messages/en.json` · `Design.md` (§5 VerifyPanel chooser + wizard v2) · `Project.md` (§7).
+
+**Next:** A3 (type roles in Design.md + sweep · card v2 + compact directory header on phones).
+
 ## 2026-10-10 — UX master audit phase A1: co-founder request, link types, leaderboard rules
 
 **Done:**

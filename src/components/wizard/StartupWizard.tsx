@@ -36,7 +36,8 @@ const VerifyPanel = dynamic(loadVerifyPanel);
 
 // Design.md §5 Add-startup wizard v2 (first-user test 2026-10-05: "adding a startup is hard").
 // 1) List it: the project link first, which auto-fills name, one-liner and logo from the site;
-//    then category.  2) Verify: the VerifyPanel chooser ("What do you have?"), or skip.
+//    then category.  2) Verify: the VerifyPanel metric chooser ("What do you want to prove?"), or
+//    skip.
 // AI tools, looking-for, screenshots and the rest are added later on /dashboard/[id]/edit.
 
 const MAX_LOGO_BYTES = 1024 * 1024;
@@ -371,6 +372,8 @@ export function StartupWizard({
       {step === 1 && (
         <form onSubmit={create} className="space-y-4">
           <p className="text-sm text-muted-foreground">{t("basicsIntro")}</p>
+          {/* Item 8: what the founder types is owner-stated; verified numbers come from step 2. */}
+          <p className="text-caption text-faint">{t("selfReportedNote")}</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
               label={t("projectLink")}
@@ -568,6 +571,10 @@ export function StartupWizard({
                   ? t("saveAndContinue")
                   : t("createAndContinue")}
             </Button>
+            {/* Issue 3: say what step 2 is for before the button is pressed. */}
+            <p className="mt-2 text-caption text-muted-foreground">
+              {t("nextVerifyHint")}
+            </p>
           </div>
         </form>
       )}

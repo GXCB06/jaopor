@@ -15,6 +15,13 @@ export type SourceId = (typeof SOURCES)[number];
 
 export type SourceKind = "revenue" | "traffic" | "build";
 
+/**
+ * The three things a founder can prove, in the order the VerifyPanel chooser shows them
+ * (Design.md §5 VerifyPanel chooser): revenue/MRR, visitors, build proof. A metric owns the
+ * supported sources for it, so an unsupported one (Google Analytics) can never appear.
+ */
+export const METRICS: readonly SourceKind[] = ["revenue", "traffic", "build"];
+
 export const SOURCE_KIND: Record<SourceId, SourceKind> = {
   stripe: "revenue",
   revenuecat: "revenue",

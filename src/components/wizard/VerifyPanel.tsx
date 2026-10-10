@@ -8,9 +8,7 @@ import {
   CreditCardIcon,
   ExternalLinkIcon,
   GitBranchIcon,
-  GlobeIcon,
   ShieldCheckIcon,
-  SmartphoneIcon,
   XIcon,
   type LucideIcon,
 } from "lucide-react";
@@ -21,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
+  METRICS,
   SOURCE_KIND,
   SOURCE_NAME,
   sourcesOfKind,
@@ -37,8 +36,9 @@ import { Field, inputClass } from "./fields";
 // Design.md §5 VerifyPanel: revenue (Stripe | RevenueCat) · visitors (JaoPor snippet | Plausible |
 // Umami | Cloudflare) · build proof (GitHub). Every credential is read-only; the server proves it
 // before storing. The snippet needs no credential: a visit from the website activates it.
-// While nothing is connected it is a chooser instead ("What do you have?", Design.md §5
-// VerifyPanel chooser; first-user test: three groups on one screen made people skip).
+// While nothing is connected it is a chooser instead, grouped by the metric a founder wants to
+// prove ("What do you want to prove?", Design.md §5 VerifyPanel chooser; issue 4). It is one
+// screen of three rows, so the first-user test's "three groups all open" skip doesn't repeat.
 
 export type ConnectionInfo = {
   source: SourceId;
@@ -156,53 +156,18 @@ export function VerifyPanel({
   );
 }
 
-type Choice = "website" | "stripe" | "revenuecat" | "github" | "analytics";
-const ANALYTICS: SourceId[] = ["plausible", "umami", "cloudflare"];
+const METRIC_ICON: Record<SourceKind, LucideIcon> = {
+  revenue: CreditCardIcon,
+  traffic: ChartColumnIcon,
+  build: GitBranchIcon,
+};
 
-const CHOICES: {
-  id: Choice;
-  icon: LucideIcon;
-  source: SourceId;
-  /** Deep-link target from the profile ("#verify-revenue"…): the tile carries the id. */
-  anchor: string | null;
-  noKey: boolean;
-}[] = [
-  {
-    id: "website",
-    icon: GlobeIcon,
-    source: "jaopor",
-    anchor: "verify-traffic",
-    noKey: true,
-  },
-  {
-    id: "stripe",
-    icon: CreditCardIcon,
-    source: "stripe",
-    anchor: "verify-revenue",
-    noKey: false,
-  },
-  {
-    id: "revenuecat",
-    icon: SmartphoneIcon,
-    source: "revenuecat",
-    anchor: null,
-    noKey: false,
-  },
-  {
-    id: "github",
-    icon: GitBranchIcon,
-    source: "github",
-    anchor: "verify-build",
-    noKey: true,
-  },
-  {
-    id: "analytics",
-    icon: ChartColumnIcon,
-    source: "plausible",
-    anchor: null,
-    noKey: false,
-  },
-];
+/** Deep-link target from the profile ("#verify-revenue"…): the metric row carries the id. */
+const METRIC_ANCHOR: Record<SourceKind, string> = {
+  revenue: "verify-revenue",
+  traffic: "verify-traffic",
+  build: "verify-build",
+};
 
 function VerifyChooser({
   startupId,
@@ -216,47 +181,71 @@ function VerifyChooser({
   onConnected?: (source: SourceId) => void;
 }) {
   const t = useTranslations("Sources");
-  const [choice, setChoice] = useState<Choice | null>(null);
-  const [analytics, setAnalytics] = useState<SourceId>("plausible");
+  // Which metric is expanded (null = the three metric rows).
+  const [metric, setMetric] = useState<SourceKind | null>(null);
+  // The source picked within that metric.
+  const [source, setSource] = useState<SourceId | null>(null);
   // Sources connected here (the wizard's `connections` never refreshes).
   const [done, setDone] = useState<SourceId[]>([]);
   // JaoPor snippet: whether our server found it on the website (Owner verified).
   const [owner, setOwner] = useState(false);
 
-  // The snippet needs a website; without one, analytics takes its deep-link anchor.
-  const choices = CHOICES.filter((c) => c.id !== "website" || websiteHost).map(
-    (c) =>
-      c.id === "analytics" && !websiteHost
-        ? { ...c, anchor: "verify-traffic" }
-        : c,
-  );
-  const current = choices.find((c) => c.id === choice);
-  const source =
-    current?.id === "analytics" ? analytics : (current?.source ?? null);
-  const doneOf = (c: (typeof choices)[number]) =>
-    c.id === "analytics"
-      ? ANALYTICS.some((s) => done.includes(s))
-      : done.includes(c.source);
+  // The snippet needs a website; without one only analytics remain (issue 4, metric-first).
+  const sourcesFor = (kind: SourceKind): SourceId[] =>
+    kind === "traffic" && !websiteHost
+      ? sourcesOfKind("traffic").filter((s) => s !== "jaopor")
+      : sourcesOfKind(kind);
+  const metricDone = (kind: SourceKind) =>
+    sourcesFor(kind).some((s) => done.includes(s));
 
-  if (!current || !source)
-    return (
-      <div id="verify" className="scroll-mt-24 space-y-3">
-        <div className="space-y-1">
-          <h3 className="text-sm font-semibold">{t("choose.title")}</h3>
-          <p className="text-caption text-muted-foreground">
-            {t("choose.hint")}
-          </p>
-        </div>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {choices.map((c) => {
-            const Icon = c.icon;
-            const isDone = doneOf(c);
+  function openMetric(kind: SourceKind) {
+    setMetric(kind);
+    setSource(sourcesFor(kind)[0] ?? null);
+  }
+
+  const replaces = source
+    ? (done.find(
+        (s) => s !== source && SOURCE_KIND[s] === SOURCE_KIND[source],
+      ) ?? null)
+    : null;
+  const connected = source ? done.includes(source) : false;
+
+  return (
+    <div id="verify" className="scroll-mt-24 space-y-3">
+      <div className="space-y-1">
+        <h3 className="text-sm font-semibold">{t("metric.title")}</h3>
+        <p className="text-caption text-muted-foreground">{t("metric.hint")}</p>
+      </div>
+      {/* What verifying unlocks, before the choice (Design.md §5, issue 3). */}
+      <ul className="flex flex-wrap gap-x-3 gap-y-1 text-caption text-muted-foreground">
+        {(t.raw("getStrip") as string[]).map((item) => (
+          <li key={item} className="flex items-center gap-1">
+            <CheckIcon
+              className="size-3.5 shrink-0 text-positive"
+              aria-hidden="true"
+            />
+            {item}
+          </li>
+        ))}
+      </ul>
+
+      {metric === null ? (
+        <div className="grid gap-2">
+          {METRICS.map((kind) => {
+            const Icon = METRIC_ICON[kind];
+            const isDone = metricDone(kind);
+            const names = sourcesFor(kind)
+              .map((s) => SOURCE_NAME[s])
+              .join(" · ");
+            // Chip reflects the metric's first (default) source.
+            const primary = sourcesFor(kind)[0];
+            const noKey = primary === "jaopor" || primary === "github";
             return (
               <button
-                key={c.id}
-                id={c.anchor ?? undefined}
+                key={kind}
+                id={METRIC_ANCHOR[kind]}
                 type="button"
-                onClick={() => setChoice(c.id)}
+                onClick={() => openMetric(kind)}
                 className="flex scroll-mt-24 items-start gap-3 rounded-xl border bg-card p-3 text-left transition-colors hover:bg-accent"
               >
                 <Icon
@@ -264,136 +253,143 @@ function VerifyChooser({
                   aria-hidden="true"
                 />
                 <span className="min-w-0 flex-1 space-y-0.5">
-                  <span className="block text-sm font-semibold">
-                    {t(`choose.${c.id}`)}
+                  <span className="flex items-center gap-2">
+                    <span className="text-sm font-semibold">
+                      {t(`metric.${kind}`)}
+                    </span>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full border px-2 py-0.5 text-2xs",
+                        isDone || noKey
+                          ? "border-positive/30 text-positive"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      {isDone ? (
+                        <>
+                          <CheckIcon
+                            className="mr-0.5 inline size-3"
+                            aria-hidden="true"
+                          />
+                          {t("choose.connected")}
+                        </>
+                      ) : noKey ? (
+                        t("choose.noKey")
+                      ) : (
+                        t("choose.readKey")
+                      )}
+                    </span>
                   </span>
                   <span className="block text-caption text-muted-foreground">
-                    {t(`choose.${c.id}Hint`)}
+                    {t(`metric.${kind}Hint`)}
                   </span>
-                </span>
-                <span
-                  className={cn(
-                    "shrink-0 rounded-full border px-2 py-0.5 text-2xs",
-                    isDone || c.noKey
-                      ? "border-positive/30 text-positive"
-                      : "text-muted-foreground",
-                  )}
-                >
-                  {isDone ? (
-                    <>
-                      <CheckIcon
-                        className="mr-0.5 inline size-3"
-                        aria-hidden="true"
-                      />
-                      {t("choose.connected")}
-                    </>
-                  ) : c.noKey ? (
-                    t("choose.noKey")
-                  ) : (
-                    t("choose.readKey")
-                  )}
+                  <span className="block text-2xs text-faint">{names}</span>
+                  <span className="block text-2xs text-faint">
+                    {t(`metric.${kind}Note`)}
+                  </span>
                 </span>
               </button>
             );
           })}
         </div>
-      </div>
-    );
-
-  const replaces =
-    done.find((s) => s !== source && SOURCE_KIND[s] === SOURCE_KIND[source]) ??
-    null;
-  const connected = done.includes(source);
-
-  return (
-    <div id="verify" className="scroll-mt-24 space-y-3">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <button
-          type="button"
-          onClick={() => setChoice(null)}
-          className="inline-flex items-center gap-1 text-caption text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeftIcon className="size-3.5" aria-hidden="true" />
-          {t("choose.change")}
-        </button>
-        <h3 className="text-sm font-semibold">{t(`choose.${current.id}`)}</h3>
-      </div>
-      <section className="space-y-3 rounded-lg border p-4">
-        {current.id === "analytics" && (
-          <div
-            className="flex flex-wrap gap-1.5"
-            role="group"
-            aria-label={t("choose.analytics")}
-          >
-            {ANALYTICS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                aria-pressed={s === analytics}
-                onClick={() => setAnalytics(s)}
-                className={cn(
-                  "rounded-md border px-3 py-1 text-xs transition-colors",
-                  s === analytics
-                    ? "bg-accent text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {SOURCE_NAME[s]}
-              </button>
-            ))}
+      ) : (
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <button
+              type="button"
+              onClick={() => {
+                setMetric(null);
+                setSource(null);
+              }}
+              className="inline-flex items-center gap-1 text-caption text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeftIcon className="size-3.5" aria-hidden="true" />
+              {t("choose.change")}
+            </button>
+            <h3 className="text-sm font-semibold">{t(`metric.${metric}`)}</h3>
           </div>
-        )}
-        {connected ? (
-          source === "jaopor" ? (
-            <div className="space-y-3">
-              <OwnerCheck
-                startupId={startupId}
-                host={websiteHost}
-                verified={owner}
-                onChecked={(found) => {
-                  setOwner(found);
-                  if (found) onConnected?.("jaopor");
-                }}
-              />
-              <SnippetBox projectId={startupId} />
-            </div>
-          ) : (
-            <p className="flex items-center gap-2 text-sm text-positive">
-              <CheckIcon className="size-4" aria-hidden="true" />
-              {`${SOURCE_NAME[source]} · ${t("connected")}`}
-            </p>
-          )
-        ) : (
-          <SourceForm
-            key={source}
-            source={source}
-            startupId={startupId}
-            replaces={replaces}
-            websiteHost={websiteHost}
-            githubLogin={githubLogin}
-            onConnected={(s, ownerVerified) => {
-              setDone((d) => [
-                ...d.filter((x) => SOURCE_KIND[x] !== SOURCE_KIND[s]),
-                s,
-              ]);
-              if (s === "jaopor") setOwner(!!ownerVerified);
-              // A snippet not found yet proves nothing: the wizard keeps "verify later" and the
-              // profile opens with the "listed" share dialog, not "Verified!".
-              if (s !== "jaopor" || ownerVerified) onConnected?.(s);
-            }}
-          />
-        )}
-      </section>
-      {connected && (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="px-3"
-          onClick={() => setChoice(null)}
-        >
-          {t("choose.addAnother")}
-        </Button>
+          <section className="space-y-3 rounded-lg border p-4">
+            {sourcesFor(metric).length > 1 && (
+              <div
+                className="flex flex-wrap gap-1.5"
+                role="group"
+                aria-label={t(`metric.${metric}`)}
+              >
+                {sourcesFor(metric).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    aria-pressed={s === source}
+                    onClick={() => setSource(s)}
+                    className={cn(
+                      "rounded-md border px-3 py-1 text-xs transition-colors",
+                      s === source
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {SOURCE_NAME[s]}
+                  </button>
+                ))}
+              </div>
+            )}
+            {source &&
+              (connected ? (
+                source === "jaopor" ? (
+                  <div className="space-y-3">
+                    <OwnerCheck
+                      startupId={startupId}
+                      host={websiteHost}
+                      verified={owner}
+                      onChecked={(found) => {
+                        setOwner(found);
+                        if (found) onConnected?.("jaopor");
+                      }}
+                    />
+                    <SnippetBox projectId={startupId} />
+                  </div>
+                ) : (
+                  <p className="flex items-center gap-2 text-sm text-positive">
+                    <CheckIcon className="size-4" aria-hidden="true" />
+                    {`${SOURCE_NAME[source]} · ${t("connected")}`}
+                  </p>
+                )
+              ) : (
+                <SourceForm
+                  key={source}
+                  source={source}
+                  startupId={startupId}
+                  replaces={replaces}
+                  websiteHost={websiteHost}
+                  githubLogin={githubLogin}
+                  onConnected={(s, ownerVerified) => {
+                    setDone((d) => [
+                      ...d.filter((x) => SOURCE_KIND[x] !== SOURCE_KIND[s]),
+                      s,
+                    ]);
+                    if (s === "jaopor") setOwner(!!ownerVerified);
+                    // A snippet not found yet proves nothing: the wizard keeps "verify later" and
+                    // the profile opens with the "listed" share dialog, not "Verified!".
+                    if (s !== "jaopor" || ownerVerified) onConnected?.(s);
+                  }}
+                />
+              ))}
+          </section>
+          {connected && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="px-3"
+              onClick={() => {
+                setMetric(null);
+                setSource(null);
+              }}
+            >
+              {t("choose.addAnother")}
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );
@@ -696,6 +692,11 @@ function SourceForm({
       ) : (
         <form onSubmit={submit} className="space-y-3">
           {source === "jaopor" && <SnippetBox projectId={startupId} />}
+          {source === "stripe" && (
+            <p className="text-caption text-muted-foreground">
+              {t("stripeReadOnlyNote")}
+            </p>
+          )}
           <div className="grid gap-3 sm:grid-cols-2">
             {FIELDS[source].map((f) => (
               <Field
