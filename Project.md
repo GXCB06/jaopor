@@ -316,6 +316,18 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 
 - [x] (2026-10-07) **Visitor wording:** owner chose "counted" for visitors (kept on the leaderboard and Olympics); applied everywhere; /security intro and /privacy §3 title approved and updated the same day.
 - [ ] (2026-10-08) **UX/UI audit review** ([docs/UX_UI_PRODUCT_AUDIT.md](docs/UX_UI_PRODUCT_AUDIT.md)): owner decided on 2026-10-08: demos deleted, slug renamed to `jaopor` in the DB, glossary ผลงาน / project (applied). Phase 1 done 2026-10-08 (M-3, M-4, M-5, M-6); Phase 2 done 2026-10-08 (M-8, M-9, M-10, S-1, S-2); Phase 3 done 2026-10-08 (S-3, S-4, S-6, S-8, S-12, C-3). Editable link (S-9) done 2026-10-08; Phase 4 done 2026-10-08 (M-11, S-18, C-4); hide for now (S-10) and Phase 5 done 2026-10-08 (S-6, S-11, S-14, S-16, S-17, DS-1 colour, DS-3, DS-4). Phase 6 done 2026-10-08 (C-1, C-2, C-5, C-6, C-8, C-9, C-11, C-12, C-13, C-14). Later: a shared Badge / ProofMark component. Open owner decisions: enable Supabase manual linking (GitHub), backfill the jaopor-pdt0 rename, deduct Stripe coupons from MRR, the funnel counts, milestones in ฿ on English pages (S-13).
+- [ ] (2026-10-10) **Master UX/UI audit** ([docs/UX_UI_MASTER_AUDIT.md](docs/UX_UI_MASTER_AUDIT.md)): Phase 1 (audit) done; waiting for the owner's approval and 8 decisions.
+  - **Decisions:**
+    - positioning a / b / c;
+    - proof-before-story;
+    - public-on-create vs private-first;
+    - no guest limit;
+    - browser-only vs account preferences;
+    - `/leaderboard` page + movers;
+    - founder badge numbers;
+    - card screenshots.
+  - **Planned phases:** A1 (co-founder action, link types, leaderboard logic) → A2 (metric-first verify chooser) → A3 (type scale, card v2) → B1 (founder profile order, share, project page Proof / Story) → B2 (chart tabs + commits, visibility summary, chat states) → C1 (multi-select filters, `/leaderboard`) → C2 (first-visit onboarding) → C3 (founder badge, copy pass).
+  - **Migrations implied:** Instagram social key (validation trigger); optional account preferences; rank history later.
 - [ ] (2026-10-08) **Launch gate** ([docs/LAUNCH_READINESS_REPORT.md](docs/LAUNCH_READINESS_REPORT.md) §10):
   - **BLOCKERS:**
     - **B-1** Google publishing status;

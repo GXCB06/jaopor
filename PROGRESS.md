@@ -12,6 +12,48 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-10 — Master UX/UI audit (Phase 1, audit only) + hardening pass verified on production
+
+**Done:**
+
+- **`docs/UX_UI_MASTER_AUDIT.md`:** the owner's 17-issue brief plus first-visit onboarding and multi-select filters. For each item:
+  - current implementation and files;
+  - root cause;
+  - type, priority;
+  - confirmed vs assumption;
+  - solution + acceptance;
+  - dependencies, risks, tests.
+
+  Also a reordered phased plan (A1 trust fixes → A2 verification clarity → A3 readability → B1 profiles → B2 charts / settings → C1 filters + leaderboard → C2 onboarding → C3 badge + copy) and 8 owner decisions.
+
+- **Key confirmed findings:**
+  - essential Thai text at 10–11 px (metric values 11.3 px);
+  - directory: the first card at y = 635 of 812 on phones;
+  - unknown links silently become "website" (Facebook, YouTube, Linktree…);
+  - the co-founder chip looks clickable, and the only button opens the product site;
+  - founder profile on phones: the request box 1.8 screens down, the page 6.2 screens;
+  - the chart already supports revenue / MRR / visitors, but hides them in a dropdown; commits missing;
+  - the leaderboard mixes all-time commits with 30-day metrics and breaks ties by newest;
+  - filters are single-select at every layer (no migration needed to fix);
+  - Instagram on profiles needs a small migration (the validation trigger).
+- **Hardening pass on production** (`2da0b25`):
+  - production e2e 82 / 82 ✓ (incl. the new th / en 404 checks);
+  - `live_pings` has 0 rows since the deploy (no heartbeat writes);
+  - `/api/live/count` → `{count:null}`; `/api/live/ping` → 204;
+  - home makes no `/api/live/*` or Supabase calls signed out; the visitor snippet still sends `/api/collect`.
+
+**Nothing changed:** code, data, auth, migrations (the analytics migration is still not applied).
+
+**Files:** `docs/UX_UI_MASTER_AUDIT.md`
+**Verified:**
+
+- code inspection;
+- production measurements at 375 px / desktop (browser);
+- read-only SQL;
+- production e2e.
+
+**Next:** owner decisions (positioning, page order, publish-on-create, guest access, preferences storage, `/leaderboard`, founder badge numbers, card screenshots), then Phase A1.
+
 ## 2026-10-09 — Pre-launch hardening pass (live map off, th/en 404 and error pages, launch checklists)
 
 **Code changes:**
