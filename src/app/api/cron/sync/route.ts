@@ -52,6 +52,10 @@ export async function GET(req: Request) {
     console.error("[cron] refresh_activity:", refreshed.error.code);
   // Phase 8: drop stale live-visitor heartbeats.
   await admin.rpc("prune_live_pings");
+  // Add-project funnel: enforce the 180-day retention (first-party, no cookies).
+  const pruned = await admin.rpc("prune_funnel_events");
+  if (pruned.error)
+    console.error("[cron] prune_funnel_events:", pruned.error.code);
   // Phase 10d: automatic milestone posts from the numbers just synced (verified data only).
   try {
     const result = await runMilestones(

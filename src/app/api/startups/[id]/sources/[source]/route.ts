@@ -12,6 +12,8 @@ import {
 } from "@/lib/sources/sync";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { after } from "next/server";
+import { VERIFY_CODES, VERIFY_SOURCES } from "@/lib/analytics/funnel-types";
 
 // /api/startups/:id/sources/:source   source = stripe | revenuecat | plausible | umami | github
 // POST   { key?, projectId?, siteId?, shareUrl?, repo? } → validate read-only, store encrypted, first sync
@@ -20,6 +22,42 @@ import { createClient } from "@/lib/supabase/server";
 export const maxDuration = 120;
 const REFRESH_COOLDOWN_MS = 10 * 60 * 1000;
 const MAX_FIELD = 500;
+
+const VERIFY_CODE_SET = new Set<string>(VERIFY_CODES);
+const VERIFY_SOURCE_SET = new Set<string>(VERIFY_SOURCES);
+
+/**
+ * Record one connect attempt in the first-party funnel, after the response is sent. Fire-and-forget:
+ * never blocks or changes the connect result; unknown codes fall back to "server". See
+ * docs/ADD_STARTUP_ANALYTICS_MIGRATION.md.
+ */
+function logVerifyResult(
+  userId: string,
+  startupId: number,
+  source: SourceId,
+  ok: boolean,
+  code: string | null,
+) {
+  if (!VERIFY_SOURCE_SET.has(source)) return;
+  const safeCode = ok ? null : code && VERIFY_CODE_SET.has(code) ? code : "server";
+  try {
+    after(async () => {
+      try {
+        await createAdminClient().rpc("log_verify_result", {
+          p_user: userId,
+          p_startup: startupId,
+          p_source: source,
+          p_ok: ok,
+          ...(safeCode == null ? {} : { p_code: safeCode }),
+        });
+      } catch (e) {
+        console.error("[funnel] verify_result:", (e as Error).name);
+      }
+    });
+  } catch (e) {
+    console.error("[funnel] verify_result:", (e as Error).name);
+  }
+}
 
 type Ctx = RouteContext<"/api/startups/[id]/sources/[source]">;
 
@@ -57,6 +95,13 @@ export async function POST(req: Request, ctx: Ctx) {
 
   try {
     const result = await connectSource(createAdminClient(), { ...auth, data });
+    logVerifyResult(
+      auth.userId,
+      auth.startupId,
+      auth.source,
+      result.ok,
+      result.ok ? null : result.code,
+    );
     return result.ok
       ? json({ ok: true, ownerVerified: result.ownerVerified })
       : json(
@@ -70,6 +115,7 @@ export async function POST(req: Request, ctx: Ctx) {
         );
   } catch (err) {
     if (err instanceof ForbiddenError) return json({ error: "not_found" }, 404);
+    logVerifyResult(auth.userId, auth.startupId, auth.source, false, "server");
     console.error(
       "[source connect]",
       auth.source,

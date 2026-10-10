@@ -1447,6 +1447,25 @@ export type Database = {
         Returns: Json;
       };
       handle_available: { Args: { p_handle: string }; Returns: boolean };
+      log_add_event: {
+        Args: {
+          p_attempt: string;
+          p_event: string;
+          p_props?: Json;
+          p_startup?: number;
+        };
+        Returns: undefined;
+      };
+      log_verify_result: {
+        Args: {
+          p_code?: string;
+          p_ok: boolean;
+          p_source: string;
+          p_startup: number;
+          p_user: string;
+        };
+        Returns: undefined;
+      };
       profile_activity: {
         Args: {
           p_from: string;
@@ -1469,6 +1488,7 @@ export type Database = {
           total: number;
         }[];
       };
+      prune_funnel_events: { Args: never; Returns: number };
       prune_live_pings: { Args: never; Returns: number };
       refresh_activity: { Args: never; Returns: undefined };
       search_startups: {

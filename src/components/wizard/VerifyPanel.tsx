@@ -31,6 +31,7 @@ import { publicEnv } from "@/lib/public-env";
 import { useConfirm } from "@/components/core/useConfirm";
 import { cn } from "@/lib/utils";
 import { copy } from "@/components/share/copy";
+import { logAddEvent } from "@/lib/analytics/add-funnel";
 import { Field, inputClass } from "./fields";
 
 // Design.md §5 VerifyPanel: revenue (Stripe | RevenueCat) · visitors (JaoPor snippet | Plausible |
@@ -121,12 +122,15 @@ export function VerifyPanel({
   websiteHost,
   githubLogin,
   onConnected,
+  attemptId,
 }: {
   startupId: number;
   connections: ConnectionInfo[];
   websiteHost: string | null;
   githubLogin: string | null;
   onConnected?: (source: SourceId) => void;
+  /** Add-project funnel attempt (fired on the metric choice); omitted on the edit page. */
+  attemptId?: string;
 }) {
   const t = useTranslations("Sources");
   if (connections.length === 0)
@@ -136,6 +140,7 @@ export function VerifyPanel({
         websiteHost={websiteHost}
         githubLogin={githubLogin}
         onConnected={onConnected}
+        attemptId={attemptId}
       />
     );
   return (
@@ -174,11 +179,13 @@ function VerifyChooser({
   websiteHost,
   githubLogin,
   onConnected,
+  attemptId,
 }: {
   startupId: number;
   websiteHost: string | null;
   githubLogin: string | null;
   onConnected?: (source: SourceId) => void;
+  attemptId?: string;
 }) {
   const t = useTranslations("Sources");
   // Which metric is expanded (null = the three metric rows).
@@ -199,6 +206,7 @@ function VerifyChooser({
     sourcesFor(kind).some((s) => done.includes(s));
 
   function openMetric(kind: SourceKind) {
+    if (attemptId) logAddEvent(attemptId, "verify_chose", startupId, { choice: kind });
     setMetric(kind);
     setSource(sourcesFor(kind)[0] ?? null);
   }

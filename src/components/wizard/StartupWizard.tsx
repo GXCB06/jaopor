@@ -10,6 +10,11 @@ import { ProvinceField } from "@/components/profile-edit/ProvinceField";
 import { Link, useRouter } from "@/i18n/navigation";
 import { CATEGORIES, slugify } from "@/lib/catalog";
 import {
+  logAddEvent,
+  newAttemptId,
+  type AddFailedCode,
+} from "@/lib/analytics/add-funnel";
+import {
   checkProjectLink,
   ownWebsiteHost,
   sameWebsite,
@@ -114,6 +119,8 @@ export function StartupWizard({
   const router = useRouter();
 
   const [step, setStep] = useState<1 | 2>(1);
+  // One random id per add-project attempt; kept in the session draft so a refresh continues it.
+  const [attemptId, setAttemptId] = useState(() => newAttemptId());
   // The project created by step 1. Going back to step 1 edits it instead of creating another.
   const [saved, setSaved] = useState<{
     id: number;
@@ -156,7 +163,7 @@ export function StartupWizard({
   // the created project, so step 2 doesn't fall back to step 1 and create a duplicate.
   const clearDraft = useSessionDraft(
     "jaopor:draft:new-startup",
-    { step, saved, name, link, tagline, category, province },
+    { step, saved, name, link, tagline, category, province, attemptId },
     (d) => {
       setStep(d.step);
       setSaved(d.saved);
@@ -165,6 +172,7 @@ export function StartupWizard({
       setTagline(d.tagline ?? "");
       setCategory(d.category ?? "");
       setProvince(d.province ?? defaultProvince);
+      if (d.attemptId) setAttemptId(d.attemptId);
     },
   );
 
@@ -190,6 +198,10 @@ export function StartupWizard({
       .order("id")
       .then(({ data }) => setMine(data ?? []));
   }, [userId]);
+  // Funnel "opened": once per attempt (the database dedupes by attempt id).
+  useEffect(() => {
+    logAddEvent(attemptId, "add_opened");
+  }, [attemptId]);
   // The database allows 5 projects per owner; going back to edit this one is always allowed.
   const atLimit = !saved && mine.length >= 5;
   const existing =
@@ -247,14 +259,29 @@ export function StartupWizard({
   const shownLogo = logo?.url ?? autoLogo;
   const fillState = fill && fill.url === siteUrl ? fill.state : null;
 
+  // Funnel "failed": the reason step 1 refused (never blocks — see add-funnel.ts).
+  const failAdd = (code: AddFailedCode) =>
+    logAddEvent(attemptId, "add_failed", undefined, { code });
+
   async function create(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!parsed) return setError(linkProblemText(lt, check, linkChoice));
-    if (existing) return;
-    if (!province) return setError(t("provinceRequired"));
-    if (logo && logo.file.size > MAX_LOGO_BYTES)
+    if (!parsed) {
+      failAdd("invalid_link");
+      return setError(linkProblemText(lt, check, linkChoice));
+    }
+    if (existing) {
+      failAdd("already_listed");
+      return;
+    }
+    if (!province) {
+      failAdd("province_missing");
+      return setError(t("provinceRequired"));
+    }
+    if (logo && logo.file.size > MAX_LOGO_BYTES) {
+      failAdd("logo_too_big");
       return setError(t("logoTooBig"));
+    }
     const base = slugify(name) || "startup";
     const key = logoKey(logo?.file ?? null, autoLogo);
     setBusy(true);
@@ -325,14 +352,20 @@ export function StartupWizard({
             column: parsed.column,
             logo: key,
           });
+          logAddEvent(attemptId, "add_created", data.id);
           setStep(2);
           return;
         }
-        if (dbErr.code === "P0001") return setError(t("limitReached"));
+        if (dbErr.code === "P0001") {
+          failAdd("limit_reached");
+          return setError(t("limitReached"));
+        }
         if (dbErr.code !== "23505") throw dbErr;
       }
+      failAdd("slug_taken");
       setError(t("slugTaken"));
     } catch {
+      failAdd("server");
       setError(common("genericError"));
     } finally {
       setBusy(false);
@@ -341,6 +374,7 @@ export function StartupWizard({
 
   const goToProfile = () => {
     if (!saved) return;
+    logAddEvent(attemptId, "add_finished", saved.id, { skipped: !verified });
     clearDraft();
     void revalidateStartup(saved.id);
     router.push({
@@ -587,6 +621,7 @@ export function StartupWizard({
             connections={[]}
             websiteHost={ownWebsiteHost(saved.website)}
             githubLogin={githubLogin}
+            attemptId={attemptId}
             onConnected={(source) => {
               setVerified(true);
               if (SOURCE_KIND[source] !== "traffic") setProven(true);

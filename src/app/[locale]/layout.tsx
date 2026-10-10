@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import { IBM_Plex_Sans_Thai, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import {
@@ -13,6 +15,11 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { routing } from "@/i18n/routing";
+import {
+  analyticsEnabled,
+  gaInitScript,
+  gaMeasurementId,
+} from "@/lib/analytics/ga";
 import { publicEnv } from "@/lib/public-env";
 import { currencyInitScript } from "@/lib/currency-script";
 import { themeInitScript } from "@/lib/theme-script";
@@ -91,6 +98,8 @@ export default async function LocaleLayout({
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
   const messages = await getMessages();
+  // Google Analytics 4, production only (like the /v.js counter below). Disclosure lives on /privacy.
+  const gaId = analyticsEnabled() ? gaMeasurementId() : null;
 
   return (
     // The inline script sets data-theme/data-currency before hydration; React owns neither, so a language
@@ -110,6 +119,17 @@ export default async function LocaleLayout({
             __html: themeInitScript + currencyInitScript,
           }}
         />
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga-init" strategy="afterInteractive">
+              {gaInitScript(gaId)}
+            </Script>
+          </>
+        )}
       </head>
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider messages={clientMessages(messages)}>
@@ -121,6 +141,9 @@ export default async function LocaleLayout({
             <Toaster position="bottom-center" />
           </LivePresenceProvider>
         </NextIntlClientProvider>
+        {/* Option 2: Vercel Web Analytics — cookie-free, anonymous pageviews (Hobby plan: no custom
+            events). No-ops outside Vercel production. GA4 above stays off unless NEXT_PUBLIC_GA_ID. */}
+        <Analytics />
         {process.env.NODE_ENV === "production" && (
           <script defer src="/v.js" data-project={SELF_PROJECT} />
         )}

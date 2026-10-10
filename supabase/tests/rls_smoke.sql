@@ -1019,5 +1019,124 @@ begin
     has_function_privilege('authenticated', 'private.startups_owner_status()', 'EXECUTE'),
     (select coalesce(array_to_string(proconfig, ','), 'none') from pg_proc where proname = 'startups_owner_status'));
   execute 'reset role';
+
+  -- T137–T145: add-project funnel analytics (migration 20261011120000_add_funnel_events).
+  -- T137: the analytics schema and table are unreachable from the API by any client role.
+  out := out || format('T137 analytics hidden: anon usage=%s auth usage=%s svc usage=%s; anon sel=%s auth sel=%s svc sel=%s; rls=%s policies=%s (expect false x6, true, 0) | ',
+    has_schema_privilege('anon', 'analytics', 'USAGE'),
+    has_schema_privilege('authenticated', 'analytics', 'USAGE'),
+    has_schema_privilege('service_role', 'analytics', 'USAGE'),
+    has_table_privilege('anon', 'analytics.funnel_events', 'SELECT'),
+    has_table_privilege('authenticated', 'analytics.funnel_events', 'SELECT'),
+    has_table_privilege('service_role', 'analytics.funnel_events', 'SELECT'),
+    (select relrowsecurity from pg_class where oid = 'analytics.funnel_events'::regclass),
+    (select count(*) from pg_policies where schemaname = 'analytics' and tablename = 'funnel_events'));
+  -- T138: execute rights — browser fn for authenticated only; server fns for service_role only.
+  out := out || format('T138 exec rights: auth log_add=%s anon log_add=%s svc log_verify=%s auth log_verify=%s svc prune=%s auth prune=%s (expect t f t f t f) | ',
+    has_function_privilege('authenticated', 'public.log_add_event(uuid,text,bigint,jsonb)', 'EXECUTE'),
+    has_function_privilege('anon', 'public.log_add_event(uuid,text,bigint,jsonb)', 'EXECUTE'),
+    has_function_privilege('service_role', 'public.log_verify_result(uuid,bigint,text,boolean,text)', 'EXECUTE'),
+    has_function_privilege('authenticated', 'public.log_verify_result(uuid,bigint,text,boolean,text)', 'EXECUTE'),
+    has_function_privilege('service_role', 'public.prune_funnel_events()', 'EXECUTE'),
+    has_function_privilege('authenticated', 'public.prune_funnel_events()', 'EXECUTE'));
+  -- T139: a valid event inserts one row owned by auth.uid(); replaying it inserts nothing.
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  perform public.log_add_event('00000000-0000-4000-8000-0000000000e1'::uuid, 'add_opened');
+  perform public.log_add_event('00000000-0000-4000-8000-0000000000e1'::uuid, 'add_opened');
+  execute 'reset role';
+  out := out || format('T139 add_opened twice → %s row, own user=%s (expect 1, true) | ',
+    (select count(*) from analytics.funnel_events where attempt_id = '00000000-0000-4000-8000-0000000000e1'),
+    (select bool_and(user_id = a) from analytics.funnel_events where attempt_id = '00000000-0000-4000-8000-0000000000e1'));
+  -- T140: unknown event, browser verify_result, extra prop, bad code / choice, missing skipped,
+  -- add_created without a project: all store nothing and never raise.
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  perform public.log_add_event('00000000-0000-4000-8000-0000000000e2'::uuid, 'bogus_event');
+  perform public.log_add_event('00000000-0000-4000-8000-0000000000e2'::uuid, 'verify_result');
+  perform public.log_add_event('00000000-0000-4000-8000-0000000000e2'::uuid, 'add_failed', null, jsonb_build_object('code', 'invalid_link', 'extra', 'x'));
+  perform public.log_add_event('00000000-0000-4000-8000-0000000000e2'::uuid, 'add_failed', null, jsonb_build_object('code', 'nope'));
+  perform public.log_add_event('00000000-0000-4000-8000-0000000000e2'::uuid, 'verify_chose', sid, jsonb_build_object('choice', 'nope'));
+  perform public.log_add_event('00000000-0000-4000-8000-0000000000e2'::uuid, 'add_finished', sid, jsonb_build_object());
+  perform public.log_add_event('00000000-0000-4000-8000-0000000000e2'::uuid, 'add_created', null, jsonb_build_object());
+  execute 'reset role';
+  out := out || format('T140 invalid browser events stored: %s (expect 0) | ',
+    (select count(*) from analytics.funnel_events where attempt_id = '00000000-0000-4000-8000-0000000000e2'));
+  -- T141: logging into someone else's project stores nothing.
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  perform public.log_add_event('00000000-0000-4000-8000-0000000000e3'::uuid, 'add_created', sid);
+  execute 'reset role';
+  out := out || format('T141 B logs into A''s project: %s (expect 0) | ',
+    (select count(*) from analytics.funnel_events where attempt_id = '00000000-0000-4000-8000-0000000000e3'));
+  -- T142: at most 100 browser events per user per 24 h (fresh user has no other events).
+  insert into auth.users (id, email, aud, role)
+  values ('00000000-0000-4000-8000-0000000000f1', 'rls-funnel-cap@test.local', 'authenticated', 'authenticated');
+  perform set_config('request.jwt.claims', json_build_object('sub', '00000000-0000-4000-8000-0000000000f1', 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  for i in 1..100 loop
+    perform public.log_add_event(('00000000-0000-4000-8000-' || lpad(to_hex(i), 12, '0'))::uuid, 'add_opened');
+  end loop;
+  perform public.log_add_event('00000000-0000-4000-8000-00000000ffff'::uuid, 'add_opened');
+  execute 'reset role';
+  out := out || format('T142 24h cap: %s events, 101st stored=%s (expect 100, false) | ',
+    (select count(*) from analytics.funnel_events where user_id = '00000000-0000-4000-8000-0000000000f1'),
+    exists (select 1 from analytics.funnel_events where user_id = '00000000-0000-4000-8000-0000000000f1' and attempt_id = '00000000-0000-4000-8000-00000000ffff'));
+  -- T142b: verify_result rows don't count toward the per-user client cap.
+  select count(*) into n from analytics.funnel_events where user_id = a and event <> 'verify_result';
+  execute 'set local role service_role';
+  perform public.log_verify_result(a, sid, 'stripe', true, null);
+  execute 'reset role';
+  out := out || format('T142b verify_result not in client cap: client %s→%s (expect same), verify=%s (expect 1) | ',
+    n,
+    (select count(*) from analytics.funnel_events where user_id = a and event <> 'verify_result'),
+    (select count(*) from analytics.funnel_events where user_id = a and event = 'verify_result'));
+  -- T143: server verify_result — bad source / ok-with-code / bad code / foreign owner add 0; capped 50/project/day.
+  execute 'set local role service_role';
+  perform public.log_verify_result(a, sid, 'bogus', true, null);
+  perform public.log_verify_result(a, sid, 'stripe', true, 'invalid_key');
+  perform public.log_verify_result(a, sid, 'stripe', false, 'nope');
+  perform public.log_verify_result(b, sid, 'stripe', true, null);
+  for i in 1..60 loop
+    perform public.log_verify_result(a, sid, 'github', true, null);
+  end loop;
+  execute 'reset role';
+  out := out || format('T143 verify_result cap: %s rows for sid (expect 50) | ',
+    (select count(*) from analytics.funnel_events where startup_id = sid and event = 'verify_result'));
+  -- T144: prune deletes only rows older than 180 days.
+  insert into analytics.funnel_events (user_id, attempt_id, event, created_at)
+  values (a, '00000000-0000-4000-8000-0000000000e9', 'add_opened', now() - interval '181 days'),
+         (a, '00000000-0000-4000-8000-0000000000ea', 'add_opened', now() - interval '10 days');
+  execute 'set local role service_role';
+  select public.prune_funnel_events() into n;
+  execute 'reset role';
+  out := out || format('T144 prune deleted %s (expect 1); old left=%s new left=%s (expect 0, 1) | ',
+    n,
+    (select count(*) from analytics.funnel_events where attempt_id = '00000000-0000-4000-8000-0000000000e9'),
+    (select count(*) from analytics.funnel_events where attempt_id = '00000000-0000-4000-8000-0000000000ea'));
+  -- T145: account delete cascades; project delete keeps the row with startup_id = null; definer fns fixed search_path.
+  insert into auth.users (id, email, aud, role)
+  values ('00000000-0000-4000-8000-0000000000f2', 'rls-funnel-del@test.local', 'authenticated', 'authenticated');
+  insert into analytics.funnel_events (user_id, attempt_id, event)
+  values ('00000000-0000-4000-8000-0000000000f2', '00000000-0000-4000-8000-0000000000ec', 'add_opened');
+  delete from auth.users where id = '00000000-0000-4000-8000-0000000000f2';
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  insert into public.startups (owner_id, slug, name, website_url)
+  values (a, 'rls-funnel-proj', 'Funnel', 'https://funnel.test') returning id into pid;
+  execute 'reset role';
+  insert into analytics.funnel_events (user_id, attempt_id, startup_id, event)
+  values (a, '00000000-0000-4000-8000-0000000000eb', pid, 'verify_chose');
+  delete from public.startups where id = pid;
+  out := out || format('T145 cascade: user rows left=%s (expect 0); project row kept=%s startup_id null=%s (expect 1, true) | ',
+    (select count(*) from analytics.funnel_events where attempt_id = '00000000-0000-4000-8000-0000000000ec'),
+    (select count(*) from analytics.funnel_events where attempt_id = '00000000-0000-4000-8000-0000000000eb'),
+    (select startup_id is null from analytics.funnel_events where attempt_id = '00000000-0000-4000-8000-0000000000eb'));
+  out := out || format('T145 definer fns fixed search_path: %s (expect 3) | ',
+    (select count(*) from pg_proc
+       where proname in ('log_add_event', 'log_verify_result', 'prune_funnel_events')
+         and prosecdef and 'search_path=' = any (proconfig)));
+
+  execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;
 end $$;

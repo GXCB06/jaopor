@@ -1006,7 +1006,7 @@
   "Privacy": {
     "metaTitle": "Privacy policy",
     "title": "JaoPor privacy policy",
-    "updated": "Last updated: October 7, 2026",
+    "updated": "Last updated: October 10, 2026",
     "intro": "JaoPor (jaopor.vercel.app) is a directory of things people build with AI, with numbers verified at the source. This page explains what we collect, why, how long we keep it, and what you control.",
     "contact": "Privacy contact:",
     "email": "jaopordev@gmail.com",
@@ -1039,6 +1039,9 @@
           },
           {
             "t": "Product updates, comments and images you post are public. Images are resized and converted in your browser, and location data (EXIF) is removed before upload. A post's author sees who liked it; everyone else sees only the count."
+          },
+          {
+            "t": "When you add a project, we record which steps you completed (for example: opened the form, created the project, chose how to verify your numbers) and the type of error if one happened, linked to your account, so we can find the hard steps and make them easier. We don't record what you type, links or keys. This isn't shown to anyone and is deleted automatically after 180 days, or right away when your account is deleted."
           }
         ]
       },
@@ -1104,7 +1107,7 @@
       },
       {
         "title": "6. What's stored in your browser",
-        "body": "No advertising or cross-site tracking cookies. Stored on your device: the sign-in cookie (signed-in users only), theme, currency, the province you picked in the Olympics, the live map's anonymous ID, and your hide/opt-out choices. You can clear them in your browser settings."
+        "body": "We don't use advertising cookies or cross-site tracking cookies for ads. We use no analytics cookies: JaoPor's visitor counter and our host's Web Analytics (Vercel) run cookie-free. Stored on your device: the sign-in cookie (signed-in users only), theme, currency, the province you picked in the Olympics, the live map's anonymous ID, and your hide/opt-out choices. You can clear them in your browser settings."
       },
       {
         "title": "7. Messages (chat)",
@@ -1125,7 +1128,7 @@
       },
       {
         "title": "8. Services we use",
-        "body": "Vercel (hosting), Supabase (database, sign-in, realtime), Google and GitHub (sign-in), OpenFreeMap (world map images, only when you open it), Google Gemini (when a project owner presses \"Fill from website\", public text from that project's website is sent for a summary), Frankfurter (exchange rates, server-side, no user data)."
+        "body": "Vercel (hosting; also cookie-free Web Analytics with no personal data), Supabase (database, sign-in, realtime), Google and GitHub (sign-in), OpenFreeMap (world map images, only when you open it), Google Gemini (when a project owner presses \"Fill from website\", public text from that project's website is sent for a summary), Frankfurter (exchange rates, server-side, no user data)."
       },
       {
         "title": "9. Deleting your data",
