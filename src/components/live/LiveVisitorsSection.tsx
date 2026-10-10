@@ -166,7 +166,7 @@ export function LiveVisitorsSection() {
         </div>
       </div>
 
-      <div className="relative h-[420px] sm:h-[460px]">
+      <div className="relative h-[420px] sm:h-[460px]" data-live-map>
         {/* Map */}
         {world ? (
           <WorldMap visitors={all} />

@@ -17,7 +17,6 @@ import { lookingForActions } from "@/lib/looking-for";
 import { SOURCE_KIND, SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { StatCard } from "../ProfileBlocks";
 import { GrowthValue } from "../StartupBits";
-import { Card } from "../core/Card";
 import { cn } from "@/lib/utils";
 import { EmptyOwnerCard, OwnerOnly, VisitorOnly } from "./Owner";
 
@@ -250,39 +249,25 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
     },
   ];
 
-  const section = (
-    <section className="space-y-3">
-      <h2 className="text-sm font-bold">{t("traction")}</h2>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
-        {tiles.map((x) =>
-          x.card ? (
-            <div key={x.key} className={x.span}>
-              {x.card}
-            </div>
-          ) : (
-            <EmptyOwnerCard
-              key={x.key}
-              field={x.anchor}
-              label={x.label}
-              className={x.span}
-            />
-          ),
-        )}
-      </div>
-      {startup.build_story ? (
-        <Card className="space-y-2 p-4">
-          <p className="text-2xs font-bold tracking-wider text-faint uppercase">
-            {t("buildStory")}
-          </p>
-          <p className="font-prose text-xs leading-relaxed whitespace-pre-line">
-            “{startup.build_story}”
-          </p>
-        </Card>
-      ) : (
-        <EmptyOwnerCard field="build_story" label={t("buildStory")} />
+  const grid = (
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
+      {tiles.map((x) =>
+        x.card ? (
+          <div key={x.key} className={x.span}>
+            {x.card}
+          </div>
+        ) : (
+          <EmptyOwnerCard
+            key={x.key}
+            field={x.anchor}
+            label={x.label}
+            className={x.span}
+          />
+        ),
       )}
-    </section>
+    </div>
   );
-  const hasData = tiles.some((x) => x.card) || Boolean(startup.build_story);
-  return hasData ? section : <OwnerOnly>{section}</OwnerOnly>;
+  // Item 6: the tiles are the "proof" half and carry the verified / counted captions; the build
+  // story lives in the Story container. Visitors with no numbers see nothing.
+  return tiles.some((x) => x.card) ? grid : <OwnerOnly>{grid}</OwnerOnly>;
 }

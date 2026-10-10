@@ -253,7 +253,7 @@ export function MetricChart({
               tickLine={false}
               axisLine={false}
               minTickGap={28}
-              tick={{ fill: "var(--faint)", fontSize: 10 }}
+              tick={{ fill: "var(--faint)", fontSize: 12 }}
             />
             <YAxis
               width={52}
@@ -263,7 +263,7 @@ export function MetricChart({
               tickFormatter={(v: number) => fmt(v)}
               tickLine={false}
               axisLine={false}
-              tick={{ fill: "var(--faint)", fontSize: 10 }}
+              tick={{ fill: "var(--faint)", fontSize: 12 }}
             />
             <Tooltip
               cursor={{ stroke: "var(--faint)", strokeDasharray: "3 3" }}

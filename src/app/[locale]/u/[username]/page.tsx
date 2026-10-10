@@ -103,8 +103,9 @@ export default async function BuilderProfilePage({
   const yearParam = Number(Array.isArray(sp.year) ? sp.year[0] : sp.year);
   const thisYear = new Date().getUTCFullYear();
   const year = yearParam === thisYear - 1 ? yearParam : null;
-  const [t, page, thbPerUsd, olympics, counts, posts] = await Promise.all([
+  const [t, c, page, thbPerUsd, olympics, counts, posts] = await Promise.all([
     getTranslations("Builder"),
+    getTranslations("Common"),
     getBuilderPage(profile, year),
     getThbPerUsd(),
     getProvinceLeaderboard(DEFAULT_METRIC),
@@ -230,6 +231,167 @@ export default async function BuilderProfilePage({
         query: { next: `/${locale}/u/${profile.handle}?contact=1` },
       };
 
+  // Item 9 (B1.1): everything that is not the identity header — social links, badges, skills,
+  // tools and the report action — is the sidebar on desktop but moves below the main content on
+  // phones, so a visitor reaches what the founder built within the first screens.
+  const extrasContent = (
+    <>
+      {profile.bio && (
+        <p className="font-prose text-body leading-relaxed">{profile.bio}</p>
+      )}
+
+      <ul className="space-y-2.5">
+        {role &&
+          infoRow(
+            <BriefcaseIcon className="size-4" aria-hidden="true" />,
+            role.company ? `${role.title} @ ${role.company}` : role.title,
+            "role",
+          )}
+        {socials.website &&
+          infoRow(
+            <GlobeIcon className="size-4" aria-hidden="true" />,
+            <a
+              href={socials.website}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className={ext}
+            >
+              {socials.website.replace(/^https:\/\/(www\.)?/, "")}
+            </a>,
+            "website",
+          )}
+        {profile.x_handle &&
+          infoRow(
+            <span className="text-sm font-bold">𝕏</span>,
+            <a
+              href={`https://x.com/${profile.x_handle}`}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className={ext}
+            >
+              @{profile.x_handle}
+            </a>,
+            "x",
+          )}
+        {(["linkedin", "github", "facebook", "youtube", "tiktok"] as const).map(
+          (k) =>
+            socials[k]
+              ? infoRow(
+                  <LinkIcon className="size-4" aria-hidden="true" />,
+                  <a
+                    href={socials[k]}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className={ext}
+                  >
+                    {t(`social.${k}`)}
+                  </a>,
+                  k,
+                )
+              : null,
+        )}
+        {page.contacts && (page.contacts.line_id || page.contacts.email) ? (
+          <>
+            {page.contacts.line_id &&
+              infoRow(
+                <MessageCircleIcon className="size-4" aria-hidden="true" />,
+                `LINE: ${page.contacts.line_id}`,
+                "line",
+              )}
+            {page.contacts.email &&
+              infoRow(
+                <MailIcon className="size-4" aria-hidden="true" />,
+                <a href={`mailto:${page.contacts.email}`} className={ext}>
+                  {page.contacts.email}
+                </a>,
+                "email",
+              )}
+          </>
+        ) : (
+          !isOwner &&
+          infoRow(
+            <LockIcon className="size-4" aria-hidden="true" />,
+            <Link href={contactHref} className="text-brand-text hover:underline">
+              {t("askContacts")}
+            </Link>,
+            "locked",
+          )
+        )}
+      </ul>
+
+      {earned.length > 0 && (
+        <section className="space-y-3 border-t pt-5">
+          <h2 className="text-sm font-bold">{t("badgesTitle")}</h2>
+          <ul className="grid grid-cols-4 gap-2 text-center">
+            {earned.map((b) => (
+              <BadgeItem key={b.key} badge={b} label={badgeLabel(t, b)} />
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {page.skills.length > 0 ? (
+        <section className="space-y-3 border-t pt-5">
+          <h2 className="flex items-center justify-between gap-2 text-sm font-bold">
+            {t("skillsTitle")}
+            {editLink("skills")}
+          </h2>
+          {[true, false].map((top) => {
+            const list = page.skills.filter((s) => s.is_superpower === top);
+            return list.length ? (
+              <ul key={String(top)} className="flex flex-wrap gap-1.5">
+                {list.map((s) => {
+                  const def = getSkill(s.skill_slug);
+                  if (!def) return null;
+                  return (
+                    <li
+                      key={s.skill_slug}
+                      className={cn(
+                        "rounded-full border",
+                        top
+                          ? "border-brand bg-brand/15 px-3 py-1 text-caption font-bold text-brand-text"
+                          : "bg-card px-2.5 py-0.5 text-2xs text-muted-foreground",
+                      )}
+                    >
+                      {localizedName(def, locale)}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null;
+          })}
+        </section>
+      ) : (
+        empty("skills", t("addSkills"))
+      )}
+
+      {(() => {
+        const tools = [...new Set(works.flatMap((w) => w.ai_tools))].filter(
+          isAiTool,
+        );
+        return tools.length ? (
+          <section className="space-y-3 border-t pt-5">
+            <h2 className="text-sm font-bold">{t("builtWith")}</h2>
+            <ul className="flex flex-wrap gap-1.5">
+              {tools.map((tool) => (
+                <li
+                  key={tool}
+                  className="rounded-full border bg-secondary px-2.5 py-0.5 text-caption"
+                >
+                  {aiToolLabel(tool, locale)}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null;
+      })()}
+
+      {page.viewer && !isOwner && (
+        <ReportDialog targetType="user" targetId={profile.id} />
+      )}
+    </>
+  );
+
   return (
     <main className="mx-auto w-full max-w-6xl px-4 pt-6 pb-16">
       <ProfileViewBeacon profileId={profile.id} />
@@ -288,11 +450,6 @@ export default async function BuilderProfilePage({
               </p>
             )}
             <StatusPill status={profile.status} />
-            {profile.bio && (
-              <p className="pt-1 font-prose text-body leading-relaxed">
-                {profile.bio}
-              </p>
-            )}
             {editLink("basics")}
           </div>
 
@@ -324,9 +481,9 @@ export default async function BuilderProfilePage({
             {t("following")}
           </p>
 
-          <ul className="space-y-2.5">
-            {province &&
-              infoRow(
+          {province && (
+            <ul className="space-y-2.5">
+              {infoRow(
                 <MapPinIcon className="size-4" aria-hidden="true" />,
                 <Link href={`/province/${province.slug}`} className={ext}>
                   {localizedName(province, locale)}
@@ -338,158 +495,52 @@ export default async function BuilderProfilePage({
                 </Link>,
                 "province",
               )}
-            {role &&
-              infoRow(
-                <BriefcaseIcon className="size-4" aria-hidden="true" />,
-                role.company ? `${role.title} @ ${role.company}` : role.title,
-                "role",
-              )}
-            {socials.website &&
-              infoRow(
-                <GlobeIcon className="size-4" aria-hidden="true" />,
-                <a
-                  href={socials.website}
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                  className={ext}
-                >
-                  {socials.website.replace(/^https:\/\/(www\.)?/, "")}
-                </a>,
-                "website",
-              )}
-            {profile.x_handle &&
-              infoRow(
-                <span className="text-sm font-bold">𝕏</span>,
-                <a
-                  href={`https://x.com/${profile.x_handle}`}
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                  className={ext}
-                >
-                  @{profile.x_handle}
-                </a>,
-                "x",
-              )}
-            {(
-              ["linkedin", "github", "facebook", "youtube", "tiktok"] as const
-            ).map((k) =>
-              socials[k]
-                ? infoRow(
-                    <LinkIcon className="size-4" aria-hidden="true" />,
-                    <a
-                      href={socials[k]}
-                      target="_blank"
-                      rel="noopener noreferrer nofollow"
-                      className={ext}
+            </ul>
+          )}
+
+          {/* Item 9 (B1.1): a one-row skill preview on phones; the full list is below the main
+              content, reached with "ดูทั้งหมด". */}
+          {page.skills.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5 lg:hidden">
+              {page.skills
+                .filter((s) => s.is_superpower)
+                .slice(0, 4)
+                .map((s) => {
+                  const def = getSkill(s.skill_slug);
+                  return def ? (
+                    <span
+                      key={s.skill_slug}
+                      className="rounded-full border border-brand bg-brand/15 px-2.5 py-0.5 text-caption font-bold text-brand-text"
                     >
-                      {t(`social.${k}`)}
-                    </a>,
-                    k,
-                  )
-                : null,
-            )}
-            {page.contacts && (page.contacts.line_id || page.contacts.email) ? (
-              <>
-                {page.contacts.line_id &&
-                  infoRow(
-                    <MessageCircleIcon className="size-4" aria-hidden="true" />,
-                    `LINE: ${page.contacts.line_id}`,
-                    "line",
-                  )}
-                {page.contacts.email &&
-                  infoRow(
-                    <MailIcon className="size-4" aria-hidden="true" />,
-                    <a href={`mailto:${page.contacts.email}`} className={ext}>
-                      {page.contacts.email}
-                    </a>,
-                    "email",
-                  )}
-              </>
-            ) : (
-              !isOwner &&
-              infoRow(
-                <LockIcon className="size-4" aria-hidden="true" />,
-                <Link
-                  href={contactHref}
-                  className="text-brand-text hover:underline"
-                >
-                  {t("askContacts")}
-                </Link>,
-                "locked",
-              )
-            )}
-          </ul>
-
-          {earned.length > 0 && (
-            <section className="space-y-3 border-t pt-5">
-              <h2 className="text-sm font-bold">{t("badgesTitle")}</h2>
-              <ul className="grid grid-cols-4 gap-2 text-center">
-                {earned.map((b) => (
-                  <BadgeItem key={b.key} badge={b} label={badgeLabel(t, b)} />
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {page.skills.length > 0 ? (
-            <section className="space-y-3 border-t pt-5">
-              <h2 className="flex items-center justify-between gap-2 text-sm font-bold">
-                {t("skillsTitle")}
-                {editLink("skills")}
-              </h2>
-              {[true, false].map((top) => {
-                const list = page.skills.filter((s) => s.is_superpower === top);
-                return list.length ? (
-                  <ul key={String(top)} className="flex flex-wrap gap-1.5">
-                    {list.map((s) => {
-                      const def = getSkill(s.skill_slug);
-                      if (!def) return null;
-                      return (
-                        <li
-                          key={s.skill_slug}
-                          className={cn(
-                            "rounded-full border",
-                            top
-                              ? "border-brand bg-brand/15 px-3 py-1 text-caption font-bold text-brand-text"
-                              : "bg-card px-2.5 py-0.5 text-2xs text-muted-foreground",
-                          )}
-                        >
-                          {localizedName(def, locale)}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : null;
-              })}
-            </section>
-          ) : (
-            empty("skills", t("addSkills"))
-          )}
-
-          {(() => {
-            const tools = [...new Set(works.flatMap((w) => w.ai_tools))].filter(
-              isAiTool,
-            );
-            return tools.length ? (
-              <section className="space-y-3 border-t pt-5">
-                <h2 className="text-sm font-bold">{t("builtWith")}</h2>
-                <ul className="flex flex-wrap gap-1.5">
-                  {tools.map((tool) => (
-                    <li
-                      key={tool}
-                      className="rounded-full border bg-secondary px-2.5 py-0.5 text-caption"
+                      {localizedName(def, locale)}
+                    </span>
+                  ) : null;
+                })}
+              {page.skills
+                .filter((s) => !s.is_superpower)
+                .slice(0, 4)
+                .map((s) => {
+                  const def = getSkill(s.skill_slug);
+                  return def ? (
+                    <span
+                      key={s.skill_slug}
+                      className="rounded-full border bg-card px-2.5 py-0.5 text-2xs text-muted-foreground"
                     >
-                      {aiToolLabel(tool, locale)}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ) : null;
-          })()}
-
-          {page.viewer && !isOwner && (
-            <ReportDialog targetType="user" targetId={profile.id} />
+                      {localizedName(def, locale)}
+                    </span>
+                  ) : null;
+                })}
+              <a
+                href="#profile-extras"
+                className="text-caption text-muted-foreground hover:text-foreground"
+              >
+                {c("viewAll")} ›
+              </a>
+            </div>
           )}
+
+          {/* Sidebar extras — desktop only; on phones the same content sits below the main column. */}
+          <div className="hidden space-y-6 lg:block">{extrasContent}</div>
         </aside>
 
         {/* Main */}
@@ -890,42 +941,6 @@ export default async function BuilderProfilePage({
             )
           )}
 
-          {/* Product updates (Phase 10) */}
-          {posts.length > 0 ? (
-            <section className="space-y-3">
-              <div className="flex items-baseline justify-between gap-3">
-                <h2 className="text-base font-bold">{t("updatesTitle")}</h2>
-                <Link
-                  href="/feed"
-                  className="text-caption text-muted-foreground hover:text-foreground"
-                >
-                  {t("seeFeed")} →
-                </Link>
-              </div>
-              <div className="gap-4 md:columns-2 [&>*]:mb-4 [&>*]:break-inside-avoid">
-                {posts.map((p) => (
-                  <PostCard
-                    key={p.id}
-                    post={p}
-                    viewerId={page.viewer}
-                    variant="profile"
-                    now={now}
-                  />
-                ))}
-              </div>
-            </section>
-          ) : (
-            isOwner && (
-              <Link
-                href="/dashboard"
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-brand/50 px-4 py-6 text-caption text-brand-text hover:bg-brand/5"
-              >
-                <PlusIcon className="size-4" aria-hidden="true" />
-                {t("firstPost")}
-              </Link>
-            )
-          )}
-
           {page.positions.length > 0 ? (
             <Card className="space-y-4 p-5">
               <h2 className="flex items-center gap-2 text-base font-bold">
@@ -970,6 +985,47 @@ export default async function BuilderProfilePage({
           ) : (
             empty("experience", t("addExperience"))
           )}
+
+          {/* Product updates (Phase 10) */}
+          {posts.length > 0 ? (
+            <section className="space-y-3">
+              <div className="flex items-baseline justify-between gap-3">
+                <h2 className="text-base font-bold">{t("updatesTitle")}</h2>
+                <Link
+                  href="/feed"
+                  className="text-caption text-muted-foreground hover:text-foreground"
+                >
+                  {t("seeFeed")} →
+                </Link>
+              </div>
+              <div className="gap-4 md:columns-2 [&>*]:mb-4 [&>*]:break-inside-avoid">
+                {posts.map((p) => (
+                  <PostCard
+                    key={p.id}
+                    post={p}
+                    viewerId={page.viewer}
+                    variant="profile"
+                    now={now}
+                  />
+                ))}
+              </div>
+            </section>
+          ) : (
+            isOwner && (
+              <Link
+                href="/dashboard"
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-brand/50 px-4 py-6 text-caption text-brand-text hover:bg-brand/5"
+              >
+                <PlusIcon className="size-4" aria-hidden="true" />
+                {t("firstPost")}
+              </Link>
+            )
+          )}
+
+          {/* Item 9 (B1.1): the sidebar extras, below the main content on phones. */}
+          <div id="profile-extras" className="space-y-6 lg:hidden">
+            {extrasContent}
+          </div>
         </div>
       </div>
     </main>

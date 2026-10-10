@@ -64,22 +64,23 @@ Semantic tokens (never raw `emerald-*`/`red-*`/`amber-*`):
 
 - **Font:** `JetBrains Mono` (Latin, `next/font`, `--font-jetbrains`) → `IBM Plex Sans Thai` (Thai glyphs) → `ui-monospace`. `:lang(th)` line-height 1.6.
 - **Prose (2026-10-07, owner-approved; UX review: long Thai paragraphs in monospace were tiring to read):** long-form text people write uses `font-prose` = `IBM Plex Sans Thai` (Latin + Thai) → `ui-sans-serif`. Applies to: startup tagline + description on the profile, founder message, build story, insight paragraphs, post and comment bodies, chat messages, builder bio, request messages. Everything else stays monospace: numbers, labels, chips, headings, cards, tables, milestone headlines.
-- **Scale:** `html { font-size: 112.5% }` (1rem = 18px; user feedback "too small at 100%"). Figma px sizes are written as rem (px ÷ 16), so the whole Figma layout renders 12.5% larger and stays proportional. Custom steps in `@theme`: `text-3xs` 9px · `text-2xs` 10px · `text-caption` 11px · `text-body` 13px (plus Tailwind `text-xs` 12px, `text-sm` 14px).
+- **Scale:** `html { font-size: 112.5% }` (1rem = 18px; user feedback "too small at 100%"). Figma px sizes are written as rem (px ÷ 16), so the whole Figma layout renders 12.5% larger and stays proportional. Custom steps in `@theme`: `text-3xs` 12px · `text-2xs` 12px · `text-caption` 12.4px · `text-body` 14.6px (plus Tailwind `text-xs` 13.5px, `text-sm` 15.8px) — the px shown are **rendered** CSS px.
+- **Floor: 12px, no exceptions for visible text (2026-10-10, UX audit A3).** Thai loses its vowel and tone marks below 12px, so `text-3xs` and `text-2xs` are both pinned at the 12px floor (0.6667rem) and only Latin/uppercase micro-labels or counters use them — never Thai words. `text-caption` (12.4px) is the smallest Thai-capable step. Chart axis ticks use 12px too. The one exception is SVG `<text>` inside the live map, which scales with the drawing (§3 Consistency rules). `e2e/readability.spec.ts` fails any visible text inside `<main>` under 12px.
 
-| Role                      | Classes (Figma px)                                                                                               |
+| Role                      | Classes (rendered px)                                                                                            |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Brand pill (hero)         | mark `size-4` + `text-xs font-semibold tracking-wide` (12)                                                       |
-| Hero H1                   | `text-2xl md:text-[2.125rem] font-bold tracking-tight leading-tight` (34)                                        |
-| Hero subline              | `text-body text-muted-foreground` (13); inline link `text-foreground underline`                                  |
-| Page H1 (profile)         | `text-2xl font-bold tracking-tight` (24)                                                                         |
-| Section H2                | `text-sm font-bold` (14) + "View all ›" `text-caption text-faint` on the right                                   |
-| Card title                | `text-xs font-semibold truncate` (12); large card `text-body font-bold` (13)                                     |
-| Metric label              | `text-3xs font-semibold uppercase tracking-wider text-faint` (9)                                                 |
-| Metric value (card)       | `text-2xs font-bold tabular-nums` (10) — large card same                                                         |
-| Table header              | `text-2xs font-bold uppercase tracking-wider text-faint` (10)                                                    |
+| Brand pill (hero)         | mark `size-4` + `text-xs font-semibold tracking-wide` (13.5)                                                     |
+| Hero H1                   | `text-2xl md:text-[2.125rem] font-bold tracking-tight leading-tight` (38)                                        |
+| Hero subline              | `text-body text-muted-foreground` (14.6); inline link `text-foreground underline`                                |
+| Page H1 (profile)         | `text-2xl font-bold tracking-tight` (27)                                                                         |
+| Section H2                | `text-sm font-bold` (15.8) + "View all ›" `text-caption text-faint` on the right                                 |
+| Card title                | `text-xs font-semibold truncate` (13.5); large card `text-body font-bold` (14.6)                                 |
+| Metric label              | `text-2xs font-semibold uppercase tracking-wider text-faint` (12, Latin only)                                    |
+| Metric value (card)       | `text-2xs font-bold tabular-nums` (12) — large card same                                                         |
+| Table header              | `text-2xs font-bold uppercase tracking-wider text-faint` (12, Latin only)                                        |
 | Tile label / value / note | `text-caption uppercase tracking-wider text-faint` · `text-2xl font-bold` · `text-caption text-muted-foreground` |
-| Chart headline            | `text-3xl font-bold tabular-nums` (30)                                                                           |
-| Body                      | `text-xs` (12) in cards/insights, `text-body` (13) for descriptions                                              |
+| Chart headline            | `text-3xl font-bold tabular-nums` (34)                                                                           |
+| Body                      | `text-xs` (13.5) in cards/insights, `text-body` (14.6) for descriptions                                          |
 | Prose (long-form text)    | `font-prose` + the size above; never on numbers                                                                  |
 
 Numbers are always `tabular-nums`. Money is compact on cards (`$4.3k`) and full on the profile (`$14,903`).
@@ -252,7 +253,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 - Breadcrumb `text-2xs text-faint`: `JaoPor › Startups › {name}` (last item `text-foreground`).
 - Row: logo 72 `rounded-2xl border` · name (`text-2xl font-bold`) + founding badge + `VerifiedBadge` · description paragraph `font-prose text-body text-muted-foreground max-w-2xl` (tagline, then the long description). Below `sm` the logo sits **above** the name (`flex-col`, 2026-10-07: beside it, the logo column squeezed the text into a narrow strip on phones). Right side actions: **Share** (outline-card button, opens ShareStudio) and **Visit ↗** (primary; the first project link).
-- **Numbers first (2026-10-08, UX audit M-6):** the StatCard row (or TractionTiles when there is no verified revenue) comes **directly under the header** at every width; ProjectLinks, the LookingForBanner and the demo strip follow the numbers, before the chart. (On a 375 px phone the first screen used to hold no number.)
+- **Numbers first (2026-10-08, UX audit M-6; order refined 2026-10-10, master audit item 6):** the StatCard row comes **directly under the header** at every width (tiles with no data drop out); ProjectLinks and the LookingForBanner follow, then the **Proof** container (chart + traction tiles), then **Story** (why + build story + facts), screenshots, founder message, updates. `TractionTiles` no longer sits above the header row for revenue-less projects — it lives in Proof. (On a 375 px phone the first screen used to hold no number.)
 - **Long description on phones:** below `sm` the description shows 4 lines (`line-clamp-4`) with a `text-caption text-brand-text` "อ่านต่อ" / "ย่อ" toggle (only when it is longer than about 160 characters); full text from `sm`.
 - Under the numbers: other ProjectLinks (small outline buttons) and the LookingForBanner.
 
@@ -281,12 +282,15 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 - `text-caption text-muted-foreground`, centered line: brand check icon · "Revenue is verified with **{Source}** API key. Last updated: {datetime}". Stale (> 48h) or error → amber text.
 
-### InsightsGrid ("ข้อมูลเชิงลึก" bento, spec 6.4 step 6, Phase 2)
+### Proof container ("ตัวเลขที่ยืนยัน / นับได้", master audit item 6, 2026-10-10)
 
-- H2, then **Value proposition** full width, then `grid lg:grid-cols-2 gap-3.5` of two stacked columns (1 column below `lg`):
-  - Left: กลุ่มลูกค้า (B2B/B2C chip + "~N ผู้ใช้" when active users are known) · ราคา · ขนาดทีม · เงินทุน · ช่องทางการตลาด (**logo chips**).
-  - Right: ปัญหาที่แก้ · ตลาด (category chip with its lucide icon) · เทคโนโลยีที่ใช้ (**logo chips grouped under muted sub-labels**, empty groups skipped) · สร้างด้วย (AI tool logo chips).
-- Cards are `InsightCard` (40px icon box). Empty-state rule: visitors see only cards with data; the owner sees `EmptyOwnerCard` prompts in the same slots.
+- `section.space-y-3` with an H2, holding **only** evidence: the revenue / MRR / visitors chart card (which carries the "verified by / counted by" stamps) and `TractionTiles` (ผู้เข้าชม 30 วัน · ผู้ใช้ที่แอคทีฟ · หลักฐานการสร้าง with their via / counted-by captions). Evidence together, separate from the narrative.
+- Hidden from visitors when it holds no number (`hasProof`); the owner always sees the heading plus `EmptyOwnerCard` prompts. Nothing verified → the chart slot is the owner's "+ เชื่อมต่อ Stripe" prompt, never an empty card for visitors.
+
+### StorySection ("เรื่องราวของผลงาน", master audit item 6, 2026-10-10 — replaces InsightsGrid)
+
+- H2, then the narrative in order: **ปัญหาที่แก้ → คุณค่าที่มอบให้ → กลุ่มลูกค้า** (the "why"), then the founder's **build story** (เรื่องการสร้าง, a quoted prose card), then the remaining facts as a compact `grid lg:grid-cols-2 gap-3.5`: ราคา · ตลาด (category chip with its lucide icon) · ขนาดทีม · เงินทุน · ช่องทางการตลาด (logo chips) · เทคโนโลยีที่ใช้ (logo chips grouped under muted sub-labels, empty groups skipped) · สร้างด้วย (AI tool logo chips).
+- Cards are `InsightCard` (40px icon box). Empty-state rule: visitors see only filled parts; the owner sees `EmptyOwnerCard` prompts in the same slots. Previously the build story sat inside `TractionTiles` and the "why" in `InsightsGrid` at the very bottom, splitting the story in two.
 - **LogoChip:** `inline-flex items-center gap-1.5 rounded-full border bg-secondary px-2.5 py-0.5 text-caption` + 14px glyph. Glyph = Simple Icons path in the brand colour, or `--foreground`-ish fallback when the brand colour has < 3:1 contrast on that theme's card (precomputed `fgDark`/`fgLight` in `lib/config/glyphs.ts`); brands without a Simple Icon use their lucide icon in `text-muted-foreground`; custom entries use `Tag`.
 
 ### FounderMessage (spec 6.4 step 5)
@@ -502,8 +506,10 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 ### Builder profile v2 (`/u/[username]`, also `/@username`; Phase 10e, Figma "Founder Prfile 2nd" 160-2)
 
 - Breadcrumb (JaoPor › คนสร้าง › name, `text-2xs text-faint`), then `lg:grid-cols-[296px_minmax(0,1fr)] gap-12`; the sidebar is `lg:sticky lg:top-20` and stacks above the main column below `lg`.
-- **Sidebar:** avatar 144 (240 at `lg`) with a status dot · name `text-2xl font-bold` · `@handle` · **proof line** "{n} ผลงาน · {v} ยืนยันแล้ว · สร้างมา {m} เดือน" (`text-caption text-muted-foreground tabular-nums`, parts with no data left out) · headline · StatusPill · bio · ProfileActions · followers with the 30-day gain in positive ("128 ผู้ติดตาม +12 · 42 กำลังติดตาม") · info list · badges (round, grid of 4) · skills: superpowers as large chips (`border-brand bg-brand/15 px-3 py-1 font-bold text-brand-text`), the rest small (`bg-card px-2.5 text-2xs`) · "สร้างด้วย" · report.
-- **Main:** looking-for card → **4 stat tiles** (MRR รวม "จาก n ผลงานที่ยืนยัน" · รายได้ทั้งหมด "ตั้งแต่เริ่มขาย" · GitHub ★ "n commits" · อัปเดตผลงาน "โพสต์ใน 6 เดือน"; zero tiles hidden) → **revenue / activity card** (see "Profile revenue dashboard" below; "กิจกรรมการสร้าง" = the heatmap; no verified revenue → visitors see the heatmap alone, the owner sees both tabs with a "connect a payment provider" prompt) → pinned works (4, "ดูทั้งหมด n ›" shows the rest in place via `?works=all`) → **อัปเดตผลงาน** (latest 4 PostCards, `variant="profile"`, `md:columns-2` masonry, "ดูฟีดทั้งหมด →") → experience (`sm:grid-cols-2 lg:grid-cols-3`, each entry `border-l-2 pl-3.5`, the current role `border-brand`).
+- **Sidebar:** avatar 144 (240 at `lg`) with a status dot · name `text-2xl font-bold` · `@handle` · **proof line** "{n} ผลงาน · {v} ยืนยันแล้ว · สร้างมา {m} เดือน" (`text-caption text-muted-foreground tabular-nums`, parts with no data left out) · headline · StatusPill · bio · ProfileActions (ติดต่อ / ติดตาม + "แชร์โปรไฟล์") · followers with the 30-day gain in positive ("128 ผู้ติดตาม +12 · 42 กำลังติดตาม") · info list · badges (round, grid of 4) · skills: superpowers as large chips (`border-brand bg-brand/15 px-3 py-1 font-bold text-brand-text`), the rest small (`bg-card px-2.5 text-2xs`) · "สร้างด้วย" · report.
+- **Main:** looking-for card → **4 stat tiles** (MRR รวม "จาก n ผลงานที่ยืนยัน" · รายได้ทั้งหมด "ตั้งแต่เริ่มขาย" · GitHub ★ "n commits" · อัปเดตผลงาน "โพสต์ใน 6 เดือน"; zero tiles hidden) → **revenue / activity card** (see "Profile revenue dashboard" below; "กิจกรรมการสร้าง" = the heatmap; no verified revenue → visitors see the heatmap alone, the owner sees both tabs with a "connect a payment provider" prompt) → pinned works (4, "ดูทั้งหมด n ›" shows the rest in place via `?works=all`) → experience (`sm:grid-cols-2 lg:grid-cols-3`, each entry `border-l-2 pl-3.5`, the current role `border-brand`) → **อัปเดตผลงาน** (latest 4 PostCards, `variant="profile"`, `md:columns-2` masonry, "ดูฟีดทั้งหมด →").
+- **Phone order (2026-10-10, master audit item 9):** below `lg` the sidebar keeps only identity — photo, name, proof line, headline, StatusPill, actions, followers, province — plus a skill preview that links to `#profile-extras`; bio, links, badges, the full skills list, "สร้างด้วย" and report move to the bottom of the main column (`#profile-extras`). The main column leads with looking-for → proof → revenue → pinned works → **experience → อัปเดตผลงาน** (experience moved above the feed so the founder's history isn't buried under posts).
+- **Share (2026-10-10, item 11):** a full-width "แชร์โปรไฟล์" button sits under the actions (the owner sees it under "แก้ไขโปรไฟล์"): the native Web Share sheet on phones, otherwise it copies the canonical `/{locale}/@handle` link (Instagram as a profile link is still pending the review it needs).
 - **Edit in place (owner):** each section title gets a small "✎ แก้ไข" link (`text-2xs text-faint`) to `/dashboard/profile#{section}`, which opens the editor on exactly that section. Visitors never see empty sections; the owner gets dashed "+ เพิ่ม…" prompts (incl. "โพสต์อัปเดตผลงานแรกของคุณ" → dashboard composer).
 - Contact dialog, report dialog and the profile-view beacon are unchanged (Phase 9b).
 

@@ -12,6 +12,62 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-10 — Google Analytics 4 (gtag.js) on production + privacy disclosure
+
+**Done:**
+
+- **GA4 installed** (`src/app/[locale]/layout.tsx`, `src/lib/analytics.ts` (new)): the tag (`G-JYPJ2RFH4N`, pasted by the owner) loads via `next/script` (`afterInteractive`) in the localized root layout — gtag.js plus an inline `ga-init` that boots `dataLayer` and calls `gtag("config", …)`. **Production only**, mirroring the `/v.js` self-counter, so dev and e2e never send hits. `NEXT_PUBLIC_GA_ID` overrides the ID; empty or `"off"` disables it without a code change (unset → JaoPor's property). Documented in `.env.example`.
+- **Privacy policy updated (th + en)**: §6 "ข้อมูลที่เก็บในเบราว์เซอร์ของคุณ" now discloses the Google Analytics cookies (`_ga`) while keeping the no-advertising / no-cross-site-tracking-**for-ads** promise; §8 "บริการภายนอกที่เราใช้" lists Google Analytics (traffic statistics on page view); the "last updated" date is bumped to 2026-10-10.
+- **New test** (`src/lib/analytics.test.ts`): default/override/disable parsing, the production-only gate, and the init snippet.
+
+**Not changed / still open:**
+
+- **No consent banner.** The tag loads before any consent step; **PDPA / EU consent remains an owner decision** (Project.md §7 flagged it). No migration; no production data or settings change; no deploy.
+
+**Verified:** `npx vitest run` → 437 passed / 17 skipped (new `analytics.test.ts` 6 cases; `messages.test.ts` th↔en parity passes); `npm run typecheck` ✓; `npm run lint` ✓; `npm run build` ✓ (56/56). The production prerender carries the tag: `.next/server/app/th.html` contains `<link rel="preload" href="https://www.googletagmanager.com/gtag/js?id=G-JYPJ2RFH4N" as="script"/>`.
+
+**Files:** `src/lib/analytics.ts` (new) · `src/lib/analytics.test.ts` (new) · `src/app/[locale]/layout.tsx` · `.env.example` · `messages/th.json` · `messages/en.json` · `Project.md` (§7 open item).
+
+**Next:** owner decision on PDPA/consent (consent banner vs. cookie-free Vercel Web Analytics vs. the planned first-party funnel); then resume the master audit at B2 (charts / settings).
+
+## 2026-10-10 — UX master audit phase B1: founder profile order, share, project Proof/Story
+
+**Done:**
+
+- **Item 9 — founder profile order (P0 on phones)** (`src/app/[locale]/u/[username]/page.tsx`): below `lg` the sidebar now keeps only identity (photo, name, proof line, headline, StatusPill, actions, followers, province) plus a skill preview that links to `#profile-extras`; bio, links, badges, the full skills list, "สร้างด้วย" and report move to the **bottom of the main column** (`#profile-extras`). The main column leads with looking-for → proof strip → revenue card → pinned works → **experience → อัปเดตผลงาน** (experience moved above the feed so a founder's history isn't buried under posts). Desktop keeps the old sticky sidebar.
+- **Item 11 — Share on profiles (P2)** (`components/builder/ProfileShareButton.tsx`, `ProfileActions.tsx`): a full-width "แชร์โปรไฟล์" button under the actions (owner sees it under "แก้ไขโปรไฟล์"): the native **Web Share** sheet when available, otherwise it copies the canonical `/{locale}/@handle` short link. Instagram-as-a-link is deferred (needs a validation-trigger migration, reviewed separately).
+- **Item 6 — project page Proof / Story (P1)** (`page.tsx`, `ProfileBlocks.tsx`, `profile/ProjectBlocks.tsx`): the chart (with its verified-by / counted-by stamps) and `TractionTiles` now sit together in one **"ตัวเลขที่ยืนยัน / นับได้"** container; the narrative moved into one **"เรื่องราวของผลงาน"** container — ปัญหาที่แก้ → คุณค่าที่มอบให้ → กลุ่มลูกค้า, then the founder's build story, then the remaining facts (ราคา · ตลาด · ขนาดทีม · เงินทุน · ช่องทาง · เทคโนโลยี · สร้างด้วย). `InsightsGrid` (which split the "why" to the very bottom) is gone; the build story no longer lives inside the traction tiles. Order is now Proof → Story → screenshots → founder message → updates → more. Proof is hidden from visitors when it holds no number; nothing empty is shown to visitors.
+
+**Not changed:**
+
+- no migration; no production data or settings; no auth change; no deploy;
+- Instagram link support (flagged for a separate migration review): untouched.
+
+**Verified:** `npx vitest run` → 431 passed / 17 skipped; `npm run typecheck` ✓; `npm run lint` ✓; `npm run build` ✓ (56/56). `npx playwright test e2e/project.spec.ts` → **4 passed** (th + en × desktop & 375: "Proof before Story before updates" on a real project page). `e2e/readability.spec.ts` + `e2e/pages.spec.ts` + `e2e/numbers.spec.ts` → **76 passed / 10 skipped**, no horizontal scroll, no raw keys. `e2e/profile.spec.ts` (new, item 9): loads clean, **4 skipped** locally (profiles read through the admin RPC, which needs `SUPABASE_SECRET_KEY`).
+
+**Files:** `src/app/[locale]/u/[username]/page.tsx` · `src/app/[locale]/startup/[slug]/page.tsx` · `src/components/ProfileBlocks.tsx` (StorySection) · `src/components/profile/ProjectBlocks.tsx` (TractionTiles) · `src/components/builder/ProfileActions.tsx` · `src/components/builder/ProfileShareButton.tsx` (new) · `messages/th.json` · `messages/en.json` · `Design.md` (§5 profile + §6 Proof/Story) · `e2e/profile.spec.ts` (new) · `e2e/project.spec.ts` (new).
+
+**Next:** A3 item 2 (card v2 + compact directory header) — still blocked on the two TrustMRR screenshots (audit Q8); then B2 (charts / settings), C1 (multi-select filters + leaderboard page).
+
+## 2026-10-10 — UX master audit phase A3 (item 1): 12px type floor
+
+**Done:**
+
+- **Item 1 — type roles + a 12px floor** (`globals.css`, `Design.md` §3): Thai loses its vowel and tone marks below 12px, so `text-3xs` and `text-2xs` are both pinned at the **12px floor** (0.6667rem → 12px at the 112.5% root) — no visible text renders under 12px. `text-caption` (12.4px) is the smallest Thai-capable step. Design.md's scale and role table now state rendered px and the floor rule; `text-3xs`/`text-2xs` are limited to Latin/uppercase micro-labels and counters, never Thai words.
+- **Chart ticks raised** (`MetricChart.tsx`): revenue/visitor axis labels were 10px → 12px, the last sub-12 text on a page.
+- **New acceptance check** (`e2e/readability.spec.ts`): fails if any visible text inside `<main>` computes under 12px (skips `aria-hidden` decoration and the live map's scaled SVG text, marked `data-live-map`). The whole fix was the token change — no call-site sweep needed.
+
+**Not changed:**
+
+- no migration; no production data or settings; no auth change;
+- OG / share-card / badge image routes (their own render targets, not `<main>`).
+
+**Verified:** `npx vitest run` → 431 passed / 17 skipped; `npm run typecheck` ✓; `npm run lint` ✓; `npm run build` ✓ (56/56 pages). `npx playwright test e2e/readability.spec.ts` → **28 passed** (th + en × home/startups/categories/olympics/feed/login + a project page × desktop & 375). `e2e/pages.spec.ts` + `e2e/numbers.spec.ts` → **48 passed / 10 skipped**, no new horizontal scroll and card numbers still fit at the larger size.
+
+**Files:** `src/app/globals.css` · `Design.md` (§3 scale + floor) · `src/components/MetricChart.tsx` · `src/components/live/LiveVisitorsSection.tsx` (`data-live-map`) · `e2e/readability.spec.ts` (new) · `Project.md`.
+
+**Next:** A3 item 2 (card v2 + compact directory header on phones) — blocked until the two TrustMRR reference screenshots arrive (audit Q8); then B1.
+
 ## 2026-10-10 — UX master audit phase A2: verification clarity
 
 **Done:**

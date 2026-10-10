@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { inputClass } from "@/components/wizard/fields";
 import { Link, useRouter } from "@/i18n/navigation";
+import { ProfileShareButton } from "@/components/builder/ProfileShareButton";
 import { REQUEST_TOPICS, type RequestTopic } from "@/lib/looking-for";
 import { cn } from "@/lib/utils";
 
@@ -73,13 +74,16 @@ export function ProfileActions({
 
   if (isOwner)
     return (
-      <Link
-        href="/dashboard/profile"
-        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border text-sm font-semibold hover:bg-accent"
-      >
-        <PencilIcon className="size-4" aria-hidden="true" />
-        {t("editProfile")}
-      </Link>
+      <div className="space-y-2">
+        <Link
+          href="/dashboard/profile"
+          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border text-sm font-semibold hover:bg-accent"
+        >
+          <PencilIcon className="size-4" aria-hidden="true" />
+          {t("editProfile")}
+        </Link>
+        <ProfileShareButton handle={handle} name={name} />
+      </div>
     );
 
   const follow = () =>
@@ -171,6 +175,10 @@ export function ProfileActions({
           {t("follow")}
         </Link>
       )}
+
+      <div className="col-span-2">
+        <ProfileShareButton handle={handle} name={name} />
+      </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

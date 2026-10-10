@@ -13,10 +13,12 @@
   --font-mono:
     var(--font-jetbrains), var(--font-plex-thai), ui-monospace, monospace;
   /* Design.md §3: Figma px steps as rem (px / 16), so they follow the 112.5% root scale. */
-  --text-3xs: 0.5625rem;
-  --text-3xs--line-height: 0.84375rem;
-  --text-2xs: 0.625rem;
-  --text-2xs--line-height: 0.9375rem;
+  /* Typography floor (A3, 2026-10-10): no visible text under 12px — Thai loses its vowel and
+     tone marks below it, so text-3xs and text-2xs both sit at the floor (1rem = 18px → 12px). */
+  --text-3xs: 0.6667rem;
+  --text-3xs--line-height: 1rem;
+  --text-2xs: 0.6667rem;
+  --text-2xs--line-height: 1rem;
   --text-caption: 0.6875rem;
   --text-caption--line-height: 1.03125rem;
   --text-body: 0.8125rem;
