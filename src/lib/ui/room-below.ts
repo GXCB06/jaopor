@@ -66,7 +66,17 @@ export function makeRoomBelow(trigger: HTMLElement, wanted: number): number {
   return Math.max(MIN_LIST_HEIGHT, Math.floor(spaceBelow(trigger)));
 }
 
-/** Rough list height for `rows` options (+ group headings), used as `wanted`. */
+/** Rough list height for `rows` options (+ group headings), used as `wanted` (Thai rows ≈ 44 px). */
 export function listHeight(rows: number, headings = 0, extra = 0): number {
-  return Math.min(352, rows * 34 + headings * 28 + 12 + extra);
+  return Math.min(352, rows * 44 + headings * 30 + 12 + extra);
+}
+
+/**
+ * Which edge of the trigger the list lines up with: the list may be wider than its trigger, so a
+ * trigger in the right half of the screen gets a list aligned to its right edge (never off-screen).
+ * Lists never flip or shift on their own (avoidCollisions off): this and the height cap keep them in.
+ */
+export function alignFor(trigger: HTMLElement): "start" | "end" {
+  const r = trigger.getBoundingClientRect();
+  return r.left + r.width / 2 > window.innerWidth / 2 ? "end" : "start";
 }

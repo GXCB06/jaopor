@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Popover as P } from "radix-ui";
 import { useId, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { listHeight, makeRoomBelow } from "@/lib/ui/room-below";
+import { alignFor, listHeight, makeRoomBelow } from "@/lib/ui/room-below";
 
 // Design.md §5 Dropdowns: the multi-choice filter dropdown. Opens below the trigger (never up),
 // as wide as the trigger, capped to the room underneath. Inside a GET form it posts one hidden
@@ -52,6 +52,7 @@ export function MultiChoice({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [maxHeight, setMaxHeight] = useState<number>();
+  const [align, setAlign] = useState<"start" | "end">("start");
   const triggerRef = useRef<HTMLButtonElement>(null);
   const listId = useId();
 
@@ -72,6 +73,7 @@ export function MultiChoice({
     );
 
   const openChange = (next: boolean) => {
+    if (next && triggerRef.current) setAlign(alignFor(triggerRef.current));
     if (next && triggerRef.current)
       setMaxHeight(
         makeRoomBelow(
@@ -147,9 +149,13 @@ export function MultiChoice({
           <P.Content
             id={listId}
             side="bottom"
-            align="start"
+            align={align}
             sideOffset={4}
-            style={maxHeight ? { maxHeight } : undefined}
+            avoidCollisions={false}
+            // Ours (room made before opening) and Radix's live one (content above may still shift).
+            style={{
+              maxHeight: `min(${maxHeight ?? 352}px, var(--radix-popover-content-available-height))`,
+            }}
             // A phone keyboard popping up would eat the room we just made: focus stays put.
             onOpenAutoFocus={(e) => {
               if (window.matchMedia("(pointer: coarse)").matches)

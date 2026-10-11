@@ -12,6 +12,25 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-11 — Fix: a dropdown could still open upward on production
+
+**Done:** The production e2e run after deploy `ac44425` caught the leaderboard list opening above its button (desktop; flaky at 375).
+
+- **Cause:** Radix's collision logic could still flip a list. It happened when the list opened low on screen and the layout moved under it: the section's scroll reveal, or the live board filling in above.
+- **Fix:**
+  - `ChoiceSelect` and `MultiChoice` now open with `avoidCollisions={false}`, so they never flip.
+  - Horizontal alignment comes from the trigger's position (`alignFor`: right half → aligned to the right edge).
+  - The height is capped by both our pre-open room and Radix's live `--radix-*-content-available-height`, so a later layout shift shrinks the list instead of pushing it off screen.
+  - The row estimate went from 34 to 44 px (Thai rows).
+
+**Verified:**
+
+- New e2e "near the bottom of the screen" (button 60 px from the bottom, clicked at once) passes at desktop and 375; `dropdowns.spec.ts` 6 / 6.
+- Full local e2e 123 passed / 0 failed; unit 595; typecheck ✓; lint ✓.
+- Production after `ac44425`: the live board shows; a heartbeat returns its key and appears in the snapshot. Production e2e: 135 passed, 1 failed (this bug).
+
+**Files:** `src/lib/ui/room-below.ts` (+ test), `src/components/core/{ChoiceSelect,MultiChoice}.tsx`, `e2e/dropdowns.spec.ts`, `PROGRESS.md`
+
 ## 2026-10-11 — Anonymous mode live; project page layout restored; live board back; page-enter motion; Olympics "projects" board
 
 **Done:**

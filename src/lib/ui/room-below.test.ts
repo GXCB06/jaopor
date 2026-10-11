@@ -19,8 +19,8 @@ describe("scrollNeeded", () => {
 
 describe("listHeight", () => {
   it("grows with rows and headings and is capped", () => {
-    expect(listHeight(3)).toBe(3 * 34 + 12);
-    expect(listHeight(3, 1, 44)).toBe(3 * 34 + 28 + 12 + 44);
+    expect(listHeight(3)).toBe(3 * 44 + 12);
+    expect(listHeight(3, 1, 44)).toBe(3 * 44 + 30 + 12 + 44);
     expect(listHeight(77, 6)).toBe(352);
   });
 });

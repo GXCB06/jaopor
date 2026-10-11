@@ -4,7 +4,7 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { Select as S } from "radix-ui";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { listHeight, makeRoomBelow } from "@/lib/ui/room-below";
+import { alignFor, listHeight, makeRoomBelow } from "@/lib/ui/room-below";
 
 // Design.md §5 Dropdowns: the one single-choice dropdown (replaces native <select>, whose popup
 // the browser may open upward and past the screen edge). Always opens below the trigger, as wide
@@ -68,6 +68,7 @@ export function ChoiceSelect({
   const value = controlled ?? own;
   const [open, setOpen] = useState(false);
   const [maxHeight, setMaxHeight] = useState<number>();
+  const [align, setAlign] = useState<"start" | "end">("start");
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const all = [...options, ...groups.flatMap((g) => g.options)];
@@ -80,13 +81,15 @@ export function ChoiceSelect({
     onValueChange?.(next);
   };
   const openChange = (next: boolean) => {
-    if (next && triggerRef.current)
+    if (next && triggerRef.current) {
       setMaxHeight(
         makeRoomBelow(
           triggerRef.current,
           listHeight(all.length, groups.length),
         ),
       );
+      setAlign(alignFor(triggerRef.current));
+    }
     setOpen(next);
   };
 
@@ -137,9 +140,13 @@ export function ChoiceSelect({
           <S.Content
             position="popper"
             side="bottom"
-            align="start"
+            align={align}
             sideOffset={4}
-            style={maxHeight ? { maxHeight } : undefined}
+            avoidCollisions={false}
+            // Ours (room made before opening) and Radix's live one (content above may still shift).
+            style={{
+              maxHeight: `min(${maxHeight ?? 352}px, var(--radix-select-content-available-height))`,
+            }}
             className="z-50 max-h-88 max-w-[calc(100vw-1rem)] min-w-(--radix-select-trigger-width) overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md"
           >
             <S.ScrollUpButton className="flex h-6 items-center justify-center text-muted-foreground">

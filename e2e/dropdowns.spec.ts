@@ -64,3 +64,20 @@ test("leaderboard metric list opens below its button", async ({ page }) => {
   await trigger.click();
   await expectBelowAndOnScreen(page, trigger, page.getByRole("listbox"));
 });
+
+test("a dropdown near the bottom of the screen still opens below (the page makes room)", async ({
+  page,
+}) => {
+  await page.goto("/th");
+  const trigger = page.locator('#leaderboard [role="combobox"]');
+  // Put the button 60 px above the bottom edge and click at once (mid scroll-reveal).
+  await trigger.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    window.scrollBy({
+      top: r.bottom - (window.innerHeight - 60),
+      behavior: "instant",
+    });
+  });
+  await trigger.click();
+  await expectBelowAndOnScreen(page, trigger, page.getByRole("listbox"));
+});
