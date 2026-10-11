@@ -6,7 +6,6 @@ import type { AiTool, Category } from "@/lib/catalog";
 import type { Region } from "@/lib/config/provinces";
 import type { LookingFor } from "@/lib/links";
 import {
-  OLYMPIC_COLUMNS,
   rankProvinces,
   type OlympicMetric,
   type OlympicSource,
@@ -14,6 +13,15 @@ import {
 } from "@/lib/olympics";
 import type { Tables } from "@/lib/supabase/database.types";
 import { createPublicClient } from "@/lib/supabase/public";
+import {
+  metricColumn,
+  normalizeStartup,
+  revenueShownFilter,
+  schemaMode,
+  startupColumns,
+  type SchemaMode,
+  type StartupDisclosure,
+} from "./startup-columns";
 
 // Public read queries (anon role → only published rows). Cookie-free, so pages can be ISR-cached.
 
@@ -21,15 +29,45 @@ export type Owner = Pick<
   Tables<"profiles">,
   "handle" | "display_name" | "avatar_url" | "x_handle" | "headline"
 >;
-export type StartupRow = Tables<"startups"> & { owner: Owner | null };
+/**
+ * A public startup row. Metric fields hold only what visitors may see (R2 disclosure levels:
+ * null unless the owner shows it `exact`); `disclosure` carries band / growth / badge.
+ */
+export type StartupRow = Tables<"startups"> & {
+  owner: Owner | null;
+  disclosure: StartupDisclosure;
+};
 
 // Named FK: startup_members also links startups and profiles (many-to-many), so the plain embed
 // is ambiguous (PGRST201).
-const SELECT =
-  "*, owner:profiles!startups_owner_id_fkey(handle, display_name, avatar_url, x_handle, headline)";
+const OWNER_EMBED =
+  "owner:profiles!startups_owner_id_fkey(handle, display_name, avatar_url, x_handle, headline)";
+const select = (mode: SchemaMode) => `${startupColumns(mode)}, ${OWNER_EMBED}`;
 
 function db() {
   return createPublicClient();
+}
+
+/** Rows from either schema → StartupRow (public values only). */
+function rows(mode: SchemaMode, data: unknown): StartupRow[] {
+  return ((data ?? []) as Record<string, unknown>[]).map(
+    (r) => normalizeStartup(mode, r) as unknown as StartupRow,
+  );
+}
+
+/** Untyped builder: public_* columns aren't in the generated types until the migration runs. */
+function from(table: "startups") {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return db().from(table) as any;
+}
+
+/** "Revenue is verified and shown" in this schema (directory filter, boards, rank). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function withRevenueShown(mode: SchemaMode, query: any) {
+  const f = revenueShownFilter(mode);
+  return f.op === "eq"
+    ? query.eq(f.column, f.value)
+    : query.not(f.column, "is", null);
 }
 
 /** Design.md §5 LeaderboardCard metrics: each ranks only verified numbers. */
@@ -40,15 +78,17 @@ export async function getBoard(
   metric: BoardMetric,
   limit = 50,
 ): Promise<StartupRow[]> {
-  const { column, verifiedRevenueOnly } = BOARD_DEFINITIONS[metric];
+  const mode = await schemaMode();
+  const { verifiedRevenueOnly } = BOARD_DEFINITIONS[metric];
+  // R2: value boards rank exact values only (the public column is null at any other level).
+  const column = metricColumn(mode, BOARD_DEFINITIONS[metric].column);
   // Demo projects never rank (their numbers are made up; the Olympics board excludes them too).
-  let query = db()
-    .from("startups")
-    .select(SELECT)
+  let query = from("startups")
+    .select(select(mode))
     .not(column, "is", null)
     .eq("is_demo", false);
   // Revenue columns only count once the provider connection is verified.
-  if (verifiedRevenueOnly) query = query.eq("verification_status", "verified");
+  if (verifiedRevenueOnly) query = withRevenueShown(mode, query);
   const { data, error } = await query
     .order(column, { ascending: false })
     // A1.3: within equal values, a neutral visible order (name), never the creation date.
@@ -57,22 +97,24 @@ export async function getBoard(
   if (error) throw error;
   // The same rules again in code (published, not demo, has a value, verified revenue), so the
   // board can't show a row the definition excludes even if a query filter changes.
-  return (data as StartupRow[]).filter((s) => isBoardEligible(s, metric));
+  return rows(mode, data).filter((s) => isBoardEligible(s, metric));
 }
 
 /** Projects with verified traffic or build proof, strongest first (home "Top traction" row). */
 export async function getTopTraction(limit = 10): Promise<StartupRow[]> {
-  const { data, error } = await db()
-    .from("startups")
-    .select(SELECT)
-    .or("visitors_30d.not.is.null,build_commits.not.is.null")
+  const mode = await schemaMode();
+  const visitors = metricColumn(mode, "visitors_30d");
+  const commits = metricColumn(mode, "build_commits");
+  const { data, error } = await from("startups")
+    .select(select(mode))
+    .or(`${visitors}.not.is.null,${commits}.not.is.null`)
     // Real projects before demos (Design.md §5 Demo projects).
     .order("is_demo", { ascending: true })
-    .order("visitors_30d", { ascending: false, nullsFirst: false })
-    .order("build_commits", { ascending: false, nullsFirst: false })
+    .order(visitors, { ascending: false, nullsFirst: false })
+    .order(commits, { ascending: false, nullsFirst: false })
     .limit(limit);
   if (error) throw error;
-  return data as StartupRow[];
+  return rows(mode, data);
 }
 
 /** Profile "More startups": same category first, then the newest others. */
@@ -81,10 +123,10 @@ export async function getMoreStartups(
   limit = 6,
 ): Promise<StartupRow[]> {
   // Spec 6.4 step 7: same category first, then same province, then the newest.
+  const mode = await schemaMode();
   const base = () =>
-    db()
-      .from("startups")
-      .select(SELECT)
+    from("startups")
+      .select(select(mode))
       .neq("id", startup.id)
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -96,24 +138,24 @@ export async function getMoreStartups(
   for (const r of [same, local, recent]) if (r?.error) throw r.error;
   const seen = new Set<number>();
   return [
-    ...(same.data as StartupRow[]),
-    ...((local?.data ?? []) as StartupRow[]),
-    ...(recent.data as StartupRow[]),
+    ...rows(mode, same.data),
+    ...rows(mode, local?.data),
+    ...rows(mode, recent.data),
   ]
     .filter((s) => !seen.has(s.id) && seen.add(s.id))
     .slice(0, limit);
 }
 
 export async function getRecent(limit = 12): Promise<StartupRow[]> {
-  const { data, error } = await db()
-    .from("startups")
-    .select(SELECT)
+  const mode = await schemaMode();
+  const { data, error } = await from("startups")
+    .select(select(mode))
     // Real projects before demos: once 6 are real, demos leave the home rows by themselves.
     .order("is_demo", { ascending: true })
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw error;
-  return data as StartupRow[];
+  return rows(mode, data);
 }
 
 export const DIRECTORY_SORTS = [
@@ -151,11 +193,12 @@ export const PAGE_SIZE = 24;
 export async function listStartups(
   filters: DirectoryFilters,
 ): Promise<{ rows: StartupRow[]; total: number }> {
-  let query = db().from("startups").select(SELECT, { count: "exact" });
+  const mode = await schemaMode();
+  let query = from("startups").select(select(mode), { count: "exact" });
   if (filters.category) query = query.eq("category", filters.category);
   if (filters.province) query = query.eq("province", filters.province);
   if (filters.tool) query = query.contains("ai_tools", [filters.tool]);
-  if (filters.verified) query = query.eq("verification_status", "verified");
+  if (filters.verified) query = withRevenueShown(mode, query);
   if (filters.lookingFor)
     query = query.contains("looking_for", [filters.lookingFor]);
   if (filters.type === "app")
@@ -177,28 +220,32 @@ export async function listStartups(
   // Round 3 "verified first": verified numbers, then owner verified, then the rest (demos last).
   // "Newest" stays purely chronological.
   if ((filters.sort ?? "mrr") !== "newest")
-    query = query.order("proof_level", { ascending: false });
+    query = query.order(metricColumn(mode, "proof_level"), {
+      ascending: false,
+    });
+  const sortBy = SORT_COLUMN[filters.sort ?? "mrr"];
+  // R2: a hidden value never orders (public columns are null below exact, so it sorts last).
   const { data, error, count } = await query
-    .order(SORT_COLUMN[filters.sort ?? "mrr"], {
+    .order(sortBy === "created_at" ? sortBy : metricColumn(mode, sortBy), {
       ascending: false,
       nullsFirst: false,
     })
     .order("created_at", { ascending: false })
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
   if (error) throw error;
-  return { rows: data as StartupRow[], total: count ?? 0 };
+  return { rows: rows(mode, data), total: count ?? 0 };
 }
 
 export async function getStartupBySlug(
   slug: string,
 ): Promise<StartupRow | null> {
-  const { data, error } = await db()
-    .from("startups")
-    .select(SELECT)
+  const mode = await schemaMode();
+  const { data, error } = await from("startups")
+    .select(select(mode))
     .eq("slug", slug)
     .maybeSingle();
   if (error) throw error;
-  return data as StartupRow | null;
+  return data ? rows(mode, [data])[0] : null;
 }
 
 /**
@@ -274,15 +321,17 @@ export function isSyncStale(lastSyncedAt: string | null): boolean {
 
 /** 1-based MRR rank among verified startups (null if not verified). */
 export async function getRank(startup: StartupRow): Promise<number | null> {
+  // R2: a rank reveals order, so only an exact MRR ranks (mrr_cents is null otherwise).
   if (startup.verification_status !== "verified" || startup.mrr_cents === null)
     return null;
-  const { count, error } = await db()
-    .from("startups")
-    .select("id", { count: "exact", head: true })
-    .eq("verification_status", "verified")
+  const mode = await schemaMode();
+  const { count, error } = await withRevenueShown(
+    mode,
+    from("startups").select("id", { count: "exact", head: true }),
+  )
     // Demo projects carry made-up numbers: they never count towards a real project's rank.
     .eq("is_demo", false)
-    .gt("mrr_cents", startup.mrr_cents);
+    .gt(metricColumn(mode, "mrr_cents"), startup.mrr_cents);
   if (error) throw error;
   return (count ?? 0) + 1;
 }
@@ -291,12 +340,13 @@ export async function countStartups(): Promise<{
   total: number;
   verified: number;
 }> {
+  const mode = await schemaMode();
   const [all, verified] = await Promise.all([
     db().from("startups").select("id", { count: "exact", head: true }),
-    db()
-      .from("startups")
-      .select("id", { count: "exact", head: true })
-      .eq("verification_status", "verified"),
+    withRevenueShown(
+      mode,
+      from("startups").select("id", { count: "exact", head: true }),
+    ),
   ]);
   return { total: all.count ?? 0, verified: verified.count ?? 0 };
 }
@@ -325,8 +375,9 @@ export async function getChartSeries(
     new Date(now - (days - 1 - i) * 86_400_000).toISOString().slice(0, 10);
   const start = dayAt(0);
   const today = new Date(now + 86_400_000).toISOString().slice(0, 10);
-  const hasRevenue = startup.verification_status === "verified";
-  const hasTraffic = startup.visitors_30d !== null;
+  // R2: history is public only at exact (the snapshot policies enforce it too).
+  const hasRevenue = startup.disclosure.revenue.level === "exact";
+  const hasTraffic = startup.disclosure.traffic.level === "exact";
 
   const [rev, traffic] = await Promise.all([
     hasRevenue
@@ -430,18 +481,21 @@ export async function searchStartups(q: string, max = 6): Promise<SearchHit[]> {
 
 /** Spec 6.8 "ยอดนิยม": what an empty, focused search shows (verified first, then MRR, then new). */
 export async function popularStartups(max = 5): Promise<SearchHit[]> {
-  const { data, error } = await db()
-    .from("startups")
-    .select(
-      "id, slug, name, tagline, logo_path, category, verification_status, verified_provider, is_demo",
-    )
+  const mode = await schemaMode();
+  const { data, error } = await from("startups")
+    .select(startupColumns(mode))
     .order("is_demo", { ascending: true })
-    .order("verification_status", { ascending: false })
-    .order("mrr_cents", { ascending: false, nullsFirst: false })
+    .order(mode === "public" ? "public_proof_level" : "verification_status", {
+      ascending: false,
+    })
+    .order(metricColumn(mode, "mrr_cents"), {
+      ascending: false,
+      nullsFirst: false,
+    })
     .order("created_at", { ascending: false })
     .limit(max);
   if (error) throw error;
-  return data.map((r) => ({
+  return rows(mode, data).map((r) => ({
     id: r.id,
     slug: r.slug,
     name: r.name,
@@ -483,12 +537,17 @@ export async function getProvinceLeaderboard(
   metric: OlympicMetric,
   region: Region | null = null,
 ): Promise<ProvinceRank[]> {
-  const { data, error } = await db()
-    .from("startups")
-    .select(OLYMPIC_COLUMNS)
+  // R2: only exact values count (public columns are null below exact; spec §6 Olympics).
+  const mode = await schemaMode();
+  const { data, error } = await from("startups")
+    .select(startupColumns(mode))
     .not("province", "is", null)
     .eq("is_demo", false)
     .limit(5000);
   if (error) throw error;
-  return rankProvinces(data as OlympicSource[], metric, region);
+  return rankProvinces(
+    rows(mode, data) as unknown as OlympicSource[],
+    metric,
+    region,
+  );
 }

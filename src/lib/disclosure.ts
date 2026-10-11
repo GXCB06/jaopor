@@ -229,3 +229,32 @@ export function publicProofLevel(
     return 1;
   return 0;
 }
+
+// ---------------------------------------------------------------------------------------------
+// Display: band text (Design.md §7 Disclosure levels). Money bands are THB, counts own units.
+// ---------------------------------------------------------------------------------------------
+
+/** 1_000 → "1k", 2_500 → "2.5k", 1_000_000 → "1M"; below 1,000 as is. */
+export function compactEdge(n: number): string {
+  const fmt = (v: number) => String(Math.round(v * 10) / 10);
+  if (n >= 1_000_000) return `${fmt(n / 1_000_000)}M`;
+  if (n >= 1_000) return `${fmt(n / 1_000)}k`;
+  return String(n);
+}
+
+/** How to word a band: a range, "under hi" (starts at 0) or "over lo" (open top). */
+export type BandText =
+  | { kind: "range"; lo: string; hi: string }
+  | { kind: "under"; hi: string }
+  | { kind: "over"; lo: string };
+
+export function bandText(
+  band: { lo: number; hi: number | null },
+  unit: "thb" | "count",
+): BandText {
+  const f = (n: number) => (unit === "thb" ? "฿" : "") + compactEdge(n);
+  if (band.hi === null) return { kind: "over", lo: f(band.lo) };
+  if (band.lo === 0) return { kind: "under", hi: f(band.hi) };
+  // "฿10k–25k": the symbol once, on the lower edge (Design.md §7 Disclosure levels).
+  return { kind: "range", lo: f(band.lo), hi: compactEdge(band.hi) };
+}

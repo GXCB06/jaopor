@@ -10,6 +10,7 @@ import {
 } from "@/lib/autofill";
 import { isOwnWebsite } from "@/lib/links";
 import { fetchHtml } from "@/lib/net/link-preview";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 // Design.md §5 Edit page "✨ ช่วยเติมจากเว็บไซต์": owner-only. Reads the project's public website
@@ -59,7 +60,7 @@ export async function POST(
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const { data: startup } = await supabase
     .from("startups")
-    .select("website_url, github_repo")
+    .select("website_url")
     .eq("id", id)
     .eq("owner_id", auth.user.id)
     .maybeSingle();
@@ -84,7 +85,7 @@ export async function POST(
     return NextResponse.json({ error: "site_unreachable" }, { status: 502 });
 
   const page = extractPage(html);
-  const readme = await fetchReadme(startup.github_repo);
+  const readme = await fetchReadme(await verifiedRepo(id));
   const ai = await geminiJson(
     buildPrompt(page, readme, locale === "en" ? "en" : "th"),
     DRAFT_SCHEMA,
@@ -93,4 +94,18 @@ export async function POST(
   // The AI draft wins field by field; the page's own metadata fills whatever it left out.
   const draft: AutofillDraft = { ...heuristicDraft(page), ...aiDraft };
   return NextResponse.json({ draft, source: ai ? "ai" : "page" });
+}
+
+/**
+ * R2 disclosure levels: github_repo is a build-proof column, not selectable by signed-in users once
+ * the migration is applied. Read it with the service role, only after the session query above
+ * proved this user owns the project.
+ */
+async function verifiedRepo(id: number): Promise<string | null> {
+  const { data } = await createAdminClient()
+    .from("startups")
+    .select("github_repo")
+    .eq("id", id)
+    .maybeSingle();
+  return data?.github_repo ?? null;
 }

@@ -13,6 +13,7 @@ import {
 } from "next-intl/server";
 import { VerifiedBadge } from "@/components/core/VerifiedBadge";
 import { syncedRecently } from "@/lib/motion/live";
+import { DisclosedStat, isNonExact } from "@/components/profile/DisclosedStat";
 import {
   EmptyOwnerCard,
   OwnerBar,
@@ -85,9 +86,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   const startup = await getStartupBySlug(slug);
   if (!startup) return {};
-  // Demo projects carry sample numbers: never put them in a title that gets shared.
+  // Demo projects carry sample numbers: never put them in a title that gets shared. R2: the MRR
+  // goes in the title only when the owner shows it exact (mrr_cents is null otherwise).
   const verified =
-    startup.verification_status === "verified" && !startup.is_demo;
+    startup.verification_status === "verified" &&
+    !startup.is_demo &&
+    startup.mrr_cents !== null;
   // Thai pages show baht, like the page itself (it used to say "$69 MRR" above "฿2,310").
   const thbPerUsd = locale === "th" && verified ? await getThbPerUsd() : null;
   const mrr = thbPerUsd
@@ -193,7 +197,11 @@ export default async function StartupPage({ params }: Props) {
     chartMetrics.length > 0 ||
     startup.visitors_30d !== null ||
     startup.active_users !== null ||
-    startup.build_commits !== null;
+    startup.build_commits !== null ||
+    // R2: a group shown as a range, growth or badge is still proof.
+    isNonExact(startup.disclosure.traffic) ||
+    isNonExact(startup.disclosure.users) ||
+    isNonExact(startup.disclosure.build);
 
   // Share kit (Design.md §9): absolute URLs, verified numbers only.
   const url = `${publicEnv.siteUrl}/${locale}/startup/${startup.slug}`;
@@ -244,6 +252,8 @@ export default async function StartupPage({ params }: Props) {
             // Any number from a connected source counts (revenue, build proof, owner check, visitors).
             proof:
               verified ||
+              startup.disclosure.build.level !== null ||
+              startup.disclosure.traffic.level !== null ||
               startup.build_commits !== null ||
               startup.visitors_30d !== null ||
               startup.owner_verified_at !== null ||
@@ -341,7 +351,8 @@ export default async function StartupPage({ params }: Props) {
               badgeSrc={badgeSrc}
               currencySymbol={projectCurrencySymbol(startup)}
               proven={
-                (verified && !startup.is_demo) || startup.build_commits !== null
+                (verified && !startup.is_demo) ||
+                startup.disclosure.build.level !== null
               }
             />
             {primary && (
@@ -364,7 +375,7 @@ export default async function StartupPage({ params }: Props) {
         <section className="space-y-3">
           {/* relative: MetricHelp opens across the whole row, not inside one narrow tile. */}
           <div className="relative grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
-            {verified && (
+            {verified && startup.revenue_all_time_cents !== null && (
               <StatCard
                 label={t("allTime")}
                 value={
@@ -385,7 +396,7 @@ export default async function StartupPage({ params }: Props) {
                 }
               />
             )}
-            {verified && (
+            {verified && startup.mrr_cents !== null && (
               <StatCard
                 label={t("mrr")}
                 value={
@@ -410,6 +421,19 @@ export default async function StartupPage({ params }: Props) {
                       )}
                     </MetricHelp>
                   )
+                }
+              />
+            )}
+            {/* R2 (Design.md §7 Disclosure levels): revenue shown as a range, growth or badge. */}
+            {!startup.is_demo && (
+              <DisclosedStat
+                label={t("mrr")}
+                growthLabel={t("revenue30d")}
+                d={startup.disclosure.revenue}
+                unit="thb"
+                band={
+                  startup.disclosure.revenue.band ??
+                  startup.disclosure.revenue30dBand
                 }
               />
             )}

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { detectStack, isPublicRepo, parseRepo } from "@/lib/build/github";
 import { serverEnv } from "@/lib/env";
 import { ProviderError } from "@/lib/revenue/types";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 // Design.md §5 Edit page "ดึงจาก GitHub": owner-only. Reads a *public* repo's languages, root files
@@ -27,7 +28,7 @@ export async function POST(
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const { data: startup } = await supabase
     .from("startups")
-    .select("github_url, github_repo")
+    .select("github_url")
     .eq("id", id)
     .eq("owner_id", auth.user.id)
     .maybeSingle();
@@ -35,7 +36,7 @@ export async function POST(
     return NextResponse.json({ error: "not_found" }, { status: 404 });
 
   // The form's current GitHub link (may be unsaved), else the saved link / verified repo.
-  const repo = [raw, startup.github_url, startup.github_repo]
+  const repo = [raw, startup.github_url, await verifiedRepo(id)]
     .map((v) => (typeof v === "string" && v ? parseRepo(v) : null))
     .find(Boolean);
   if (!repo) return NextResponse.json({ error: "no_repo" }, { status: 400 });
@@ -56,4 +57,18 @@ export async function POST(
       return NextResponse.json({ error: "slow_down" }, { status: 429 });
     return NextResponse.json({ error: "failed" }, { status: 502 });
   }
+}
+
+/**
+ * R2 disclosure levels: github_repo is a build-proof column, not selectable by signed-in users once
+ * the migration is applied. Read it with the service role, only after the session query above
+ * proved this user owns the project.
+ */
+async function verifiedRepo(id: number): Promise<string | null> {
+  const { data } = await createAdminClient()
+    .from("startups")
+    .select("github_repo")
+    .eq("id", id)
+    .maybeSingle();
+  return data?.github_repo ?? null;
 }

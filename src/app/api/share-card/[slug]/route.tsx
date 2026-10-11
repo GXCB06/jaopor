@@ -36,8 +36,10 @@ type Series = {
 /** Revenue (Stripe daily snapshots) first, then verified visitors; null when neither exists. */
 async function loadSeries(s: StartupRow, days: number): Promise<Series | null> {
   if (s.is_demo) return null; // sample data never goes on a share image
+  // R2: daily history only when the owner shows revenue exact (the snapshot policy returns no rows
+  // otherwise, and a zero-filled chart would read as ฿0).
   if (
-    s.verification_status === "verified" &&
+    s.disclosure.revenue.level === "exact" &&
     s.verified_provider === "stripe"
   ) {
     const pts = await getRevenueSeries(s.id, days);

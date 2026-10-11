@@ -7,6 +7,8 @@ import { growthPct } from "@/lib/format";
 import { logoUrl } from "@/lib/supabase/logo-url";
 import { cn } from "@/lib/utils";
 import { CopyLinkButton } from "./CopyLinkButton";
+import { useBandLabel } from "./profile/band-label";
+import type { StartupDisclosure } from "@/lib/data/startup-columns";
 import { InView } from "./core/InView";
 import { RollingNumber } from "./core/RollingNumber";
 import {
@@ -46,7 +48,10 @@ export type CardStartup = Pick<
   | "verification_status"
   | "visitors_30d"
   | "visitors_prev_30d"
->;
+> & {
+  /** R2 disclosure levels; absent (e.g. the Add-project preview) = every number exact. */
+  disclosure?: StartupDisclosure;
+};
 
 const compact = (n: number) =>
   new Intl.NumberFormat("en", { notation: "compact" }).format(n);
@@ -60,6 +65,40 @@ function useMetrics(
   third: "growth" | "allTime",
 ): Metric[] | null {
   const t = useTranslations("Card");
+  const dt = useTranslations("Disclosure");
+  const bandLabel = useBandLabel();
+  // R2 (Design.md §7 Disclosure levels): a group shown as a range, growth or badge gets one
+  // metric with that form instead of figures (which are null for visitors at those levels).
+  const disclosed = (
+    d: StartupDisclosure[keyof Omit<
+      StartupDisclosure,
+      "revenue30dBand" | "bandFxDay"
+    >],
+    label: string,
+    growthLabel: string,
+    unit: "thb" | "count",
+  ): Metric[] | null => {
+    if (!d.level || d.level === "exact") return null;
+    if (d.level === "band" && d.band)
+      return [{ label, value: bandLabel(d.band, unit) }];
+    if (d.level === "growth" && d.growthPct !== null)
+      return [{ label: growthLabel, value: <GrowthValue pct={d.growthPct} /> }];
+    return [
+      {
+        label,
+        value: <span className="text-positive">{dt("badgeValue")}</span>,
+      },
+    ];
+  };
+  if (s.verification_status === "verified" && s.disclosure) {
+    const masked = disclosed(
+      s.disclosure.revenue,
+      t("mrr"),
+      t("growth"),
+      "thb",
+    );
+    if (masked) return masked;
+  }
   if (s.verification_status === "verified") {
     return [
       {
@@ -90,6 +129,16 @@ function useMetrics(
             ),
           },
     ];
+  }
+  if (s.disclosure && s.visitors_30d === null && s.build_commits === null) {
+    const masked =
+      disclosed(
+        s.disclosure.traffic,
+        large ? t("visitors") : t("visitorsShort"),
+        t("growth"),
+        "count",
+      ) ?? disclosed(s.disclosure.build, t("commits"), t("growth"), "count");
+    if (masked) return masked;
   }
   if (s.visitors_30d !== null || s.build_commits !== null) {
     return [

@@ -2056,5 +2056,21 @@
       }
     ],
     "note": "Draft: these terms describe how JaoPor works today. They have not been legally reviewed yet and may change."
+  },
+  "Disclosure": {
+    "under": "Under {hi}",
+    "over": "Over {lo}",
+    "bandCaption": "Shown as a range",
+    "growthCaption": "vs the previous 30 days",
+    "badgeValue": "Verified",
+    "badgeCaption": "Figure not shown",
+    "othersSee": "Others see: {level}",
+    "level": {
+      "exact": "The exact number",
+      "band": "A range",
+      "growth": "Growth (%)",
+      "badge": "The badge only",
+      "private": "Nothing"
+    }
   }
 }

@@ -6,6 +6,8 @@ import {
   MONEY_BAND_EDGES_THB,
   SURFACES,
   bandFor,
+  bandText,
+  compactEdge,
   effectiveLevel,
   growthPercent,
   levelOf,
@@ -209,5 +211,38 @@ describe("publicProofLevel (O2: private doesn't count)", () => {
         { traffic: "private" },
       ),
     ).toBe(1);
+  });
+});
+
+describe("bandText / compactEdge", () => {
+  it.each([
+    [999, "999"],
+    [1_000, "1k"],
+    [2_500, "2.5k"],
+    [25_000, "25k"],
+    [1_000_000, "1M"],
+  ])("%s → %s", (n, s) => {
+    expect(compactEdge(n)).toBe(s);
+  });
+
+  it("words money and count bands", () => {
+    expect(bandText({ lo: 10_000, hi: 25_000 }, "thb")).toEqual({
+      kind: "range",
+      lo: "฿10k",
+      hi: "25k",
+    });
+    expect(bandText({ lo: 0, hi: 1_000 }, "thb")).toEqual({
+      kind: "under",
+      hi: "฿1k",
+    });
+    expect(bandText({ lo: 1_000_000, hi: null }, "thb")).toEqual({
+      kind: "over",
+      lo: "฿1M",
+    });
+    expect(bandText({ lo: 100, hi: 250 }, "count")).toEqual({
+      kind: "range",
+      lo: "100",
+      hi: "250",
+    });
   });
 });

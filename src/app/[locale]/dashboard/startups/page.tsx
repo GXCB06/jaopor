@@ -1,4 +1,5 @@
 import { stackCount } from "@/lib/config/display";
+import { getOwnStartups } from "@/lib/data/owner-startups";
 import { hasPricing } from "@/lib/pricing";
 import { completenessPct } from "@/lib/completeness";
 import type { Metadata } from "next";
@@ -99,11 +100,15 @@ export default async function DashboardStartupsPage({
   const userId = await requireUserId(locale, "/dashboard/startups");
 
   const supabase = await createClient();
-  const { data: startups } = await supabase
+  const { data: own } = await supabase
     .from("startups")
-    .select("*")
-    .eq("owner_id", userId)
-    .order("created_at", { ascending: false });
+    .select("id")
+    .eq("owner_id", userId);
+  // R2: real numbers for the owner via get_my_startup_metrics once the migration is live.
+  const startups = await getOwnStartups(
+    supabase,
+    (own ?? []).map((s) => s.id),
+  );
 
   const ids = (startups ?? []).map((s) => s.id);
   const { data: shotRows } = ids.length

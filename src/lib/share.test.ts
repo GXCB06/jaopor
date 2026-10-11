@@ -142,3 +142,63 @@ describe("share modal helpers (spec 6.5)", () => {
     ).toBe("$");
   });
 });
+
+describe("share assets respect disclosure levels (R2)", () => {
+  const shown = (level: string | null, extra = {}) => ({
+    level,
+    band: null,
+    growthPct: null,
+    ...extra,
+  });
+  const verified = {
+    ...base,
+    verification_status: "verified",
+    verified_provider: "stripe",
+  };
+
+  it("badge: no figure anywhere, the source still listed", () => {
+    const s = {
+      ...verified,
+      disclosure: {
+        revenue: shown("badge"),
+        traffic: shown(null),
+        build: shown(null),
+      },
+    };
+    expect(shareMetrics(s)).toEqual([]);
+    expect(verifiedSources(s)).toEqual(["Stripe"]);
+    expect(badgeValue(s)).toBe("verified revenue");
+  });
+
+  it("band: the range, never an amount; ASCII on the SVG badge", () => {
+    const s = {
+      ...verified,
+      disclosure: {
+        revenue: shown("band", { band: { lo: 10_000, hi: 25_000 } }),
+        traffic: shown(null),
+        build: shown(null),
+      },
+    };
+    expect(shareMetrics(s)).toEqual([{ id: "mrr", value: "฿10k–25k" }]);
+    expect(badgeValue(s)).toBe("THB 10k–25k MRR");
+  });
+
+  it("growth: the percentage only", () => {
+    const s = {
+      ...verified,
+      disclosure: {
+        revenue: shown("growth", { growthPct: 18 }),
+        traffic: shown(null),
+        build: shown(null),
+      },
+    };
+    expect(shareMetrics(s)).toEqual([{ id: "revenue30d", value: "+18%" }]);
+  });
+
+  it("private: nothing, not even the source", () => {
+    const s = { ...base, disclosure: undefined };
+    expect(shareMetrics(s)).toEqual([]);
+    expect(verifiedSources(s)).toEqual([]);
+    expect(badgeValue(s)).toBe(null);
+  });
+});

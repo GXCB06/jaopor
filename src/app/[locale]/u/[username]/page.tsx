@@ -1,3 +1,4 @@
+import { DisclosedInline } from "@/components/profile/DisclosedInline";
 import {
   BriefcaseIcon,
   FlameIcon,
@@ -907,6 +908,12 @@ export default async function BuilderProfilePage({
                                   )}
                                 />
                               </span>
+                            ) : isVerified(w) && w.disclosure.revenue.level ? (
+                              // R2: revenue verified but shown as a range, growth or badge.
+                              <DisclosedInline
+                                d={w.disclosure.revenue}
+                                unit="thb"
+                              />
                             ) : w.build_stars ? (
                               <span className="flex items-center gap-1.5 font-bold tabular-nums">
                                 <StarIcon

@@ -16,6 +16,7 @@ import { linkPlatform, projectLinks, type LinkKind } from "@/lib/links";
 import { lookingForActions } from "@/lib/looking-for";
 import { SOURCE_KIND, SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { StatCard } from "../ProfileBlocks";
+import { DisclosedStat, isNonExact } from "./DisclosedStat";
 import { RollingNumber } from "../core/RollingNumber";
 import { GrowthValue } from "../StartupBits";
 import { cn } from "@/lib/utils";
@@ -197,6 +198,12 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
               </span>
             }
           />
+        ) : isNonExact(startup.disclosure.traffic) ? (
+          <DisclosedStat
+            label={t("visitors30d")}
+            d={startup.disclosure.traffic}
+            unit="count"
+          />
         ) : null,
     },
     {
@@ -209,6 +216,12 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
             label={t("activeUsers")}
             value={<RollingNumber text={n(startup.active_users)} />}
             caption={via("revenuecat")}
+          />
+        ) : isNonExact(startup.disclosure.users) ? (
+          <DisclosedStat
+            label={t("activeUsers")}
+            d={startup.disclosure.users}
+            unit="count"
           />
         ) : null,
     },
@@ -245,6 +258,12 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
                   .join(" · ")}
               </span>
             }
+          />
+        ) : isNonExact(startup.disclosure.build) ? (
+          <DisclosedStat
+            label={t("buildProof")}
+            d={startup.disclosure.build}
+            unit="count"
           />
         ) : null,
     },

@@ -8,6 +8,13 @@ import type { LookingFor } from "@/lib/profile";
 import { orderSkills, type DirectoryBuilder } from "@/lib/builders";
 import { sumSeries } from "@/lib/builder";
 import { getChartSeries } from "@/lib/data/startups";
+import {
+  normalizeStartup,
+  schemaMode,
+  startupColumns,
+  type SchemaMode,
+  type StartupDisclosure,
+} from "@/lib/data/startup-columns";
 import { isProvince } from "@/lib/config/provinces";
 
 // Phase 9b public builder profile. Visibility-controlled fields come from get_profile (server-only,
@@ -31,10 +38,21 @@ export type PublicProfile = {
   following: number;
 };
 
+/** A builder's work: public values only (R2 disclosure levels), like StartupRow. */
 export type BuilderWork = Tables<"startups"> & {
+  disclosure: StartupDisclosure;
   role: string;
   pinned: number | null;
 };
+
+/**
+ * The revenue fields a builder summary needs, in either schema (R2): verified = revenue shown at
+ * any level; mrr_cents is set only at `exact`, so sums never include a hidden value.
+ */
+const revenueFields = (mode: SchemaMode) =>
+  mode === "public"
+    ? "public_revenue_level, public_mrr_cents"
+    : "verification_status, mrr_cents";
 
 const viewerId = cache(async (): Promise<string | null> => {
   const supabase = await createClient();
@@ -61,6 +79,7 @@ export async function getBuilderPage(
   const admin = createAdminClient();
   const viewer = await viewerId();
   const isOwner = viewer === profile.id;
+  const mode = await schemaMode();
   const end = year ? new Date(Date.UTC(year, 11, 31)) : new Date();
   const from = new Date(end.getTime() - 371 * 86_400_000);
   const iso = (d: Date) => d.toISOString().slice(0, 10);
@@ -88,7 +107,9 @@ export async function getBuilderPage(
       .order("position"),
     supabase
       .from("startup_members")
-      .select("role, pinned_position, startup:startups(*)")
+      .select(
+        `role, pinned_position, startup:startups(${startupColumns(mode)})` as "role, pinned_position, startup:startups(*)",
+      )
       .eq("user_id", profile.id)
       .eq("status", "confirmed"),
     admin.rpc("profile_activity", {
@@ -138,7 +159,11 @@ export async function getBuilderPage(
 
   const works: BuilderWork[] = (members.data ?? [])
     .filter((m) => m.startup)
-    .map((m) => ({ ...m.startup!, role: m.role, pinned: m.pinned_position }));
+    .map((m) => ({
+      ...normalizeStartup(mode, m.startup! as Record<string, unknown>),
+      role: m.role,
+      pinned: m.pinned_position,
+    }));
 
   return {
     viewer,
@@ -171,13 +196,16 @@ export const getProfileCard = cache(async (handle: string) => {
   const { data } = await admin.rpc("get_profile", { p_handle: handle });
   const profile = data as PublicProfile | null;
   if (!profile) return null;
+  const mode = await schemaMode();
   const { data: members } = await admin
     .from("startup_members")
-    .select("startup:startups(mrr_cents, verification_status, is_demo, status)")
+    .select(
+      `startup:startups(${revenueFields(mode)}, is_demo, status)` as "startup:startups(mrr_cents, verification_status, is_demo, status)",
+    )
     .eq("user_id", profile.id)
     .eq("status", "confirmed");
   const published = (members ?? [])
-    .map((m) => m.startup)
+    .map((m) => (m.startup ? normalizeStartup(mode, m.startup) : null))
     .filter((s) => s?.status === "published");
   const verified = published.filter(
     (s) => s!.verification_status === "verified" && !s!.is_demo,
@@ -201,10 +229,13 @@ const isPublic = (fv: unknown, field: string) =>
  * Filtering happens in TypeScript (lib/builders.ts); fine while the directory is small.
  */
 export const listBuilders = cache(async (): Promise<DirectoryBuilder[]> => {
+  const mode = await schemaMode();
   const { data, error } = await createAdminClient()
     .from("profiles")
     .select(
       `id, handle, display_name, avatar_url, headline, status, province, field_visibility, created_at,
+       profile_skills(skill_slug, is_superpower, position),
+       startup_members!startup_members_user_id_fkey(status, startup:startups(status, ${revenueFields(mode)}, is_demo, ai_tools))` as `id, handle, display_name, avatar_url, headline, status, province, field_visibility, created_at,
        profile_skills(skill_slug, is_superpower, position),
        startup_members!startup_members_user_id_fkey(status, startup:startups(status, verification_status, is_demo, mrr_cents, ai_tools))`,
     )
@@ -217,7 +248,7 @@ export const listBuilders = cache(async (): Promise<DirectoryBuilder[]> => {
       .filter(
         (m) => m.status === "confirmed" && m.startup?.status === "published",
       )
-      .map((m) => m.startup!);
+      .map((m) => normalizeStartup(mode, m.startup!));
     const verified = works.filter(
       (w) => w.verification_status === "verified" && !w.is_demo,
     );
@@ -253,8 +284,9 @@ export const listBuilders = cache(async (): Promise<DirectoryBuilder[]> => {
  * projects carry sample numbers and never count as this person's), plus today's partial value.
  */
 export async function getBuilderRevenue(works: BuilderWork[]) {
+  // R2: only works whose revenue is shown `exact` add to the summed chart.
   const verified = works.filter(
-    (w) => w.verification_status === "verified" && !w.is_demo,
+    (w) => w.disclosure.revenue.level === "exact" && !w.is_demo,
   );
   if (!verified.length) return null;
   const todayKey = new Date().toISOString().slice(0, 10);

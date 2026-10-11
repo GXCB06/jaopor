@@ -12,6 +12,39 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-11 — R2 surfaces A–C: compatibility layer + masked public reads + band / growth / badge displays (migration still NOT applied; not committed)
+
+**Done (docs/DISCLOSURE_SURFACE_AUDIT.md):**
+
+- **Compatibility layer** `src/lib/data/startup-columns.ts`:
+  - `schemaMode()` detects whether the `public_*` columns exist (cached 60 s, so an apply is picked up without a deploy);
+  - before the migration every read is exactly as today; after it, public reads select only non-metric columns + `public_*`, and `normalizeStartup()` maps them back to the usual field names. Hidden values arrive as null; a `disclosure` summary (level, band, growth per group) is added.
+- **A (would break on apply):**
+  - `lib/data/startups.ts`: every query, filter and sort uses `metricColumn()`. Boards, rank, directory sort and Olympics are therefore exact-only, and charts load only at exact.
+  - `lib/data/builder.ts`: the profile's works are normalized; summed MRR counts exact only; the directory and OG card read the public twins with the admin client.
+  - `lib/data/posts.ts`: the post embed uses the public revenue level and provider.
+  - Owner pages (`dashboard`, `dashboard/startups`, `dashboard/[id]/edit`) use the new `lib/data/owner-startups.ts`. After apply it reads the owner's real values via `get_my_startup_metrics()`.
+  - `/api/startups/[id]/{autofill,detect-stack}` read `github_repo` with the service role only after the session's ownership check.
+  - Write paths only return safe columns (checked).
+- **B:** milestones (cron) read the public twins, so a value milestone can only fire at exact. Old milestone posts: amount kept at exact; otherwise "verified its revenue", or dropped (private revenue, or stars without exact build). The stored body with the amount never leaves the server.
+- **C:**
+  - `DisclosedStat` / `DisclosedInline` / `useBandLabel` (client-safe): "฿10k–25k · แสดงเป็นช่วง", "↑ 18% · เทียบ 30 วันก่อน", "ยืนยันแล้ว · ไม่แสดงตัวเลข".
+  - Wired into the project page (revenue tile, TractionTiles, proof flags; title MRR only at exact), `StartupCard`, founder-profile work rows, and the share kit (OG / share text / badge: band and growth forms, "verified revenue" at badge, ASCII "THB" on the SVG).
+  - Share-card revenue chart only at exact. Previously a badge-level project would have drawn a zero-filled "฿0" chart.
+  - New `Disclosure` message namespace (th + en), appended without reformatting.
+- **Deferred:**
+  - **C9 owner controls** (the "ใครเห็นตัวเลขนี้?" chooser, settings, preview, "คนอื่นเห็น" line, `revalidatePath`): they write `metric_disclosure`, which only exists after the apply, so they can't be tested end to end before it.
+  - **Growth board:** needs new Leaderboard keys, a home page change (marketing edits pending) and a floor rule.
+
+**Verified:**
+- typecheck ✓ · lint ✓ · unit 562 passed / 17 skipped (+22: normalizer both schemas, milestone masking, share forms, band text);
+- e2e local 117 passed / 0 failed (legacy path identical to before);
+- build ✓;
+- temporary local page (deleted) at 1280 and 375 px: tiles, cards and inline forms render, no overflow, and the band wraps instead of being cut off ("฿100k–250k", "มากกว่า ฿1M").
+
+**Not changed:** no migration applied, no commit, no setting; homepage copy untouched.
+**Next:** owner review → commit → deploy (legacy path) → apply migration after the post (with approval) → advisors + RLS smoke + types → C9 owner controls → remove the legacy branch.
+
 ## 2026-10-11 — R2 steps 2–6: disclosure levels (Design.md, logic + tests, migration written, RLS tests, surface audit) — NOT applied, NOT committed
 
 **Done (owner decisions O1–O5 approved 2026-10-11; O4 = precomputed `public_*` columns):**

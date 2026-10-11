@@ -1,4 +1,5 @@
 import "server-only";
+import { getOwnStartups, type OwnerStartup } from "./owner-startups";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Tables } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
@@ -136,7 +137,7 @@ export async function unreadNotifications(): Promise<number> {
 
 const isoDay = (d: Date) => d.toISOString().slice(0, 10);
 
-export type DashboardStartup = Tables<"startups"> & {
+export type DashboardStartup = OwnerStartup & {
   role: string;
   visitors7d: number | null;
   rank: number | null;
@@ -165,13 +166,8 @@ export async function getDashboard(userId: string) {
     requests7dRes,
     pendingRes,
   ] = await Promise.all([
-    ids.length
-      ? supabase
-          .from("startups")
-          .select("*")
-          .in("id", ids)
-          .order("created_at", { ascending: false })
-      : Promise.resolve({ data: [] as Tables<"startups">[] }),
+    // R2: own numbers via get_my_startup_metrics once the disclosure migration is live.
+    getOwnStartups(supabase, ids).then((data) => ({ data })),
     ids.length
       ? supabase
           .from("traffic_snapshots")
@@ -213,7 +209,11 @@ export async function getDashboard(userId: string) {
       ...s,
       role: roleOf.get(s.id) ?? "founder",
       visitors7d: s.traffic_provider ? (traffic.get(s.id) ?? 0) : null,
-      rank: await getRank({ ...s, owner: null }),
+      // Rank is a public fact: computed from what visitors see (null unless MRR is exact).
+      rank:
+        s.disclosure.revenue.level === "exact"
+          ? await getRank({ ...s, owner: null })
+          : null,
     })),
   );
 

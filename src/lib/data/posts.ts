@@ -1,20 +1,29 @@
 import "server-only";
 import { cache } from "react";
 import type { LinkPreview } from "@/lib/og-parse";
+import { parseMilestoneKey } from "@/lib/milestones";
 import type { PostType } from "@/lib/posts";
 import { createPublicClient, logoUrl } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
+import { schemaMode, type SchemaMode } from "./startup-columns";
 
 // Phase 10 reads. The viewer's own client, so RLS decides visibility (hidden posts and posts on
 // unpublished startups only for their author) and post_likes returns only my likes.
 // Embeds name their foreign keys: post_likes / startup_members are join tables, so an unnamed
 // posts→profiles or posts→startups embed would be ambiguous (PGRST201, see 2026-10-01 outage).
 
-const POST_SELECT = `id, author_id, startup_id, type, body, link_url, link_preview, is_auto, milestone_key,
+// R2 disclosure levels: after the migration the revenue badge comes from the public columns
+// (aliased to the old names), so a `private` group shows no source on its posts.
+const POST_SELECT = (
+  mode: SchemaMode,
+) => `id, author_id, startup_id, type, body, link_url, link_preview, is_auto, milestone_key,
   likes_count, comments_count, created_at, edited_at, hidden_at, province,
   author:profiles!posts_author_id_fkey(handle, display_name, avatar_url),
-  startup:startups!posts_startup_id_fkey(id, slug, name, logo_path, verified_provider,
-    verification_status, is_demo),
+  startup:startups!posts_startup_id_fkey(id, slug, name, logo_path, ${
+    mode === "public"
+      ? "verified_provider:public_verified_provider, revenue_level:public_revenue_level, build_level:public_build_level"
+      : "verified_provider, verification_status"
+  }, is_demo),
   images:post_images(id, path, width, height, position)`;
 
 export type PostView = {
@@ -72,7 +81,11 @@ type Row = {
     name: string;
     logo_path: string | null;
     verified_provider: string | null;
-    verification_status: string;
+    /** Legacy schema. */
+    verification_status?: string;
+    /** Public schema: the public revenue / build levels (null = not shown). */
+    revenue_level?: string | null;
+    build_level?: string | null;
     is_demo: boolean;
   } | null;
   images: {
@@ -84,17 +97,43 @@ type Row = {
   }[];
 };
 
+/**
+ * R2 disclosure levels for auto milestone posts written before the owner hid a group: an amount
+ * ("แตะ ฿10,000 MRR") is shown only while that group is `exact`. Revenue still shown at another
+ * level reads as "verified its revenue"; a private revenue group or a non-exact build group
+ * drops the post. The stored body (it holds the amount) never leaves the server in those cases.
+ */
+export function maskMilestone(
+  r: Row,
+): { key: string | null; body: string } | null {
+  const ms = r.type === "milestone" ? parseMilestoneKey(r.milestone_key) : null;
+  if (!ms || !r.startup) return { key: r.milestone_key, body: r.body };
+  // Before the migration (legacy schema) every group is exact: unchanged behaviour.
+  if (r.startup.verification_status !== undefined)
+    return { key: r.milestone_key, body: r.body };
+  const revenue = r.startup.revenue_level ?? null;
+  const build = r.startup.build_level ?? null;
+  if (ms.family === "stars")
+    return build === "exact" ? { key: r.milestone_key, body: r.body } : null;
+  if (!revenue) return null;
+  if (revenue === "exact" || ms.family === "verified")
+    return { key: r.milestone_key, body: r.body };
+  return { key: `verified:${ms.startupId}`, body: "" };
+}
+
 function toView(r: Row, liked: Set<number>): PostView | null {
   if (!r.startup) return null;
+  const masked = maskMilestone(r);
+  if (!masked) return null;
   return {
     id: r.id,
     authorId: r.author_id,
     type: r.type as PostType,
-    body: r.body,
+    body: masked.body,
     linkUrl: r.link_url,
     preview: (r.link_preview as LinkPreview | null) ?? null,
     isAuto: r.is_auto,
-    milestoneKey: r.milestone_key,
+    milestoneKey: masked.key,
     likes: r.likes_count,
     comments: r.comments_count,
     createdAt: r.created_at,
@@ -112,7 +151,9 @@ function toView(r: Row, liked: Set<number>): PostView | null {
       name: r.startup.name,
       logoUrl: logoUrl(r.startup.logo_path),
       verifiedSource:
-        r.startup.verification_status === "verified" && !r.startup.is_demo
+        (r.startup.verification_status === "verified" ||
+          Boolean(r.startup.revenue_level)) &&
+        !r.startup.is_demo
           ? r.startup.verified_provider
           : null,
     },
@@ -142,7 +183,7 @@ export const getPost = cache(async (id: number): Promise<PostView | null> => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("posts")
-    .select(POST_SELECT)
+    .select(POST_SELECT(await schemaMode()) as "id")
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(`getPost: ${error.message}`);
@@ -168,7 +209,7 @@ export async function listPosts(opts: {
   const supabase = await createClient();
   let q = supabase
     .from("posts")
-    .select(POST_SELECT)
+    .select(POST_SELECT(await schemaMode()) as "id")
     .is("hidden_at", null)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
@@ -201,7 +242,7 @@ export async function listStartupPostsPublic(
 ): Promise<PostView[]> {
   const { data, error } = await createPublicClient()
     .from("posts")
-    .select(POST_SELECT)
+    .select(POST_SELECT(await schemaMode()) as "id")
     .eq("startup_id", startupId)
     .is("hidden_at", null)
     .order("created_at", { ascending: false })

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getOwnStartup } from "@/lib/data/owner-startups";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { StartupEditForm } from "@/components/wizard/StartupEditForm";
 import { requireUserId } from "@/lib/auth";
@@ -17,13 +18,11 @@ export default async function EditStartupPage({
   const userId = await requireUserId(locale, `/dashboard/${id}/edit`);
 
   const supabase = await createClient();
-  const { data: startup } = await supabase
-    .from("startups")
-    .select("*")
-    .eq("id", Number(id))
-    .eq("owner_id", userId)
-    .maybeSingle();
-  if (!startup) notFound();
+  // R2: the owner's real numbers via get_my_startup_metrics once the migration is live.
+  const startup = Number.isSafeInteger(Number(id))
+    ? await getOwnStartup(supabase, Number(id))
+    : null;
+  if (!startup || startup.owner_id !== userId) notFound();
 
   const [t, connections, githubLogin, shots] = await Promise.all([
     getTranslations("Profile"),
