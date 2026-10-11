@@ -7,6 +7,7 @@ import { OlympicsBoard, RankChange } from "@/components/olympics/OlympicsBoard";
 import { OlympicsMap } from "@/components/olympics/OlympicsMap";
 import { OlympicValue } from "@/components/olympics/OlympicValue";
 import { Podium } from "@/components/olympics/Podium";
+import { ProvinceActivity } from "@/components/olympics/ProvinceActivity";
 import { ProvinceBadge } from "@/components/olympics/ProvinceBadge";
 import { RegionStandings } from "@/components/olympics/RegionStandings";
 import { ShareRankCard } from "@/components/olympics/ShareRankCard";
@@ -20,7 +21,10 @@ import {
   type Region,
 } from "@/lib/config/provinces";
 import { getThbPerUsd } from "@/lib/data/fx";
-import { getProvinceLeaderboard } from "@/lib/data/startups";
+import {
+  getProjectActivity,
+  getProvinceLeaderboard,
+} from "@/lib/data/startups";
 import {
   DEFAULT_METRIC,
   boardSummary,
@@ -62,11 +66,12 @@ export default async function OlympicsPage({
   const metric = parseMetric(one(sp.metric));
   const region = parseRegion(one(sp.region));
 
-  const [t, common, national, thbPerUsd] = await Promise.all([
+  const [t, common, national, thbPerUsd, activity] = await Promise.all([
     getTranslations("Olympics"),
     getTranslations("Common"),
     getProvinceLeaderboard(metric),
     getThbPerUsd(),
+    getProjectActivity().catch(() => []),
   ]);
   // Logo URLs resolved here: the board below is a client component.
   const board = (
@@ -267,6 +272,8 @@ export default async function OlympicsPage({
               )}
             </Card>
           )}
+
+          <ProvinceActivity rows={activity} region={region} />
         </div>
 
         <aside className="space-y-4">

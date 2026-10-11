@@ -4,9 +4,11 @@ import {
   climbers,
   emptyProvinces,
   gapToNext,
+  newestProjects,
   parseMetric,
   parseRegion,
   provinceRank,
+  provincePioneers,
   rankProvinces,
   regionStandings,
   type OlympicSource,
@@ -260,5 +262,40 @@ describe("projects board (every published project counts)", () => {
 
   it("is the default board", () => {
     expect(parseMetric("nonsense")).toBe("projects");
+  });
+});
+
+describe("pioneers and newest projects", () => {
+  const p = (slug: string, province: string | null, created_at: string) => ({
+    slug,
+    name: slug,
+    logo_path: null,
+    province,
+    created_at,
+    owner: null,
+  });
+  const rows = [
+    p("kk-2", "khon-kaen", "2026-10-05T00:00:00Z"),
+    p("kk-1", "khon-kaen", "2026-10-01T00:00:00Z"),
+    p("bkk-1", "bangkok", "2026-10-03T00:00:00Z"),
+    p("nowhere", "atlantis", "2026-10-09T00:00:00Z"),
+    p("none", null, "2026-10-10T00:00:00Z"),
+  ];
+
+  it("the first project of each province, newest pioneer first", () => {
+    expect(provincePioneers(rows).map((r) => r.slug)).toEqual([
+      "bkk-1",
+      "kk-1",
+    ]);
+    expect(provincePioneers(rows, "central").map((r) => r.slug)).toEqual([
+      "bkk-1",
+    ]);
+  });
+
+  it("newest projects with a known province", () => {
+    expect(newestProjects(rows, 2).map((r) => r.slug)).toEqual([
+      "kk-2",
+      "bkk-1",
+    ]);
   });
 });

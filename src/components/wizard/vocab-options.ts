@@ -1,4 +1,5 @@
 // Option lists for the VocabCombobox fields (spec 6.9), built from src/lib/config.
+import { CATEGORY_ALIASES } from "@/lib/config/category-aliases";
 import { CATEGORY_LIST } from "@/lib/config/categories";
 import { CHANNEL_LIST, CUSTOM_PREFIX } from "@/lib/config/channels";
 import { localizedLabel, localizedName } from "@/lib/config/localized";
@@ -111,50 +112,6 @@ export function suggestedStackValues(
   return out;
 }
 
-/**
- * What people actually type when looking for a category (owner request 2026-10-11: scrolling 37
- * categories took too long). Matched together with the Thai / English names and descriptions.
- */
-const CATEGORY_ALIASES: Record<string, string> = {
-  ai: "เอไอ แชทบอท chatbot gpt llm agent",
-  saas: "ซอฟต์แวร์ subscription สมัครสมาชิก b2b",
-  "developer-tools": "dev โปรแกรมเมอร์ api sdk cli devtools",
-  fintech: "การเงิน บัญชี ภาษี จ่ายเงิน payment finance accounting ลงทุน",
-  marketing: "โฆษณา ads seo การตลาด",
-  ecommerce: "ขายของ ร้านค้า ร้านออนไลน์ shop store",
-  productivity: "จดโน้ต todo งาน ทำงาน note",
-  design: "ออกแบบ กราฟิก figma ui",
-  "no-code": "nocode lowcode โนโค้ด",
-  analytics: "ข้อมูล dashboard สถิติ data",
-  education: "เรียน สอน คอร์ส โรงเรียน ติว course learning",
-  health: "สุขภาพ ฟิตเนส ออกกำลัง หมอ คลินิก fitness",
-  community: "ชุมชน กลุ่ม forum",
-  content: "ครีเอเตอร์ วิดีโอ บล็อก creator video",
-  crypto: "คริปโต บล็อกเชน blockchain web3 nft",
-  support: "บริการลูกค้า ซัพพอร์ต helpdesk",
-  entertainment: "บันเทิง เพลง หนัง music movie",
-  games: "เกม game เกมมือถือ",
-  "green-tech": "สิ่งแวดล้อม พลังงาน climate",
-  iot: "อุปกรณ์ เซนเซอร์ hardware smart home",
-  legal: "กฎหมาย สัญญา ทนาย law",
-  marketplace: "ตลาด ซื้อขาย platform",
-  mobile: "แอปมือถือ app ios android",
-  news: "ข่าว สื่อ media",
-  "real-estate": "อสังหา บ้าน คอนโด เช่า property",
-  hr: "บุคคล รับสมัครงาน หางาน job recruit",
-  sales: "ขาย crm ลูกค้า",
-  security: "ความปลอดภัย รหัสผ่าน cyber",
-  social: "โซเชียล แชท เพื่อน chat",
-  travel: "ท่องเที่ยว เที่ยว โรงแรม ตั๋ว hotel trip",
-  utilities: "เครื่องมือ tools ยูทิลิตี้",
-  "line-oa": "ไลน์ line liff บอทไลน์",
-  food: "อาหาร ร้านอาหาร สั่งอาหาร restaurant delivery",
-  agritech: "เกษตร ฟาร์ม farm",
-  "local-sme": "เอสเอ็มอี ร้านค้าท้องถิ่น ธุรกิจ sme",
-  logistics: "ขนส่ง ส่งของ พัสดุ delivery shipping",
-  other: "อื่นๆ อื่น ๆ",
-};
-
 /** Categories with their icon, searchable in Thai, English and the aliases above. */
 export function categoryOptions(locale: string): VocabOption[] {
   return CATEGORY_LIST.map((c) => ({
@@ -164,4 +121,3 @@ export function categoryOptions(locale: string): VocabOption[] {
     lucideIcon: c.icon,
   }));
 }
-

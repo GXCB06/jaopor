@@ -7,6 +7,7 @@ import type { Region } from "@/lib/config/provinces";
 import type { LookingFor } from "@/lib/links";
 import { asList } from "@/lib/url-list";
 import {
+  type ActivityProject,
   rankProvinces,
   type OlympicMetric,
   type OlympicSource,
@@ -548,6 +549,24 @@ export async function getCategoryCounts(): Promise<Record<string, number>> {
  * Spec 6.7 Province Olympics board (v3): ranked in TypeScript from the public startup rows, with
  * previous-period ranks for the 30-day metrics (see lib/olympics.ts).
  */
+/**
+ * Published, non-demo projects with a province, for the Olympics "pioneers" and "newest" panels
+ * (owner-approved 2026-10-12). Identity columns only: an anonymous project's are placeholders.
+ */
+export async function getProjectActivity(): Promise<ActivityProject[]> {
+  const { data, error } = await db()
+    .from("startups")
+    .select(
+      "slug, name, logo_path, province, created_at, owner:profiles!startups_owner_id_fkey(handle, display_name, avatar_url)",
+    )
+    .not("province", "is", null)
+    .eq("is_demo", false)
+    .order("created_at", { ascending: true })
+    .limit(5000);
+  if (error) throw error;
+  return (data ?? []) as unknown as ActivityProject[];
+}
+
 export async function getProvinceLeaderboard(
   metric: OlympicMetric,
   region: Region | null = null,

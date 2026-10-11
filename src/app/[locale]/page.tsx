@@ -1,6 +1,8 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BrandPill } from "@/components/BrandLogo";
 import { LeaderboardCard, type BoardRow } from "@/components/LeaderboardCard";
+import { CategoryRail } from "@/components/CategoryRail";
+import { HeroConstellation } from "@/components/home/HeroConstellation";
 import { ProviderStrip } from "@/components/ProviderStrip";
 import { AddStartupButton, QuickSearch } from "@/components/search/QuickSearch";
 import { QuickSearchSection } from "@/components/search/QuickSearchSection";
@@ -21,6 +23,9 @@ import { getThbPerUsd } from "@/lib/data/fx";
 import { growthPct } from "@/lib/format";
 import { boardValue, rankBoard } from "@/lib/leaderboard";
 import { logoUrl } from "@/lib/supabase/public";
+import { isAnonymousSlug } from "@/lib/anonymous";
+import { categoryName, provinceName } from "@/lib/config/display";
+import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 
 export const revalidate = 60;
 
@@ -104,6 +109,32 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     ]),
   ) as Record<BoardMetric, BoardRow[]>;
 
+  // Hero constellation (Design.md §5 Hero): real projects only, never an anonymous one's identity.
+  const seen = [...recent, ...traction].filter(
+    (s, i, all) =>
+      !s.is_demo &&
+      !isAnonymousSlug(s.slug) &&
+      all.findIndex((o) => o.id === s.id) === i,
+  );
+  const constellationLogos = seen
+    .map((s) => logoUrl(s.logo_path))
+    .filter((u): u is string => Boolean(u));
+  const constellationWords = [
+    ...new Set([
+      ...seen.flatMap((s) =>
+        [s.verified_provider, s.traffic_provider]
+          .filter(isSource)
+          .map((p) => `✓ ${SOURCE_NAME[p]}`),
+      ),
+      ...seen.filter((s) => s.build_commits !== null).map(() => "✓ GitHub"),
+      ...seen.map((s) => provinceName(s.province, locale)).filter(Boolean),
+      ...seen.map((s) => categoryName(s.category, locale)),
+      "✓ Stripe",
+      "✓ GitHub",
+      "MRR",
+    ]),
+  ] as string[];
+
   const dot = <span aria-hidden="true">·</span>;
   const subLink = "hover:text-foreground";
 
@@ -112,7 +143,11 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4">
-      <section className="flex flex-col items-center pt-10 pb-10 text-center md:pt-12">
+      <section className="relative isolate flex flex-col items-center pt-10 pb-10 text-center md:pt-12">
+        <HeroConstellation
+          logos={constellationLogos}
+          words={constellationWords}
+        />
         <BrandPill />
         <h1 className="mb-3 text-2xl leading-tight font-bold tracking-tight text-balance md:text-[2.125rem]">
           <span className="block">{t("headline1")}</span>
@@ -156,6 +191,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             {nav("leaderboard")}
           </Link>
         </nav>
+        <CategoryRail />
       </section>
 
       {/* "ตัวเลขแรงสุด" skips cards already shown above and hides itself when that leaves fewer

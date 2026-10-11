@@ -12,6 +12,35 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-12 — Olympics pioneers/newest, home category rail, category suggestion, hero constellation (prototype)
+
+**Done** (owner: "ผมเห็นด้วยกับคุณนะ" to the proposals; public pages keep the top navigation):
+
+- **Olympics, under "ยังไม่มีผลงานจาก N จังหวัด":** two cards, "ผู้บุกเบิกจังหวัด" (each province's first project, newest pioneer first: project, "คนแรกของ{จังหวัด}", owner, time) and "มาใหม่ล่าสุด" (newest projects with their province). Both follow the region filter.
+  - Pure `provincePioneers` / `newestProjects` in `lib/olympics.ts` (tested); loader `getProjectActivity`; component `olympics/ProvinceActivity`.
+  - Anonymous projects show "ผลงานไม่เปิดเผยชื่อ".
+- **Home category rail** (`CategoryRail`): chips with icons and counts; categories with projects first, 12 shown, then "ดูทั้งหมด ›". Scrolls sideways on phones (no page overflow) and wraps on wider screens.
+- **Category suggestion from the pasted website:** `/api/startups/preview` now also returns `category`.
+  - Gemini picks from the fixed list when `GEMINI_API_KEY` is set (name + one-liner only); otherwise the keyword matcher `lib/category-suggest.ts` decides.
+  - On a tie it gives no suggestion, and words are length-gated (Latin ≥ 4, Thai ≥ 3).
+  - The wizard shows "แนะนำจากเว็บไซต์ของคุณ: [icon] หมวด" as a one-click chip while nothing is chosen. It is never preselected (UX audit M-9).
+  - The aliases moved to `lib/config/category-aliases.ts`, shared with the picker. The ambiguous "หนัง" became "ดูหนัง / ภาพยนตร์" (it matched "หนังสือ").
+- **Hero constellation (prototype):** a `<canvas>` behind the home hero, using real listed projects' logos (never anonymous ones) and pills with verified sources, provinces and categories, joined by thin lines.
+  - The centre is masked so the headline, subline and search stay clear.
+  - Full window width, sized from the page's client width (no sideways scroll).
+  - About 30 fps on desktop, paused off-screen or in a hidden tab; one still frame on phones and with reduced motion.
+- Design.md: §5 Hero (category rail, constellation), Olympics and category picker notes.
+
+**Verified:**
+
+- Unit 611 passed / 17 skipped (new: pioneers/newest, `keywordCategory` ×6, category search).
+- typecheck ✓ · lint ✓ · e2e local 124 passed / 0 failed.
+- The first run caught 101 px of sideways overflow on `/th` and `/en`: before hydration a bare canvas sizes itself 2:1. Fixed with a default `left-0 w-full`.
+- Browser: Olympics panels at 1280; home rail at 1280 and 375 (no overflow); constellation in light and dark at 1280, centre clear.
+
+**Not verified:** the wizard's suggestion chip in a browser (needs sign-in), and Gemini's answer (no key locally).
+**Next:** owner review of the hero on a phone and a desktop before push.
+
 ## 2026-10-12 — GA4 migration applied; searchable category picker with icons
 
 **Done:**

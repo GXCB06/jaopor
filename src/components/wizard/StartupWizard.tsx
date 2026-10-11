@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { StartupCard, type CardStartup } from "@/components/StartupCard";
 import { ProvinceField } from "@/components/profile-edit/ProvinceField";
 import { Link, useRouter } from "@/i18n/navigation";
-import { slugify } from "@/lib/catalog";
+import { isCategory, slugify } from "@/lib/catalog";
 import {
   logAddEvent,
   newAttemptId,
@@ -152,6 +152,10 @@ export function StartupWizard({
   // An uploaded logo and its object URL for the preview tile.
   const [logo, setLogo] = useState<{ file: File; url: string } | null>(null);
   const [autoLogo, setAutoLogo] = useState<string | null>(null);
+  // Suggested from the pasted website: a one-click chip, never preselected (UX audit M-9).
+  const [suggestedCategory, setSuggestedCategory] = useState<string | null>(
+    null,
+  );
   // Auto-fill status for one link: reading → done (nothing is shown when the site can't be read).
   const [fill, setFill] = useState<{
     url: string;
@@ -229,7 +233,12 @@ export function StartupWizard({
           signal: ctrl.signal,
         });
         if (!res.ok) return setFill(null);
-        const site = (await res.json()) as SiteAutofill;
+        const site = (await res.json()) as SiteAutofill & {
+          category?: string | null;
+        };
+        setSuggestedCategory(
+          site.category && isCategory(site.category) ? site.category : null,
+        );
         const prev = auto.current;
         const next = {
           name: site.name?.slice(0, 80) ?? "",
@@ -499,6 +508,7 @@ export function StartupWizard({
                 required
                 value={category}
                 onChange={setCategory}
+                suggestion={suggestedCategory}
               />
             </Field>
             <Field

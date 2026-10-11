@@ -56,6 +56,8 @@
     "olympics": "Province Olympics"
   },
   "Home": {
+    "categoryRail": "Categories",
+    "allCategories": "All categories",
     "tagline": "Ordinary people can achieve extraordinary things.",
     "subline": "Discover what people build on JaoPor: websites, apps, games, SaaS, LINE OAs and GitHub projects. Explore the stats their owners connect, from visitors, revenue and MRR to commits. Verified numbers show their source and when they were last checked. List yours with a single link, at any stage.",
     "searchPlaceholder": "\"AI tool built with Claude Code\"",
@@ -889,6 +891,11 @@
     "addCta": "Add a project"
   },
   "Olympics": {
+    "pioneersTitle": "Province pioneers",
+    "pioneersSub": "The first project from each province. List first and your name stays here.",
+    "firstIn": "First in {province}",
+    "newestTitle": "Just listed",
+    "newestSub": "The newest projects from across the country",
     "title": "Province Olympics",
     "subtitle": "Which province has the startups and products with the best numbers? Judged on numbers from real systems, never typed-in figures.",
     "metric": "Metric",
@@ -2117,6 +2124,7 @@
     "wizardHint": "Show verified numbers without the name, logo or links. You can change it later on the edit page."
   },
   "CategoryPicker": {
+    "suggested": "Suggested from your website:",
     "placeholder": "Type a category, e.g. games, education, shop",
     "noMatch": "No such category. Try another word or pick “Other”.",
     "popular": "Popular categories"

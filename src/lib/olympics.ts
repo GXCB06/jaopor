@@ -288,3 +288,54 @@ export function boardSummary(ranked: ProvinceRank[]): {
     total: ranked.reduce((s, r) => s + r.total, 0),
   };
 }
+
+/** A listed project for the "pioneers" and "newest" panels (Olympics page). */
+export type ActivityProject = {
+  slug: string;
+  name: string;
+  logo_path: string | null;
+  province: string | null;
+  created_at: string;
+  owner: {
+    handle: string | null;
+    display_name: string | null;
+    avatar_url: string | null;
+  } | null;
+};
+
+/**
+ * Each province's first project ("ผู้บุกเบิกจังหวัด", owner-approved 2026-10-12), newest pioneer
+ * first so a province that just opened gets seen. Unknown provinces are skipped.
+ */
+export function provincePioneers(
+  rows: ActivityProject[],
+  region: Region | null = null,
+): (ActivityProject & { province: string })[] {
+  const first = new Map<string, ActivityProject & { province: string }>();
+  for (const r of [...rows].sort((a, b) =>
+    a.created_at.localeCompare(b.created_at),
+  )) {
+    const def = getProvince(r.province);
+    if (!def || (region && def.region !== region) || first.has(def.slug))
+      continue;
+    first.set(def.slug, { ...r, province: def.slug });
+  }
+  return [...first.values()].sort((a, b) =>
+    b.created_at.localeCompare(a.created_at),
+  );
+}
+
+/** The newest projects with a province ("มาใหม่ล่าสุด"), optionally in one region. */
+export function newestProjects(
+  rows: ActivityProject[],
+  limit: number,
+  region: Region | null = null,
+): (ActivityProject & { province: string })[] {
+  return rows
+    .filter((r) => {
+      const def = getProvince(r.province);
+      return def && (!region || def.region === region);
+    })
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .slice(0, limit) as (ActivityProject & { province: string })[];
+}
