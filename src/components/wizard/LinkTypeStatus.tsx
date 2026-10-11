@@ -1,5 +1,6 @@
 "use client";
 
+import { ChoiceSelect } from "@/components/core/ChoiceSelect";
 import { useTranslations } from "next-intl";
 import {
   LINK_CHOICES,
@@ -28,20 +29,21 @@ export function LinkTypeStatus({
       {value && (
         <label className="flex flex-wrap items-center gap-2 text-caption text-muted-foreground">
           <span>{lt("type")}</span>
-          <select
+          <ChoiceSelect
+            variant="filter"
+            aria-label={lt("type")}
             value={value}
-            onChange={(e) => {
-              const next = e.target.value as LinkChoice;
+            onValueChange={(v) => {
+              const next = v as LinkChoice;
               onChoice(next === check.detected ? null : next);
             }}
-            className="h-8 rounded-md border bg-background px-2 text-caption text-foreground"
-          >
-            {LINK_CHOICES.map((c) => (
-              <option key={c} value={c}>
-                {linkChoiceLabel(lt, c)}
-              </option>
-            ))}
-          </select>
+            options={LINK_CHOICES.map((c) => ({
+              value: c,
+              label: linkChoiceLabel(lt, c),
+            }))}
+            fullWidth={false}
+            className="w-auto text-foreground"
+          />
           {!choice && check.detected && (
             <span className="text-faint">{lt("autoDetected")}</span>
           )}

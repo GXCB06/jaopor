@@ -144,7 +144,7 @@ Where the warmth goes: welcome moments, empty states, Add-project intro, the pos
 - **Radius:** `--radius: 0.5rem`. Compact cards and dropdown buttons `rounded-lg` (8); profile tiles, insight cards, chart card, leaderboard, large cards `rounded-xl` (12); buttons/inputs `rounded-md` (6); pills `rounded-full`; tags `rounded-sm` (4).
 - **Spacing:** compact card `p-3`, large card / tile `p-4`, chart card `p-6`; section gap `mt-9` (36); grids `gap-3`.
 - **Elevation:** none. Separation from `bg-card` + `border`.
-- **Native controls:** `color-scheme` follows the theme (dark `<select>` popups).
+- **Native controls:** `color-scheme` follows the theme (date pickers, scrollbars). No native `<select>` anywhere: see §5 Dropdowns.
 
 ## 5. Components
 
@@ -202,6 +202,15 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 - **Outline/ghost-card:** `border bg-card hover:bg-accent rounded-md text-xs font-medium` (profile Share)
 - **Dropdown button:** `h-7 rounded-lg border bg-secondary px-2.5 text-xs` + chevron (leaderboard metric, chart range)
 - **Text link:** `text-caption text-faint hover:text-foreground` with trailing `›`
+
+### Dropdowns (2026-10-11, owner report: the filter list opened upward past the screen edge, one choice only)
+
+Rule for **every** list that drops from a control (selects, filters, action menus, search results, comboboxes): it **opens below its trigger, never above, and stays inside the screen**. Before it opens, the page scrolls just enough to give it room (never so far that the trigger slides under the sticky header), and the list is capped to the room that is there and scrolls inside (`src/lib/ui/room-below.ts`). No native `<select>`: the browser decides where its popup goes (Chrome opened it upward).
+
+- **ChoiceSelect** (`core/ChoiceSelect.tsx`, Radix Select, popper below, `align start`, at least the trigger's width, max `22rem` / the room below): one choice. Variants: `field` (forms; = `inputClass` box, h-9), `filter` (sidebars; h-8 `rounded-md border border-input bg-background text-caption`), `chip` (= Dropdown button above). Rows `py-2 text-sm` (touch-sized), checked row `font-semibold` + brand check on the right; group headings `text-2xs font-semibold text-faint`. Optional fields keep the placeholder as a choosable first row so a choice can be cleared. In forms it posts one hidden field (works in GET forms); `required` blocks submit on the empty value.
+- **MultiChoice** (`core/MultiChoice.tsx`, Radix Popover below): several choices, for **filters**. Trigger = `filter` box; text = placeholder ("ทุกหมวดหมู่") / the one label / "{first} +{n}" (all labels for screen readers). Panel: a search box when there are more than 12 options (matches Thai, English and aliases, e.g. "กทม"); checkbox rows (`accent-(--brand)`), grouped like the old optgroups; footer "ล้าง" · "เลือก n รายการ" · "เสร็จ". On touch screens opening doesn't focus the search box (the keyboard would eat the room).
+- **URL:** one parameter, values joined by commas (`?category=saas,fintech`); repeated parameters are read too, unknown values dropped, max 20 (`src/lib/url-list.ts`). Within a filter any value matches (OR); different filters combine (AND).
+- **Action menus** (DropdownMenu wrapper in `ui/dropdown-menu.tsx`): side bottom, capped to the room below; a menu taller than that scrolls the page and grows. **QuickSearch** results and **VocabCombobox** follow the same rule (QuickSearch no longer flips upward near the page bottom; phones still get the full-screen sheet).
 
 ### StartupCard — compact (home rows)
 
@@ -531,7 +540,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 ### Builders directory (`/builders`, Phase 9c)
 
 - Same frame as `/startups`: centered hero (BrandPill, H1 "คนสร้าง", subline, a people search box = GET form `q`, and "สร้างโปรไฟล์ของคุณ" for visitors without a profile) → `lg:grid-cols-[15rem_minmax(0,1fr)]` filter sidebar (CSS-only toggle below `lg`) + results.
-- **Filters** (one GET form, "ใช้ตัวกรอง" / "ล้าง"): ทักษะ (select, optgroups by skill group) · พื้นที่ (one select: a region, or a province grouped by region; param `area`) · สถานะ · สร้างด้วย (AI tool) · "เฉพาะคนที่มีตัวเลขยืนยันแล้ว" checkbox. Only what an anonymous visitor may see is filterable: a hidden province or hidden skills never match.
+- **Filters** (one GET form, "ใช้ตัวกรอง" / "ล้าง"; every list is a **MultiChoice**, §5 Dropdowns): ทักษะ (grouped by skill group) · พื้นที่ (regions and provinces in one list, "ทั้งภาค…" first in each region group; param `area`) · สถานะ · สร้างด้วย (AI tool) · "เฉพาะคนที่มีตัวเลขยืนยันแล้ว" checkbox. Only what an anonymous visitor may see is filterable: a hidden province or hidden skills never match.
 - **Order:** verified revenue → verified works → works → newest. 24 per page, the same prev / next pager.
 - **BuilderCard** (`grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3`): `rounded-xl border bg-card p-4` + hover lift (`hover:-translate-y-0.5 hover:border-foreground/20`), whole card links to `/u/{handle}`. Row: avatar 48 round (initials fallback) · name `font-semibold truncate` + `@handle text-2xs text-faint`. Headline `text-caption text-muted-foreground line-clamp-2`. StatusPill. Up to 3 skill chips (superpowers `border-brand/40 text-brand-text`, others `bg-secondary`). Footer `border-t pt-3 text-caption tabular-nums`: "n ผลงาน" · "฿X/เดือน" with a positive ✓ only when there is verified revenue; province (MapPin) right-aligned when public.
 - **StatusPill** (shared by the profile page and cards): `rounded-full border px-2.5 py-0.5 text-2xs font-semibold` + 6px dot; looking for co-founder / open to work = `positive` tint, networking = `brand` tint, busy = neutral `bg-secondary text-muted-foreground`.
@@ -561,7 +570,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 ### Feed (`/feed`, Phase 10c, Figma "Feed Ux/ui" 160-555)
 
 - Three columns from `xl` (`xl:grid-cols-[12.5rem_minmax(0,40rem)_minmax(0,1fr)] gap-8`, max-w-6xl); at `lg` two columns with the right rail under the posts (1024px is too narrow for three); below `lg` one column, the view tabs become a horizontal scroll row and type / province / category fold into the CSS-only "ตัวกรอง" toggle as on /startups.
-- **Left:** "ฟีด" `text-2xl font-extrabold` + "คนสร้างอัปเดตอะไรกันบ้าง"; view links ล่าสุด / กำลังติดตาม / ยอดนิยมสัปดาห์นี้ (`h-10 rounded-lg px-3`, active `bg-secondary font-bold`); "ประเภท" chips (ทั้งหมด + 5 types, each in its type colour, active = filled `bg-foreground text-background`); จังหวัด and หมวดหมู่ selects (GET form). Everything lives in the URL (`view`, `type`, `province`, `category`, `waiting`).
+- **Left:** "ฟีด" `text-2xl font-extrabold` + "คนสร้างอัปเดตอะไรกันบ้าง"; view links ล่าสุด / กำลังติดตาม / ยอดนิยมสัปดาห์นี้ (`h-10 rounded-lg px-3`, active `bg-secondary font-bold`); "ประเภท" chips (ทั้งหมด + 5 types, each in its type colour, active = filled `bg-foreground text-background`); จังหวัด and หมวดหมู่ MultiChoice filters (GET form, several values each). Everything lives in the URL (`view`, `type`, `province`, `category`, `waiting`).
 - **Center:** Composer, then PostCards (`space-y-4`), then "โหลดเพิ่ม" (`h-12 w-full rounded-xl border`) which appends the next page in place (cursor = the last post's time; popular uses an offset). Empty: dashed one-liner per view (following with no follows → "ติดตามคนสร้างเพื่อเห็นอัปเดตที่นี่" + link to /builders).
 - **Right rail** (`space-y-5`): "คนสร้างที่น่าติดตาม" (3 rows: avatar 36, name + "● หา Co-founder" in positive when looking, startup · province, ติดตาม outline button) · "อัปเดตบ่อยสุดสัปดาห์นี้" (top 3 startups by posts in 7 days: logo 28, name, "n โพสต์") · "รอ Feedback จากคุณ" teal card (`border-info/40 bg-info/10`; count of feedback posts from the last 14 days that aren't mine and I haven't commented on; "ดูโพสต์ที่รอคำตอบ" → `?type=feedback&waiting=1`). Signed-out visitors see the count of feedback posts with no comments yet.
 - "ยอดนิยมสัปดาห์นี้" = posts of the last 7 days ranked by (likes + 2 × comments) / (hours + 2)^1.5.
@@ -610,7 +619,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 ### Directory (`/startups`, Figma "Marketplace")
 
 - Hero (brand pill, H1, subline, ProviderStrip, SearchBar) then `grid lg:grid-cols-[15rem_1fr] gap-4`.
-- **FilterSidebar** (`rounded-xl border bg-card p-4 space-y-4`, title "FILTERS" `text-3xs text-faint` above it): Category (select) · AI tool (select) · Verified only (checkbox) · Project type (Website / App / LINE OA / GitHub select) · Looking for (select) · Reset link. GET form, works without JS; on mobile it collapses into a `<details>` "Filters" disclosure.
+- **FilterSidebar** (`rounded-xl border bg-card p-4 space-y-4`, title "FILTERS" `text-3xs text-faint` above it): Category · Province · AI tool · Project type (Website / App / LINE OA / GitHub) · Looking for, each a **MultiChoice** (several values, any matches; §5 Dropdowns) · Verified only (checkbox) · Reset link. GET form; on mobile it collapses behind the "Filters" toggle (CSS checkbox, no JS).
 - Results header: "{n} startups found" (`text-caption text-muted-foreground`) + sort select (Top MRR · Most visitors · Newest · Most commits).
 - Grid `sm:grid-cols-2 gap-3` of large StartupCards; pagination below.
 

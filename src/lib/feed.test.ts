@@ -13,8 +13,8 @@ describe("feed filters", () => {
     ).toEqual({
       view: "popular",
       type: "lesson",
-      province: "mukdahan",
-      category: "saas",
+      province: ["mukdahan"],
+      category: ["saas"],
       waiting: false,
     });
     expect(
@@ -22,9 +22,22 @@ describe("feed filters", () => {
     ).toEqual({
       view: "latest",
       type: undefined,
-      province: undefined,
-      category: undefined,
+      province: [],
+      category: [],
       waiting: false,
+    });
+  });
+
+  it("reads several provinces / categories (comma or repeated) and writes them back joined", () => {
+    const f = parseFeedFilters({
+      province: ["bangkok,atlantis", "chiang-mai"],
+      category: "saas,saas,ai",
+    });
+    expect(f.province).toEqual(["bangkok", "chiang-mai"]);
+    expect(f.category).toEqual(["saas", "ai"]);
+    expect(feedQuery(f)).toEqual({
+      province: "bangkok,chiang-mai",
+      category: "saas,ai",
     });
   });
 

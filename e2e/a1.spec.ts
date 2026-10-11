@@ -13,18 +13,20 @@ test("leaderboard labels carry the period and the footer defines the board", asy
   await page.goto("/th");
   const board = page.locator("#leaderboard");
   await expect(board).toBeVisible();
-  const select = board.locator("select");
+  const select = board.getByRole("combobox");
+  await select.click();
   for (const label of [
     "MRR ปัจจุบัน",
     "รายได้ 30 วัน",
     "ผู้เข้าชม 30 วัน",
     "Commits ทั้งหมด",
   ])
-    await expect(select.locator("option", { hasText: label })).toHaveCount(1);
+    await expect(page.getByRole("option", { name: label })).toHaveCount(1);
   // Each board has its own definition line; switching boards switches it.
-  await select.selectOption("commits");
+  await page.getByRole("option", { name: "Commits ทั้งหมด" }).click();
   await expect(board).toContainText("Commits ทั้งหมดบน branch หลัก");
-  await select.selectOption("visitors");
+  await select.click();
+  await page.getByRole("option", { name: "ผู้เข้าชม 30 วัน" }).click();
   await expect(board).toContainText("นับโดยสคริปต์ JaoPor");
   await expectNoHorizontalScroll(page, "/th");
 });

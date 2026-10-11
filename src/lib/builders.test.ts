@@ -67,6 +67,17 @@ describe("builders directory", () => {
     expect(f({ region: "north", tool: "cursor" })).toEqual([]);
   });
 
+  it("a list matches any of its values; a province and a region add up", () => {
+    const f = (x: Parameters<typeof filterBuilders>[1]) =>
+      filterBuilders(list, x, regionOf).map((r) => r.handle);
+    expect(f({ tool: ["cursor", "nothing"] })).toEqual(["nok"]);
+    expect(f({ province: ["bangkok"], region: ["north"] }).sort()).toEqual([
+      "nok",
+      "somchai",
+    ]);
+    expect(f({ skill: [] })).toHaveLength(3);
+  });
+
   it("a hidden province never matches a province or region filter", () => {
     expect(
       filterBuilders(list, { region: "central" }, regionOf).map(

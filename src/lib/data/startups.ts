@@ -5,6 +5,7 @@ import { BOARD_DEFINITIONS, isBoardEligible } from "@/lib/leaderboard";
 import type { AiTool, Category } from "@/lib/catalog";
 import type { Region } from "@/lib/config/provinces";
 import type { LookingFor } from "@/lib/links";
+import { asList } from "@/lib/url-list";
 import {
   rankProvinces,
   type OlympicMetric,
@@ -169,14 +170,15 @@ export type DirectorySort = (typeof DIRECTORY_SORTS)[number];
 export const PROJECT_TYPES = ["website", "app", "line", "github"] as const;
 export type ProjectType = (typeof PROJECT_TYPES)[number];
 
+/** Each list filter matches any of its values (Design.md §5 Dropdowns); filters combine with AND. */
 export type DirectoryFilters = {
   q?: string;
-  category?: Category;
-  tool?: AiTool;
+  category?: Category | Category[];
+  tool?: AiTool | AiTool[];
   verified?: boolean;
-  type?: ProjectType;
-  lookingFor?: LookingFor;
-  province?: string;
+  type?: ProjectType | ProjectType[];
+  lookingFor?: LookingFor | LookingFor[];
+  province?: string | string[];
   sort?: DirectorySort;
   page?: number;
 };
@@ -190,20 +192,33 @@ const SORT_COLUMN = {
 
 export const PAGE_SIZE = 24;
 
+/** PostgREST OR expression: a project with a link of any of these types. "app" = either store. */
+export function typeFilter(types: readonly ProjectType[]): string {
+  return types
+    .flatMap((t) =>
+      t === "app"
+        ? ["app_store_url.not.is.null", "play_store_url.not.is.null"]
+        : [`${t}_url.not.is.null`],
+    )
+    .join(",");
+}
+
 export async function listStartups(
   filters: DirectoryFilters,
 ): Promise<{ rows: StartupRow[]; total: number }> {
   const mode = await schemaMode();
   let query = from("startups").select(select(mode), { count: "exact" });
-  if (filters.category) query = query.eq("category", filters.category);
-  if (filters.province) query = query.eq("province", filters.province);
-  if (filters.tool) query = query.contains("ai_tools", [filters.tool]);
+  const categories = asList(filters.category);
+  const provinces = asList(filters.province);
+  const tools = asList(filters.tool);
+  const lookingFor = asList(filters.lookingFor);
+  const types = asList(filters.type);
+  if (categories.length) query = query.in("category", categories);
+  if (provinces.length) query = query.in("province", provinces);
+  if (tools.length) query = query.overlaps("ai_tools", tools);
   if (filters.verified) query = withRevenueShown(mode, query);
-  if (filters.lookingFor)
-    query = query.contains("looking_for", [filters.lookingFor]);
-  if (filters.type === "app")
-    query = query.or("app_store_url.not.is.null,play_store_url.not.is.null");
-  else if (filters.type) query = query.not(`${filters.type}_url`, "is", null);
+  if (lookingFor.length) query = query.overlaps("looking_for", lookingFor);
+  if (types.length) query = query.or(typeFilter(types));
   if (filters.q) {
     // Strip PostgREST filter syntax characters before building the OR expression.
     const term = filters.q

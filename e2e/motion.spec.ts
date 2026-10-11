@@ -138,19 +138,16 @@ test("switching the leaderboard slides rows to their new rank", async ({
   await page.goto("/th");
   const board = page.locator("#leaderboard");
   await board.scrollIntoViewIfNeeded();
-  const select = board.locator("select");
+  const select = board.getByRole("combobox");
   const ids = () =>
     board
       .locator("tbody tr[data-id]")
       .evaluateAll((trs) => trs.map((tr) => tr.getAttribute("data-id")));
-  const options = await select
-    .locator("option")
-    .evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
   const before = await ids();
-  const current = await select.inputValue();
-  const other = options.find((o) => o !== current);
-  test.skip(!other, "only one board");
-  await select.selectOption(other!);
+  await select.click();
+  const other = page.getByRole("option", { selected: false }).first();
+  test.skip((await other.count()) === 0, "only one board");
+  await other.click();
   const running = await page.evaluate(
     () =>
       document

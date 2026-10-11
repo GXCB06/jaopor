@@ -156,7 +156,11 @@ export async function feedRail(now: number): Promise<FeedRail> {
       .eq("is_auto", false)
       .gte("created_at", daysAgo(7, now))
       .limit(500),
-    waitingPosts(viewer, { view: "latest", waiting: true }, now),
+    waitingPosts(
+      viewer,
+      { view: "latest", waiting: true, province: [], category: [] },
+      now,
+    ),
   ]);
 
   const skip = new Set([...followed, viewer ?? ""]);

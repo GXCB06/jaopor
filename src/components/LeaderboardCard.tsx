@@ -1,7 +1,7 @@
 "use client";
 
+import { ChoiceSelect } from "@/components/core/ChoiceSelect";
 import { Medal } from "./core/Medal";
-import { ChevronDownIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Link } from "@/i18n/navigation";
@@ -125,27 +125,19 @@ export function LeaderboardCard({
             {t("updatedDaily")}
           </span>
         </h2>
-        <label className="relative">
-          <span className="sr-only">{t("metric")}</span>
-          <select
-            value={metric}
-            onChange={(e) => {
-              setMetric(e.target.value as BoardMetric);
-              setExpanded(false);
-            }}
-            className="h-7 appearance-none rounded-lg border bg-secondary pr-7 pl-2.5 text-xs"
-          >
-            {(Object.keys(boards) as BoardMetric[]).map((m) => (
-              <option key={m} value={m}>
-                {t(`metrics.${m}`)}
-              </option>
-            ))}
-          </select>
-          <ChevronDownIcon
-            className="pointer-events-none absolute top-1/2 right-2 size-3.5 -translate-y-1/2 text-faint"
-            aria-hidden="true"
-          />
-        </label>
+        <ChoiceSelect
+          variant="chip"
+          aria-label={t("metric")}
+          value={metric}
+          onValueChange={(v) => {
+            setMetric(v as BoardMetric);
+            setExpanded(false);
+          }}
+          options={(Object.keys(boards) as BoardMetric[]).map((m) => ({
+            value: m,
+            label: t(`metrics.${m}`),
+          }))}
+        />
       </div>
 
       {rows.length === 0 ? (

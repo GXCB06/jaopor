@@ -2,18 +2,16 @@ import { SlidersHorizontalIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { FollowButton } from "@/components/builder/FollowButton";
+import { MultiChoice } from "@/components/core/MultiChoice";
 import { Avatar } from "@/components/posts/bits";
 import { Composer } from "@/components/posts/Composer";
 import { FeedList } from "@/components/posts/FeedList";
 import { StartupLogo } from "@/components/StartupBits";
 import { Link } from "@/i18n/navigation";
 import { CATEGORY_LIST } from "@/lib/config/categories";
+import { provinceGroups } from "@/lib/config/choice-options";
 import { localizedName } from "@/lib/config/localized";
-import {
-  PROVINCE_LIST,
-  REGION_LIST,
-  getProvince,
-} from "@/lib/config/provinces";
+import { getProvince } from "@/lib/config/provinces";
 import { feedPage, feedRail } from "@/lib/data/feed";
 import { myPostableStartups, viewerId } from "@/lib/data/posts";
 import { FEED_VIEWS, feedQuery, parseFeedFilters } from "@/lib/feed";
@@ -41,9 +39,6 @@ const TYPE_TEXT: Record<string, string> = {
   lesson: "text-muted-foreground",
   feedback: "text-info",
 };
-const selectCls =
-  "h-9 w-full rounded-md border border-input bg-background px-2 text-caption";
-
 // Design.md §5 Feed: filters · composer + posts + โหลดเพิ่ม · right rail.
 export default async function FeedPage({
   params,
@@ -149,39 +144,26 @@ export default async function FeedPage({
           <span className="block text-2xs tracking-wider text-faint uppercase">
             {t("province")}
           </span>
-          <select
+          <MultiChoice
             name="province"
-            defaultValue={f.province ?? ""}
-            className={selectCls}
-          >
-            <option value="">{t("allProvinces")}</option>
-            {REGION_LIST.map((r) => (
-              <optgroup key={r.slug} label={localizedName(r, locale)}>
-                {PROVINCE_LIST.filter((p) => p.region === r.slug).map((p) => (
-                  <option key={p.slug} value={p.slug}>
-                    {localizedName(p, locale)}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
+            defaultValue={f.province}
+            placeholder={t("allProvinces")}
+            groups={provinceGroups(locale)}
+          />
         </label>
         <label className="block space-y-2">
           <span className="block text-2xs tracking-wider text-faint uppercase">
             {t("category")}
           </span>
-          <select
+          <MultiChoice
             name="category"
-            defaultValue={f.category ?? ""}
-            className={selectCls}
-          >
-            <option value="">{t("allCategories")}</option>
-            {CATEGORY_LIST.map((c) => (
-              <option key={c.slug} value={c.slug}>
-                {localizedName(c, locale)}
-              </option>
-            ))}
-          </select>
+            defaultValue={f.category}
+            placeholder={t("allCategories")}
+            options={CATEGORY_LIST.map((c) => ({
+              value: c.slug,
+              label: localizedName(c, locale),
+            }))}
+          />
         </label>
         <button
           type="submit"

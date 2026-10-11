@@ -1,5 +1,6 @@
 "use client";
 
+import { ChoiceSelect } from "@/components/core/ChoiceSelect";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -255,24 +256,25 @@ export function ScreenshotsManager({
                 >
                   <ChevronLeftIcon className="size-3.5" aria-hidden="true" />
                 </button>
-                <select
-                  value={s.kind}
-                  aria-label={t("kind", { n: i + 1 })}
-                  onChange={(e) => {
-                    const kind = e.target.value as ScreenshotKind;
-                    setShots((all) =>
-                      all.map((x) => (x.id === s.id ? { ...x, kind } : x)),
-                    );
-                    void update(s.id, { kind });
-                  }}
-                  className="h-7 min-w-0 flex-1 rounded-md border bg-input/30 px-1 text-2xs"
-                >
-                  {SCREENSHOT_KINDS.map((k) => (
-                    <option key={k} value={k}>
-                      {t(`kinds.${k}`)}
-                    </option>
-                  ))}
-                </select>
+                <span className="min-w-0 flex-1">
+                  <ChoiceSelect
+                    variant="filter"
+                    aria-label={t("kind", { n: i + 1 })}
+                    value={s.kind}
+                    onValueChange={(v) => {
+                      const kind = v as ScreenshotKind;
+                      setShots((all) =>
+                        all.map((x) => (x.id === s.id ? { ...x, kind } : x)),
+                      );
+                      void update(s.id, { kind });
+                    }}
+                    options={SCREENSHOT_KINDS.map((k) => ({
+                      value: k,
+                      label: t(`kinds.${k}`),
+                    }))}
+                    className="h-7 px-1.5 text-2xs"
+                  />
+                </span>
                 <button
                   type="button"
                   onClick={() => void reorder(i, i + 1)}

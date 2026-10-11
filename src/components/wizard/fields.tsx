@@ -1,9 +1,10 @@
 "use client";
 
+import { ChoiceSelect } from "@/components/core/ChoiceSelect";
 import { cn } from "@/lib/utils";
 
-// Native form controls styled to Design.md §5 (SearchBar/Input tokens). Native <select> keeps
-// mobile pickers usable and needs no extra primitive.
+// Form controls styled to Design.md §5 (SearchBar/Input tokens). Select is the shared
+// ChoiceSelect (opens below, never past the screen edge: Design.md §5 Dropdowns).
 
 export const inputClass =
   "h-9 w-full rounded-md border border-input bg-input/30 px-3 text-sm placeholder:text-muted-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none disabled:opacity-50";
@@ -78,20 +79,19 @@ export function Select({
   required?: boolean;
 }) {
   return (
-    <select
+    <ChoiceSelect
       id={id}
       required={required}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={inputClass}
-    >
-      {placeholder !== undefined && <option value="">{placeholder}</option>}
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
-      ))}
-    </select>
+      onValueChange={onChange}
+      placeholder={placeholder}
+      // Optional field: the placeholder stays choosable, so a choice can be cleared again.
+      options={
+        placeholder !== undefined && !required
+          ? [{ value: "", label: placeholder }, ...options]
+          : options
+      }
+    />
   );
 }
 

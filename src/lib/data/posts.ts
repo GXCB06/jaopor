@@ -6,6 +6,7 @@ import type { PostType } from "@/lib/posts";
 import { createPublicClient, logoUrl } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import { schemaMode, type SchemaMode } from "./startup-columns";
+import { asList } from "@/lib/url-list";
 
 // Phase 10 reads. The viewer's own client, so RLS decides visibility (hidden posts and posts on
 // unpublished startups only for their author) and post_likes returns only my likes.
@@ -198,8 +199,9 @@ export async function listPosts(opts: {
   notAuthor?: string;
   startupId?: number;
   type?: PostType;
-  province?: string;
-  category?: string;
+  /** Any of these (Design.md §5 Dropdowns). */
+  province?: string | string[];
+  category?: string | string[];
   /** Only posts created at or after this time. */
   since?: string;
   limit?: number;
@@ -219,8 +221,10 @@ export async function listPosts(opts: {
   if (opts.notAuthor) q = q.neq("author_id", opts.notAuthor);
   if (opts.startupId) q = q.eq("startup_id", opts.startupId);
   if (opts.type) q = q.eq("type", opts.type);
-  if (opts.province) q = q.eq("province", opts.province);
-  if (opts.category) q = q.eq("category", opts.category);
+  const provinces = asList(opts.province);
+  const categories = asList(opts.category);
+  if (provinces.length) q = q.in("province", provinces);
+  if (categories.length) q = q.in("category", categories);
   if (opts.since) q = q.gte("created_at", opts.since);
   if (opts.before) q = q.lt("created_at", opts.before);
   const { data, error } = await q;

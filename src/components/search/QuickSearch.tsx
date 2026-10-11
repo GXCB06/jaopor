@@ -15,6 +15,7 @@ import { PersonPhoto } from "@/components/PersonPhoto";
 import { CATEGORY_LIST, getCategory } from "@/lib/config/categories";
 import { localizedName } from "@/lib/config/localized";
 import { highlightParts } from "@/lib/search-text";
+import { makeRoomBelow } from "@/lib/ui/room-below";
 import { cn } from "@/lib/utils";
 import { StartupLogo } from "../StartupBits";
 
@@ -86,7 +87,7 @@ export function QuickSearch({
   const [q, setQ] = useState(defaultValue);
   const [open, setOpen] = useState(false);
   const [sheet, setSheet] = useState(false);
-  const [up, setUp] = useState(false);
+  const [maxHeight, setMaxHeight] = useState<number>();
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<Results | null>(null);
   const [active, setActive] = useState(-1);
@@ -136,9 +137,11 @@ export function QuickSearch({
   }, [open, sheet]);
 
   function openPanel() {
-    const rect = rootRef.current?.getBoundingClientRect();
-    if (rect) setUp(window.innerHeight - rect.bottom < 440);
+    // Phones get the full-screen sheet; elsewhere the panel always opens below the box
+    // (Design.md §5 Dropdowns), scrolling the page to make room for it.
     if (window.innerWidth < 640) setSheet(true);
+    else if (rootRef.current)
+      setMaxHeight(Math.min(420, makeRoomBelow(rootRef.current, 420)));
     setOpen(true);
   }
   function close() {
@@ -485,10 +488,10 @@ export function QuickSearch({
             sheet
               ? "mt-2 min-h-0 flex-1 overflow-y-auto"
               : cn(
-                  "absolute inset-x-0 z-30 max-h-[420px] overflow-y-auto rounded-xl border bg-popover p-1.5 shadow-lg",
-                  up ? "bottom-full mb-2" : "top-full mt-2",
+                  "absolute inset-x-0 top-full z-30 mt-2 max-h-[420px] overflow-y-auto rounded-xl border bg-popover p-1.5 shadow-lg",
                 ),
           )}
+          style={!sheet && maxHeight ? { maxHeight } : undefined}
         >
           {panelBody}
         </div>

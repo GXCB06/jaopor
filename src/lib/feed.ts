@@ -4,6 +4,7 @@
 import { isCategory } from "./catalog";
 import { isProvince } from "./config/provinces";
 import { POST_TYPES, type PostType } from "./posts";
+import { joinList, parseList } from "./url-list";
 
 export const FEED_VIEWS = ["latest", "following", "popular"] as const;
 export type FeedView = (typeof FEED_VIEWS)[number];
@@ -11,8 +12,9 @@ export type FeedView = (typeof FEED_VIEWS)[number];
 export type FeedFilters = {
   view: FeedView;
   type?: PostType;
-  province?: string;
-  category?: string;
+  /** Any of these provinces / categories (multi-choice filters, `?province=a,b`). */
+  province: string[];
+  category: string[];
   /** "รอ Feedback จากคุณ": feedback posts I haven't commented on (forces type = feedback). */
   waiting: boolean;
 };
@@ -27,8 +29,6 @@ const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 export function parseFeedFilters(sp: Params): FeedFilters {
   const view = one(sp.view);
   const type = one(sp.type);
-  const province = one(sp.province);
-  const category = one(sp.category);
   const waiting = one(sp.waiting) === "1";
   return {
     view: (FEED_VIEWS as readonly string[]).includes(view ?? "")
@@ -39,8 +39,8 @@ export function parseFeedFilters(sp: Params): FeedFilters {
       : (POST_TYPES as readonly string[]).includes(type ?? "")
         ? (type as PostType)
         : undefined,
-    province: isProvince(province) ? province : undefined,
-    category: isCategory(category) ? category : undefined,
+    province: parseList(sp.province, isProvince),
+    category: parseList(sp.category, isCategory),
     waiting,
   };
 }
@@ -53,8 +53,8 @@ export function feedQuery(
   const all: Record<string, string | undefined> = {
     view: f.view === "latest" ? undefined : f.view,
     type: f.waiting ? undefined : f.type,
-    province: f.province,
-    category: f.category,
+    province: joinList(f.province),
+    category: joinList(f.category),
     waiting: f.waiting ? "1" : undefined,
     ...patch,
   };

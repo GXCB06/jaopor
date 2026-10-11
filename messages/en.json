@@ -2082,5 +2082,13 @@
       "badge": "The badge only",
       "private": "Nothing"
     }
+  },
+  "Choice": {
+    "search": "Search",
+    "clear": "Clear",
+    "done": "Done",
+    "more": "+{count}",
+    "noMatch": "No matches",
+    "selected": "{count, plural, =0 {None selected} other {# selected}}"
   }
 }

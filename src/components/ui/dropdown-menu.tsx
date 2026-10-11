@@ -4,11 +4,58 @@ import * as React from "react";
 import { cn } from "cn";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 import { CheckIcon, ChevronRightIcon } from "lucide-react";
+import {
+  MIN_LIST_HEIGHT,
+  makeRoomBelow,
+  spaceBelow,
+} from "@/lib/ui/room-below";
+
+// JaoPor (Design.md §5 Dropdowns): a menu opens below its trigger and stays inside the screen.
+// On open it is capped to the room under the trigger (so Radix never flips it upward); once
+// mounted, a menu taller than that scrolls the page just enough and grows into the new room.
+type Room = {
+  trigger: React.RefObject<HTMLElement | null>;
+  setTrigger: (el: HTMLElement | null) => void;
+  maxHeight?: number;
+  setMaxHeight: (n: number) => void;
+};
+const RoomContext = React.createContext<Room | null>(null);
 
 function DropdownMenu({
+  onOpenChange,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
-  return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
+  const trigger = React.useRef<HTMLElement | null>(null);
+  const [maxHeight, setMaxHeight] = React.useState<number>();
+  const room = React.useMemo(
+    () => ({
+      trigger,
+      setTrigger: (el: HTMLElement | null) => {
+        trigger.current = el;
+      },
+      maxHeight,
+      setMaxHeight,
+    }),
+    [maxHeight],
+  );
+  return (
+    <RoomContext.Provider value={room}>
+      <DropdownMenuPrimitive.Root
+        data-slot="dropdown-menu"
+        onOpenChange={(next) => {
+          if (next && trigger.current)
+            setMaxHeight(
+              Math.max(
+                MIN_LIST_HEIGHT,
+                Math.floor(spaceBelow(trigger.current)),
+              ),
+            );
+          onOpenChange?.(next);
+        }}
+        {...props}
+      />
+    </RoomContext.Provider>
+  );
 }
 
 function DropdownMenuPortal({
@@ -20,11 +67,18 @@ function DropdownMenuPortal({
 }
 
 function DropdownMenuTrigger({
+  ref,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
+  const room = React.useContext(RoomContext);
   return (
     <DropdownMenuPrimitive.Trigger
       data-slot="dropdown-menu-trigger"
+      ref={(el) => {
+        room?.setTrigger(el);
+        if (typeof ref === "function") ref(el);
+        else if (ref) ref.current = el;
+      }}
       {...props}
     />
   );
@@ -34,14 +88,35 @@ function DropdownMenuContent({
   className,
   align = "start",
   sideOffset = 4,
+  style,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
+  const room = React.useContext(RoomContext);
+  const grow = React.useCallback(
+    (el: HTMLDivElement | null) => {
+      const trigger = room?.trigger.current;
+      if (!el || !trigger) return;
+      requestAnimationFrame(() => {
+        const hidden = el.scrollHeight - el.clientHeight;
+        if (hidden > 1)
+          room.setMaxHeight(makeRoomBelow(trigger, el.scrollHeight));
+      });
+    },
+    // Only on mount: growing re-renders with a new maxHeight.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
         data-slot="dropdown-menu-content"
+        ref={grow}
+        side="bottom"
         sideOffset={sideOffset}
         align={align}
+        style={
+          room?.maxHeight ? { maxHeight: room.maxHeight, ...style } : style
+        }
         className={cn(
           "z-50 max-h-(--radix-dropdown-menu-content-available-height) w-(--radix-dropdown-menu-trigger-width) min-w-32 origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:overflow-hidden data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className,

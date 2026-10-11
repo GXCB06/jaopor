@@ -8,7 +8,9 @@ import { AddStartupButton, QuickSearch } from "@/components/search/QuickSearch";
 import { QuickSearchSection } from "@/components/search/QuickSearchSection";
 import { StartupCard } from "@/components/StartupCard";
 import { Link } from "@/i18n/navigation";
+import { MultiChoice } from "@/components/core/MultiChoice";
 import { AI_TOOLS, CATEGORIES, isAiTool, isCategory } from "@/lib/catalog";
+import { provinceGroups } from "@/lib/config/choice-options";
 import {
   DIRECTORY_SORTS,
   PAGE_SIZE,
@@ -19,10 +21,10 @@ import {
 } from "@/lib/data/startups";
 import { getThbPerUsd } from "@/lib/data/fx";
 import { LOOKING_FOR, type LookingFor } from "@/lib/links";
-import { localizedName } from "@/lib/config/localized";
-import { PROVINCE_LIST, REGION_LIST, isProvince } from "@/lib/config/provinces";
+import { isProvince } from "@/lib/config/provinces";
 import { categoryName } from "@/lib/config/display";
 import { aiToolLabel } from "@/lib/config/stack";
+import { joinList, parseList } from "@/lib/url-list";
 
 export async function generateMetadata({
   params,
@@ -34,9 +36,6 @@ export async function generateMetadata({
 
 const pick = <T extends string>(list: readonly T[], v: string | undefined) =>
   list.includes(v as T) ? (v as T) : undefined;
-
-const selectCls =
-  "h-8 w-full rounded-md border border-input bg-background px-2 text-caption";
 
 // Design.md §6 /startups (Figma "Marketplace"): hero · FilterSidebar + results + grid.
 export default async function StartupsPage({
@@ -50,16 +49,17 @@ export default async function StartupsPage({
     Array.isArray(v) ? v[0] : v;
 
   const q = one(sp.q)?.slice(0, 60);
-  const category = isCategory(one(sp.category))
-    ? (one(sp.category) as (typeof CATEGORIES)[number])
-    : undefined;
-  const tool = isAiTool(one(sp.tool))
-    ? (one(sp.tool) as (typeof AI_TOOLS)[number])
-    : undefined;
+  // Multi-choice filters (Design.md §5 Dropdowns): ?category=saas,ai matches either.
+  const category = parseList<(typeof CATEGORIES)[number]>(sp.category, isCategory);
+  const tool = parseList<(typeof AI_TOOLS)[number]>(sp.tool, isAiTool);
   const verified = one(sp.verified) === "1";
-  const type = pick<ProjectType>(PROJECT_TYPES, one(sp.type));
-  const lookingFor = pick<LookingFor>(LOOKING_FOR, one(sp.lookingFor));
-  const province = isProvince(one(sp.province)) ? one(sp.province) : undefined;
+  const type = parseList<ProjectType>(sp.type, (x) =>
+    PROJECT_TYPES.includes(x as ProjectType),
+  );
+  const lookingFor = parseList<LookingFor>(sp.lookingFor, (x) =>
+    LOOKING_FOR.includes(x as LookingFor),
+  );
+  const province = parseList<string>(sp.province, isProvince);
   const sort = pick<DirectorySort>(DIRECTORY_SORTS, one(sp.sort)) ?? "mrr";
   const page = Math.max(1, Number(one(sp.page)) || 1);
 
@@ -83,12 +83,12 @@ export default async function StartupsPage({
 
   const base = {
     q,
-    category,
-    tool,
+    category: joinList(category),
+    tool: joinList(tool),
     verified: verified ? "1" : undefined,
-    type,
-    lookingFor,
-    province,
+    type: joinList(type),
+    lookingFor: joinList(lookingFor),
+    province: joinList(province),
     sort: sort === "mrr" ? undefined : sort,
   };
   const href = (patch: Record<string, string | undefined>) => ({
@@ -99,16 +99,15 @@ export default async function StartupsPage({
       ),
     ) as Record<string, string>,
   });
-  const activeFilters = [
-    category,
-    tool,
-    verified || undefined,
-    type,
-    lookingFor,
-    province,
-  ].filter(Boolean).length;
+  const activeFilters =
+    category.length +
+    tool.length +
+    type.length +
+    lookingFor.length +
+    province.length +
+    (verified ? 1 : 0);
 
-  // GET form: works without JS. Changing a select needs "Apply" (no client code here).
+  // GET form; each MultiChoice posts one comma-joined field. Changes apply with "Apply".
   const filters = (
     <form
       action={`/${locale}/startups`}
@@ -118,70 +117,53 @@ export default async function StartupsPage({
       {q && <input type="hidden" name="q" value={q} />}
       {sort !== "mrr" && <input type="hidden" name="sort" value={sort} />}
       <Field label={t("category")}>
-        <select
+        <MultiChoice
           name="category"
-          defaultValue={category ?? ""}
-          className={selectCls}
-        >
-          <option value="">{t("allCategories")}</option>
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {categoryName(c, locale)}
-            </option>
-          ))}
-        </select>
+          defaultValue={category}
+          placeholder={t("allCategories")}
+          options={CATEGORIES.map((c) => ({
+            value: c,
+            label: categoryName(c, locale),
+          }))}
+        />
       </Field>
       <Field label={t("province")}>
-        <select
+        <MultiChoice
           name="province"
-          defaultValue={province ?? ""}
-          className={selectCls}
-        >
-          <option value="">{t("allProvinces")}</option>
-          {REGION_LIST.map((r) => (
-            <optgroup key={r.slug} label={localizedName(r, locale)}>
-              {PROVINCE_LIST.filter((p) => p.region === r.slug).map((p) => (
-                <option key={p.slug} value={p.slug}>
-                  {localizedName(p, locale)}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
+          defaultValue={province}
+          placeholder={t("allProvinces")}
+          groups={provinceGroups(locale)}
+        />
       </Field>
       <Field label={t("tool")}>
-        <select name="tool" defaultValue={tool ?? ""} className={selectCls}>
-          <option value="">{t("allTools")}</option>
-          {AI_TOOLS.filter((x) => x !== "other").map((x) => (
-            <option key={x} value={x}>
-              {aiToolLabel(x, locale)}
-            </option>
-          ))}
-        </select>
+        <MultiChoice
+          name="tool"
+          defaultValue={tool}
+          placeholder={t("allTools")}
+          options={AI_TOOLS.filter((x) => x !== "other").map((x) => ({
+            value: x,
+            label: aiToolLabel(x, locale),
+          }))}
+        />
       </Field>
       <Field label={t("type")}>
-        <select name="type" defaultValue={type ?? ""} className={selectCls}>
-          <option value="">{t("anyType")}</option>
-          {PROJECT_TYPES.map((x) => (
-            <option key={x} value={x}>
-              {t(`types.${x}`)}
-            </option>
-          ))}
-        </select>
+        <MultiChoice
+          name="type"
+          defaultValue={type}
+          placeholder={t("anyType")}
+          options={PROJECT_TYPES.map((x) => ({
+            value: x,
+            label: t(`types.${x}`),
+          }))}
+        />
       </Field>
       <Field label={lf("title")}>
-        <select
+        <MultiChoice
           name="lookingFor"
-          defaultValue={lookingFor ?? ""}
-          className={selectCls}
-        >
-          <option value="">{t("any")}</option>
-          {LOOKING_FOR.map((x) => (
-            <option key={x} value={x}>
-              {lf(x)}
-            </option>
-          ))}
-        </select>
+          defaultValue={lookingFor}
+          placeholder={t("any")}
+          options={LOOKING_FOR.map((x) => ({ value: x, label: lf(x) }))}
+        />
       </Field>
       <label className="flex items-center gap-2 text-caption">
         <input
@@ -338,6 +320,7 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
+    // A <label> around the dropdown's button: clicking the label text opens it too.
     <label className="block space-y-1.5">
       <span className="block text-caption font-medium">{label}</span>
       {children}

@@ -2,6 +2,7 @@
 // built server-side from what an anonymous visitor may see (lib/data/builder.ts listBuilders).
 
 import type { Province, Region } from "@/lib/config/provinces";
+import { asList } from "@/lib/url-list";
 
 export type DirectoryBuilder = {
   id: string;
@@ -22,13 +23,14 @@ export type DirectoryBuilder = {
   createdAt: string;
 };
 
+/** Each list matches any of its values; provinces and regions together form one "area" facet. */
 export type BuilderFilters = {
   q?: string;
-  skill?: string;
-  province?: Province;
-  region?: Region;
-  status?: string;
-  tool?: string;
+  skill?: string | string[];
+  province?: Province | Province[];
+  region?: Region | Region[];
+  status?: string | string[];
+  tool?: string | string[];
   verified?: boolean;
 };
 
@@ -53,18 +55,24 @@ export function filterBuilders(
   regionOf: (p: Province) => Region | undefined,
 ): DirectoryBuilder[] {
   const q = f.q?.trim().toLowerCase().replace(/^@/, "");
+  const skills = asList(f.skill);
+  const provinces = asList(f.province);
+  const regions = asList(f.region);
+  const statuses = asList(f.status);
+  const tools = asList(f.tool);
+  const inArea = (p: Province | null) =>
+    p !== null &&
+    (provinces.includes(p) || regions.includes(regionOf(p) as Region));
   return list.filter(
     (b) =>
       (!q ||
         b.handle.includes(q) ||
         b.name.toLowerCase().includes(q) ||
         (b.headline ?? "").toLowerCase().includes(q)) &&
-      (!f.skill || b.skills.some((s) => s.slug === f.skill)) &&
-      (!f.province || b.province === f.province) &&
-      (!f.region ||
-        (b.province !== null && regionOf(b.province) === f.region)) &&
-      (!f.status || b.status === f.status) &&
-      (!f.tool || b.tools.includes(f.tool)) &&
+      (!skills.length || b.skills.some((s) => skills.includes(s.slug))) &&
+      (!(provinces.length || regions.length) || inArea(b.province)) &&
+      (!statuses.length || statuses.includes(b.status)) &&
+      (!tools.length || b.tools.some((x) => tools.includes(x))) &&
       (!f.verified || b.verifiedWorks > 0),
   );
 }

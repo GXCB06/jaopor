@@ -12,6 +12,19 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-11 — Dropdowns always open below and stay on screen; multi-choice filters
+
+**Done:**
+
+- **One rule for every dropdown** (Design.md §5 Dropdowns): it opens below its trigger, never above, and stays inside the screen. `src/lib/ui/room-below.ts` scrolls the page just enough before opening (never pushing the trigger under the sticky header) and caps the list to the room below, so the popper never flips.
+- **No native `<select>` left.** New `core/ChoiceSelect` (Radix Select, popper below; `field` / `filter` / `chip` variants) replaces all 14: the shared form `Select` (wizard, edit page, profile editor, report dialog), the leaderboard metric, chart metric/period, Olympics province finder, Composer (project, type), link type, screenshot kind. Optional fields keep the placeholder as a choosable row so a choice can be cleared.
+- **Multi-choice filters:** new `core/MultiChoice` (Radix Popover with checkboxes, search box above 12 options matching Thai/English/aliases, "ล้าง · เลือก n รายการ · เสร็จ"). /startups (category, province, AI tool, type, looking for), /builders (skill, area = regions + provinces, status, tool) and /feed (province, category). URL: `?category=saas,fintech` (repeated params read too, max 20, `src/lib/url-list.ts`); any value within a filter matches, filters combine. Data: `listStartups` uses `in` / `overlaps` / an OR of link types (`typeFilter`), `listPosts` `in`, `filterBuilders` lists.
+- **Menus and pop-up lists follow the same rule:** the DropdownMenu wrapper (side bottom, capped, grows by scrolling the page when taller), QuickSearch (no longer flips upward near the page bottom; phones keep the sheet), VocabCombobox.
+
+**Files:** `src/lib/ui/room-below.ts`, `src/lib/url-list.ts`, `src/lib/config/choice-options.ts`, `src/components/core/{ChoiceSelect,MultiChoice}.tsx`, `src/components/ui/dropdown-menu.tsx`, the three directory pages, `src/lib/{builders,feed}.ts`, `src/lib/data/{startups,posts,feed}.ts`, the components listed above, `messages/*` (`Choice`), `Design.md`, `e2e/dropdowns.spec.ts`
+**Verified:** typecheck ✓ · lint ✓ · unit 585 passed / 17 skipped (new: room-below, url-list, typeFilter, multi-value feed and builder filters) · e2e `dropdowns.spec.ts` at desktop + 375 px: the province and category lists start under their trigger and end inside the screen; two categories → `?category=saas,fintech` and kept after reload; leaderboard list below its button. `a1` / `motion` specs updated to the new control and pass. Browser pane at 375 px: the page scrolls up and the category list opens below "ทุกหมวดหมู่".
+**Next:** full e2e before push.
+
 ## 2026-10-11 — Google Analytics 4 as a visitor source (code ready, hidden until the owner sets it up) + homepage copy live
 
 **Done:**

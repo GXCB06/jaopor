@@ -2,6 +2,7 @@
 
 import { XIcon, type LucideIcon } from "lucide-react";
 import { useId, useMemo, useRef, useState } from "react";
+import { makeRoomBelow } from "@/lib/ui/room-below";
 import { Glyph, LogoChip } from "@/components/core/LogoChip";
 import { normalizeSearch } from "@/lib/search-text";
 import { cn } from "@/lib/utils";
@@ -61,6 +62,7 @@ export function VocabCombobox({
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [maxHeight, setMaxHeight] = useState<number>();
   const [active, setActive] = useState(0);
 
   const byValue = useMemo(
@@ -166,7 +168,12 @@ export function VocabCombobox({
           disabled={full}
           placeholder={single ? "" : placeholder}
           value={open || !single ? query : single.label}
-          onFocus={() => setOpen(true)}
+          onFocus={() => {
+            // The list opens below the box and fits on screen (Design.md §5 Dropdowns).
+            if (inputRef.current)
+              setMaxHeight(Math.min(256, makeRoomBelow(inputRef.current, 256)));
+            setOpen(true);
+          }}
           onBlur={() => setTimeout(() => setOpen(false), 120)}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -203,6 +210,7 @@ export function VocabCombobox({
           <ul
             id={listId}
             role="listbox"
+            style={maxHeight ? { maxHeight } : undefined}
             className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-md border bg-popover p-1 text-sm shadow-md"
           >
             {rows.length === 0 && (

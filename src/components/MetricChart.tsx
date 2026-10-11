@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDownIcon } from "lucide-react";
+import { ChoiceSelect } from "@/components/core/ChoiceSelect";
 import { useFormatter, useTranslations } from "next-intl";
 import { useId, useState } from "react";
 import {
@@ -74,28 +74,16 @@ function CompactSelect<T extends string | number>({
   onChange: (v: T) => void;
 }) {
   return (
-    <label className="relative">
-      <span className="sr-only">{label}</span>
-      <select
-        value={value}
-        onChange={(e) =>
-          onChange(
-            options.find((o) => String(o.value) === e.target.value)!.value,
-          )
-        }
-        className="h-7 appearance-none rounded-lg border bg-secondary pr-7 pl-2.5 text-caption font-medium"
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDownIcon
-        className="pointer-events-none absolute top-1/2 right-2 size-3 -translate-y-1/2 text-faint"
-        aria-hidden="true"
-      />
-    </label>
+    <ChoiceSelect
+      variant="chip"
+      aria-label={label}
+      value={String(value)}
+      onValueChange={(v) =>
+        onChange(options.find((o) => String(o.value) === v)!.value)
+      }
+      options={options.map((o) => ({ value: String(o.value), label: o.label }))}
+      className="text-caption font-medium"
+    />
   );
 }
 

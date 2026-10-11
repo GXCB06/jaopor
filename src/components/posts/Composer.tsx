@@ -1,5 +1,6 @@
 "use client";
 
+import { ChoiceSelect } from "@/components/core/ChoiceSelect";
 import { ImagePlusIcon, LinkIcon, Loader2Icon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
@@ -20,9 +21,6 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { toUploadImage } from "@/lib/webp";
 import { Avatar } from "./bits";
-
-const selectCls =
-  "h-9 rounded-md border border-input bg-background px-2 text-xs text-foreground";
 
 /** Design.md §5 Composer: text, startup, type, up to 4 images, an optional link. */
 export function Composer({
@@ -225,30 +223,30 @@ export function Composer({
         )}
 
         <div className="flex flex-wrap items-center gap-2 sm:ml-12">
-          <select
-            value={startupId}
+          <ChoiceSelect
+            variant="filter"
             aria-label={t("startupLabel")}
-            onChange={(e) => setStartupId(Number(e.target.value))}
-            className={cn(selectCls, "max-w-40")}
-          >
-            {startups.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-          <select
-            value={type}
+            value={String(startupId)}
+            onValueChange={(v) => setStartupId(Number(v))}
+            options={startups.map((s) => ({
+              value: String(s.id),
+              label: s.name,
+            }))}
+            fullWidth={false}
+            className="w-auto max-w-40"
+          />
+          <ChoiceSelect
+            variant="filter"
             aria-label={t("typeLabel")}
-            onChange={(e) => setType(e.target.value as ManualPostType)}
-            className={selectCls}
-          >
-            {MANUAL_POST_TYPES.map((x) => (
-              <option key={x} value={x}>
-                {t(`types.${x}`)}
-              </option>
-            ))}
-          </select>
+            value={type}
+            onValueChange={(v) => setType(v as ManualPostType)}
+            options={MANUAL_POST_TYPES.map((x) => ({
+              value: x,
+              label: t(`types.${x}`),
+            }))}
+            fullWidth={false}
+            className="w-auto"
+          />
           <input
             ref={fileRef}
             type="file"

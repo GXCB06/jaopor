@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BrandPill } from "@/components/BrandLogo";
 import { BuilderCard } from "@/components/builder/BuilderCard";
+import { MultiChoice } from "@/components/core/MultiChoice";
 import { Link } from "@/i18n/navigation";
 import {
   BUILDERS_PAGE_SIZE,
@@ -13,9 +14,7 @@ import {
 import { AI_TOOLS, isAiTool } from "@/lib/catalog";
 import { localizedName } from "@/lib/config/localized";
 import {
-  PROVINCE_LIST,
   REGIONS,
-  REGION_LIST,
   getProvince,
   isProvince,
   type Region,
@@ -26,7 +25,9 @@ import {
   SKILL_LIST,
   isSkill,
 } from "@/lib/config/skills";
+import { provinceGroups } from "@/lib/config/choice-options";
 import { aiToolLabel } from "@/lib/config/stack";
+import { joinList, parseList } from "@/lib/url-list";
 import { listBuilders } from "@/lib/data/builder";
 import { getThbPerUsd } from "@/lib/data/fx";
 import { PROFILE_STATUSES, type ProfileStatus } from "@/lib/profile";
@@ -43,9 +44,6 @@ export async function generateMetadata({
   };
 }
 
-const selectCls =
-  "h-8 w-full rounded-md border border-input bg-background px-2 text-caption";
-
 // Design.md §5 Builders directory (spec 9c): hero with people search · filter sidebar + card grid.
 export default async function BuildersPage({
   params,
@@ -58,16 +56,18 @@ export default async function BuildersPage({
     Array.isArray(v) ? v[0] : v;
 
   const q = one(sp.q)?.trim().slice(0, 60) || undefined;
-  const skill = isSkill(one(sp.skill)) ? one(sp.skill) : undefined;
-  const area = one(sp.area);
-  const region = REGIONS.includes(area as Region)
-    ? (area as Region)
-    : undefined;
-  const province = isProvince(area) ? area : undefined;
-  const status = PROFILE_STATUSES.includes(one(sp.status) as ProfileStatus)
-    ? one(sp.status)
-    : undefined;
-  const tool = isAiTool(one(sp.tool)) ? one(sp.tool) : undefined;
+  // Multi-choice filters (Design.md §5 Dropdowns); `area` mixes regions and provinces.
+  const skill = parseList<string>(sp.skill, isSkill);
+  const area = parseList<string>(
+    sp.area,
+    (x) => REGIONS.includes(x as Region) || isProvince(x),
+  );
+  const region = area.filter((x): x is Region => REGIONS.includes(x as Region));
+  const province = area.filter(isProvince);
+  const status = parseList<string>(sp.status, (x) =>
+    PROFILE_STATUSES.includes(x as ProfileStatus),
+  );
+  const tool = parseList<string>(sp.tool, isAiTool);
   const verified = one(sp.verified) === "1";
   const page = Math.max(1, Number(one(sp.page)) || 1);
 
@@ -98,10 +98,10 @@ export default async function BuildersPage({
 
   const base = {
     q,
-    skill,
-    area: region ?? province,
-    status,
-    tool,
+    skill: joinList(skill),
+    area: joinList(area),
+    status: joinList(status),
+    tool: joinList(tool),
     verified: verified ? "1" : undefined,
   };
   const href = (patch: Record<string, string | undefined>) => ({
@@ -112,15 +112,14 @@ export default async function BuildersPage({
       ),
     ) as Record<string, string>,
   });
-  const activeFilters = [
-    skill,
-    region ?? province,
-    status,
-    tool,
-    verified || undefined,
-  ].filter(Boolean).length;
+  const activeFilters =
+    skill.length +
+    area.length +
+    status.length +
+    tool.length +
+    (verified ? 1 : 0);
 
-  // GET form: works without JS (same pattern as /startups).
+  // GET form; each MultiChoice posts one comma-joined field (same pattern as /startups).
   const filterForm = (
     <form
       action={`/${locale}/builders`}
@@ -129,62 +128,51 @@ export default async function BuildersPage({
     >
       {q && <input type="hidden" name="q" value={q} />}
       <Field label={t("skill")}>
-        <select name="skill" defaultValue={skill ?? ""} className={selectCls}>
-          <option value="">{t("anySkill")}</option>
-          {SKILL_GROUPS.map((g) => (
-            <optgroup
-              key={g}
-              label={localizedName(SKILL_GROUP_LABEL[g], locale)}
-            >
-              {SKILL_LIST.filter((s) => s.group === g).map((s) => (
-                <option key={s.slug} value={s.slug}>
-                  {localizedName(s, locale)}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
+        <MultiChoice
+          name="skill"
+          defaultValue={skill}
+          placeholder={t("anySkill")}
+          groups={SKILL_GROUPS.map((g) => ({
+            label: localizedName(SKILL_GROUP_LABEL[g], locale),
+            options: SKILL_LIST.filter((s) => s.group === g).map((s) => ({
+              value: s.slug,
+              label: localizedName(s, locale),
+              keywords: `${s.nameTh} ${s.nameEn}`,
+            })),
+          }))}
+        />
       </Field>
       <Field label={t("area")}>
-        <select
+        <MultiChoice
           name="area"
-          defaultValue={region ?? province ?? ""}
-          className={selectCls}
-        >
-          <option value="">{t("anyArea")}</option>
-          {REGION_LIST.map((r) => (
-            <optgroup key={r.slug} label={localizedName(r, locale)}>
-              <option value={r.slug}>
-                {t("wholeRegion", { region: localizedName(r, locale) })}
-              </option>
-              {PROVINCE_LIST.filter((p) => p.region === r.slug).map((p) => (
-                <option key={p.slug} value={p.slug}>
-                  {localizedName(p, locale)}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
+          defaultValue={area}
+          placeholder={t("anyArea")}
+          groups={provinceGroups(locale, (region) =>
+            t("wholeRegion", { region }),
+          )}
+        />
       </Field>
       <Field label={t("status")}>
-        <select name="status" defaultValue={status ?? ""} className={selectCls}>
-          <option value="">{t("anyStatus")}</option>
-          {PROFILE_STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {tb(`status.${s}`)}
-            </option>
-          ))}
-        </select>
+        <MultiChoice
+          name="status"
+          defaultValue={status}
+          placeholder={t("anyStatus")}
+          options={PROFILE_STATUSES.map((s) => ({
+            value: s,
+            label: tb(`status.${s}`),
+          }))}
+        />
       </Field>
       <Field label={t("tool")}>
-        <select name="tool" defaultValue={tool ?? ""} className={selectCls}>
-          <option value="">{t("anyTool")}</option>
-          {AI_TOOLS.filter((x) => x !== "other").map((x) => (
-            <option key={x} value={x}>
-              {aiToolLabel(x, locale)}
-            </option>
-          ))}
-        </select>
+        <MultiChoice
+          name="tool"
+          defaultValue={tool}
+          placeholder={t("anyTool")}
+          options={AI_TOOLS.filter((x) => x !== "other").map((x) => ({
+            value: x,
+            label: aiToolLabel(x, locale),
+          }))}
+        />
       </Field>
       <label className="flex items-center gap-2 text-caption">
         <input

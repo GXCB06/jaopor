@@ -1,5 +1,7 @@
 "use client";
 
+import { ChoiceSelect } from "@/components/core/ChoiceSelect";
+import { provinceGroups } from "@/lib/config/choice-options";
 import {
   ArrowRightIcon,
   ChevronDownIcon,
@@ -12,8 +14,6 @@ import { StartupLogo } from "@/components/StartupBits";
 import { Link } from "@/i18n/navigation";
 import { localizedName } from "@/lib/config/localized";
 import {
-  PROVINCE_LIST,
-  REGION_LIST,
   getProvince,
   getRegion,
 } from "@/lib/config/provinces";
@@ -179,30 +179,13 @@ export function OlympicsBoard({
         ) : (
           <label className="flex min-w-0 flex-1 items-center gap-2">
             <span className="text-muted-foreground">{t("finderTitle")}</span>
-            <span className="relative min-w-40 flex-1 sm:max-w-56">
-              <select
-                defaultValue=""
-                onChange={(e) => setMyProvince(e.target.value || null)}
-                className="h-8 w-full appearance-none rounded-md border border-input bg-background pr-7 pl-2.5 text-caption"
-              >
-                <option value="" disabled>
-                  {t("finderPlaceholder")}
-                </option>
-                {REGION_LIST.map((r) => (
-                  <optgroup key={r.slug} label={localizedName(r, locale)}>
-                    {PROVINCE_LIST.filter((p) => p.region === r.slug).map(
-                      (p) => (
-                        <option key={p.slug} value={p.slug}>
-                          {localizedName(p, locale)}
-                        </option>
-                      ),
-                    )}
-                  </optgroup>
-                ))}
-              </select>
-              <ChevronDownIcon
-                className="pointer-events-none absolute top-1/2 right-2 size-3.5 -translate-y-1/2 text-faint"
-                aria-hidden="true"
+            <span className="min-w-40 flex-1 sm:max-w-56">
+              <ChoiceSelect
+                variant="filter"
+                value=""
+                onValueChange={(v) => setMyProvince(v || null)}
+                placeholder={t("finderPlaceholder")}
+                groups={provinceGroups(locale)}
               />
             </span>
           </label>
