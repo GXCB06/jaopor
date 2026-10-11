@@ -65,6 +65,8 @@
     "emptyRecent": "ยังไม่มีผลงาน เริ่มจากผลงานของคุณชิ้นแรก แล้วรับป้ายเจ้าพ่อรุ่นบุกเบิก #1",
     "headline1": "1 คน + 1 Startup",
     "headline2": "ดูผลงานจริง ตัวเลขจริง",
+    "heroTop": "1 คน <muted>+</muted> 1 Startup",
+    "heroBottom": "ดูผลงานจริง <brand>ตัวเลขจริง</brand>",
     "verifiedBy": "ตัวเลขจาก:",
     "comingSoon": "เร็ว ๆ นี้",
     "explore": "ดูผลงานทั้งหมด {total} ชิ้น",

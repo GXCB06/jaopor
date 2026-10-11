@@ -37,3 +37,24 @@ export function BrandPill() {
     </Link>
   );
 }
+
+/** Home hero lockup: big mascot + "JaoPor." (brand dot), not a link (Design.md §5 Hero). */
+export function HeroBrand() {
+  const t = useTranslations("Common");
+  return (
+    <p className="mb-5 inline-flex items-center gap-3 md:mb-6 md:gap-4">
+      <Image
+        src="/brand/jaopor-mascot-128.webp"
+        alt=""
+        width={128}
+        height={128}
+        loading="eager"
+        className="size-14 md:size-[4.5rem]"
+      />
+      <span className="text-4xl font-extrabold tracking-[-0.02em] md:text-5xl">
+        {t("brand")}
+        <span className="text-brand-text">.</span>
+      </span>
+    </p>
+  );
+}

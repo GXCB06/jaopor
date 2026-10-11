@@ -20,3 +20,24 @@ export const ANONYMOUS_HIDES = [
   "demoVideo",
   "oldUrls",
 ] as const;
+
+const CONSONANTS = "bdfgklmnprstvz";
+const VOWELS = "aeiou";
+
+/**
+ * A made-up word shown blurred in place of an anonymous project's name (TrustMRR-style "hidden"
+ * look). Built only from the random slug, so it carries nothing of the real name; the same
+ * project always gets the same shape.
+ */
+export function anonymousMask(slug: string): string {
+  const hex = slug.replace(/^anon-/, "") || "0";
+  const digit = (i: number) => parseInt(hex[i % hex.length], 16) || 0;
+  const length = 6 + (digit(0) % 5);
+  let word = "";
+  for (let i = 0; i < length; i++)
+    word +=
+      i % 2
+        ? VOWELS[digit(i + 1) % VOWELS.length]
+        : CONSONANTS[digit(i + 1) % CONSONANTS.length];
+  return word[0].toUpperCase() + word.slice(1);
+}

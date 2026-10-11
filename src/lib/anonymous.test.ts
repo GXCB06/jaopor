@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isAnonymousSlug } from "./anonymous";
+import { anonymousMask, isAnonymousSlug } from "./anonymous";
 
 describe("isAnonymousSlug", () => {
   it("matches only the reserved placeholder shape", () => {
@@ -9,5 +9,14 @@ describe("isAnonymousSlug", () => {
     expect(isAnonymousSlug("anon-0a1b2c3d4e-x")).toBe(false);
     expect(isAnonymousSlug("anonymous")).toBe(false);
     expect(isAnonymousSlug(null)).toBe(false);
+  });
+});
+
+describe("anonymousMask", () => {
+  it("is a stable made-up word from the slug alone", () => {
+    const a = anonymousMask("anon-0a1b2c3d4e");
+    expect(a).toBe(anonymousMask("anon-0a1b2c3d4e"));
+    expect(a).toMatch(/^[A-Z][a-z]{5,9}$/);
+    expect(anonymousMask("anon-ffffffffff")).not.toBe(a);
   });
 });

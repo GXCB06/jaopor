@@ -1,4 +1,3 @@
-import { EyeOffIcon } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { ANON_NAME } from "@/lib/anonymous";
@@ -30,6 +29,20 @@ export function StartupLogo({
       />
     );
   }
+  // An anonymous project (placeholder name, no logo): a blurred tile, like its blurred name.
+  if (name === ANON_NAME)
+    return (
+      <span
+        aria-hidden="true"
+        className={cn(
+          "shrink-0 overflow-hidden rounded-sm border bg-secondary",
+          className,
+        )}
+        style={{ width: size, height: size }}
+      >
+        <span className="block size-full scale-125 bg-linear-to-br from-brand/70 via-muted-foreground/30 to-positive/50 blur-[6px]" />
+      </span>
+    );
   return (
     <span
       aria-hidden="true"
@@ -40,12 +53,7 @@ export function StartupLogo({
       )}
       style={{ width: size, height: size }}
     >
-      {/* An anonymous project (placeholder name, no logo) gets a "hidden" mark, not an "A". */}
-      {name === ANON_NAME ? (
-        <EyeOffIcon className="size-1/2" aria-hidden="true" />
-      ) : (
-        name.slice(0, 1)
-      )}
+      {name.slice(0, 1)}
     </span>
   );
 }

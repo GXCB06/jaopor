@@ -14,6 +14,7 @@ import {
 } from "next-intl/server";
 import { VerifiedBadge } from "@/components/core/VerifiedBadge";
 import { syncedRecently } from "@/lib/motion/live";
+import { ProjectName } from "@/components/core/ProjectName";
 import { isAnonymousSlug } from "@/lib/anonymous";
 import { DisclosedStat, isNonExact } from "@/components/profile/DisclosedStat";
 import {
@@ -248,7 +249,9 @@ export default async function StartupPage({ params }: Props) {
             {nav("startups")}
           </Link>
           <ChevronRightIcon className="size-3" aria-hidden="true" />
-          <span className="truncate text-foreground">{displayName}</span>
+          <span className="truncate text-foreground">
+            <ProjectName name={startup.name} slug={startup.slug} />
+          </span>
         </nav>
 
         <OwnerBar
@@ -283,7 +286,7 @@ export default async function StartupPage({ params }: Props) {
               {/* relative: the evidence-ladder note opens across this row (MetricHelp). */}
               <div className="relative flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold tracking-tight">
-                  {displayName}
+                  <ProjectName name={startup.name} slug={startup.slug} />
                 </h1>
                 {anonymous && (
                   <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs text-muted-foreground">

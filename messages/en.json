@@ -65,6 +65,8 @@
     "emptyRecent": "Nothing here yet. Start with your first project and become Founding JaoPor #1.",
     "headline1": "1 person + 1 startup",
     "headline2": "Real work. Real numbers.",
+    "heroTop": "1 person <muted>+</muted> 1 startup",
+    "heroBottom": "Real work. <brand>Real numbers.</brand>",
     "verifiedBy": "Numbers from:",
     "comingSoon": "coming soon",
     "explore": "Explore all {total} projects",

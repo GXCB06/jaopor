@@ -12,6 +12,33 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-12 — Hero lockup like the owner's mockup, constellation removed, anonymous names blurred
+
+**Done** (owner review of the hero prototype):
+
+- **Constellation removed:** `HeroConstellation` and its data were deleted.
+  - The owner's bigger idea is a graph page of every project (linked by province, category and builder) that grows with JaoPor. It is noted as a future page in Project.md §7.
+- **Home hero, top part, from the owner's mockup:**
+  - **HeroBrand lockup:** the mascot at 56 / 72 px plus "JaoPor." with a brand-coloured dot. It is not a link.
+  - **Headline:** line 1 "1 คน + 1 Startup" at 1.75rem → 3xl/4xl (`text-5xl`/`text-6xl`) with a grey "+"; line 2 "ดูผลงานจริง ตัวเลขจริง" with "ตัวเลขจริง" in the brand colour.
+  - New rich-text keys `Home.heroTop` / `heroBottom` (th + en). `headline1/2` stay plain for the OG image.
+  - Belief line, subline, nav and search are unchanged (owner: "ไม่เกี่ยว").
+- **Anonymous projects blurred** (owner: "ทำเบลอ ๆ ไว้"):
+  - `ProjectName` shows a blurred made-up word from `anonymousMask(slug)`. It is built from the random slug only, so it carries nothing of the real name. Screen readers hear "ผลงานไม่เปิดเผยชื่อ".
+  - The logo tile is a blurred gradient instead of the `EyeOff` icon.
+  - The project page heading and breadcrumb use it too. Plain-text places (title, OG image, share card) keep the words.
+- **"The category rail disappears after sign-in":**
+  - The home page has no signed-in branch; it renders the same for everyone.
+  - The signed-in tab was production (jaopor.vercel.app), which doesn't have the unpushed `77e1209` yet. A push fixes it.
+
+**Verified:**
+
+- Unit 612 passed / 17 skipped (new: `anonymousMask`). typecheck ✓ · lint ✓.
+- e2e local: 123 passed / 0 failed / 17 skipped.
+- Browser: `/th` and `/en` at 1280 and 375. Line 1 fits on one line at 375 in Thai; English wraps in balance. No sideways scroll.
+
+**Not verified:** the blur with a real anonymous project. None is listed yet; covered by the unit test and typecheck.
+
 ## 2026-10-12 — Olympics pioneers/newest, home category rail, category suggestion, hero constellation (prototype)
 
 **Done** (owner: "ผมเห็นด้วยกับคุณนะ" to the proposals; public pages keep the top navigation):
