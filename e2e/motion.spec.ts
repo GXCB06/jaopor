@@ -108,3 +108,68 @@ test.describe("reduced motion", () => {
     await expect(page.locator(".roll-v").first()).toHaveCSS("opacity", "1");
   });
 });
+
+test("cards on screen at load stay put; cards that scroll in rise once", async ({
+  page,
+}) => {
+  await page.goto("/th/startups");
+  const cards = page.locator("article.card-rise");
+  const n = await cards.count();
+  test.skip(n === 0, "no projects listed");
+  // Already on screen when the page loads: settled at once, no effect.
+  await expect(cards.first()).toHaveAttribute("data-in", "done");
+  await page.evaluate(() => {
+    (window as unknown as { __anims: string[] }).__anims = [];
+    document.addEventListener("animationstart", (e) =>
+      (window as unknown as { __anims: string[] }).__anims.push(
+        e.animationName,
+      ),
+    );
+  });
+  const last = cards.nth(n - 1);
+  const below = await last.evaluate(
+    (el) => el.getBoundingClientRect().top > window.innerHeight,
+  );
+  test.skip(!below, "every card fits on the first screen");
+  await last.scrollIntoViewIfNeeded();
+  await expect(last).toHaveAttribute("data-in", "done", { timeout: 5_000 });
+  await expect(last).toHaveCSS("opacity", "1");
+  const anims = await page.evaluate(
+    () => (window as unknown as { __anims: string[] }).__anims,
+  );
+  expect(anims).toContain("card-rise");
+});
+
+test("switching the leaderboard slides rows to their new rank", async ({
+  page,
+}) => {
+  await page.goto("/th");
+  const board = page.locator("#leaderboard");
+  await board.scrollIntoViewIfNeeded();
+  const select = board.locator("select");
+  const ids = () =>
+    board
+      .locator("tbody tr[data-id]")
+      .evaluateAll((trs) => trs.map((tr) => tr.getAttribute("data-id")));
+  const options = await select
+    .locator("option")
+    .evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
+  const before = await ids();
+  const current = await select.inputValue();
+  const other = options.find((o) => o !== current);
+  test.skip(!other, "only one board");
+  await select.selectOption(other!);
+  const running = await page.evaluate(
+    () =>
+      document
+        .getAnimations()
+        .filter((a) =>
+          (a.effect as KeyframeEffect | null)?.target?.matches?.("tr[data-id]"),
+        ).length,
+  );
+  const after = await ids();
+  // Rows only move when the set or order of rows changes between the two boards.
+  if (before.length && after.length && before.join() !== after.join())
+    expect(running).toBeGreaterThan(0);
+  await expect(board.locator("tbody")).toBeVisible();
+});

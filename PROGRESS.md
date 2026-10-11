@@ -12,6 +12,21 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-11 — Revamp M2: card rise, rolling numbers on cards + leaderboard, rank-change slide, first-verify stamp; founder request on the phone's first screen
+
+**Done (Design.md §7 Motion + §5 Builder profile first):**
+
+- **`InView` modes:** `seen` (M1 tiles, waiting state before the first view) and `enter` (cards, leaderboard: nothing hidden before JS; already on screen at load → settled at once, no flash; only elements that scroll in play their effect). The M1 waiting-state CSS is now scoped to `seen`.
+- **Card rise:** StartupCard (home rows, directory, category, province, "More startups") and BuilderCard rise in (opacity + 16 px, 700 ms, staggered 60 ms by grid position, 5 steps) and roll their money / visitors / commits; the wizard preview card never moves.
+- **Leaderboard:** values roll when the card first scrolls in; switching boards slides rows on both boards to their new rank (FLIP, transform only, 450 ms) and fades up rows new to the board; "show all" and reduced motion just swap.
+- **First-verify stamp:** VerifyPanel's just-connected check pops in once with one ring; already-connected rows never animate.
+- **Founder profile (production e2e failure on 375 px):** a phone-only "ส่งคำขอคุย →" link under the StatusPill when the founder is looking (never for the owner), same contact flow; the full looking-for card stays first in the main column. Cause: GXCB06's profile now shows the looking-for card, which the test hadn't measured before; M1 did not change this page.
+
+**Not changed:** no migration, data, settings; homepage copy (the parallel marketing session's uncommitted edits left untouched).
+**Files:** `Design.md`, `src/app/globals.css`, `src/components/core/InView.tsx`, `src/components/{StartupCard,LeaderboardCard}.tsx`, `src/components/builder/BuilderCard.tsx`, `src/components/wizard/VerifyPanel.tsx`, `src/app/[locale]/u/[username]/page.tsx`, `e2e/motion.spec.ts`
+**Verified:** typecheck ✓ · lint ✓ · unit 453 passed / 17 skipped · e2e local 117 passed / 17 skipped / 0 failed (new: cards on screen at load stay put, cards that scroll in rise; leaderboard switch) · build ✓ · FLIP checked on a temporary local page with synthetic rows (deleted): rows slide from their old offsets, the new row fades up, nothing left running after 800 ms, none under reduced motion, no page errors · stamp keyframes start (`stamp-pop` + ring) · 375 px screenshots mid-rise and settled. The profile fix is verified by the production e2e after deploy (profiles need the server key locally).
+**Next:** owner "push" → production e2e (incl. the profile test) → R2.
+
 ## 2026-10-11 — Revamp M1: motion foundation, rolling verified numbers, chart draw, live pulse
 
 **Done (Design.md §7 Motion first, no animation library):**

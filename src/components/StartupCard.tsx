@@ -7,6 +7,8 @@ import { growthPct } from "@/lib/format";
 import { logoUrl } from "@/lib/supabase/logo-url";
 import { cn } from "@/lib/utils";
 import { CopyLinkButton } from "./CopyLinkButton";
+import { InView } from "./core/InView";
+import { RollingNumber } from "./core/RollingNumber";
 import {
   CornerTag,
   GrowthValue,
@@ -62,17 +64,21 @@ function useMetrics(
     return [
       {
         label: large ? t("revenue30d") : t("revenueShort"),
-        value: <Money cents={s.revenue_30d_cents} thbPerUsd={thbPerUsd} />,
+        value: <Money cents={s.revenue_30d_cents} thbPerUsd={thbPerUsd} roll />,
       },
       {
         label: t("mrr"),
-        value: <Money cents={s.mrr_cents} thbPerUsd={thbPerUsd} />,
+        value: <Money cents={s.mrr_cents} thbPerUsd={thbPerUsd} roll />,
       },
       third === "allTime"
         ? {
             label: t("revenueAllTime"),
             value: (
-              <Money cents={s.revenue_all_time_cents} thbPerUsd={thbPerUsd} />
+              <Money
+                cents={s.revenue_all_time_cents}
+                thbPerUsd={thbPerUsd}
+                roll
+              />
             ),
           }
         : {
@@ -89,7 +95,12 @@ function useMetrics(
     return [
       {
         label: large ? t("visitors") : t("visitorsShort"),
-        value: s.visitors_30d !== null ? compact(s.visitors_30d) : "–",
+        value:
+          s.visitors_30d !== null ? (
+            <RollingNumber text={compact(s.visitors_30d)} />
+          ) : (
+            "–"
+          ),
       },
       {
         label: t("growth"),
@@ -99,7 +110,12 @@ function useMetrics(
       },
       {
         label: t("commits"),
-        value: s.build_commits !== null ? compact(s.build_commits) : "–",
+        value:
+          s.build_commits !== null ? (
+            <RollingNumber text={compact(s.build_commits)} />
+          ) : (
+            "–"
+          ),
       },
     ];
   }
@@ -200,15 +216,14 @@ export function StartupCard({
     </div>
   );
 
-  return (
-    <article
-      className={cn(
-        "group relative flex flex-col border transition-colors hover:border-foreground/20",
-        muted ? "border-dashed bg-transparent" : "bg-card",
-        large ? "justify-between rounded-xl p-4" : "rounded-lg p-3",
-        className,
-      )}
-    >
+  const cardClass = cn(
+    "group relative flex flex-col border transition-colors hover:border-foreground/20",
+    muted ? "border-dashed bg-transparent" : "bg-card",
+    large ? "justify-between rounded-xl p-4" : "rounded-lg p-3",
+    className,
+  );
+  const body = (
+    <>
       {!preview && (
         <Link
           href={href}
@@ -258,6 +273,14 @@ export function StartupCard({
         )}
       </div>
       {metricRow}
-    </article>
+    </>
+  );
+  // Design.md §7 Motion: cards that scroll in rise and roll their numbers; the preview never moves.
+  return preview ? (
+    <article className={cardClass}>{body}</article>
+  ) : (
+    <InView as="article" mode="enter" className={cn("card-rise", cardClass)}>
+      {body}
+    </InView>
   );
 }

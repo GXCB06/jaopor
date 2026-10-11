@@ -206,7 +206,8 @@ function VerifyChooser({
     sourcesFor(kind).some((s) => done.includes(s));
 
   function openMetric(kind: SourceKind) {
-    if (attemptId) logAddEvent(attemptId, "verify_chose", startupId, { choice: kind });
+    if (attemptId)
+      logAddEvent(attemptId, "verify_chose", startupId, { choice: kind });
     setMetric(kind);
     setSource(sourcesFor(kind)[0] ?? null);
   }
@@ -358,7 +359,10 @@ function VerifyChooser({
                   </div>
                 ) : (
                   <p className="flex items-center gap-2 text-sm text-positive">
-                    <CheckIcon className="size-4" aria-hidden="true" />
+                    {/* Design.md §7 Motion: the first-verify stamp pops in once, right after connecting. */}
+                    <span className="verify-stamp rounded-full">
+                      <CheckIcon className="size-4" aria-hidden="true" />
+                    </span>
                     {`${SOURCE_NAME[source]} · ${t("connected")}`}
                   </p>
                 )

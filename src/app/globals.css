@@ -276,7 +276,7 @@
 @media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
   /* Waiting to be seen: the digit slots are blank, never a fake "0" (the width is kept, so
      nothing moves). Failsafe: the real value shows after 3 s if JS never marks it seen. */
-  [data-inview]:not([data-in]) .roll-v {
+  [data-inview="seen"]:not([data-in]) .roll-v {
     animation: motion-hide 1ms 3s backwards;
   }
   /* Seen: each column rolls to its digit, staggered from the left, then the real digit takes over. */
@@ -289,7 +289,7 @@
   }
 
   /* Chart draw: the series is revealed left to right; axes, grid and tooltip stay. */
-  [data-inview]:not([data-in]) :is(.recharts-area, .recharts-line) {
+  [data-inview="seen"]:not([data-in]) :is(.recharts-area, .recharts-line) {
     animation: chart-hidden 1ms 3s backwards;
   }
   [data-in="1"] :is(.recharts-area, .recharts-line) {
@@ -300,6 +300,50 @@
   .live-ring {
     animation: live-beat 1.6s var(--ease-settle) 3;
   }
+
+  /* M2 card rise: cards that scroll in rise into place, staggered by grid position. */
+  [data-in="1"].card-rise {
+    animation: card-rise var(--motion-slow) var(--ease-settle)
+      calc(var(--rise-i, 0) * 60ms) backwards;
+  }
+
+  /* M2 first-verify stamp: the check pops in once with one ring. */
+  .verify-stamp {
+    animation: stamp-pop 500ms var(--ease-settle) backwards;
+  }
+  .verify-stamp::after {
+    animation: live-beat 900ms var(--ease-settle) 120ms 1 backwards;
+  }
+}
+
+.card-rise:nth-child(5n + 2),
+li:nth-child(5n + 2) > .card-rise {
+  --rise-i: 1;
+}
+.card-rise:nth-child(5n + 3),
+li:nth-child(5n + 3) > .card-rise {
+  --rise-i: 2;
+}
+.card-rise:nth-child(5n + 4),
+li:nth-child(5n + 4) > .card-rise {
+  --rise-i: 3;
+}
+.card-rise:nth-child(5n + 5),
+li:nth-child(5n + 5) > .card-rise {
+  --rise-i: 4;
+}
+.verify-stamp {
+  position: relative;
+  display: inline-flex;
+}
+.verify-stamp::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid var(--positive);
+  opacity: 0;
+  pointer-events: none;
 }
 
 @keyframes motion-hide {
@@ -330,6 +374,25 @@
   }
   to {
     clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+}
+@keyframes stamp-pop {
+  0% {
+    opacity: 0;
+    scale: 0.4;
+  }
+  60% {
+    opacity: 1;
+    scale: 1.15;
+  }
+  100% {
+    scale: 1;
   }
 }
 @keyframes live-beat {

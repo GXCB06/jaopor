@@ -230,6 +230,11 @@ export default async function BuilderProfilePage({
         // Back to this profile with the request form open, in the same language.
         query: { next: `/${locale}/u/${profile.handle}?contact=1` },
       };
+  // The founder is looking for someone and has said for what: the looking-for card shows.
+  const looking =
+    (profile.status === "looking_cofounder" ||
+      profile.status === "open_to_work") &&
+    Boolean(lf.roles?.length || lf.offer || lf.deal || lf.commitment);
 
   // Item 9 (B1.1): everything that is not the identity header — social links, badges, skills,
   // tools and the report action — is the sidebar on desktop but moves below the main content on
@@ -311,7 +316,10 @@ export default async function BuilderProfilePage({
           !isOwner &&
           infoRow(
             <LockIcon className="size-4" aria-hidden="true" />,
-            <Link href={contactHref} className="text-brand-text hover:underline">
+            <Link
+              href={contactHref}
+              className="text-brand-text hover:underline"
+            >
               {t("askContacts")}
             </Link>,
             "locked",
@@ -450,6 +458,16 @@ export default async function BuilderProfilePage({
               </p>
             )}
             <StatusPill status={profile.status} />
+            {/* Phones: the request is on the first screen, not below the whole sidebar (Design.md
+                §5 Builder profile). The full looking-for card stays first in the main column. */}
+            {looking && !isOwner && (
+              <Link
+                href={contactHref}
+                className="block text-caption font-semibold text-brand-text hover:underline lg:hidden"
+              >
+                {t("sendRequest")} →
+              </Link>
+            )}
             {editLink("basics")}
           </div>
 
@@ -545,75 +563,73 @@ export default async function BuilderProfilePage({
 
         {/* Main */}
         <div className="min-w-0 space-y-8">
-          {(profile.status === "looking_cofounder" ||
-            profile.status === "open_to_work") &&
-            (lf.roles?.length || lf.offer || lf.deal || lf.commitment) && (
-              <Card className="space-y-4 border-brand/50 bg-brand/5 p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="flex items-center gap-2 text-base font-bold">
-                    <span
-                      aria-hidden="true"
-                      className="size-2 rounded-full bg-positive"
-                    />
-                    {t(`status.${profile.status}`)}
-                    {editLink("status")}
-                  </h2>
-                  {!isOwner && (
-                    <Link
-                      href={contactHref}
-                      className="inline-flex h-9 items-center rounded-md bg-brand px-4 text-xs font-semibold text-white hover:opacity-90"
-                    >
-                      {t("sendRequest")} →
-                    </Link>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                  {(lf.roles?.length || lf.industries?.length) && (
-                    <div className="rounded-lg border bg-background/40 p-3">
-                      <p className="mb-2 text-2xs text-faint">{t("wants")}</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {lf.roles?.map((r) => (
-                          <span
-                            key={r}
-                            className="rounded-full border px-2 py-0.5 text-2xs"
-                          >
-                            {t(`roles.${r}`)}
-                          </span>
-                        ))}
-                        {lf.industries?.map((c) => (
-                          <span
-                            key={c}
-                            className="rounded-full border px-2 py-0.5 text-2xs text-muted-foreground"
-                          >
-                            {categoryName(c, locale)}
-                          </span>
-                        ))}
-                      </div>
+          {looking && (
+            <Card className="space-y-4 border-brand/50 bg-brand/5 p-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="flex items-center gap-2 text-base font-bold">
+                  <span
+                    aria-hidden="true"
+                    className="size-2 rounded-full bg-positive"
+                  />
+                  {t(`status.${profile.status}`)}
+                  {editLink("status")}
+                </h2>
+                {!isOwner && (
+                  <Link
+                    href={contactHref}
+                    className="inline-flex h-9 items-center rounded-md bg-brand px-4 text-xs font-semibold text-white hover:opacity-90"
+                  >
+                    {t("sendRequest")} →
+                  </Link>
+                )}
+              </div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                {(lf.roles?.length || lf.industries?.length) && (
+                  <div className="rounded-lg border bg-background/40 p-3">
+                    <p className="mb-2 text-2xs text-faint">{t("wants")}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {lf.roles?.map((r) => (
+                        <span
+                          key={r}
+                          className="rounded-full border px-2 py-0.5 text-2xs"
+                        >
+                          {t(`roles.${r}`)}
+                        </span>
+                      ))}
+                      {lf.industries?.map((c) => (
+                        <span
+                          key={c}
+                          className="rounded-full border px-2 py-0.5 text-2xs text-muted-foreground"
+                        >
+                          {categoryName(c, locale)}
+                        </span>
+                      ))}
                     </div>
-                  )}
-                  {lf.offer && (
-                    <div className="rounded-lg border bg-background/40 p-3">
-                      <p className="mb-2 text-2xs text-faint">{t("offers")}</p>
-                      <p className="text-caption">{lf.offer}</p>
-                    </div>
-                  )}
-                  {(lf.deal || lf.commitment || lf.location) && (
-                    <div className="rounded-lg border bg-background/40 p-3">
-                      <p className="mb-2 text-2xs text-faint">{t("deal")}</p>
-                      <p className="text-caption">
-                        {[
-                          lf.deal && t(`deals.${lf.deal}`),
-                          lf.commitment && t(`commitments.${lf.commitment}`),
-                          lf.location && t(`locations.${lf.location}`),
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            )}
+                  </div>
+                )}
+                {lf.offer && (
+                  <div className="rounded-lg border bg-background/40 p-3">
+                    <p className="mb-2 text-2xs text-faint">{t("offers")}</p>
+                    <p className="text-caption">{lf.offer}</p>
+                  </div>
+                )}
+                {(lf.deal || lf.commitment || lf.location) && (
+                  <div className="rounded-lg border bg-background/40 p-3">
+                    <p className="mb-2 text-2xs text-faint">{t("deal")}</p>
+                    <p className="text-caption">
+                      {[
+                        lf.deal && t(`deals.${lf.deal}`),
+                        lf.commitment && t(`commitments.${lf.commitment}`),
+                        lf.location && t(`locations.${lf.location}`),
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
 
           {/* Proof strip (verified numbers only; zero tiles hidden) */}
           {(() => {
