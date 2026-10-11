@@ -1378,20 +1378,28 @@ begin
   insert into public.startups (owner_id, name, slug, website_url, category, country, province, is_anonymous)
     values (b, 'Secret Sauce', 'rls-secret-sauce', 'https://secret-sauce.example', 'saas', 'TH', 'bangkok', true)
     returning id into anon_sid;
-  select name into real_name from public.startup_identity(anon_sid);
-  out := out || format('T162 created anonymous: public name=%s, slug placeholder=%s, website=%s; owner reads %s | ',
+  execute 'reset role';
+  select name into real_name from private.startup_identity where startup_id = anon_sid;
+  out := out || format('T162 created anonymous: public name=%s, slug placeholder=%s, website=%s; stash holds %s | ',
     (select name from public.startups where id = anon_sid),
     (select slug ~ '^anon-[0-9a-f]{10}$' from public.startups where id = anon_sid),
     coalesce((select website_url from public.startups where id = anon_sid), 'hidden'), real_name);
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
   update public.startups set name = 'Secret Sauce 2' where id = anon_sid;
-  select name into real_name from public.startup_identity(anon_sid);
+  execute 'reset role';
+  select name into real_name from private.startup_identity where startup_id = anon_sid;
   out := out || format('T163 owner rename while anonymous: public=%s, stash=%s | ',
     (select name from public.startups where id = anon_sid), real_name);
   execute 'reset role';
   perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
   execute 'set local role authenticated';
-  select count(*) into n from public.startup_identity(anon_sid);
-  out := out || format('T164 another signed-in user reads the identity: %s rows (expected 0) | ', n);
+  begin
+    select count(*) into n from public.startup_identity(anon_sid);
+    out := out || 'T164 a signed-in user calls startup_identity: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T164 signed-in users cannot call startup_identity (server key only, good) | ';
+  end;
   execute 'reset role';
   perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
   execute 'set local role anon';

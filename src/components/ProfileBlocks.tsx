@@ -34,7 +34,7 @@ import { LogoChip } from "./core/LogoChip";
 import { EmptyOwnerCard, OwnerOnly } from "./profile/Owner";
 import { Chip } from "./StartupBits";
 
-// Server components for the startup profile (Design.md §5 StatCard / RevenueChartCard / StorySection / FounderMessage).
+// Server components for the startup profile (Design.md §5 StatCard / RevenueChartCard / InsightsGrid / FounderMessage).
 
 export function StatCard({
   label,
@@ -204,12 +204,10 @@ function Slot({ item, className }: { item: Insight; className?: string }) {
 }
 
 /**
- * Design.md §5 Story (UX master audit item 6): replaces InsightsGrid. The narrative now lives in one
- * place — the "why" (problem → value → audience) first, the founder's build story next, then the
- * remaining facts (pricing, team, funding, channels, market, stack, AI tools) as a compact list.
- * Visitors see only filled parts; the owner gets the dashed "+ Add" prompts.
+ * Design.md §5 InsightsGrid (spec 6.4 step 6): value proposition full width, then two columns
+ * (market facts left, product facts right). Empty-state rule: visitors see only filled cards.
  */
-export async function StorySection({ startup }: { startup: StartupRow }) {
+export async function InsightsGrid({ startup }: { startup: StartupRow }) {
   const [t, cat, pr, locale, format] = await Promise.all([
     getTranslations("Profile"),
     getTranslations("Catalog"),
@@ -226,20 +224,13 @@ export async function StorySection({ startup }: { startup: StartupRow }) {
   const stack = stackGroups(startup.tech_stack, locale);
   const category = getCategory(startup.category);
 
-  // The narrative lines: what it solves → the value → who it's for.
-  const why: Insight[] = [
-    {
-      icon: ShieldCheckIcon,
-      label: t("problemSolved"),
-      field: "problem_solved",
-      content: para(startup.problem_solved),
-    },
-    {
-      icon: LightbulbIcon,
-      label: t("valueProposition"),
-      field: "value_proposition",
-      content: para(startup.value_proposition),
-    },
+  const valueProp: Insight = {
+    icon: LightbulbIcon,
+    label: t("valueProposition"),
+    field: "value_proposition",
+    content: para(startup.value_proposition),
+  };
+  const left: Insight[] = [
     {
       icon: UsersIcon,
       label: t("audience"),
@@ -255,10 +246,6 @@ export async function StorySection({ startup }: { startup: StartupRow }) {
         </div>
       ) : null,
     },
-  ];
-
-  // The remaining facts, as a compact two-column list.
-  const facts: Insight[] = [
     {
       icon: DollarSignIcon,
       label: t("pricing"),
@@ -272,17 +259,6 @@ export async function StorySection({ startup }: { startup: StartupRow }) {
             {para(startup.pricing_note)}
           </div>
         ) : null,
-    },
-    {
-      icon: TagIcon,
-      label: t("category"),
-      field: "category",
-      content: logoChips([
-        {
-          label: categoryName(startup.category, locale),
-          lucideIcon: category?.icon,
-        },
-      ]),
     },
     {
       icon: UserIcon,
@@ -307,6 +283,25 @@ export async function StorySection({ startup }: { startup: StartupRow }) {
       content: logoChips(
         startup.marketing_channels.map((c) => channelChip(c, locale)),
       ),
+    },
+  ];
+  const right: Insight[] = [
+    {
+      icon: ShieldCheckIcon,
+      label: t("problemSolved"),
+      field: "problem_solved",
+      content: para(startup.problem_solved),
+    },
+    {
+      icon: TagIcon,
+      label: t("category"),
+      field: "category",
+      content: logoChips([
+        {
+          label: categoryName(startup.category, locale),
+          lucideIcon: category?.icon,
+        },
+      ]),
     },
     {
       icon: Code2Icon,
@@ -344,37 +339,23 @@ export async function StorySection({ startup }: { startup: StartupRow }) {
     },
   ];
 
-  const filled = [...why, ...facts].some((i) => i.content);
-  const section = (
+  const all = [valueProp, ...left, ...right];
+  const grid = (
     <section className="space-y-3.5">
-      <h2 className="text-sm font-bold">{t("storyTitle")}</h2>
-      {why.map((item) => (
-        <Slot key={item.field} item={item} />
-      ))}
-      {startup.build_story ? (
-        <Card className="space-y-2 p-4">
-          <p className="text-2xs font-bold tracking-wider text-faint uppercase">
-            {t("buildStory")}
-          </p>
-          <p className="font-prose text-xs leading-relaxed whitespace-pre-line">
-            “{startup.build_story}”
-          </p>
-        </Card>
-      ) : (
-        <EmptyOwnerCard field="build_story" label={t("buildStory")} />
-      )}
+      <h2 className="text-sm font-bold">{t("insights")}</h2>
+      <Slot item={valueProp} />
       <div className="grid gap-3.5 lg:grid-cols-2">
-        {facts.map((item) => (
-          <Slot key={item.field} item={item} />
+        {[left, right].map((col, i) => (
+          <div key={i} className="space-y-3.5">
+            {col.map((item) => (
+              <Slot key={item.field} item={item} />
+            ))}
+          </div>
         ))}
       </div>
     </section>
   );
-  return filled || startup.build_story ? (
-    section
-  ) : (
-    <OwnerOnly>{section}</OwnerOnly>
-  );
+  return all.some((i) => i.content) ? grid : <OwnerOnly>{grid}</OwnerOnly>;
 }
 
 /** Design.md §5 FounderMessage (spec 6.4 step 5): big quote card, hidden when empty. */

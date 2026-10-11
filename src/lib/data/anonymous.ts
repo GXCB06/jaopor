@@ -4,8 +4,8 @@ import { createPublicClient } from "@/lib/supabase/public";
 
 // Anonymous projects (Design.md §5 Anonymous projects, migration 20261011126000_anonymous_mode).
 // Public rows of an anonymous project hold placeholders; the real identity comes from
-// public.startup_identity(), which answers the owner (session client) or the server (secret key)
-// and nobody else. Until the migration is applied the switch stays hidden and nothing changes.
+// public.startup_identity(), executable by the server key only (the caller checks ownership).
+// Until the migration is applied the switch stays hidden and nothing changes.
 
 export type RealIdentity = {
   slug: string;
@@ -54,8 +54,8 @@ export function setAnonymousReadyForTests(value: boolean | null) {
 }
 
 /**
- * The real identity of an anonymous project, or null (not anonymous, not the owner, migration
- * not applied). `client`: the owner's session client, or the admin client on the server.
+ * The real identity of an anonymous project, or null (not anonymous or migration not applied).
+ * `client`: the admin client; check that the viewer owns the project first.
  */
 export async function realIdentity(
   client: AnyClient,

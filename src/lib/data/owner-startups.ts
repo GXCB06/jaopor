@@ -4,6 +4,7 @@ import type { Database, Tables } from "@/lib/supabase/database.types";
 import { parseDisclosure, type MetricDisclosure } from "@/lib/disclosure";
 import { isAnonymousSlug } from "@/lib/anonymous";
 import { realIdentity } from "./anonymous";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   PUBLIC_TWIN,
   normalizeStartup,
@@ -60,10 +61,13 @@ export async function getOwnStartups(
     .in("id", ids)
     .order("created_at", { ascending: false });
   if (error) throw error;
+  const normalized = (data ?? []).map((r) => normalizeStartup(mode, r));
+  // Anonymous projects: the owner (checked here) gets the real identity via the server.
+  const viewer = normalized.some((r) => isAnonymousSlug(r.slug))
+    ? (await supabase.auth.getUser()).data.user?.id
+    : undefined;
   const rows = await Promise.all(
-    (data ?? []).map((r) =>
-      withOwnIdentity(supabase, normalizeStartup(mode, r)),
-    ),
+    normalized.map((r) => withOwnIdentity(viewer, r)),
   );
   if (mode === "legacy")
     return rows.map((r) => ({ ...r, levels: {} }) as unknown as OwnerStartup);
@@ -90,12 +94,15 @@ export async function getOwnStartups(
 }
 
 /** Anonymous mode: the owner sees their real identity; the public slug stays for links. */
-async function withOwnIdentity<T extends { id: number; slug: string }>(
-  supabase: Db,
+async function withOwnIdentity<
+  T extends { id: number; slug: string; owner_id: string },
+>(
+  viewer: string | undefined,
   row: T,
 ): Promise<T & { anonymous: { realSlug: string } | null }> {
-  if (!isAnonymousSlug(row.slug)) return { ...row, anonymous: null };
-  const real = await realIdentity(supabase, row.id);
+  if (!isAnonymousSlug(row.slug) || !viewer || row.owner_id !== viewer)
+    return { ...row, anonymous: null };
+  const real = await realIdentity(createAdminClient(), row.id);
   if (!real) return { ...row, anonymous: null };
   const { slug: realSlug, ...identity } = real;
   return { ...row, ...identity, anonymous: { realSlug } };

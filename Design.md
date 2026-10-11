@@ -291,15 +291,15 @@ Rule for **every** list that drops from a control (selects, filters, action menu
 
 - `text-caption text-muted-foreground`, centered line: brand check icon · "Revenue is verified with **{Source}** API key. Last updated: {datetime}". Stale (> 48h) or error → amber text.
 
-### Proof container ("ตัวเลขที่ยืนยัน / นับได้", master audit item 6, 2026-10-10)
+### Project page order (owner request 2026-10-11: back to the pre-10-Oct layout)
 
-- `section.space-y-3` with an H2, holding **only** evidence: the revenue / MRR / visitors chart card (which carries the "verified by / counted by" stamps) and `TractionTiles` (ผู้เข้าชม 30 วัน · ผู้ใช้ที่แอคทีฟ · หลักฐานการสร้าง with their via / counted-by captions). Evidence together, separate from the narrative.
-- Hidden from visitors when it holds no number (`hasProof`); the owner always sees the heading plus `EmptyOwnerCard` prompts. Nothing verified → the chart slot is the owner's "+ เชื่อมต่อ Stripe" prompt, never an empty card for visitors.
+The 2026-10-10 "Proof → Story" split (master audit item 6: one "ตัวเลขที่ยืนยัน / นับได้" container, one "เรื่องราวของผลงาน" container) was **reverted**: the owner found it harder to read. The page reads again:
 
-### StorySection ("เรื่องราวของผลงาน", master audit item 6, 2026-10-10 — replaces InsightsGrid)
-
-- H2, then the narrative in order: **ปัญหาที่แก้ → คุณค่าที่มอบให้ → กลุ่มลูกค้า** (the "why"), then the founder's **build story** (เรื่องการสร้าง, a quoted prose card), then the remaining facts as a compact `grid lg:grid-cols-2 gap-3.5`: ราคา · ตลาด (category chip with its lucide icon) · ขนาดทีม · เงินทุน · ช่องทางการตลาด (logo chips) · เทคโนโลยีที่ใช้ (logo chips grouped under muted sub-labels, empty groups skipped) · สร้างด้วย (AI tool logo chips).
-- Cards are `InsightCard` (40px icon box). Empty-state rule: visitors see only filled parts; the owner sees `EmptyOwnerCard` prompts in the same slots. Previously the build story sat inside `TractionTiles` and the "why" in `InsightsGrid` at the very bottom, splitting the story in two.
+- header → stat cards → links / looking-for. A project **without verified revenue leads with `TractionTiles`** (visitors, build) right under the header (`tractionFirst`), so a phone's first screen holds a number.
+- **Chart card** (revenue / MRR / visitors with the verified-by / counted-by stamps). Nothing verified → the owner's "+ เชื่อมต่อ" prompt, never an empty card for visitors.
+- **TractionTiles** ("ตัวเลขจากระบบที่เชื่อมต่อ", H2, tiles + the founder's **build story** quote card under them), unless it already led.
+- Screenshots / demo video → FounderMessage → **InsightsGrid** ("ข้อมูลเชิงลึก": value proposition full width, then two columns: audience · pricing · team · funding · channels | problem solved · category · tech stack · AI tools) → latest updates → more startups.
+- Empty-state rule unchanged: visitors see only filled cards; the owner sees `EmptyOwnerCard` prompts.
 - **LogoChip:** `inline-flex items-center gap-1.5 rounded-full border bg-secondary px-2.5 py-0.5 text-caption` + 14px glyph. Glyph = Simple Icons path in the brand colour, or `--foreground`-ish fallback when the brand colour has < 3:1 contrast on that theme's card (precomputed `fgDark`/`fgLight` in `lib/config/glyphs.ts`); brands without a Simple Icon use their lucide icon in `text-muted-foreground`; custom entries use `Tag`.
 
 ### FounderMessage (spec 6.4 step 5)
@@ -391,6 +391,8 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
 
 ### Olympics page (`/[locale]/olympics`, spec 6.7; v3 2026-10-01 = Claude Design frame 149:7635 + our open spots and map)
 
+- **Default board "จำนวนผลงาน" / "Projects"** (owner request 2026-10-11: quantity first, it works before anyone verifies numbers): every published, non-demo project counts, verified or not; movement and growth compare with the projects listed 30+ days ago. The verified boards (รายได้ 30 วัน · MRR · ผู้เข้าชม · คอมมิต) follow in the metric switch. The province page's rank line and the Olympics OG image use this board.
+
 Product decision (user asked to act as PM / marketer / designer): the Claude Design structure wins on retention and sharing (your-province gap, rank movement, monthly season, dense table, share + methodology cards). Kept from v2: dashed "ที่ว่าง" podium places (the board is young) and the region map (moved into the region card). Not adopted yet: "แชมป์ N เดือนติด" (needs rank history) and "อัปเดตทุกชั่วโมง" (we sync daily).
 
 - **Season metric:** รายได้ 30 วัน (default) · MRR · ผู้เข้าชม 30 วัน · Commits. Rank movement (▲/▼/–/ใหม่) and growth % compare with the previous 30 days (revenue30d, visitors only).
@@ -402,6 +404,8 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - **Sidebar (320px):** "ภาคไหนแรงสุด" (OlympicsMap h-36 + RegionStandings) · "มาแรงเดือนนี้" (Flame; top 3 climbers with ▲n; hidden when none) · **ShareRankCard** (`border-brand/40 bg-brand/5`: download the province's OG image, or the Olympics one; copy link) · "นับคะแนนยังไง" methodology text.
 
 ### LiveVisitorsSection (home, Phase 8, "ตอนนี้มีคนดูอยู่")
+
+- **Back on (2026-10-11, owner request), as a cheap "poll" board by default** (`NEXT_PUBLIC_LIVE_VISITORS` unset): no Supabase Realtime. Each visible tab sends the heartbeat about once a minute (`/api/live/ping`, which answers the tab's short key) and reads `/api/live/snapshot` every 30 s (CDN-cached 30 s: one query per half minute for the whole site). Same board: count, Thai map pins (at the province capital), countries, devices, pages and the latest activity. "1" / "realtime" switches back to the presence channel (only on a plan with higher Realtime limits; it was turned off on 2026-10-09 for that reason); "0" / "off" hides it.
 
 - `rounded-xl border bg-card` section after the card rows. Header: status dot (positive pulse = live, warning = fallback, faint = connecting) + title; right: "ทั่วโลก / ประเทศไทย" toggle (`h-7 border` button) and × (hides the section, remembered; a small "แสดงคนที่กำลังดู JaoPor" link brings it back).
 - Body `h-[420px] sm:h-[460px]` at every count (the round C compact height for ≤ 3 viewers was reverted on 2026-10-07: the map became too small to see the pins, and the 4-row feed overlapped the stats overlay): Thailand silhouette (`fill-muted-foreground/15`) with one pin per province at its centre (brand circle + DiceBear avatar, positive count badge when > 1); world view = MapLibre (OpenFreeMap dark, loaded on demand) with avatar markers at the coarse coordinates.
@@ -703,6 +707,7 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 
 Motion shows the page arriving and the data being drawn (a section, a line, a source that is live). It never decorates. No animation library. **Numbers never animate** (owner, 2026-10-11): figures are plain text from the first paint.
 
+- **Page enter** (owner request 2026-10-11): a page opened by a link or a reload fades its top-level blocks up (`page-enter`: opacity 0→1, 16 px, `--motion-slow`, `--ease-settle`), staggered 70 ms per block (max 280 ms). Back / Forward shows the page at once (it was seen already) and holds nothing for the scroll reveal. A `<head>` script sets `html[data-nav]` before the first paint (`lib/motion/nav.ts`), so the CSS plays from the first frame and no content is ever shown then hidden; `popstate` switches it to "back" (ScrollReveal). Blocks held by the section reveal below the fold are left to it.
 - **Tokens** (`globals.css`):
   - `--ease-settle: cubic-bezier(0.22, 1, 0.36, 1)` (fast start, soft landing). Use it instead of Tailwind's `ease-out`, which keeps its own meaning.
   - Durations: `--motion-fast` 160 ms (hover, press), `--motion-base` 240 ms (small state changes), `--motion-slow` 700 ms (a section or line arriving).

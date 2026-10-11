@@ -893,6 +893,7 @@
     "subtitle": "Which province has the startups and products with the best numbers? Judged on numbers from real systems, never typed-in figures.",
     "metric": "Metric",
     "metrics": {
+      "projects": "Projects",
       "revenue30d": "Revenue (30d)",
       "mrr": "MRR",
       "visitors": "Visitors (30d)",
@@ -950,7 +951,7 @@
     "moreProvinces": "+{n} provinces",
     "risingTitle": "Rising this month",
     "howTitle": "How scoring works",
-    "howBody": "Revenue verified through Stripe and RevenueCat · commits through GitHub · visitors counted by the JaoPor script or analytics (Plausible, Umami, Cloudflare) · revenue converted from USD at today's rate · demo projects excluded · province as chosen by the founder · rank changes compare with the previous 30 days",
+    "howBody": "Projects: every published project, numbers verified or not · revenue verified through Stripe and RevenueCat · commits through GitHub · visitors counted by the JaoPor script or analytics (Plausible, Umami, Cloudflare) · revenue converted from USD at today's rate · demo projects excluded · province as chosen by the founder · rank changes compare with the previous 30 days",
     "startupLeaderboard": "See the leaderboard"
   },
   "Province": {

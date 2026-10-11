@@ -11,9 +11,12 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { getProvince } from "@/lib/config/provinces";
 import type { CoarseGeo } from "@/lib/live/geo";
 import {
   LIVE_ENABLED,
+  LIVE_MODE,
+  type LiveSnapshotRow,
   createIdentity,
   isIdentity,
   pageSection,
@@ -25,8 +28,11 @@ import {
 import { createClient } from "@/lib/supabase/client";
 
 /**
- * Phase 8 live visitors (Design.md §5 LivePresence). One Supabase Realtime presence channel for
- * the whole site, open only while the tab is visible. Each browser tracks an anonymous identity
+ * Phase 8 live visitors (Design.md §5 LivePresence). Two engines (identity.ts LIVE_MODE):
+ * - "poll" (default): a heartbeat about once a minute and the CDN-cached /api/live/snapshot every
+ *   30 s while the tab is visible. Same board, no Realtime quota.
+ * - "realtime": one Supabase Realtime presence channel for the whole site, open only while the
+ *   tab is visible. Each browser tracks an anonymous identity
  * (random id + word-list name), the page path, device and coarse location; page changes are
  * broadcast for the activity feed. Everything received is validated (`parseVisitor`).
  * Fallback: a heartbeat every 60 s to /api/live/ping, and when Realtime fails the count comes
@@ -158,6 +164,9 @@ export function LivePresenceProvider({
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [fallbackCount, setFallbackCount] = useState<number | null>(null);
   const channel = useRef<RealtimeChannel | null>(null);
+  // Poll mode: the shared snapshot and this tab's own key in it (from the ping answer).
+  const [snapshot, setSnapshot] = useState<LiveSnapshotRow[] | null>(null);
+  const [myKey, setMyKey] = useState<string | null>(null);
   const lastBroadcast = useRef(0);
 
   // Coarse location, once per tab.
@@ -188,9 +197,15 @@ export function LivePresenceProvider({
   // Realtime presence: connect while visible, leave when hidden.
   const ready = LIVE_ENABLED && identity !== null && geo !== null;
   const status: LiveState["status"] =
-    !ready || !visible ? "off" : (joined ?? "connecting");
+    !ready || !visible
+      ? "off"
+      : LIVE_MODE === "poll"
+        ? snapshot
+          ? "live"
+          : "connecting"
+        : (joined ?? "connecting");
   useEffect(() => {
-    if (!ready || !visible || !identity) return;
+    if (LIVE_MODE !== "realtime" || !ready || !visible || !identity) return;
     const supabase = createClient();
     const ch = supabase.channel("live-visitors", {
       config: {
@@ -270,12 +285,36 @@ export function LivePresenceProvider({
           device: me.device,
         }),
         keepalive: true,
-      }).catch(() => {});
+      })
+        .then((r) =>
+          r.status === 200 ? (r.json() as Promise<{ k?: unknown }>) : null,
+        )
+        .then((d) => {
+          if (typeof d?.k === "string") setMyKey(d.k);
+        })
+        .catch(() => {});
     ping();
     const t = setInterval(ping, 60_000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-ping on page change only
   }, [visible, me?.path, me?.id, optedOut]);
+
+  // Poll mode: the board's data, every 30 s while the tab is visible.
+  useEffect(() => {
+    if (LIVE_MODE !== "poll" || !ready || !visible) return;
+    const poll = () =>
+      fetch("/api/live/snapshot")
+        .then((r) => r.json() as Promise<{ visitors?: LiveSnapshotRow[] }>)
+        .then((d) =>
+          setSnapshot(
+            Array.isArray(d.visitors) ? d.visitors.slice(0, 300) : [],
+          ),
+        )
+        .catch(() => {});
+    poll();
+    const t = setInterval(poll, 30_000);
+    return () => clearInterval(t);
+  }, [ready, visible]);
 
   useEffect(() => {
     if (status !== "fallback") return;
@@ -289,8 +328,26 @@ export function LivePresenceProvider({
     return () => clearInterval(t);
   }, [status]);
 
-  const value = useMemo(
-    () => ({
+  const value = useMemo(() => {
+    if (LIVE_MODE === "poll") {
+      // Everyone else in the snapshot (this tab is added by the board as `me`).
+      const others = (snapshot ?? []).filter((r) => r.k !== myKey);
+      return {
+        status,
+        optedOut,
+        me,
+        visitors: others.map(snapshotVisitor),
+        events: others.slice(0, 8).map((r) => ({
+          key: `${r.k}-${r.at}`,
+          c: r.c,
+          a: r.a,
+          section: pageSection(r.path),
+          at: r.at,
+        })),
+        fallbackCount: null,
+      };
+    }
+    return {
       status,
       optedOut,
       me,
@@ -299,8 +356,23 @@ export function LivePresenceProvider({
         optedOut && me ? visitors.filter((v) => v.id !== me.id) : visitors,
       events,
       fallbackCount,
-    }),
-    [status, optedOut, me, visitors, events, fallbackCount],
-  );
+    };
+  }, [status, optedOut, me, visitors, events, fallbackCount, snapshot, myKey]);
   return <LiveContext.Provider value={value}>{children}</LiveContext.Provider>;
+}
+
+/** A snapshot row as a map visitor: the province's capital stands in for the location. */
+function snapshotVisitor(r: LiveSnapshotRow): LiveVisitor {
+  const p = r.province ? getProvince(r.province) : null;
+  return {
+    id: r.k,
+    c: r.c,
+    a: r.a,
+    path: r.path,
+    country: r.country,
+    province: r.province,
+    lat: p?.lat ?? null,
+    lng: p?.lng ?? null,
+    device: r.device,
+  };
 }

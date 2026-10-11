@@ -1,9 +1,10 @@
 // Spec 6.7 Province Olympics (redesign v3, 2026-10-01: Claude Design structure). Shared by the page,
 // the province page, the home teaser and the detail-page link.
 //
-// The season metric is revenue over the last 30 days, so leaders can change every month. Rank
-// movement compares with the previous 30 days (startups.revenue_prev_30d_cents / visitors_prev_30d),
-// which exist for revenue30d and visitors only; MRR and commits show no movement.
+// The default board counts published projects (owner request 2026-10-11: quantity first, it works
+// before anyone verifies numbers); its movement compares with the projects listed 30+ days ago.
+// The verified boards: revenue over the last 30 days (movement vs startups.revenue_prev_30d_cents),
+// visitors (vs visitors_prev_30d), MRR and commits (no movement).
 // Ranking runs in TypeScript over the public startup rows (the v1 SQL `province_leaderboard` has no
 // 30-day metric); a v2 SQL twin can replace it once the board is large.
 import {
@@ -15,13 +16,16 @@ import {
 } from "@/lib/config/provinces";
 
 export const OLYMPIC_METRICS = [
+  // Owner request 2026-10-11: every published project counts, verified or not, so provinces can
+  // compete on how much gets built before anyone connects revenue or users. Default board.
+  "projects",
   "revenue30d",
   "mrr",
   "visitors",
   "commits",
 ] as const;
 export type OlympicMetric = (typeof OLYMPIC_METRICS)[number];
-export const DEFAULT_METRIC: OlympicMetric = "revenue30d";
+export const DEFAULT_METRIC: OlympicMetric = "projects";
 
 /** Money metrics are USD cents (shown in the visitor's currency); the others are counts. */
 export function isMoneyMetric(m: OlympicMetric): boolean {
@@ -30,7 +34,7 @@ export function isMoneyMetric(m: OlympicMetric): boolean {
 
 /** Metrics with a stored previous period (rank movement and growth). */
 export function hasPrevious(m: OlympicMetric): boolean {
-  return m === "revenue30d" || m === "visitors";
+  return m === "projects" || m === "revenue30d" || m === "visitors";
 }
 
 export function parseMetric(v: unknown): OlympicMetric {
@@ -85,10 +89,14 @@ export type OlympicSource = {
   visitors_30d: number | null;
   visitors_prev_30d: number | null;
   build_commits: number | null;
+  /** For the "projects" board: listed 30+ days ago = counted in the previous period too. */
+  created_at: string;
 };
 
 export const OLYMPIC_COLUMNS =
-  "slug, name, logo_path, province, status, is_demo, verification_status, revenue_30d_cents, revenue_prev_30d_cents, mrr_cents, visitors_30d, visitors_prev_30d, build_commits";
+  "slug, name, logo_path, province, status, is_demo, verification_status, revenue_30d_cents, revenue_prev_30d_cents, mrr_cents, visitors_30d, visitors_prev_30d, build_commits, created_at";
+
+const DAY_MS = 86_400_000;
 
 /** A startup's verified value for the metric, or null when it has none (it doesn't count). */
 export function metricValue(
@@ -97,6 +105,8 @@ export function metricValue(
 ): number | null {
   const verified = s.verification_status === "verified";
   switch (metric) {
+    case "projects":
+      return 1;
     case "revenue30d":
       return verified ? s.revenue_30d_cents : null;
     case "mrr":
@@ -112,7 +122,10 @@ export function metricValue(
 export function previousValue(
   s: OlympicSource,
   metric: OlympicMetric,
+  now = Date.now(),
 ): number | null {
+  if (metric === "projects")
+    return Date.parse(s.created_at) <= now - 30 * DAY_MS ? 1 : 0;
   if (metric === "revenue30d")
     return s.verification_status === "verified"
       ? (s.revenue_prev_30d_cents ?? 0)
@@ -136,6 +149,7 @@ export function rankProvinces(
   rows: OlympicSource[],
   metric: OlympicMetric,
   region: Region | null = null,
+  now = Date.now(),
 ): ProvinceRank[] {
   const groups = new Map<string, Group>();
   for (const s of rows) {
@@ -146,7 +160,7 @@ export function rankProvinces(
     if (value === null) continue;
     const g = groups.get(def.slug) ?? { def, items: [], prev: 0 };
     g.items.push({ slug: s.slug, name: s.name, logo_path: s.logo_path, value });
-    g.prev += previousValue(s, metric) ?? 0;
+    g.prev += previousValue(s, metric, now) ?? 0;
     groups.set(def.slug, g);
   }
   const withPrev = hasPrevious(metric);

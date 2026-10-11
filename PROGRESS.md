@@ -12,6 +12,46 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-11 — Anonymous mode live; project page layout restored; live board back; page-enter motion; Olympics "projects" board
+
+**Done:**
+
+- **Anonymous mode applied** (owner: "apply"; the founder stays visible).
+  - Migration `anonymous_mode`, then the advisors showed one new WARN: `startup_identity()` could be executed by signed-in users.
+  - Fixed with `startup_identity_server_only`: revoke from `authenticated`. Owner reads now go through the server key after an ownership check (`owner-startups.ts`, the action, autofill).
+  - Types regenerated (`is_anonymous`, `startup_identity`, `owner_anonymous_websites`). The temporary casts are removed.
+- **Project page back to the pre-10-Oct order** (owner: the Proof / Story split read worse):
+  - `tractionFirst` → chart card → `TractionTiles` (with the build story) → screenshots → founder message → `InsightsGrid` → updates.
+  - `StorySection` was replaced by the restored `InsightsGrid`.
+  - The R2 disclosure and anonymous changes are kept.
+  - `e2e/project.spec.ts` was rewritten for this order.
+- **Live board ("ตอนนี้มีคนดูอยู่") back on by default as a polled board.**
+  - It had been off since 2026-10-09 because the Realtime presence channel would pass the Free plan's 100 msg/s at about 50 people.
+  - New engine: the heartbeat (`/api/live/ping` now answers the tab's short key) plus `/api/live/snapshot` (tabs seen in the last 90 s, CDN-cached 30 s, so about one query per 30 s for the whole site) feed the same board. Pins sit at the province capital; avatars are derived from the key.
+  - `NEXT_PUBLIC_LIVE_VISITORS`: unset/"poll" (default), "1"/"realtime", "0"/"off".
+- **Page-enter motion:**
+  - A page opened by a link or a reload fades its top-level blocks up, staggered.
+  - Back / Forward shows the page at once.
+  - `html[data-nav]` is set by a `<head>` script before the first paint, so nothing blinks. `popstate` sets "back".
+- **Olympics default board "จำนวนผลงาน":** every published, non-demo project counts, verified or not, with growth against the projects listed 30+ days ago. It appears first in the switch and is used on province pages and the OG image. The scoring note explains it.
+- Your `autofill.ts` copy change was committed (`0cd1b79`).
+
+**Verified:**
+
+- **Live DB after applying, rolled-back checks:**
+  - Masked public row; owner rename diverted to the stash.
+  - Signed-in users and anon can't call `startup_identity`; the server key reads it.
+  - Anon can't read the stash; the real slug stays reserved.
+  - Turning it off restores everything.
+- **Advisors:** no new WARN. The remaining WARN is the existing Auth leaked-password setting.
+- **Gates:** typecheck ✓ · lint ✓ · unit 595 passed / 17 skipped · e2e local 121 passed / 0 failed · build ✓.
+- **Browser:**
+  - The board renders locally; a link-click navigation runs `page-enter`; Back runs none and resets the flag; below-fold sections still wait for the scroll reveal.
+  - `/th/olympics` shows the projects board.
+- **Not verified locally:** the heartbeat write (no `KEY_ENCRYPTION_SECRET` in the local env). It is checked on production after the deploy.
+
+**Files:** `supabase/migrations/2026101112{6,7}000_*.sql`, `supabase/tests/rls_smoke.sql`, `src/lib/supabase/database.types.ts`, `src/lib/data/{owner-startups,anonymous}.ts`, `src/app/actions/anonymous.ts`, the project page, `src/components/{ProfileBlocks,profile/ProjectBlocks}.tsx`, `src/lib/live/identity.ts`, `src/components/live/LivePresence.tsx`, `src/app/api/live/{ping,snapshot}/route.ts`, `src/lib/motion/nav.ts`, `src/components/core/ScrollReveal.tsx`, `src/app/globals.css`, `src/lib/olympics.ts`, the Olympics OG image, `messages/*`, `Design.md`, `Project.md`, `e2e/project.spec.ts`
+
 ## 2026-10-11 — Anonymous mode for projects (code ready; migration written, NOT applied)
 
 **Done:**

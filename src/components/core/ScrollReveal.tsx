@@ -11,11 +11,31 @@ import { useEffect } from "react";
  * the ones still below the fold get `data-reveal="wait"` (out of view, so the visitor never sees
  * them disappear); CSS plays the effect when they become `in`. No JS, no IntersectionObserver or
  * reduced motion → nothing changes. Runs again after a client-side navigation.
+ *
+ * Page enter (owner request 2026-10-11, CSS in globals.css): `html[data-nav="enter"]` fades a new
+ * page's blocks up. Back / Forward (popstate) sets "back" before the old page renders, so it
+ * appears at once and nothing on it is held for the scroll reveal either; afterwards its blocks
+ * are marked `data-entered` and the flag returns to "enter" for the next link.
  */
 export function ScrollReveal() {
   const pathname = usePathname();
 
   useEffect(() => {
+    const back = () =>
+      document.documentElement.setAttribute("data-nav", "back");
+    window.addEventListener("popstate", back);
+    return () => window.removeEventListener("popstate", back);
+  }, []);
+
+  useEffect(() => {
+    const html = document.documentElement;
+    if (html.getAttribute("data-nav") === "back") {
+      // Seen already: show it as it is, and let the next page opened by a link animate again.
+      for (const el of document.querySelectorAll("main > *"))
+        el.setAttribute("data-entered", "");
+      html.setAttribute("data-nav", "enter");
+      return;
+    }
     if (
       typeof IntersectionObserver === "undefined" ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches

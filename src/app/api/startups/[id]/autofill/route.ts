@@ -65,8 +65,8 @@ export async function POST(
     .eq("id", id)
     .eq("owner_id", auth.user.id)
     .maybeSingle();
-  // The owner's session reads an anonymous project's real website (startup_identity).
-  const startup = row ? await withRealLinks(supabase, row) : null;
+  // Ownership checked by the query above; an anonymous project's real website via the server key.
+  const startup = row ? await withRealLinks(createAdminClient(), row) : null;
   if (!startup)
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   // A1.2: only the project's own website is read (not a Facebook / YouTube page).

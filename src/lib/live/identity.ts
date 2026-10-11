@@ -163,12 +163,42 @@ export function parseVisitor(raw: unknown): LiveVisitor | null {
 }
 
 /**
- * Phase 8 switch. **Off by default since 2026-10-09** (launch-readiness B-2): one Supabase Realtime
- * presence channel for the whole site sends every page change to every open tab, which passes the
- * Free plan's 100 messages/s at about 50 people online and can use the monthly 2 M messages in a
- * launch day. Off means no Realtime connection, no heartbeat and no geo lookup from this provider;
- * the API routes answer without touching the database. The feature, its tables and the /privacy
- * wording are kept: set NEXT_PUBLIC_LIVE_VISITORS=1 in Vercel and redeploy to turn it back on
- * (after a redesign or a plan with higher Realtime limits).
+ * Phase 8 switch (NEXT_PUBLIC_LIVE_VISITORS):
+ * - unset / "poll" (default since 2026-10-11, owner asked for the board back): no Realtime. Each
+ *   visible tab pings /api/live/ping about once a minute and reads /api/live/snapshot, which the
+ *   CDN caches for 30 s, so the whole site costs about one query per half minute to read.
+ * - "1" / "realtime": the original Supabase Realtime presence channel. It sends every page change
+ *   to every open tab and passes the Free plan's 100 messages/s at about 50 people online
+ *   (launch-readiness B-2, 2026-10-09), so only with a plan that allows it.
+ * - "0" / "off": nothing (no heartbeat, no geo lookup; the routes don't touch the database).
  */
-export const LIVE_ENABLED = process.env.NEXT_PUBLIC_LIVE_VISITORS === "1";
+export type LiveMode = "off" | "poll" | "realtime";
+export function liveMode(value: string | undefined): LiveMode {
+  if (value === "0" || value === "off") return "off";
+  if (value === "1" || value === "realtime") return "realtime";
+  return "poll";
+}
+export const LIVE_MODE: LiveMode = liveMode(
+  process.env.NEXT_PUBLIC_LIVE_VISITORS,
+);
+export const LIVE_ENABLED = LIVE_MODE !== "off";
+
+/** One row of /api/live/snapshot: a tab seen in the last 90 s (no id, no IP). */
+export type LiveSnapshotRow = {
+  /** First 12 hex of the day-scoped HMAC of the browser id (rotates daily). */
+  k: string;
+  c: number;
+  a: number;
+  path: string;
+  country: string | null;
+  province: string | null;
+  device: "mobile" | "desktop";
+  /** Last heartbeat, ms since epoch. */
+  at: number;
+};
+
+/** Avatar for a snapshot row: the browser's own (when stored) or one derived from its key. */
+export function avatarFromKey(k: string): { c: number; a: number } {
+  const n = parseInt(k.slice(0, 8), 16) || 0;
+  return { c: n % COLORS.length, a: Math.floor(n / COLORS.length) % ANIMALS.length };
+}

@@ -26,6 +26,7 @@ const row = (over: Partial<OlympicSource>): OlympicSource => ({
   visitors_30d: null,
   visitors_prev_30d: null,
   build_commits: null,
+  created_at: "2026-01-01T00:00:00Z",
   ...over,
 });
 
@@ -189,7 +190,7 @@ describe("helpers", () => {
 
   it("parses URL params with safe defaults", () => {
     expect(parseMetric("visitors")).toBe("visitors");
-    expect(parseMetric("drop table")).toBe("revenue30d");
+    expect(parseMetric("drop table")).toBe("projects");
     expect(parseRegion("south")).toBe("south");
     expect(parseRegion(["south"])).toBeNull();
   });
@@ -221,5 +222,43 @@ describe("region standings", () => {
       startups: 3,
       total: 1700,
     });
+  });
+});
+
+describe("projects board (every published project counts)", () => {
+  const now = Date.parse("2026-10-11T00:00:00Z");
+  const rows = [
+    row({
+      slug: "p1",
+      province: "khon-kaen",
+      verification_status: "unverified",
+    }),
+    row({
+      slug: "p2",
+      province: "khon-kaen",
+      verification_status: "unverified",
+      created_at: "2026-10-05T00:00:00Z",
+    }),
+    row({ slug: "p3", province: "bangkok", verification_status: "unverified" }),
+    row({ slug: "demo", province: "bangkok", is_demo: true }),
+    row({ slug: "hidden", province: "bangkok", status: "private" }),
+  ];
+
+  it("ranks by the number of projects, verified or not (no demos, no private ones)", () => {
+    const board = rankProvinces(rows, "projects", null, now);
+    expect(board.map((p) => [p.province, p.total])).toEqual([
+      ["khon-kaen", 2],
+      ["bangkok", 1],
+    ]);
+  });
+
+  it("growth compares with the projects listed 30+ days ago", () => {
+    const kk = rankProvinces(rows, "projects", null, now)[0];
+    expect(kk.prevTotal).toBe(1);
+    expect(kk.growth).toBe(1);
+  });
+
+  it("is the default board", () => {
+    expect(parseMetric("nonsense")).toBe("projects");
   });
 });

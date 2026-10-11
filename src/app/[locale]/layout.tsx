@@ -26,6 +26,7 @@ import { currencyInitScript } from "@/lib/currency-script";
 import { themeInitScript } from "@/lib/theme-script";
 import { cn } from "@/lib/utils";
 import "../globals.css";
+import { navInitScript } from "@/lib/motion/nav";
 
 // Design.md §3 Typography: JetBrains Mono (Figma), Thai glyphs fall back to Plex Sans Thai.
 const jetbrains = JetBrains_Mono({
@@ -117,7 +118,7 @@ export default async function LocaleLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: themeInitScript + currencyInitScript,
+            __html: themeInitScript + currencyInitScript + navInitScript,
           }}
         />
         {gaId && (

@@ -351,7 +351,7 @@ export function StartupWizard({
             province,
             logo_path: logoPath,
             // Masked by the database before the row is ever visible (migration anonymous_mode).
-            ...((anonymous ? { is_anonymous: true } : {}) as object),
+            ...(anonymous ? { is_anonymous: true } : {}),
           })
           .select("id, slug, website_url")
           .single();

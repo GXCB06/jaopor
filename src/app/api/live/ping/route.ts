@@ -8,7 +8,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // Phase 8 heartbeat fallback (live_pings): each open tab pings about once a minute so the visitor
 // count keeps working when Supabase Realtime is down or at its connection limit. Stored: an HMAC of
 // the random browser id under a key that changes daily, the page path, country / province and
-// device. Rows older than 10 minutes are pruned. Always answers 204.
+// device. Rows older than 10 minutes are pruned. Answers 200 with this tab's short key `k` (the
+// same key /api/live/snapshot shows, so the page can leave itself out of "others"), else 204.
 
 const PATH = /^\/[A-Za-z0-9/_-]{0,199}$/;
 let lastPrune = 0;
@@ -59,6 +60,10 @@ export async function POST(req: Request) {
       lastPrune = Date.now();
       await admin.rpc("prune_live_pings");
     }
+    return Response.json(
+      { k: hash.toString("hex").slice(0, 12) },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (err) {
     // Missing table (migration not applied yet) or a DB hiccup: the live map simply shows less.
     console.error("[live/ping] failed:", (err as Error).name);

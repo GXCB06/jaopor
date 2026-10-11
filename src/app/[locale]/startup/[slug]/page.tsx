@@ -19,7 +19,6 @@ import { DisclosedStat, isNonExact } from "@/components/profile/DisclosedStat";
 import {
   EmptyOwnerCard,
   OwnerBar,
-  OwnerOnly,
   OwnerProvider,
   UnverifiedLine,
 } from "@/components/profile/Owner";
@@ -29,7 +28,7 @@ import {
   TractionTiles,
 } from "@/components/profile/ProjectBlocks";
 import {
-  StorySection,
+  InsightsGrid,
   FounderCard,
   StatCard,
   ChartStamp,
@@ -203,16 +202,15 @@ export default async function StartupPage({ params }: Props) {
   const chartMetrics = (["revenue", "mrr", "visitors"] as const).filter(
     (m) => series[m] !== null,
   );
-  // Item 6: the "Proof" container only appears for visitors when it holds at least one number.
-  const hasProof =
-    chartMetrics.length > 0 ||
-    startup.visitors_30d !== null ||
-    startup.active_users !== null ||
-    startup.build_commits !== null ||
-    // R2: a group shown as a range, growth or badge is still proof.
-    isNonExact(startup.disclosure.traffic) ||
-    isNonExact(startup.disclosure.users) ||
-    isNonExact(startup.disclosure.build);
+  // A project without verified revenue leads with the numbers it does have (visitors, build).
+  // Owner request 2026-10-11: back to this layout (the Proof / Story split read worse).
+  const tractionFirst =
+    !verified &&
+    (startup.visitors_30d !== null ||
+      startup.build_commits !== null ||
+      // R2: a group shown as a range, growth or badge is still a number to lead with.
+      isNonExact(startup.disclosure.traffic) ||
+      isNonExact(startup.disclosure.build));
 
   // Share kit (Design.md §9): absolute URLs, verified numbers only.
   const url = `${publicEnv.siteUrl}/${locale}/startup/${startup.slug}`;
@@ -398,6 +396,10 @@ export default async function StartupPage({ params }: Props) {
 
         <LiveViewersPill />
 
+        {/* Numbers first, at every width (Design.md §5 Profile header; on a phone the first screen
+            used to hold no number). */}
+        {tractionFirst && <TractionTiles startup={startup} />}
+
         {/* Spec 2.4: only tiles that have data; unverified numbers collapse into one muted line. */}
         <section className="space-y-3">
           {/* relative: MetricHelp opens across the whole row, not inside one narrow tile. */}
@@ -531,45 +533,27 @@ export default async function StartupPage({ params }: Props) {
           </p>
         )}
 
-        {/* Item 6 (master audit): "Proof" — every verified / counted number in one place: the chart
-            (which carries the "verified by / counted by" stamps) plus the traction tiles. Visitors
-            never see the heading without a number under it; the owner always sees the prompts. */}
-        {hasProof ? (
-          <section className="space-y-3">
-            <h2 className="text-sm font-bold">{t("proofTitle")}</h2>
-            {chartMetrics.length > 0 ? (
-              <Card className="p-4 sm:p-6">
-                <MetricChart
-                  series={series}
-                  thbPerUsd={thbPerUsd}
-                  stamps={Object.fromEntries(
-                    chartMetrics.map((m) => [
-                      m,
-                      <ChartStamp key={m} startup={startup} metric={m} />,
-                    ]),
-                  )}
-                />
-              </Card>
-            ) : (
-              <EmptyOwnerCard field="revenue" label={t("connectChart")} />
-            )}
-            <TractionTiles startup={startup} />
-          </section>
+        {/* Spec 6.4 step 3: chart card; nothing verified → owner-only prompt. */}
+        {chartMetrics.length > 0 ? (
+          <Card className="p-4 sm:p-6">
+            <MetricChart
+              series={series}
+              thbPerUsd={thbPerUsd}
+              stamps={Object.fromEntries(
+                chartMetrics.map((m) => [
+                  m,
+                  <ChartStamp key={m} startup={startup} metric={m} />,
+                ]),
+              )}
+            />
+          </Card>
         ) : (
-          <OwnerOnly>
-            <section className="space-y-3">
-              <h2 className="text-sm font-bold">{t("proofTitle")}</h2>
-              <EmptyOwnerCard field="revenue" label={t("connectChart")} />
-              <TractionTiles startup={startup} />
-            </section>
-          </OwnerOnly>
+          <EmptyOwnerCard field="revenue" label={t("connectChart")} />
         )}
 
-        {/* Item 6: "Story" — the "why" (problem → value → audience), the build story, then the
-            remaining facts. Replaces InsightsGrid, which had split the narrative in two. */}
-        <StorySection startup={startup} />
+        {!tractionFirst && <TractionTiles startup={startup} />}
 
-        {/* Screenshots + demo video; owner prompt when empty. */}
+        {/* Spec 6.4 step 4: screenshots + demo video; owner prompt when empty. */}
         {shots.length > 0 || startup.demo_video_url ? (
           <ScreenshotGallery
             name={startup.name}
@@ -583,6 +567,10 @@ export default async function StartupPage({ params }: Props) {
         )}
 
         <FounderMessageCard startup={startup} />
+
+        <div className="pt-3">
+          <InsightsGrid startup={startup} />
+        </div>
 
         {updates.length > 0 && (
           <section className="pt-3">

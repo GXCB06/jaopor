@@ -11,8 +11,8 @@
 -- anonymous (the edit form, the GitHub sync) is diverted into the stash; turning the mode off
 -- restores everything, old URLs included.
 --
--- NOT APPLIED. Apply only with the owner's approval, BEFORE 20261011130000_disclosure_levels
--- (that one grants is_anonymous to anon). Then advisors, RLS smoke (T162–T170), regenerate types.
+-- Applied 2026-10-11 with the owner's approval, before 20261011130000_disclosure_levels (that one
+-- grants is_anonymous to anon). RLS smoke: T162–T168.
 
 -- 1. The switch. Owners set it on insert (wizard) or update (edit page).
 alter table public.startups add column is_anonymous boolean not null default false;

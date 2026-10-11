@@ -8,7 +8,11 @@ import { getProvinceLeaderboard } from "@/lib/data/startups";
 import { money } from "@/lib/format";
 import { logoTileDataUri } from "@/lib/logo";
 import { OG_SANS, ogFonts } from "@/lib/og-fonts";
-import { DEFAULT_METRIC, regionStandings } from "@/lib/olympics";
+import {
+  DEFAULT_METRIC,
+  isMoneyMetric,
+  regionStandings,
+} from "@/lib/olympics";
 import { publicEnv } from "@/lib/public-env";
 import { BRAND_HEX, CARD_THEME, REGION_HEX } from "@/lib/share-palette";
 
@@ -104,7 +108,9 @@ export default async function Image({
                   <span
                     style={{ fontSize: 34, fontWeight: 700, color: C.muted }}
                   >
-                    {money(row.total, { currency: "thb", thbPerUsd })}
+                    {isMoneyMetric(DEFAULT_METRIC)
+                      ? money(row.total, { currency: "thb", thbPerUsd })
+                      : t("startups", { count: row.total })}
                   </span>
                 )}
               </div>

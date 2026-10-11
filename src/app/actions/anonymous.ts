@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { routing } from "@/i18n/routing";
 import { isAnonymousSlug } from "@/lib/anonymous";
 import { realIdentity } from "@/lib/data/anonymous";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export type AnonymousResult =
@@ -41,13 +42,13 @@ export async function setProjectAnonymous(
       .from("startup_slug_history")
       .select("slug")
       .eq("startup_id", startupId),
-    on ? Promise.resolve(null) : realIdentity(supabase, startupId),
+    // Ownership was checked above; the identity is read with the server key.
+    on ? Promise.resolve(null) : realIdentity(createAdminClient(), startupId),
   ]);
 
   const { error } = await supabase
     .from("startups")
-    // The column isn't in the generated types until the migration is applied.
-    .update({ is_anonymous: on } as never)
+    .update({ is_anonymous: on })
     .eq("id", startupId);
   if (error) {
     if (error.code === "42703" || error.code === "PGRST204")

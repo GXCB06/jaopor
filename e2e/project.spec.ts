@@ -3,25 +3,25 @@ import { expectNoHorizontalScroll, firstLink, openPage } from "./helpers";
 import en from "../messages/en.json";
 import th from "../messages/th.json";
 
-// UX master audit B1.3 (item 6): the project page groups evidence into a "Proof" container and the
-// narrative into a "Story" container, Proof first. Project pages render from public data, so this
-// runs everywhere (no server key needed), like readability.spec.ts.
+// Project page order (owner request 2026-10-11: back to the layout before the Proof / Story split):
+// numbers (chart + "ตัวเลขจากระบบที่เชื่อมต่อ") → screenshots → founder message → ข้อมูลเชิงลึก →
+// updates. Project pages render from public data, so this runs everywhere.
 
 const T = {
   th: {
-    proof: th.Profile.proofTitle,
-    story: th.Profile.storyTitle,
+    insights: th.Profile.insights,
     updates: th.Profile.latestUpdates,
+    gone: [th.Profile.proofTitle, th.Profile.storyTitle],
   },
   en: {
-    proof: en.Profile.proofTitle,
-    story: en.Profile.storyTitle,
+    insights: en.Profile.insights,
     updates: en.Profile.latestUpdates,
+    gone: [en.Profile.proofTitle, en.Profile.storyTitle],
   },
 };
 
 for (const locale of ["th", "en"] as const) {
-  test(`/${locale} project page: Proof, then Story, then updates`, async ({
+  test(`/${locale} project page: the original order, insights before updates`, async ({
     page,
   }) => {
     const href = await firstLink(
@@ -39,17 +39,11 @@ for (const locale of ["th", "en"] as const) {
       ),
     );
     const m = T[locale];
-    const proof = heads.indexOf(m.proof);
-    const story = heads.indexOf(m.story);
+    for (const old of m.gone) expect(heads).not.toContain(old);
+    const insights = heads.indexOf(m.insights);
     const updates = heads.indexOf(m.updates);
-
-    expect(proof, `"${m.proof}" heading`).toBeGreaterThanOrEqual(0);
-    if (story !== -1) expect(proof, "Proof before Story").toBeLessThan(story);
-    if (updates !== -1) {
-      expect(proof, "Proof before updates").toBeLessThan(updates);
-      if (story !== -1)
-        expect(story, "Story before updates").toBeLessThan(updates);
-    }
+    if (insights !== -1 && updates !== -1)
+      expect(insights, "insights before updates").toBeLessThan(updates);
     await expectNoHorizontalScroll(page, path);
   });
 }

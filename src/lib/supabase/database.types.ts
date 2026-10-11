@@ -1162,6 +1162,7 @@ export type Database = {
           github_repo: string | null;
           github_url: string | null;
           id: number;
+          is_anonymous: boolean;
           is_demo: boolean;
           last_synced_at: string | null;
           line_url: string | null;
@@ -1225,6 +1226,7 @@ export type Database = {
           github_repo?: string | null;
           github_url?: string | null;
           id?: never;
+          is_anonymous?: boolean;
           is_demo?: boolean;
           last_synced_at?: string | null;
           line_url?: string | null;
@@ -1288,6 +1290,7 @@ export type Database = {
           github_repo?: string | null;
           github_url?: string | null;
           id?: never;
+          is_anonymous?: boolean;
           is_demo?: boolean;
           last_synced_at?: string | null;
           line_url?: string | null;
@@ -1466,6 +1469,14 @@ export type Database = {
         };
         Returns: undefined;
       };
+      owner_anonymous_websites: {
+        Args: { p_owner: string };
+        Returns: {
+          name: string;
+          startup_id: number;
+          website_url: string;
+        }[];
+      };
       profile_activity: {
         Args: {
           p_from: string;
@@ -1504,6 +1515,21 @@ export type Database = {
           tagline: string;
           verification_status: string;
           verified_provider: string;
+        }[];
+      };
+      startup_identity: {
+        Args: { p_startup: number };
+        Returns: {
+          app_store_url: string;
+          demo_video_url: string;
+          github_repo: string;
+          github_url: string;
+          line_url: string;
+          logo_path: string;
+          name: string;
+          play_store_url: string;
+          slug: string;
+          website_url: string;
         }[];
       };
       take_avatar_change: { Args: never; Returns: undefined };
