@@ -11,6 +11,7 @@ import {
 } from "next-intl/server";
 import { LivePresenceProvider } from "@/components/live/LivePresence";
 import { PrefsSync } from "@/components/PrefsSync";
+import { ScrollReveal } from "@/components/core/ScrollReveal";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
@@ -135,6 +136,8 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={clientMessages(messages)}>
           <LivePresenceProvider>
             <PrefsSync />
+            {/* Design.md §7 Motion: sections fade up once as they scroll into view. */}
+            <ScrollReveal />
             <SiteHeader />
             <div className="flex flex-1 flex-col">{children}</div>
             <SiteFooter />

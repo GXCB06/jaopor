@@ -12,6 +12,25 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-11 — Motion: numbers no longer animate; sections fade up as you scroll (owner request); R2 A–C deployed
+
+**Done:**
+
+- **R2 A–C pushed** (`34294dc`) and deployed: production e2e 132 passed / 2 skipped / 0 failed (legacy path, pages unchanged).
+- **Owner request:** "ตัวเลขไม่ต้องมี animation" + "ขณะเลื่อนลงในหน้าใหม่ ให้แต่ละส่วนค่อย ๆ ปรากฏขึ้น".
+  - **Removed:** RollingNumber, `lib/motion/digits.ts` + test, the roll CSS, the `Money roll` option, every roll use (project tiles, TractionTiles, cards, leaderboard, builder cards) and StatCard's InView wrapper.
+  - **Added:** `core/ScrollReveal` (in the locale layout). Each top-level `<section>` of `<main>` that starts below the fold is marked `data-reveal="wait"` (out of view) and fades up once (700 ms, 24 px) when it enters. On-screen sections never move. Nothing happens without JS or with reduced motion. It runs again after client navigation.
+  - **Kept:** chart draw, live pulse, card rise, leaderboard FLIP and the verify stamp.
+  - Design.md §7 Motion updated ("numbers never animate", section reveal).
+
+**Files:** `src/components/core/ScrollReveal.tsx` (new), `src/app/[locale]/layout.tsx`, `src/app/globals.css`, `src/components/{StartupBits,StartupCard,LeaderboardCard,ProfileBlocks}.tsx`, `src/components/builder/BuilderCard.tsx`, `src/components/profile/ProjectBlocks.tsx`, `src/app/[locale]/startup/[slug]/page.tsx`, `e2e/motion.spec.ts`, `Design.md`; deleted `core/RollingNumber.tsx`, `lib/motion/digits{,.test}.ts`.
+**Verified:**
+- typecheck ✓ · lint ✓ · unit 557 passed / 17 skipped · e2e local 117 passed / 0 failed. The motion spec covers: below-the-fold sections wait then reveal, on-screen sections untouched, no digit columns, reduced motion marks nothing.
+- build ✓.
+- 375 px screenshots mid-reveal and settled on the project page.
+
+**Next:** production e2e after deploy; owner review of the motion; TrustMRR vs JaoPor UX comparison (owner question).
+
 ## 2026-10-11 — R2 surfaces A–C: compatibility layer + masked public reads + band / growth / badge displays (migration still NOT applied; not committed)
 
 **Done (docs/DISCLOSURE_SURFACE_AUDIT.md):**

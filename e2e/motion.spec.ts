@@ -1,15 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// Design.md §7 Motion (M1): verified numbers roll in once when seen, the chart draws in, and
-// nothing moves for visitors who ask for reduced motion. The real value is always in the DOM.
+// Design.md §7 Motion: sections fade up as they scroll in, the chart draws in, numbers are plain,
+// and nothing moves for visitors who ask for reduced motion.
 
-const MOTION =
-  /^(roll-digit|motion-hide|motion-show|chart-draw|chart-hidden|live-beat)$/;
+const MOTION = /^(section-rise|card-rise|chart-draw|chart-hidden|live-beat)$/;
 
-/** First listed project page that has `selector` (a rolling number by default), or null. */
+/** First listed project page that has `selector`, or null. */
 async function projectWith(
   page: Page,
-  selector = "[data-inview] .roll-d",
+  selector: string,
 ): Promise<string | null> {
   await page.goto("/th/startups");
   const hrefs = await page
@@ -31,40 +30,33 @@ async function projectWith(
   return null;
 }
 
-test("a rolling number reads exactly its value and rolls once when seen", async ({
+test("sections below the fold fade up once; numbers never animate", async ({
   page,
 }) => {
-  const href = await projectWith(page);
-  test.skip(!href, "no project with a verified or counted number");
-  const tile = page
-    .locator("[data-inview]", { has: page.locator(".roll-d") })
-    .first();
-  const text = (await tile.textContent()) ?? "";
-  // The 0–9 column is CSS-generated: never part of the text people copy or tools read.
-  expect(text).toMatch(/\d/);
-  expect(text).not.toContain("0123456789");
-
-  await tile.scrollIntoViewIfNeeded();
-  await expect(tile).toHaveAttribute("data-in", "done", { timeout: 5_000 });
-  await expect(tile).toHaveText(text);
-  await expect(tile.locator(".roll-v").first()).toHaveCSS("opacity", "1");
-
-  // Replaying the first view starts both halves of the effect: the column and the digit hold.
-  const names = await tile.evaluate(async (el) => {
-    el.removeAttribute("data-in");
-    el.getBoundingClientRect();
-    el.setAttribute("data-in", "1");
-    await new Promise((r) => requestAnimationFrame(() => r(null)));
-    return document
-      .getAnimations()
-      .filter((a) => {
-        const target = (a.effect as KeyframeEffect | null)?.target;
-        return target instanceof Element && el.contains(target);
-      })
-      .map((a) => (a as CSSAnimation).animationName);
-  });
-  expect(names).toContain("roll-digit");
-  expect(names).toContain("motion-hide");
+  const href = await projectWith(page, "main section");
+  test.skip(!href, "no project page");
+  // On screen at load: never touched (nothing hidden for what the visitor already sees).
+  const first = page.locator("main section").first();
+  await expect(first).not.toHaveAttribute("data-reveal", /.+/);
+  const waiting = page.locator('main section[data-reveal="wait"]');
+  // ScrollReveal marks sections after hydration.
+  await waiting
+    .first()
+    .waitFor({ state: "attached", timeout: 5_000 })
+    .catch(() => {});
+  test.skip((await waiting.count()) === 0, "the page fits on one screen");
+  // Pin the section by position: a `[data-reveal="wait"]` locator would move on to the next one.
+  const index = await page
+    .locator("main section")
+    .evaluateAll((all) =>
+      all.findIndex((el) => el.getAttribute("data-reveal") === "wait"),
+    );
+  const target = page.locator("main section").nth(index);
+  await target.scrollIntoViewIfNeeded();
+  await expect(target).toHaveAttribute("data-reveal", "in");
+  await expect(target).toHaveCSS("opacity", "1", { timeout: 3_000 });
+  // Numbers are plain text: no digit columns anywhere.
+  expect(await page.locator(".roll-d").count()).toBe(0);
 });
 
 test("the chart draws in and ends fully visible", async ({ page }) => {
@@ -88,11 +80,11 @@ test("the chart draws in and ends fully visible", async ({ page }) => {
 test.describe("reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
 
-  test("nothing rolls, draws or pulses, and values show at once", async ({
+  test("nothing fades, draws or pulses, and every section shows at once", async ({
     page,
   }) => {
-    const href = await projectWith(page);
-    test.skip(!href, "no project with numbers");
+    const href = await projectWith(page, "main section");
+    test.skip(!href, "no project page");
     const tiles = page.locator("[data-inview]");
     // InView settles immediately for reduced motion: no start state, no failsafe wait.
     await expect(tiles.first()).toHaveAttribute("data-in", "done");
@@ -105,7 +97,7 @@ test.describe("reduced motion", () => {
         .filter((n) => n && re.test(n));
     }, MOTION.source);
     expect(moving).toEqual([]);
-    await expect(page.locator(".roll-v").first()).toHaveCSS("opacity", "1");
+    expect(await page.locator("main [data-reveal]").count()).toBe(0);
   });
 });
 

@@ -2,7 +2,6 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { formatPct, money } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { RollingNumber } from "./core/RollingNumber";
 
 // Small shared pieces used by cards, leaderboard and profile (Design.md §3 / §5).
 
@@ -177,23 +176,18 @@ export function Money({
   cents,
   thbPerUsd,
   full = false,
-  roll = false,
 }: {
   cents: number | null | undefined;
   thbPerUsd: number | null | undefined;
   full?: boolean;
-  /** Design.md §7 Motion: digits roll in on first view (needs an InView ancestor). */
-  roll?: boolean;
 }) {
-  const show = (text: string) => (roll ? <RollingNumber text={text} /> : text);
   const usd = money(cents, { full });
-  if (!thbPerUsd || cents === null || cents === undefined)
-    return <>{show(usd)}</>;
+  if (!thbPerUsd || cents === null || cents === undefined) return <>{usd}</>;
   return (
     <>
-      <span className="cur-usd">{show(usd)}</span>
+      <span className="cur-usd">{usd}</span>
       <span className="cur-thb" title={`≈ 1 USD = ${thbPerUsd.toFixed(2)} THB`}>
-        {show(money(cents, { currency: "thb", thbPerUsd, full }))}
+        {money(cents, { currency: "thb", thbPerUsd, full })}
       </span>
     </>
   );

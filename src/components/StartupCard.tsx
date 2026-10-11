@@ -10,7 +10,6 @@ import { CopyLinkButton } from "./CopyLinkButton";
 import { useBandLabel } from "./profile/band-label";
 import type { StartupDisclosure } from "@/lib/data/startup-columns";
 import { InView } from "./core/InView";
-import { RollingNumber } from "./core/RollingNumber";
 import {
   CornerTag,
   GrowthValue,
@@ -103,21 +102,17 @@ function useMetrics(
     return [
       {
         label: large ? t("revenue30d") : t("revenueShort"),
-        value: <Money cents={s.revenue_30d_cents} thbPerUsd={thbPerUsd} roll />,
+        value: <Money cents={s.revenue_30d_cents} thbPerUsd={thbPerUsd} />,
       },
       {
         label: t("mrr"),
-        value: <Money cents={s.mrr_cents} thbPerUsd={thbPerUsd} roll />,
+        value: <Money cents={s.mrr_cents} thbPerUsd={thbPerUsd} />,
       },
       third === "allTime"
         ? {
             label: t("revenueAllTime"),
             value: (
-              <Money
-                cents={s.revenue_all_time_cents}
-                thbPerUsd={thbPerUsd}
-                roll
-              />
+              <Money cents={s.revenue_all_time_cents} thbPerUsd={thbPerUsd} />
             ),
           }
         : {
@@ -144,12 +139,7 @@ function useMetrics(
     return [
       {
         label: large ? t("visitors") : t("visitorsShort"),
-        value:
-          s.visitors_30d !== null ? (
-            <RollingNumber text={compact(s.visitors_30d)} />
-          ) : (
-            "–"
-          ),
+        value: s.visitors_30d !== null ? compact(s.visitors_30d) : "–",
       },
       {
         label: t("growth"),
@@ -159,12 +149,7 @@ function useMetrics(
       },
       {
         label: t("commits"),
-        value:
-          s.build_commits !== null ? (
-            <RollingNumber text={compact(s.build_commits)} />
-          ) : (
-            "–"
-          ),
+        value: s.build_commits !== null ? compact(s.build_commits) : "–",
       },
     ];
   }

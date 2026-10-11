@@ -244,50 +244,11 @@
   }
 }
 
-/* RollingNumber: the real digit defines the box; a 0–9 column (alt text "") slides over it. */
-/* A 1em window (line-height 1) clipped with clip-path, not overflow: overflow would move the
-   inline-block's baseline off the text baseline. Rows are 1em apart, so exactly one shows. */
-.roll-d {
-  position: relative;
-  display: inline-block;
-  line-height: 1;
-  clip-path: inset(0);
-}
-.roll-d::before {
-  content: "0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9" / "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  line-height: 1;
-  text-align: center;
-  white-space: pre;
-  opacity: 0;
-  pointer-events: none;
-}
-.roll-v {
-  display: inline-block;
-  line-height: 1; /* :lang(th) sets 1.6 on every element; the window must stay 1em. */
-}
 .live-ring {
   opacity: 0;
 }
 
 @media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
-  /* Waiting to be seen: the digit slots are blank, never a fake "0" (the width is kept, so
-     nothing moves). Failsafe: the real value shows after 3 s if JS never marks it seen. */
-  [data-inview="seen"]:not([data-in]) .roll-v {
-    animation: motion-hide 1ms 3s backwards;
-  }
-  /* Seen: each column rolls to its digit, staggered from the left, then the real digit takes over. */
-  [data-in="1"] .roll-v {
-    animation: motion-hide calc(var(--motion-slow) + var(--i) * 40ms) linear;
-  }
-  [data-in="1"] .roll-d::before {
-    animation: roll-digit var(--motion-slow) var(--ease-settle)
-      calc(var(--i) * 40ms) backwards;
-  }
-
   /* Chart draw: the series is revealed left to right; axes, grid and tooltip stay. */
   [data-inview="seen"]:not([data-in]) :is(.recharts-area, .recharts-line) {
     animation: chart-hidden 1ms 3s backwards;
@@ -299,6 +260,16 @@
   /* Live pulse (VerifiedBadge live): 3 beats, then rest. */
   .live-ring {
     animation: live-beat 1.6s var(--ease-settle) 3;
+  }
+
+  /* Section reveal: sections below the fold at load wait out of view, then fade up once as
+     they scroll in (ScrollReveal in the locale layout). On-screen sections never move. */
+  [data-reveal="wait"] {
+    opacity: 0;
+    translate: 0 24px;
+  }
+  [data-reveal="in"] {
+    animation: section-rise var(--motion-slow) var(--ease-settle) both;
   }
 
   /* M2 card rise: cards that scroll in rise into place, staggered by grid position. */
@@ -346,22 +317,6 @@ li:nth-child(5n + 5) > .card-rise {
   pointer-events: none;
 }
 
-@keyframes motion-hide {
-  from,
-  to {
-    opacity: 0;
-  }
-}
-@keyframes roll-digit {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(calc(var(--d) * -1em));
-  }
-}
 @keyframes chart-hidden {
   from,
   to {
@@ -374,6 +329,16 @@ li:nth-child(5n + 5) > .card-rise {
   }
   to {
     clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes section-rise {
+  from {
+    opacity: 0;
+    translate: 0 24px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
   }
 }
 @keyframes card-rise {

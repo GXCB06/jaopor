@@ -8,7 +8,6 @@ import { Link } from "@/i18n/navigation";
 import { PersonPhoto } from "@/components/PersonPhoto";
 import type { BoardMetric } from "@/lib/leaderboard";
 import { InView } from "./core/InView";
-import { RollingNumber } from "./core/RollingNumber";
 import { CornerTag, GrowthValue, Money, StartupLogo } from "./StartupBits";
 
 /** One leaderboard row, formatted on the server (slim: only what the table shows). */
@@ -243,9 +242,9 @@ export function LeaderboardCard({
                   </td>
                   <td className="px-3 py-3 text-right text-xs font-bold tabular-nums">
                     {r.cents !== undefined ? (
-                      <Money cents={r.cents} thbPerUsd={thbPerUsd} full roll />
+                      <Money cents={r.cents} thbPerUsd={thbPerUsd} full />
                     ) : (
-                      <RollingNumber text={r.value} />
+                      r.value
                     )}
                   </td>
                   <td className="hidden py-3 pr-4 pl-3 text-right text-xs sm:table-cell">

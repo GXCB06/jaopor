@@ -30,7 +30,6 @@ import { cn } from "@/lib/utils";
 import { PersonPhoto } from "./PersonPhoto";
 import { Card } from "./core/Card";
 import { InsightCard } from "./core/InsightCard";
-import { InView } from "./core/InView";
 import { LogoChip } from "./core/LogoChip";
 import { EmptyOwnerCard, OwnerOnly } from "./profile/Owner";
 import { Chip } from "./StartupBits";
@@ -59,10 +58,9 @@ export function StatCard({
         </p>
         {help}
       </div>
-      {/* Design.md §7 Motion: a RollingNumber value rolls in on first view. */}
-      <InView className="truncate text-2xl font-bold tracking-tight tabular-nums">
+      <div className="truncate text-2xl font-bold tracking-tight tabular-nums">
         {value}
-      </InView>
+      </div>
       {caption && (
         <div className="line-clamp-2 text-caption text-muted-foreground sm:truncate">
           {caption}

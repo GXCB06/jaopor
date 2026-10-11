@@ -383,7 +383,6 @@ export default async function StartupPage({ params }: Props) {
                     cents={startup.revenue_all_time_cents}
                     thbPerUsd={thbPerUsd}
                     full
-                    roll
                   />
                 }
                 caption={rank ? t("rank", { rank }) : undefined}
@@ -400,12 +399,7 @@ export default async function StartupPage({ params }: Props) {
               <StatCard
                 label={t("mrr")}
                 value={
-                  <Money
-                    cents={startup.mrr_cents}
-                    thbPerUsd={thbPerUsd}
-                    full
-                    roll
-                  />
+                  <Money cents={startup.mrr_cents} thbPerUsd={thbPerUsd} full />
                 }
                 caption={t("subscriptions", {
                   count: startup.active_subscriptions ?? 0,

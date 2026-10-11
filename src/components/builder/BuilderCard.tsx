@@ -27,7 +27,7 @@ export function BuilderCard({
     .filter((s) => s.def)
     .slice(0, 3);
 
-  // Design.md §7 Motion: the card rises in and its MRR rolls when it scrolls into view.
+  // Design.md §7 Motion: the card rises in when it scrolls into view.
   return (
     <InView mode="enter" className="card-rise h-full">
       <Link
@@ -90,7 +90,7 @@ export function BuilderCard({
                 className="size-3.5 text-positive"
                 aria-hidden="true"
               />
-              <Money cents={b.mrrCents} thbPerUsd={thbPerUsd} roll />
+              <Money cents={b.mrrCents} thbPerUsd={thbPerUsd} />
               <span className="font-normal text-faint">{t("perMonth")}</span>
             </span>
           )}
