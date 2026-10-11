@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { PersonPhoto } from "./PersonPhoto";
 import { Card } from "./core/Card";
 import { InsightCard } from "./core/InsightCard";
+import { InView } from "./core/InView";
 import { LogoChip } from "./core/LogoChip";
 import { EmptyOwnerCard, OwnerOnly } from "./profile/Owner";
 import { Chip } from "./StartupBits";
@@ -58,9 +59,10 @@ export function StatCard({
         </p>
         {help}
       </div>
-      <div className="truncate text-2xl font-bold tracking-tight tabular-nums">
+      {/* Design.md §7 Motion: a RollingNumber value rolls in on first view. */}
+      <InView className="truncate text-2xl font-bold tracking-tight tabular-nums">
         {value}
-      </div>
+      </InView>
       {caption && (
         <div className="line-clamp-2 text-caption text-muted-foreground sm:truncate">
           {caption}
@@ -370,9 +372,12 @@ export async function StorySection({ startup }: { startup: StartupRow }) {
       </div>
     </section>
   );
-  return filled || startup.build_story ? section : <OwnerOnly>{section}</OwnerOnly>;
+  return filled || startup.build_story ? (
+    section
+  ) : (
+    <OwnerOnly>{section}</OwnerOnly>
+  );
 }
-
 
 /** Design.md §5 FounderMessage (spec 6.4 step 5): big quote card, hidden when empty. */
 export async function FounderMessageCard({ startup }: { startup: StartupRow }) {

@@ -12,6 +12,7 @@ import {
   setRequestLocale,
 } from "next-intl/server";
 import { VerifiedBadge } from "@/components/core/VerifiedBadge";
+import { syncedRecently } from "@/lib/motion/live";
 import {
   EmptyOwnerCard,
   OwnerBar,
@@ -270,6 +271,7 @@ export default async function StartupPage({ params }: Props) {
                   <VerifiedBadge
                     source={verifiedSource}
                     ownerVerified={startup.owner_verified_at !== null}
+                    live={syncedRecently(startup.last_synced_at)}
                   />
                 )}
                 {!startup.is_demo && (
@@ -370,6 +372,7 @@ export default async function StartupPage({ params }: Props) {
                     cents={startup.revenue_all_time_cents}
                     thbPerUsd={thbPerUsd}
                     full
+                    roll
                   />
                 }
                 caption={rank ? t("rank", { rank }) : undefined}
@@ -386,7 +389,12 @@ export default async function StartupPage({ params }: Props) {
               <StatCard
                 label={t("mrr")}
                 value={
-                  <Money cents={startup.mrr_cents} thbPerUsd={thbPerUsd} full />
+                  <Money
+                    cents={startup.mrr_cents}
+                    thbPerUsd={thbPerUsd}
+                    full
+                    roll
+                  />
                 }
                 caption={t("subscriptions", {
                   count: startup.active_subscriptions ?? 0,

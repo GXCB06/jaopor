@@ -334,7 +334,7 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
     - Instagram on profiles (validation trigger migration);
     - a stale-data rule for the counted / build boards.
 - [ ] (2026-10-11) **Major revamp plan** ([docs/MAJOR_REVAMP_PLAN.md](docs/MAJOR_REVAMP_PLAN.md)): **direction adopted 2026-10-11.** Decided: D1 all five disclosure levels, D2 per-project AI-label switch (shown by default), D6 funnel applied (done), motion foundation + numbers before the post (M1), R2 coded now with its migration applied only after the 14 Oct post. Still open: D3 visitor-first section order, D4 notification channels, D5 rest of motion (after R2), D7 interviews, D8 PDPA banner.
-  - **R0 done** (funnel live). **Next:** M1 → R2a–R2e.
+  - **R0 done** (funnel live). **M1 done** (motion foundation + rolling verified numbers, chart draw, live pulse; waiting for review). **Next:** R2a–R2e.
 - [x] (2026-10-10) **Google Analytics tag** (`G-JYPJ2RFH4N`): **re-enabled 2026-10-11** — the built-in default is back in `src/lib/analytics/ga.ts`, so production loads GA with **no env var set** (`NEXT_PUBLIC_GA_ID` still overrides; empty / `off` disables). Reverses the earlier same-day GA-off decision; /privacy §6/§8 restore the `_ga` / Google Analytics disclosure. **No consent banner** — the pre-consent load makes the PDPA opt-in question (§7) still open.
 
 - [ ] (2026-10-08) **Launch gate** ([docs/LAUNCH_READINESS_REPORT.md](docs/LAUNCH_READINESS_REPORT.md) §10):

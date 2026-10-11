@@ -12,6 +12,22 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-11 — Revamp M1: motion foundation, rolling verified numbers, chart draw, live pulse
+
+**Done (Design.md §7 Motion first, no animation library):**
+
+- **Tokens + rules** (`globals.css`): `--ease-settle`, `--motion-fast/base/slow` (160 / 240 / 700 ms); a site-wide `prefers-reduced-motion: reduce` rule (every animation and transition effectively instant); effects gated by `(prefers-reduced-motion: no-preference) and (scripting: enabled)`.
+- **`InView`** (`core/InView.tsx`, client): sets `data-in="1"` on first view (30%), `done` after the effect, so nothing replays on period / metric / currency switches; reduced motion or no IntersectionObserver → `done` at once.
+- **`RollingNumber`** (`core/RollingNumber.tsx` + `lib/motion/digits.ts`, tests): digits of an already-formatted value roll in; the real text stays in the DOM (the 0–9 column is a `::before` with empty alt text), so copy / screen readers / e2e read the exact value. **Waiting state is blank, never a fake "0"** (an early phone frame showed "฿0,000" before hydration). 1em window clipped with `clip-path` (keeps the text baseline); `line-height: 1` pinned on the digit because `:lang(th)` sets 1.6 everywhere.
+- **Used in:** project page money tiles (`Money roll`), TractionTiles (visitors, active users, commits). Not leaderboard rows / cards (M2).
+- **Chart draw** (`MetricChart`): the series is revealed left → right with `clip-path` once; Recharts' own animation stays off.
+- **Live pulse** (`VerifiedBadge live`, `lib/motion/live.ts` + tests): 3 beats when the source synced within 26 h.
+
+**Not changed:** no migration, data, settings; MRR semantics; homepage copy (the parallel marketing session's uncommitted hero edits were left untouched and not committed).
+**Files:** `Design.md`, `src/app/globals.css`, `src/components/core/{InView,RollingNumber,VerifiedBadge}.tsx`, `src/components/{StartupBits,ProfileBlocks,MetricChart}.tsx`, `src/components/profile/ProjectBlocks.tsx`, `src/app/[locale]/startup/[slug]/page.tsx`, `src/lib/motion/{digits,live}.ts` (+ tests), `e2e/motion.spec.ts`
+**Verified:** typecheck ✓ · lint ✓ · unit 453 passed / 17 skipped (+8) · e2e local 114 passed / 16 skipped / 0 failed (new `motion.spec.ts`: exact text, roll + hold animations run, chart ends unclipped, reduced motion has no motion animations; desktop + 375 px) · build ✓ · Playwright screenshots mid-roll and settled at 1280 and 375 px (one digit row visible, baseline aligned, no horizontal overflow, live ring present).
+**Next:** owner review of M1 → R2a (disclosure logic).
+
 ## 2026-10-11 — Revamp R0: add-project funnel live + motion study
 
 **Done:**

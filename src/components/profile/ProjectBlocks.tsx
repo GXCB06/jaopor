@@ -16,6 +16,7 @@ import { linkPlatform, projectLinks, type LinkKind } from "@/lib/links";
 import { lookingForActions } from "@/lib/looking-for";
 import { SOURCE_KIND, SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { StatCard } from "../ProfileBlocks";
+import { RollingNumber } from "../core/RollingNumber";
 import { GrowthValue } from "../StartupBits";
 import { cn } from "@/lib/utils";
 import { EmptyOwnerCard, OwnerOnly, VisitorOnly } from "./Owner";
@@ -183,7 +184,7 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
         startup.visitors_30d !== null ? (
           <StatCard
             label={t("visitors30d")}
-            value={n(startup.visitors_30d)}
+            value={<RollingNumber text={n(startup.visitors_30d)} />}
             caption={
               <span className="whitespace-normal">
                 <GrowthValue
@@ -206,7 +207,7 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
         startup.active_users !== null ? (
           <StatCard
             label={t("activeUsers")}
-            value={n(startup.active_users)}
+            value={<RollingNumber text={n(startup.active_users)} />}
             caption={via("revenuecat")}
           />
         ) : null,
@@ -220,7 +221,7 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
         commits !== null ? (
           <StatCard
             label={t("buildProof")}
-            value={t("commits", { count: commits })}
+            value={<RollingNumber text={t("commits", { count: commits })} />}
             caption={
               <span className="whitespace-normal">
                 {[

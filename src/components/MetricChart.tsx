@@ -26,6 +26,7 @@ import { useCurrency } from "@/lib/currency";
 import type { ChartSeries } from "@/lib/data/startups";
 import { formatCompact, money } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { InView } from "./core/InView";
 import { GrowthPill } from "./StartupBits";
 
 function Switch({
@@ -222,98 +223,101 @@ export function MetricChart({
         </div>
       )}
 
-      <div
-        className="h-64 w-full"
-        role="img"
-        aria-label={`${metricLabel(metric)} · ${periodLabel(period)}: ${fmt(w.total, true)}`}
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={data}
-            margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
-          >
-            <defs>
-              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="0%"
-                  stopColor="var(--chart-1)"
-                  stopOpacity={0.25}
-                />
-                <stop
-                  offset="100%"
-                  stopColor="var(--chart-1)"
-                  stopOpacity={0}
-                />
-              </linearGradient>
-            </defs>
-            <CartesianGrid vertical={false} stroke="var(--border)" />
-            <XAxis
-              dataKey="day"
-              tickFormatter={label}
-              tickLine={false}
-              axisLine={false}
-              minTickGap={28}
-              tick={{ fill: "var(--faint)", fontSize: 12 }}
-            />
-            <YAxis
-              width={52}
-              ticks={ticks}
-              domain={[0, ticks[ticks.length - 1]]}
-              interval={0}
-              tickFormatter={(v: number) => fmt(v)}
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: "var(--faint)", fontSize: 12 }}
-            />
-            <Tooltip
-              cursor={{ stroke: "var(--faint)", strokeDasharray: "3 3" }}
-              content={({ active, payload }) => {
-                if (!active || !payload?.length) return null;
-                const row = payload[0].payload as (typeof data)[number];
-                return (
-                  <div className="rounded-md border bg-popover px-2.5 py-1.5 text-caption">
-                    <p className="text-muted-foreground">
-                      {period === 365
-                        ? t("weekOf", { day: label(row.day) })
-                        : label(row.day)}
-                    </p>
-                    <p className="font-bold tabular-nums">
-                      {fmt(row.value, true)}
-                    </p>
-                    {compare && (
-                      <p className="text-muted-foreground tabular-nums">
-                        {t("prevPeriod")}: {fmt(row.previous, true)}
+      {/* Design.md §7 Motion: the series draws in once, on first view. */}
+      <InView>
+        <div
+          className="h-64 w-full"
+          role="img"
+          aria-label={`${metricLabel(metric)} · ${periodLabel(period)}: ${fmt(w.total, true)}`}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={data}
+              margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
+            >
+              <defs>
+                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="0%"
+                    stopColor="var(--chart-1)"
+                    stopOpacity={0.25}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor="var(--chart-1)"
+                    stopOpacity={0}
+                  />
+                </linearGradient>
+              </defs>
+              <CartesianGrid vertical={false} stroke="var(--border)" />
+              <XAxis
+                dataKey="day"
+                tickFormatter={label}
+                tickLine={false}
+                axisLine={false}
+                minTickGap={28}
+                tick={{ fill: "var(--faint)", fontSize: 12 }}
+              />
+              <YAxis
+                width={52}
+                ticks={ticks}
+                domain={[0, ticks[ticks.length - 1]]}
+                interval={0}
+                tickFormatter={(v: number) => fmt(v)}
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "var(--faint)", fontSize: 12 }}
+              />
+              <Tooltip
+                cursor={{ stroke: "var(--faint)", strokeDasharray: "3 3" }}
+                content={({ active, payload }) => {
+                  if (!active || !payload?.length) return null;
+                  const row = payload[0].payload as (typeof data)[number];
+                  return (
+                    <div className="rounded-md border bg-popover px-2.5 py-1.5 text-caption">
+                      <p className="text-muted-foreground">
+                        {period === 365
+                          ? t("weekOf", { day: label(row.day) })
+                          : label(row.day)}
                       </p>
-                    )}
-                  </div>
-                );
-              }}
-            />
-            {compare && (
-              <Line
+                      <p className="font-bold tabular-nums">
+                        {fmt(row.value, true)}
+                      </p>
+                      {compare && (
+                        <p className="text-muted-foreground tabular-nums">
+                          {t("prevPeriod")}: {fmt(row.previous, true)}
+                        </p>
+                      )}
+                    </div>
+                  );
+                }}
+              />
+              {compare && (
+                <Line
+                  type="monotone"
+                  dataKey="previous"
+                  stroke="var(--chart-2)"
+                  strokeWidth={2}
+                  strokeDasharray="4 4"
+                  dot={false}
+                  connectNulls
+                  isAnimationActive={false}
+                />
+              )}
+              <Area
                 type="monotone"
-                dataKey="previous"
-                stroke="var(--chart-2)"
+                dataKey="value"
+                stroke="var(--chart-1)"
                 strokeWidth={2}
-                strokeDasharray="4 4"
-                dot={false}
+                fill={`url(#${gradientId})`}
+                activeDot={{ r: 4, stroke: "var(--card)", strokeWidth: 2 }}
                 connectNulls
                 isAnimationActive={false}
               />
-            )}
-            <Area
-              type="monotone"
-              dataKey="value"
-              stroke="var(--chart-1)"
-              strokeWidth={2}
-              fill={`url(#${gradientId})`}
-              activeDot={{ r: 4, stroke: "var(--card)", strokeWidth: 2 }}
-              connectNulls
-              isAnimationActive={false}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </InView>
 
       <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
         <div className="flex flex-wrap gap-x-5 gap-y-2">

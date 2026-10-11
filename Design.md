@@ -688,6 +688,25 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 - **Error:** `text-destructive text-sm` inline, plus a retry. Never raw errors.
 - **Unverified:** founder-typed numbers are never shown as revenue; show "Not verified yet".
 
+### Motion (M1, 2026-10-11, owner decision; references studied: Finsepa, Bencho)
+
+Motion shows the data (a number arriving, a line being drawn, a source that is live). It never decorates. No animation library.
+
+- **Tokens** (`globals.css`):
+  - `--ease-settle: cubic-bezier(0.22, 1, 0.36, 1)` (fast start, soft landing). Use it instead of Tailwind's `ease-out`, which keeps its own meaning.
+  - Durations: `--motion-fast` 160 ms (hover, press), `--motion-base` 240 ms (small state changes), `--motion-slow` 700 ms (a number or line arriving).
+- **Rules:**
+  - animate `transform`, `opacity` and `clip-path` only, so nothing reflows;
+  - content is complete in the HTML: motion only plays after JS marks an element as seen, and without JS, or in a browser without `@media (scripting)`, the final value simply shows;
+  - each effect plays **once per element**, on first view; switching period, metric or currency doesn't replay it;
+  - no infinite loops (the live pulse beats 3 times); no autoplay video; no hidden-until-JS hero text;
+  - `prefers-reduced-motion: reduce` makes every animation and transition effectively instant (global rule), and the M1 effects don't run at all.
+- **InView** (`core/InView`): a client wrapper that sets `data-inview` and, on first intersection (about 30% visible), `data-in="1"`, then `data-in="done"` once the effect has finished. Before it is seen, the element waits in its start state (for numbers: blank digit slots of the final width, **never a fake 0**, which would read as zero revenue on a slow phone); a 3 s CSS failsafe shows the final value if JS never arrives.
+- **RollingNumber** (`core/RollingNumber`, server component): splits an already-formatted value (`฿12,400`, `1.2k`, `48 commits`) into digit columns. The real digit stays in the DOM (copy, search, screen readers and e2e read exactly the formatted text); a `::before` 0–9 stack with empty alt text slides to it in `--motion-slow`, staggered 40 ms per digit from the left. Symbols, separators and letters don't move. Used in StatCard values (project page money tiles, TractionTiles). Not in leaderboard rows or cards yet (too busy; M2).
+- **Chart draw** (RevenueChartCard): on first view the series (area + compare line) is revealed left to right with `clip-path` in `--motion-slow`; axes, grid and tooltip don't move. Recharts' own animation stays off.
+- **Live pulse** (VerifiedBadge `live`): a 6 px `bg-positive` dot after the source name with a ring that expands and fades (`scale` 1 → 2.8, opacity 0.5 → 0) 3 times, then rests. Only when the source synced within the last 26 h (the daily cron); decorative (`aria-hidden`), the text already says the source.
+- **Later (M2, after R2):** staggered card rise, leaderboard rank change, like burst, the first-verify stamp, a "recently verified" ticker from real events only.
+
 ## 8. Responsive
 
 - Test at **375**, 768, 1024, 1440, in dark and light.

@@ -219,3 +219,127 @@
     line-height: 1.6;
   }
 }
+
+/* Design.md §7 Motion (M1). Tokens; effects play once, after InView marks an element as seen. */
+@theme {
+  --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+}
+:root {
+  --motion-fast: 160ms;
+  --motion-base: 240ms;
+  --motion-slow: 700ms;
+}
+
+/* Reduced motion: every animation and transition is effectively instant, site-wide. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* RollingNumber: the real digit defines the box; a 0–9 column (alt text "") slides over it. */
+/* A 1em window (line-height 1) clipped with clip-path, not overflow: overflow would move the
+   inline-block's baseline off the text baseline. Rows are 1em apart, so exactly one shows. */
+.roll-d {
+  position: relative;
+  display: inline-block;
+  line-height: 1;
+  clip-path: inset(0);
+}
+.roll-d::before {
+  content: "0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9" / "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  line-height: 1;
+  text-align: center;
+  white-space: pre;
+  opacity: 0;
+  pointer-events: none;
+}
+.roll-v {
+  display: inline-block;
+  line-height: 1; /* :lang(th) sets 1.6 on every element; the window must stay 1em. */
+}
+.live-ring {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+  /* Waiting to be seen: the digit slots are blank, never a fake "0" (the width is kept, so
+     nothing moves). Failsafe: the real value shows after 3 s if JS never marks it seen. */
+  [data-inview]:not([data-in]) .roll-v {
+    animation: motion-hide 1ms 3s backwards;
+  }
+  /* Seen: each column rolls to its digit, staggered from the left, then the real digit takes over. */
+  [data-in="1"] .roll-v {
+    animation: motion-hide calc(var(--motion-slow) + var(--i) * 40ms) linear;
+  }
+  [data-in="1"] .roll-d::before {
+    animation: roll-digit var(--motion-slow) var(--ease-settle)
+      calc(var(--i) * 40ms) backwards;
+  }
+
+  /* Chart draw: the series is revealed left to right; axes, grid and tooltip stay. */
+  [data-inview]:not([data-in]) :is(.recharts-area, .recharts-line) {
+    animation: chart-hidden 1ms 3s backwards;
+  }
+  [data-in="1"] :is(.recharts-area, .recharts-line) {
+    animation: chart-draw var(--motion-slow) var(--ease-settle) both;
+  }
+
+  /* Live pulse (VerifiedBadge live): 3 beats, then rest. */
+  .live-ring {
+    animation: live-beat 1.6s var(--ease-settle) 3;
+  }
+}
+
+@keyframes motion-hide {
+  from,
+  to {
+    opacity: 0;
+  }
+}
+@keyframes roll-digit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(calc(var(--d) * -1em));
+  }
+}
+@keyframes chart-hidden {
+  from,
+  to {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+@keyframes chart-draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes live-beat {
+  0% {
+    opacity: 0.5;
+    scale: 1;
+  }
+  70%,
+  100% {
+    opacity: 0;
+    scale: 2.8;
+  }
+}

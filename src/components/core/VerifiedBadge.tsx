@@ -10,11 +10,14 @@ import { cn } from "@/lib/utils";
 export function VerifiedBadge({
   source,
   ownerVerified = false,
+  live = false,
   className,
 }: {
   /** Display name of the verifying source; omit when the numbers aren't verified. */
   source?: string | null;
   ownerVerified?: boolean;
+  /** Design.md §7 Motion live pulse: the source synced within the last 26 h. Decorative. */
+  live?: boolean;
   className?: string;
 }) {
   const t = useTranslations("Common");
@@ -40,6 +43,12 @@ export function VerifiedBadge({
     >
       <BadgeCheckIcon className="size-3.5" aria-hidden="true" />
       {t("verifiedVia", { source })}
+      {live && (
+        <span aria-hidden="true" className="relative ml-0.5 flex size-1.5">
+          <span className="live-ring absolute inset-0 rounded-full bg-positive" />
+          <span className="relative size-1.5 rounded-full bg-positive" />
+        </span>
+      )}
     </span>
   ) : (
     <span
