@@ -3,8 +3,8 @@
 -- Property ID. No founder credential is stored (encrypted_key stays null); our token only carries
 -- the analytics.readonly scope. Ownership: a web stream of the property points at the website.
 --
--- NOT APPLIED. Apply only with the owner's approval, then run the advisors, RLS smoke and
--- regenerate src/lib/supabase/database.types.ts. Independent of 20261011130000_disclosure_levels.
+-- Applied 2026-10-11 with the owner's approval ("apply GA4"). Independent of
+-- 20261011130000_disclosure_levels. RLS smoke: T161.
 
 -- 1. A traffic provider like the others (one traffic source per project).
 alter table public.provider_connections drop constraint provider_connections_provider_check;

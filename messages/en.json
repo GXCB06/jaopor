@@ -2115,5 +2115,10 @@
     "notReady": "This isn’t available yet. Please try again later.",
     "wizardLabel": "Keep the project name private (anonymous)",
     "wizardHint": "Show verified numbers without the name, logo or links. You can change it later on the edit page."
+  },
+  "CategoryPicker": {
+    "placeholder": "Type a category, e.g. games, education, shop",
+    "noMatch": "No such category. Try another word or pick “Other”.",
+    "popular": "Popular categories"
   }
 }

@@ -12,6 +12,28 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-12 — GA4 migration applied; searchable category picker with icons
+
+**Done:**
+
+- **GA4 visitor source migration applied** (owner: "apply GA4").
+  - Rolled-back check on the live DB: `ga4` is accepted as a traffic provider, a second traffic source is refused, clients can't write a connection, and the funnel logs a `ga4` verify result.
+  - Advisors: nothing new. No type changes (constraints only).
+  - The option still appears only after JaoPor's service account is set in Vercel (`GA4_SERVICE_ACCOUNT_JSON`, `NEXT_PUBLIC_GA4_SERVICE_EMAIL`).
+- **Category picker** (owner: scrolling 37 categories took too long): `CategoryField` reuses the province combobox.
+  - Each option shows its category icon; "ประเภทยอดนิยม" (AI, SaaS, อีคอมเมิร์ซ, เพิ่มประสิทธิภาพงาน, การศึกษา, เกม) comes first.
+  - Search matches the Thai and English names, the descriptions and common words (`CATEGORY_ALIASES`, e.g. เกม, ร้านค้า, บัญชี, ไลน์, chatbot, hotel).
+  - Used in wizard step 1 (required) and on the edit page. Strings: `CategoryPicker.*`.
+
+**Verified:**
+
+- Unit 603 passed / 17 skipped (new: every category has an icon and keywords; 7 typed words find the right category in th and en).
+- typecheck ✓ · lint ✓ · e2e pages / sign-in / dropdowns 66 passed.
+
+**Not verified:** the picker in a browser. The wizard and edit page need a signed-in session; it is the same combobox as the province field.
+
+**Files:** `supabase/migrations/20261011125000_ga4_traffic_source.sql` (header), `src/components/wizard/{CategoryField.tsx,vocab-options.ts,vocab-options.test.ts,StartupWizard.tsx,StartupEditForm.tsx}`, `messages/*`, `Design.md`, `Project.md`
+
 ## 2026-10-11 — Fix: a dropdown could still open upward on production
 
 **Done:** The production e2e run after deploy `ac44425` caught the leaderboard list opening above its button (desktop; flaky at 375).

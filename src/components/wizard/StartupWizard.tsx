@@ -1,14 +1,14 @@
 "use client";
 
 import { ArrowLeftIcon } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { StartupCard, type CardStartup } from "@/components/StartupCard";
 import { ProvinceField } from "@/components/profile-edit/ProvinceField";
 import { Link, useRouter } from "@/i18n/navigation";
-import { CATEGORIES, slugify } from "@/lib/catalog";
+import { slugify } from "@/lib/catalog";
 import {
   logAddEvent,
   newAttemptId,
@@ -29,9 +29,9 @@ import { useSessionDraft } from "@/lib/use-session-draft";
 import { cn } from "@/lib/utils";
 import { LinkTypeStatus } from "./LinkTypeStatus";
 import { linkProblemText } from "./link-text";
-import { Field, Select, inputClass } from "./fields";
+import { Field, inputClass } from "./fields";
+import { CategoryField } from "./CategoryField";
 import { LogoField } from "./LogoField";
-import { categoryName } from "@/lib/config/display";
 
 // Step 2 only: kept out of the first screen's JavaScript, then fetched in the background as soon as
 // step 1 shows (see the effect below), so it is ready by the time the project is created.
@@ -118,7 +118,6 @@ export function StartupWizard({
   const t = useTranslations("Wizard");
   const an = useTranslations("Anonymous");
   const common = useTranslations("Common");
-  const locale = useLocale();
   const lt = useTranslations("Links");
   const router = useRouter();
 
@@ -495,16 +494,11 @@ export function StartupWizard({
               />
             </Field>
             <Field label={t("category")} htmlFor="category">
-              <Select
+              <CategoryField
                 id="category"
                 required
                 value={category}
                 onChange={setCategory}
-                placeholder={t("categoryPlaceholder")}
-                options={CATEGORIES.map((c) => ({
-                  value: c,
-                  label: categoryName(c, locale),
-                }))}
               />
             </Field>
             <Field

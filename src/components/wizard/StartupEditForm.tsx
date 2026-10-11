@@ -32,10 +32,8 @@ import {
   type AiTool,
 } from "@/lib/catalog";
 import type { AutofillDraft } from "@/lib/autofill";
-import { CATEGORY_LIST } from "@/lib/config/categories";
 import { MAX_CHANNELS } from "@/lib/config/channels";
 import { channelLabel, toTechStack } from "@/lib/config/display";
-import { localizedName } from "@/lib/config/localized";
 import { aiToolLabel } from "@/lib/config/stack";
 import { videoEmbed, type Screenshot } from "@/lib/media";
 import {
@@ -59,6 +57,7 @@ import { useSessionDraft } from "@/lib/use-session-draft";
 import { cn } from "@/lib/utils";
 import { Field, Select, ToggleChips, inputClass } from "./fields";
 import { AnonymousPanel } from "./AnonymousPanel";
+import { CategoryField } from "./CategoryField";
 import { linkProblemText } from "./link-text";
 import { uploadLogo } from "./StartupWizard";
 import { LogoField } from "./LogoField";
@@ -788,14 +787,11 @@ export function StartupEditForm({
                   label={t("category")}
                   htmlFor="category-input"
                 >
-                  <Select
+                  <CategoryField
                     id="category-input"
+                    required
                     value={f.category}
                     onChange={set("category")}
-                    options={CATEGORY_LIST.map((c) => ({
-                      value: c.slug,
-                      label: localizedName(c, locale),
-                    }))}
                   />
                 </Field>
                 {text("tagline", "tagline", t("tagline"), 140, true)}
