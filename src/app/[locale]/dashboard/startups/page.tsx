@@ -23,6 +23,7 @@ import type { Tables } from "@/lib/supabase/database.types";
 import { logoUrl } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
+import { AnonymousChip } from "@/components/core/AnonymousChip";
 
 export async function generateMetadata({
   params,
@@ -172,6 +173,7 @@ export default async function DashboardStartupsPage({
                   />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold">{s.name}</p>
+                    {s.anonymous && <AnonymousChip />}
                     <div className="mt-1 flex flex-wrap items-center gap-2">
                       <span
                         className={cn(

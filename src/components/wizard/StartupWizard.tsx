@@ -106,13 +106,17 @@ export function StartupWizard({
   userId,
   githubLogin,
   defaultProvince,
+  anonymousReady = false,
 }: {
   userId: string;
   githubLogin: string | null;
   /** The founder's profile province: the project's starts the same (UX audit M-10). */
   defaultProvince: string;
+  /** The anonymous-mode migration is live (else the checkbox stays hidden). */
+  anonymousReady?: boolean;
 }) {
   const t = useTranslations("Wizard");
+  const an = useTranslations("Anonymous");
   const common = useTranslations("Common");
   const locale = useLocale();
   const lt = useTranslations("Links");
@@ -144,6 +148,8 @@ export function StartupWizard({
   // No default: a preselected "AI" silently miscategorised projects (UX audit M-9).
   const [category, setCategory] = useState("");
   const [province, setProvince] = useState(defaultProvince);
+  // Design.md §5 Anonymous projects: list it without its name, logo and links.
+  const [anonymous, setAnonymous] = useState(false);
   // An uploaded logo and its object URL for the preview tile.
   const [logo, setLogo] = useState<{ file: File; url: string } | null>(null);
   const [autoLogo, setAutoLogo] = useState<string | null>(null);
@@ -316,7 +322,10 @@ export function StartupWizard({
         setSaved({
           id: data.id,
           slug: data.slug,
-          website: data.website_url,
+          // Anonymous: the public row has no website; step 2 still needs the real one.
+          website:
+            data.website_url ??
+            (parsed.column === "website_url" ? parsed.url : null),
           column: parsed.column,
           logo: key,
         });
@@ -341,6 +350,8 @@ export function StartupWizard({
             country: "TH",
             province,
             logo_path: logoPath,
+            // Masked by the database before the row is ever visible (migration anonymous_mode).
+            ...((anonymous ? { is_anonymous: true } : {}) as object),
           })
           .select("id, slug, website_url")
           .single();
@@ -348,7 +359,10 @@ export function StartupWizard({
           setSaved({
             id: data.id,
             slug: data.slug,
-            website: data.website_url,
+            // Anonymous: the public row has no website; step 2 still needs the real one.
+            website:
+              data.website_url ??
+              (parsed.column === "website_url" ? parsed.url : null),
             column: parsed.column,
             logo: key,
           });
@@ -550,6 +564,25 @@ export function StartupWizard({
                 }}
               />
             </Field>
+            {anonymousReady && (
+              <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border p-3 sm:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={anonymous}
+                  disabled={!!saved}
+                  onChange={(ev) => setAnonymous(ev.target.checked)}
+                  className="mt-0.5 size-4 shrink-0 accent-(--brand)"
+                />
+                <span className="space-y-0.5">
+                  <span className="block text-xs font-semibold">
+                    {an("wizardLabel")}
+                  </span>
+                  <span className="block text-caption text-muted-foreground">
+                    {an("wizardHint")}
+                  </span>
+                </span>
+              </label>
+            )}
           </div>
           {/* S-2: the card as it will look in the list, updating as they type (not a link). */}
           {name.trim() && (
@@ -558,11 +591,11 @@ export function StartupWizard({
               <StartupCard
                 preview
                 large
-                logoSrc={shownLogo}
+                logoSrc={anonymous ? null : shownLogo}
                 className="max-w-sm"
                 startup={{
                   ...PREVIEW_BASE,
-                  name: name.trim(),
+                  name: anonymous ? an("name") : name.trim(),
                   tagline: tagline.trim() || null,
                   category: category || "other",
                 }}

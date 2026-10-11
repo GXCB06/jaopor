@@ -1,4 +1,5 @@
 import { BadgeCheckIcon, MessageCircleIcon } from "lucide-react";
+import { ProjectName } from "@/components/core/ProjectName";
 import { useLocale, useTranslations } from "next-intl";
 import { StartupLogo } from "@/components/StartupBits";
 import { Link } from "@/i18n/navigation";
@@ -83,7 +84,10 @@ export function PostCard({
                 href={`/startup/${post.startup.slug}`}
                 className="font-semibold text-foreground hover:underline"
               >
-                {post.startup.name}
+                <ProjectName
+                  name={post.startup.name}
+                  slug={post.startup.slug}
+                />
               </Link>{" "}
               · {when}
             </span>
@@ -123,7 +127,10 @@ export function PostCard({
                       href={`/startup/${post.startup.slug}`}
                       className="font-semibold text-foreground hover:underline"
                     >
-                      {post.startup.name}
+                      <ProjectName
+                        name={post.startup.name}
+                        slug={post.startup.slug}
+                      />
                     </Link>
                   ),
                 })}

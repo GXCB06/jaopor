@@ -28,6 +28,7 @@ import { SETUP_STEPS, setupChecklist, type SetupStep } from "@/lib/profile";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { logoUrl } from "@/lib/supabase/public";
 import { cn } from "@/lib/utils";
+import { AnonymousChip } from "@/components/core/AnonymousChip";
 
 export async function generateMetadata({
   params,
@@ -270,6 +271,7 @@ export default async function DashboardPage({
                             >
                               {s.name}
                             </Link>
+                            {s.anonymous && <AnonymousChip />}
                             {s.status === "private" && (
                               <span className="block text-2xs text-muted-foreground">
                                 {dt("private")}

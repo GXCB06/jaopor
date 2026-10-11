@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
+import { isAnonymousSlug } from "@/lib/anonymous";
 import {
   getRevenueSeries,
   getStartupBySlug,
@@ -66,11 +67,20 @@ export async function GET(
   if (!found) return new Response("Not found", { status: 404 });
   // Local design check only: `?demo=1` renders a demo project's sample numbers. Ignored in
   // production, where sample data never reaches a share image.
-  const startup =
+  const raw =
     process.env.NODE_ENV === "development" &&
     new URL(req.url).searchParams.get("demo") === "1"
       ? { ...found, is_demo: false }
       : found;
+  // Anonymous projects (Design.md §5): the localized label instead of the placeholder name.
+  const startup = isAnonymousSlug(raw.slug)
+    ? {
+        ...raw,
+        name: (
+          await getTranslations({ locale: q.locale, namespace: "Anonymous" })
+        )("name"),
+      }
+    : raw;
 
   const C = CARD_THEME[q.theme];
   // THB projects (spec 6.5 "฿ for THB startups") show money in baht at the site's rate;

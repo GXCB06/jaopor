@@ -27,6 +27,8 @@ declare
   base text := 'https://letfxefyqxxrfujpwtri.supabase.co/storage/v1/object/public/avatars/';
   out text := '';
   old_slug text;
+  anon_sid bigint;
+  real_name text;
 begin
   insert into auth.users (id, email, raw_user_meta_data, aud, role)
   values (a, 'rls-a@test.local', '{"full_name":"Tester A"}', 'authenticated', 'authenticated'),
@@ -1368,6 +1370,65 @@ begin
   exception when insufficient_privilege then
     out := out || 'T161b client writes a ga4 connection: denied (good) | ';
   end;
+  execute 'reset role';
+  -- T162–T168: anonymous mode (migration 20261011126000_anonymous_mode). The public row holds
+  -- placeholders, the owner reads the real identity, nobody else can, and turning it off restores it.
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  insert into public.startups (owner_id, name, slug, website_url, category, country, province, is_anonymous)
+    values (b, 'Secret Sauce', 'rls-secret-sauce', 'https://secret-sauce.example', 'saas', 'TH', 'bangkok', true)
+    returning id into anon_sid;
+  select name into real_name from public.startup_identity(anon_sid);
+  out := out || format('T162 created anonymous: public name=%s, slug placeholder=%s, website=%s; owner reads %s | ',
+    (select name from public.startups where id = anon_sid),
+    (select slug ~ '^anon-[0-9a-f]{10}$' from public.startups where id = anon_sid),
+    coalesce((select website_url from public.startups where id = anon_sid), 'hidden'), real_name);
+  update public.startups set name = 'Secret Sauce 2' where id = anon_sid;
+  select name into real_name from public.startup_identity(anon_sid);
+  out := out || format('T163 owner rename while anonymous: public=%s, stash=%s | ',
+    (select name from public.startups where id = anon_sid), real_name);
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  select count(*) into n from public.startup_identity(anon_sid);
+  out := out || format('T164 another signed-in user reads the identity: %s rows (expected 0) | ', n);
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  execute 'set local role anon';
+  begin
+    select count(*) into n from public.startup_identity(anon_sid);
+    out := out || 'T165 anon calls startup_identity: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T165 anon calls startup_identity: denied (good) | ';
+  end;
+  begin
+    perform 1 from private.startup_identity;
+    out := out || 'T165b anon reads the stash: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T165b anon reads the stash: denied (good) | ';
+  end;
+  execute 'reset role';
+  begin
+    insert into public.startups (owner_id, name, slug, website_url, category, country, province)
+      values (a, 'Copycat', 'rls-secret-sauce', 'https://copycat.example', 'saas', 'TH', 'bangkok');
+    out := out || 'T166 another project takes the hidden real slug: ALLOWED (BAD) | ';
+  exception when unique_violation then
+    out := out || 'T166 the hidden real slug stays reserved (good) | ';
+  end;
+  begin
+    insert into public.startups (owner_id, name, slug, website_url, category, country, province)
+      values (a, 'Fake', 'anon-0123456789', 'https://fake.example', 'saas', 'TH', 'bangkok');
+    out := out || 'T167 a named project uses the anon- slug shape: ALLOWED (BAD) | ';
+  exception when unique_violation then
+    out := out || 'T167 anon- slug shape refused for a named project (good) | ';
+  end;
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  update public.startups set is_anonymous = false where id = anon_sid;
+  out := out || format('T168 turned off: %s / %s / %s (expected Secret Sauce 2 / rls-secret-sauce / https://secret-sauce.example) | ',
+    (select name from public.startups where id = anon_sid),
+    (select slug from public.startups where id = anon_sid),
+    (select website_url from public.startups where id = anon_sid));
   execute 'reset role';
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;

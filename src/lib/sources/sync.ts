@@ -52,6 +52,7 @@ import {
   type SourceId,
   type SourceKind,
 } from "./catalog";
+import { ownerAnonymousWebsites, withRealLinks } from "@/lib/data/anonymous";
 
 // The one place that turns a founder's read-only credential into verified numbers on `startups`.
 // Revenue (Stripe, RevenueCat) → revenue columns + revenue_snapshots; traffic (Plausible, Umami)
@@ -416,11 +417,13 @@ async function checkOwner(
   ).select("id");
   if (!claimed?.length) return "throttled";
 
-  const { data: s } = await admin
+  const { data: row } = await admin
     .from("startups")
-    .select("website_url, owner_verified_at")
+    .select("id, website_url, owner_verified_at")
     .eq("id", startupId)
     .maybeSingle();
+  // Anonymous projects: the public row has no website; the real one is in the stash.
+  const s = row ? await withRealLinks(admin, row) : null;
   // A platform page (Facebook…, A1.2) can never carry our code: nothing to look for.
   if (!s?.website_url || !isOwnWebsite(s.website_url)) return false;
   const was = s.owner_verified_at !== null;
@@ -428,13 +431,18 @@ async function checkOwner(
     const found = await findOwnerSnippet(s.website_url, String(startupId));
     if (found === "unreachable") return was;
     const now = found === "found";
-    if (now !== was)
-      await admin
+    if (now !== was) {
+      const update = admin
         .from("startups")
         .update({ owner_verified_at: now ? new Date().toISOString() : null })
-        .eq("id", startupId)
-        // The website may have changed meanwhile: the result was for this address only.
-        .eq("website_url", s.website_url);
+        .eq("id", startupId);
+      // The website may have changed meanwhile: the result was for this address only. (An
+      // anonymous project's public row has no website; changing its real one clears the proof
+      // in the database trigger instead.)
+      await (row?.website_url
+        ? update.eq("website_url", row.website_url)
+        : update.eq("id", startupId));
+    }
     return now;
   } catch {
     return was;
@@ -523,7 +531,7 @@ async function ownedStartup(admin: Admin, startupId: number, userId: string) {
     .eq("id", startupId)
     .maybeSingle();
   if (!data || data.owner_id !== userId) throw new ForbiddenError();
-  return data;
+  return withRealLinks(admin, data);
 }
 
 /**
@@ -540,13 +548,21 @@ async function duplicateListing(
   kind: SourceKind,
 ): Promise<string | null> {
   if (kind === "build" || !startup.website_url) return null;
-  const { data: others } = await admin
-    .from("startups")
-    .select("id, name, website_url")
-    .eq("owner_id", userId)
-    .neq("id", startup.id)
-    .not("website_url", "is", null);
-  const same = (others ?? []).filter((o) =>
+  const [{ data: listed }, anonymous] = await Promise.all([
+    admin
+      .from("startups")
+      .select("id, name, website_url")
+      .eq("owner_id", userId)
+      .neq("id", startup.id)
+      .not("website_url", "is", null),
+    // Anonymous projects keep their website private but still count as the same business.
+    ownerAnonymousWebsites(admin, userId),
+  ]);
+  const others = [
+    ...(listed ?? []),
+    ...anonymous.filter((o) => o.id !== startup.id),
+  ];
+  const same = others.filter((o) =>
     sameWebsite(o.website_url, startup.website_url),
   );
   if (!same.length) return null;

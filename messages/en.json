@@ -146,7 +146,7 @@
     "prev": "Previous",
     "next": "Next",
     "page": "Page {page} of {pages}",
-    "subline": "Web apps, mobile apps, LINE OA bots and GitHub projects built with AI, with numbers verified at the source.",
+    "subline": "Startups and products from people in Thailand. See who has real users, real revenue and real impact on society, with numbers verified at the source.",
     "filters": "Filters",
     "category": "Category",
     "tool": "Built with",
@@ -890,7 +890,7 @@
   },
   "Olympics": {
     "title": "Province Olympics",
-    "subtitle": "Which province builds the biggest things with AI? Judged on numbers from real systems, never typed-in figures.",
+    "subtitle": "Which province has the startups and products with the best numbers? Judged on numbers from real systems, never typed-in figures.",
     "metric": "Metric",
     "metrics": {
       "revenue30d": "Revenue (30d)",
@@ -1017,7 +1017,7 @@
     "metaTitle": "Privacy policy",
     "title": "JaoPor privacy policy",
     "updated": "Last updated: October 11, 2026",
-    "intro": "JaoPor (jaopor.vercel.app) is a directory of things people build with AI, with numbers verified at the source. This page explains what we collect, why, how long we keep it, and what you control.",
+    "intro": "JaoPor (jaopor.vercel.app) is a directory of startups and products from people in Thailand, with numbers verified at the source. This page explains what we collect, why, how long we keep it, and what you control.",
     "contact": "Privacy contact:",
     "email": "jaopordev@gmail.com",
     "sections": [
@@ -1681,8 +1681,8 @@
   },
   "Builders": {
     "title": "Builders",
-    "metaDescription": "People in Thailand building with AI: skills, projects and verified numbers. Find a co-founder or teammate.",
-    "subline": "People building with AI in Thailand. See their skills, real projects and verified numbers, then reach out.",
+    "metaDescription": "People building startups and products in Thailand: skills, projects and verified numbers. Find a co-founder or teammate.",
+    "subline": "People building startups and products in Thailand. See their skills, real projects and verified numbers, then reach out.",
     "searchPh": "Search name, @username or headline…",
     "search": "Search",
     "createProfile": "Create your profile",
@@ -1794,7 +1794,7 @@
   },
   "Feed": {
     "title": "Feed",
-    "metaDescription": "The latest from people building with AI in Thailand: new features, launches, lessons and milestones from verified numbers.",
+    "metaDescription": "The latest from people building startups and products in Thailand: new features, launches, lessons and milestones from verified numbers.",
     "subline": "What builders are shipping",
     "views": "Feed views",
     "view": {
@@ -2090,5 +2090,29 @@
     "more": "+{count}",
     "noMatch": "No matches",
     "selected": "{count, plural, =0 {None selected} other {# selected}}"
+  },
+  "Anonymous": {
+    "name": "Anonymous project",
+    "badge": "Anonymous",
+    "pageNote": "The owner keeps this project’s name, logo and links private. Its verified numbers are still checked against the real source.",
+    "title": "Anonymous project",
+    "switchLabel": "Anonymous mode",
+    "intro": "For builders who want to show their numbers and story without saying which project it is.",
+    "hides": "Others won’t see: the project name, logo, every link (website, App Store, Google Play, LINE OA, GitHub), screenshots, the demo video and this page’s old links.",
+    "shows": "Others still see: verified numbers and charts, category, province, tagline, description, story and you as the owner.",
+    "keepGeneric": "Keep the tagline, description and posts free of the name and links: those stay visible.",
+    "newLink": "The page gets a new link and the old one stops working until you turn this off. Your real details are kept; turning it off restores everything.",
+    "ownerNote": "You still see and edit the name, logo and links. Everyone else sees “Anonymous project”.",
+    "confirmOn": "Turn on anonymous mode?",
+    "confirmOnBody": "The name, logo, links and screenshots disappear from the public page right away, and the page gets a new link (the old one stops working). What people already saw or shared can’t be taken back.",
+    "confirmOff": "Turn off anonymous mode?",
+    "confirmOffBody": "The name, logo, links and screenshots become public again and the page goes back to its old link.",
+    "turnOn": "Turn on",
+    "turnOff": "Turn off",
+    "on": "Anonymous mode is on",
+    "off": "Anonymous mode is off",
+    "notReady": "This isn’t available yet. Please try again later.",
+    "wizardLabel": "Keep the project name private (anonymous)",
+    "wizardHint": "Show verified numbers without the name, logo or links. You can change it later on the edit page."
   }
 }

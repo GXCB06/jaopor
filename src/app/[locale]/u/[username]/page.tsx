@@ -1,4 +1,5 @@
 import { DisclosedInline } from "@/components/profile/DisclosedInline";
+import { ProjectName } from "@/components/core/ProjectName";
 import {
   BriefcaseIcon,
   FlameIcon,
@@ -873,7 +874,7 @@ export default async function BuilderProfilePage({
                               size={40}
                             />
                             <span className="min-w-0 flex-1 truncate font-semibold group-hover:underline">
-                              {w.name}
+                              <ProjectName name={w.name} slug={w.slug} />
                             </span>
                             {w.is_demo && (
                               <span className="shrink-0 rounded-sm border bg-secondary px-1.5 py-0.5 text-2xs text-muted-foreground">

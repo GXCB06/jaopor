@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
 import { getOwnStartup } from "@/lib/data/owner-startups";
+import { anonymousModeReady } from "@/lib/data/anonymous";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { StartupEditForm } from "@/components/wizard/StartupEditForm";
 import { requireUserId } from "@/lib/auth";
 import { getConnections, getGithubLogin } from "@/lib/data/connections";
 import type { Screenshot } from "@/lib/media";
 import { createClient } from "@/lib/supabase/server";
+import { AnonymousChip } from "@/components/core/AnonymousChip";
 
 export const metadata = { robots: { index: false } };
 
@@ -24,30 +26,38 @@ export default async function EditStartupPage({
     : null;
   if (!startup || startup.owner_id !== userId) notFound();
 
-  const [t, connections, githubLogin, shots] = await Promise.all([
-    getTranslations("Profile"),
-    getConnections(startup.id),
-    getGithubLogin(),
-    // The owner's session (RLS) also sees screenshots of a hidden project.
-    supabase
-      .from("startup_screenshots")
-      .select("id, path, kind, caption, width, height, position")
-      .eq("startup_id", startup.id)
-      .order("position")
-      .order("id"),
-  ]);
+  const [t, connections, githubLogin, shots, anonymousReady] =
+    await Promise.all([
+      getTranslations("Profile"),
+      getConnections(startup.id),
+      getGithubLogin(),
+      // The owner's session (RLS) also sees screenshots of a hidden project.
+      supabase
+        .from("startup_screenshots")
+        .select("id, path, kind, caption, width, height, position")
+        .eq("startup_id", startup.id)
+        .order("position")
+        .order("id"),
+      anonymousModeReady(),
+    ]);
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-8">
       <h1 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">
         {t("editProfile")} · {startup.name}
       </h1>
+      {startup.anonymous && (
+        <div className="-mt-4 mb-6">
+          <AnonymousChip />
+        </div>
+      )}
       <StartupEditForm
         userId={userId}
         startup={startup}
         connections={connections}
         githubLogin={githubLogin}
         screenshots={(shots.data ?? []) as Screenshot[]}
+        anonymousReady={anonymousReady}
       />
     </main>
   );

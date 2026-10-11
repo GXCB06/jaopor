@@ -16,6 +16,8 @@ import { CATEGORY_LIST, getCategory } from "@/lib/config/categories";
 import { localizedName } from "@/lib/config/localized";
 import { highlightParts } from "@/lib/search-text";
 import { makeRoomBelow } from "@/lib/ui/room-below";
+import { ProjectName } from "@/components/core/ProjectName";
+import { isAnonymousSlug } from "@/lib/anonymous";
 import { cn } from "@/lib/utils";
 import { StartupLogo } from "../StartupBits";
 
@@ -313,7 +315,11 @@ export function QuickSearch({
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-1.5 text-xs font-semibold">
                     <span className="truncate">
-                      <Highlight text={s.name} q={query} />
+                      {isAnonymousSlug(s.slug) ? (
+                        <ProjectName name={s.name} slug={s.slug} />
+                      ) : (
+                        <Highlight text={s.name} q={query} />
+                      )}
                     </span>
                     {s.source && (
                       <span className="inline-flex shrink-0 items-center gap-0.5 text-2xs font-normal text-positive">

@@ -1,6 +1,7 @@
 "use client";
 
 import { ChoiceSelect } from "@/components/core/ChoiceSelect";
+import { ProjectName } from "@/components/core/ProjectName";
 import { provinceGroups } from "@/lib/config/choice-options";
 import {
   ArrowRightIcon,
@@ -340,7 +341,7 @@ export function OlympicsBoard({
                                       href={`/startup/${s.slug}`}
                                       className="min-w-0 truncate font-semibold hover:underline"
                                     >
-                                      {s.name}
+                                      <ProjectName name={s.name} slug={s.slug} />
                                     </Link>
                                     <span className="text-2xs text-faint tabular-nums">
                                       {Math.round(pct)}%

@@ -6,6 +6,7 @@
 -- can't read revoked columns and an owner-rights view bypasses RLS); O5 money bands in THB from
 -- the stored daily fx_rates row (no FX call on write), other groups in their own units.
 --
+-- Requires 20261011126000_anonymous_mode (is_anonymous is in the column grant below).
 -- NOT APPLIED. Apply only after the 14 Oct post and the owner's explicit approval, then run the
 -- advisors, RLS smoke T146–T160, and regenerate src/lib/supabase/database.types.ts.
 --
@@ -302,6 +303,8 @@ grant select (
   updated_at, app_store_url, play_store_url, line_url, github_url, looking_for, build_story,
   is_demo, tech_stack, pricing_amount, pricing_currency, pricing_period, demo_video_url,
   founder_role, owner_verified_at,
+  -- From 20261011126000_anonymous_mode (apply that one first).
+  is_anonymous,
   public_proof_level,
   public_revenue_level, public_verified_provider, public_last_synced_at, public_mrr_cents,
   public_revenue_30d_cents, public_revenue_prev_30d_cents, public_revenue_all_time_cents,

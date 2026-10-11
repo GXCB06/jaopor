@@ -3,6 +3,7 @@ import {
   ChevronRightIcon,
   FlaskConicalIcon,
   MapPinIcon,
+  EyeOffIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -13,6 +14,7 @@ import {
 } from "next-intl/server";
 import { VerifiedBadge } from "@/components/core/VerifiedBadge";
 import { syncedRecently } from "@/lib/motion/live";
+import { isAnonymousSlug } from "@/lib/anonymous";
 import { DisclosedStat, isNonExact } from "@/components/profile/DisclosedStat";
 import {
   EmptyOwnerCard,
@@ -97,7 +99,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const mrr = thbPerUsd
     ? money(startup.mrr_cents, { currency: "thb", thbPerUsd, full: true })
     : moneyFull(startup.mrr_cents);
-  const title = verified ? `${startup.name} — ${mrr} MRR` : startup.name;
+  // Anonymous projects (Design.md §5): never the placeholder "Anonymous" in a shared title.
+  const name = isAnonymousSlug(startup.slug)
+    ? (await getTranslations({ locale, namespace: "Anonymous" }))("name")
+    : startup.name;
+  const title = verified ? `${name} — ${mrr} MRR` : name;
   const description = startup.tagline ?? startup.description?.slice(0, 200);
   // openGraph replaces the layout's object (shallow merge), so repeat siteName/type/locale here.
   return {
@@ -152,6 +158,7 @@ export default async function StartupPage({ params }: Props) {
     thbPerUsd,
     olympics,
     updates,
+    an,
   ] = await Promise.all([
     getTranslations("Profile"),
     getTranslations("Common"),
@@ -168,7 +175,11 @@ export default async function StartupPage({ params }: Props) {
       : Promise.resolve([]),
     // Phase 10e: latest product updates (cookie-free, so the page stays cached).
     listStartupPostsPublic(startup.id, 3).catch(() => []),
+    getTranslations("Anonymous"),
   ]);
+  // Design.md §5 Anonymous projects: the public row only holds placeholders.
+  const anonymous = isAnonymousSlug(startup.slug);
+  const displayName = anonymous ? an("name") : startup.name;
   const now = renderNow();
   // Spec 6.4 step 2: "📍 จังหวัด · อันดับ #X ในโอลิมปิก" → the province page.
   const provinceNameText = provinceName(startup.province, locale);
@@ -211,7 +222,7 @@ export default async function StartupPage({ params }: Props) {
     .map((m) => `${sh(`metric.${m.id}`)} ${m.value}`)
     .join(" · ");
   const post = sh("post", {
-    name: startup.name,
+    name: displayName,
     tagline,
     metrics: metricsLine ? `${metricsLine}\n` : "",
     url,
@@ -239,7 +250,7 @@ export default async function StartupPage({ params }: Props) {
             {nav("startups")}
           </Link>
           <ChevronRightIcon className="size-3" aria-hidden="true" />
-          <span className="truncate text-foreground">{startup.name}</span>
+          <span className="truncate text-foreground">{displayName}</span>
         </nav>
 
         <OwnerBar
@@ -274,8 +285,14 @@ export default async function StartupPage({ params }: Props) {
               {/* relative: the evidence-ladder note opens across this row (MetricHelp). */}
               <div className="relative flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold tracking-tight">
-                  {startup.name}
+                  {displayName}
                 </h1>
+                {anonymous && (
+                  <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs text-muted-foreground">
+                    <EyeOffIcon className="size-3" aria-hidden="true" />
+                    {an("badge")}
+                  </span>
+                )}
                 <FoundingBadge n={startup.founding_number} />
                 {!startup.is_demo && (
                   <VerifiedBadge
@@ -345,9 +362,9 @@ export default async function StartupPage({ params }: Props) {
               slug={startup.slug}
               url={url}
               post={post}
-              text={`${startup.name}${tagline}`}
-              badgeHtml={badgeHtml(url, badgeSrc, startup.name)}
-              badgeMarkdown={badgeMarkdown(url, badgeSrc, startup.name)}
+              text={`${displayName}${tagline}`}
+              badgeHtml={badgeHtml(url, badgeSrc, displayName)}
+              badgeMarkdown={badgeMarkdown(url, badgeSrc, displayName)}
               badgeSrc={badgeSrc}
               currencySymbol={projectCurrencySymbol(startup)}
               proven={
@@ -368,6 +385,16 @@ export default async function StartupPage({ params }: Props) {
             )}
           </div>
         </header>
+
+        {anonymous && (
+          <p className="flex items-start gap-2 rounded-lg border border-dashed p-3 text-caption text-muted-foreground">
+            <EyeOffIcon
+              className="mt-0.5 size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+            {an("pageNote")}
+          </p>
+        )}
 
         <LiveViewersPill />
 

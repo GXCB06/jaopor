@@ -12,6 +12,52 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-11 — Anonymous mode for projects (code ready; migration written, NOT applied)
+
+**Done:**
+
+- **Owner request:** list a project like TrustMRR's anonymous mode, showing the numbers and insights but not the product's name, links or anything that identifies it. Checked against TrustMRR's FAQ: it removes the name, logo, website, screenshots and app-store links, and keeps the description, founder, country and verified metrics.
+- **Migration `20261011126000_anonymous_mode.sql`, written and dry-run only:**
+  - `startups.is_anonymous`. A BEFORE trigger `startups_anonymity` moves the real name, slug, logo, links, repo and demo video into `private.startup_identity`. That table has the same checks plus "at least one link", and its slug stays reserved.
+  - The public row then holds placeholders: "Anonymous", `anon-<10 hex>`, nulls, and `anonymous/project` while a repo is connected, so build proof still counts.
+  - Old URLs are moved into the stash; otherwise the real name would redirect to the anonymous page.
+  - Writes to identity columns while anonymous (the edit form, the GitHub sync) are diverted to the stash.
+  - Turning it off restores everything, old URLs included.
+  - `startups_has_a_link` now allows an anonymous row. The slug-history, slug-reserve and owner-verified triggers ignore the masking itself.
+  - Screenshots are hidden from visitors by RLS.
+  - `startup_identity()` (the owner or the service role only) and `owner_anonymous_websites()` (service role).
+  - The disclosure migration now grants `is_anonymous`, so apply this one first.
+- **App:**
+  - `lib/anonymous.ts`: `isAnonymousSlug`; the slug shape is reserved, so any row, embed or search hit is recognisable.
+  - `lib/data/anonymous.ts`: a readiness probe, `realIdentity`, and `withRealLinks` for the JaoPor snippet (`/api/collect`), connect, the owner check, autofill and detect-stack. The duplicate-listing check also sees anonymous websites.
+  - Owner views overlay the real identity but keep the public slug for links (`OwnerStartup.anonymous.realSlug`).
+  - Server action `setProjectAnonymous` revalidates every URL the project had, the lists and the owner's profile.
+- **UI** (Design.md §5 Anonymous projects):
+  - The wizard's step-1 checkbox; the preview card follows it.
+  - The edit page's switch card with a confirm.
+  - "ผลงานไม่เปิดเผยชื่อ" (`ProjectName`) on cards, the leaderboard, posts, search, Olympics, builder profile works, the project page (H1, breadcrumb, title, share text, badge snippets), the OG image (no screenshot cover) and the share card.
+  - An `EyeOff` logo tile, a page chip and a dashed note.
+  - Owner chips on the dashboard, "ผลงานของฉัน" and the edit page.
+  - Strings `Anonymous.*` (th + en).
+- Everything stays hidden until the migration is applied, and nothing changes for current projects.
+
+**Files:** `supabase/migrations/20261011126000_anonymous_mode.sql`, `supabase/migrations/20261011130000_disclosure_levels.sql` (grant), `supabase/tests/rls_smoke.sql` (T162–T168), `src/lib/anonymous.ts`, `src/lib/data/{anonymous,owner-startups}.ts`, `src/app/actions/anonymous.ts`, `src/components/core/{ProjectName,AnonymousChip}.tsx`, `src/components/wizard/{AnonymousPanel,StartupWizard,StartupEditForm}.tsx`, `src/lib/sources/sync.ts`, `src/app/api/{collect,startups/[id]/autofill,startups/[id]/detect-stack,share-card/[slug]}/route.ts(x)`, the project page + OG image, the dashboard pages, `messages/*`, `Design.md`, `Project.md`
+
+**Verified:**
+
+- **Dry run on the remote DB, in a transaction rolled back (production unchanged; `is_anonymous` absent afterwards):** 12 checks passed.
+  - Created anonymous → public "Anonymous" / `anon-…` / no website, and the owner reads the real name.
+  - A rename while anonymous is diverted, and an invalid diverted website is refused.
+  - Anon can't call `startup_identity` or read the stash.
+  - The hidden real slug stays reserved, and `anon-…` is refused for a named project.
+  - Off → name, slug and website restored, owner-verified kept, stash emptied.
+  - On again → old URLs moved to the stash. Off again → old URLs back.
+- **The first dry run found** that `startups_has_a_link` blocked masking; the constraint was relaxed and the stash now carries the checks.
+- **Gates:** typecheck ✓ · lint ✓ · unit 590 passed / 17 skipped (new: `anonymous.test.ts` ×2) · e2e local 121 passed / 0 failed · build ✓.
+
+**Not verified:** the switch and checkbox in a browser. They render only after the migration and need a signed-in owner.
+**Next:** owner approval to apply → advisors, RLS smoke, types → a signed-in check at desktop + 375 px.
+
 ## 2026-10-11 — Dropdowns always open below and stay on screen; multi-choice filters
 
 **Done:**
@@ -44,6 +90,7 @@
 - **Migration `20261011125000_ga4_traffic_source.sql`, written only, NOT applied:** `ga4` added to the provider / traffic CHECK constraints, the one-traffic-source index and the `log_verify_result` whitelist. RLS smoke T161 added.
 
 **Verified:**
+
 - unit 574 passed / 17 skipped. New `ga4.test.ts` (17): property-id parsing; token = readonly scope with a verifiable RS256 signature (throwaway key generated in the test) + cache; our credentials refused / broken key → upstream; domain match and mismatch, no web stream, 403 / 429 / 500; report mapping and an empty property. The catalog and funnel-parity tests were updated.
 - typecheck ✓ · lint ✓ · e2e local 117 passed / 0 failed · build ✓.
 - **Dry run on the remote DB in a rolled-back transaction:** ga4 accepted, a second traffic source refused, client writes denied, funnel logs ga4. Production constraint unchanged afterwards.
@@ -51,6 +98,20 @@
 
 **Not done (owner):** service account + both APIs enabled + Vercel env vars; approve applying the migration; a live connect against a real property (±5% vs the GA dashboard). Until then GA4 stays hidden.
 **Next:** owner setup → apply the migration → live check.
+
+## 2026-10-11 — "Built with AI" out of the site's positioning copy (everything except the homepage)
+
+**Done:**
+
+- Owner asked to drop "สร้างด้วย AI" from the site and lead with startups and products from people in Thailand that have real users, real revenue and real impact. Homepage left as is (owner: no change there).
+- **Changed (th + en):** `Directory.subline` ("Startup และ Product ของคนไทย ดูว่าใครมีผู้ใช้จริง รายได้จริง และกำลังสร้างประโยชน์ให้สังคม พร้อมตัวเลขที่ยืนยันจากระบบต้นทาง"; phrased as "see who has", not "everyone has", because most listings are pre-revenue and impact has no verified number), `Olympics.subtitle`, `Privacy.intro` (descriptive only; no change to what is collected, so the policy date stays), `Builders.metaDescription/subline`, `Feed.metaDescription`.
+- **`src/lib/autofill.ts`:** the optional Gemini listing-copy prompt now says "a directory of startups and products made by people in Thailand" instead of "built with AI", so generated drafts stop leading with AI.
+- **Left on purpose:** the `ai_tools` field and its filters/chips ("สร้างด้วย", "เครื่องมือ AI"), the "co-written with Claude" GitHub stat, the AI category and AI skills, and `Home.searchPlaceholder` (a homepage string: "เครื่องมือ AI ที่สร้างด้วย Claude Code"). These are data/features; the per-project switch to hide them on visitor surfaces is decision D2 (docs/MAJOR_REVAMP_PLAN.md), not built yet.
+
+**Files:** `messages/th.json`, `messages/en.json`, `src/lib/autofill.ts`
+**Verified:** `npm run typecheck` ✓; `npm run lint` ✓; `npx vitest run` → 586 passed / 17 skipped; no "ด้วย AI" / "with AI" left in `messages/`; browser check of `/th/startups` at 375 px (new subline, scrollWidth = clientWidth = 375). **Not run:** e2e, `npm run build`, `/en` pages visually.
+**Not changed:** the JaoPor listing's own description in the database ("รวมผลงานที่คนไทยสร้างด้วย AI…", shown on `/startups`; production data, owner edits it in the dashboard), internal docs (README, BizModel.md, JAOPOR_SPEC.md, CLAUDE.md, Project.md header) that still describe the old positioning.
+**Next:** owner edits the JaoPor listing text; decide on D2 and on the homepage search placeholder; align the internal docs if wanted.
 
 ## 2026-10-11 — Specs: disclosure levels (R2) and owner outcomes (proposal only)
 
@@ -94,6 +155,7 @@
 
 **Files:** `src/components/core/ScrollReveal.tsx` (new), `src/app/[locale]/layout.tsx`, `src/app/globals.css`, `src/components/{StartupBits,StartupCard,LeaderboardCard,ProfileBlocks}.tsx`, `src/components/builder/BuilderCard.tsx`, `src/components/profile/ProjectBlocks.tsx`, `src/app/[locale]/startup/[slug]/page.tsx`, `e2e/motion.spec.ts`, `Design.md`; deleted `core/RollingNumber.tsx`, `lib/motion/digits{,.test}.ts`.
 **Verified:**
+
 - typecheck ✓ · lint ✓ · unit 557 passed / 17 skipped · e2e local 117 passed / 0 failed. The motion spec covers: below-the-fold sections wait then reveal, on-screen sections untouched, no digit columns, reduced motion marks nothing.
 - build ✓.
 - 375 px screenshots mid-reveal and settled on the project page.
@@ -125,6 +187,7 @@
   - **Growth board:** needs new Leaderboard keys, a home page change (marketing edits pending) and a floor rule.
 
 **Verified:**
+
 - typecheck ✓ · lint ✓ · unit 562 passed / 17 skipped (+22: normalizer both schemas, milestone masking, share forms, band text);
 - e2e local 117 passed / 0 failed (legacy path identical to before);
 - build ✓;
@@ -175,6 +238,7 @@
   - F: residual risks.
 
 **Verified:**
+
 - typecheck ✓ · lint ✓ · vitest 540 passed / 17 skipped (+87).
 - **Dry run on the remote DB inside `begin … rollback`:**
   - first a probe confirmed rollback leaves nothing;

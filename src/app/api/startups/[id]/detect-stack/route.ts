@@ -4,6 +4,7 @@ import { serverEnv } from "@/lib/env";
 import { ProviderError } from "@/lib/revenue/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { withRealLinks } from "@/lib/data/anonymous";
 
 // Design.md §5 Edit page "ดึงจาก GitHub": owner-only. Reads a *public* repo's languages, root files
 // and manifests (package.json, requirements.txt, …) and returns stack labels. Nothing is saved
@@ -65,10 +66,12 @@ export async function POST(
  * proved this user owns the project.
  */
 async function verifiedRepo(id: number): Promise<string | null> {
-  const { data } = await createAdminClient()
+  const admin = createAdminClient();
+  const { data } = await admin
     .from("startups")
-    .select("github_repo")
+    .select("id, github_repo")
     .eq("id", id)
     .maybeSingle();
-  return data?.github_repo ?? null;
+  // Anonymous projects keep the real repo in their private identity.
+  return data ? ((await withRealLinks(admin, data)).github_repo ?? null) : null;
 }

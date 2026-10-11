@@ -12,6 +12,7 @@ import { isOwnWebsite } from "@/lib/links";
 import { fetchHtml } from "@/lib/net/link-preview";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { withRealLinks } from "@/lib/data/anonymous";
 
 // Design.md §5 Edit page "✨ ช่วยเติมจากเว็บไซต์": owner-only. Reads the project's public website
 // (+ public GitHub README) and returns a draft; nothing is saved here, the owner reviews it in
@@ -58,12 +59,14 @@ export async function POST(
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user)
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  const { data: startup } = await supabase
+  const { data: row } = await supabase
     .from("startups")
-    .select("website_url")
+    .select("id, website_url")
     .eq("id", id)
     .eq("owner_id", auth.user.id)
     .maybeSingle();
+  // The owner's session reads an anonymous project's real website (startup_identity).
+  const startup = row ? await withRealLinks(supabase, row) : null;
   if (!startup)
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   // A1.2: only the project's own website is read (not a Facebook / YouTube page).
@@ -102,10 +105,12 @@ export async function POST(
  * proved this user owns the project.
  */
 async function verifiedRepo(id: number): Promise<string | null> {
-  const { data } = await createAdminClient()
+  const admin = createAdminClient();
+  const { data } = await admin
     .from("startups")
-    .select("github_repo")
+    .select("id, github_repo")
     .eq("id", id)
     .maybeSingle();
-  return data?.github_repo ?? null;
+  // Anonymous projects keep the real repo in their private identity.
+  return data ? ((await withRealLinks(admin, data)).github_repo ?? null) : null;
 }

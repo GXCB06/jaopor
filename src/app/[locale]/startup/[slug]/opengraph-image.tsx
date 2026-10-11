@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
+import { isAnonymousSlug } from "@/lib/anonymous";
 import { getStartupBySlug } from "@/lib/data/startups";
 import { publicEnv } from "@/lib/public-env";
 import { shareMetrics, verifiedSources } from "@/lib/share";
@@ -26,15 +27,20 @@ export default async function Image({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  const [startup, t, card, fonts, tile] = await Promise.all([
+  const [found, t, card, fonts, tile, an] = await Promise.all([
     getStartupBySlug(slug),
     getTranslations({ locale, namespace: "Share" }),
     getTranslations({ locale, namespace: "Card" }),
     ogFonts(),
     logoTileDataUri(),
+    getTranslations({ locale, namespace: "Anonymous" }),
   ]);
+  // Anonymous projects (Design.md §5): the localized label, and never a screenshot as cover.
+  const anonymous = isAnonymousSlug(found?.slug);
+  const startup = found && anonymous ? { ...found, name: an("name") } : found;
 
-  const cover = startup ? await ogCoverDataUri(startup.id) : null;
+  const cover =
+    startup && !anonymous ? await ogCoverDataUri(startup.id) : null;
   const metrics = startup ? shareMetrics(startup) : [];
   const sources = startup ? verifiedSources(startup) : [];
   // Any logo format (WebP included) is converted to PNG for the renderer.

@@ -1,6 +1,7 @@
 "use client";
 
 import { ChoiceSelect } from "@/components/core/ChoiceSelect";
+import { ProjectName } from "@/components/core/ProjectName";
 import { Medal } from "./core/Medal";
 import { useTranslations } from "next-intl";
 import { useLayoutEffect, useRef, useState } from "react";
@@ -200,7 +201,7 @@ export function LeaderboardCard({
                       <span className="min-w-0">
                         <span className="flex min-w-0 items-center gap-1.5">
                           <span className="truncate text-xs font-semibold group-hover:underline">
-                            {r.name}
+                            <ProjectName name={r.name} slug={r.slug} />
                           </span>
                           {r.demo && (
                             <CornerTag tone="neutral">{t("demo")}</CornerTag>

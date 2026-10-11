@@ -2,6 +2,8 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Tables } from "@/lib/supabase/database.types";
 import { parseDisclosure, type MetricDisclosure } from "@/lib/disclosure";
+import { isAnonymousSlug } from "@/lib/anonymous";
+import { realIdentity } from "./anonymous";
 import {
   PUBLIC_TWIN,
   normalizeStartup,
@@ -20,6 +22,11 @@ export type OwnerStartup = Tables<"startups"> & {
   disclosure: StartupDisclosure;
   /** The owner's chosen levels ({} = nothing chosen yet; null when this user isn't the owner). */
   levels: MetricDisclosure | null;
+  /**
+   * Anonymous mode: the row carries the owner's REAL name / logo / links (from startup_identity),
+   * but `slug` stays the public placeholder so links work; the real slug is here.
+   */
+  anonymous: { realSlug: string } | null;
 };
 
 type Db = SupabaseClient<Database>;
@@ -53,7 +60,11 @@ export async function getOwnStartups(
     .in("id", ids)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  const rows = (data ?? []).map((r) => normalizeStartup(mode, r));
+  const rows = await Promise.all(
+    (data ?? []).map((r) =>
+      withOwnIdentity(supabase, normalizeStartup(mode, r)),
+    ),
+  );
   if (mode === "legacy")
     return rows.map((r) => ({ ...r, levels: {} }) as unknown as OwnerStartup);
 
@@ -76,6 +87,18 @@ export async function getOwnStartups(
       } as unknown as OwnerStartup;
     }),
   );
+}
+
+/** Anonymous mode: the owner sees their real identity; the public slug stays for links. */
+async function withOwnIdentity<T extends { id: number; slug: string }>(
+  supabase: Db,
+  row: T,
+): Promise<T & { anonymous: { realSlug: string } | null }> {
+  if (!isAnonymousSlug(row.slug)) return { ...row, anonymous: null };
+  const real = await realIdentity(supabase, row.id);
+  if (!real) return { ...row, anonymous: null };
+  const { slug: realSlug, ...identity } = real;
+  return { ...row, ...identity, anonymous: { realSlug } };
 }
 
 /** One own startup (edit page). Null when it doesn't exist or isn't visible to this user. */

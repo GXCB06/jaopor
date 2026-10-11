@@ -58,6 +58,7 @@ import {
 import { useSessionDraft } from "@/lib/use-session-draft";
 import { cn } from "@/lib/utils";
 import { Field, Select, ToggleChips, inputClass } from "./fields";
+import { AnonymousPanel } from "./AnonymousPanel";
 import { linkProblemText } from "./link-text";
 import { uploadLogo } from "./StartupWizard";
 import { LogoField } from "./LogoField";
@@ -132,9 +133,15 @@ export function StartupEditForm({
   connections,
   githubLogin,
   screenshots,
+  anonymousReady = false,
 }: {
   userId: string;
-  startup: Tables<"startups">;
+  startup: Tables<"startups"> & {
+    /** Anonymous mode (lib/data/owner-startups.ts): `slug` is the public one, this the real one. */
+    anonymous?: { realSlug: string } | null;
+  };
+  /** The anonymous-mode migration is live (else the switch stays hidden). */
+  anonymousReady?: boolean;
   connections: ConnectionInfo[];
   githubLogin: string | null;
   screenshots: Screenshot[];
@@ -200,7 +207,7 @@ export function StartupEditForm({
       demoVideo: startup.demo_video_url ?? "",
       founderRole: startup.founder_role ?? "",
       founderMessage: startup.founder_message ?? "",
-      slug: startup.slug,
+      slug: startup.anonymous?.realSlug ?? startup.slug,
     }),
     [startup],
   );
@@ -536,7 +543,11 @@ export function StartupEditForm({
       toast.success(e("saved"), {
         action: {
           label: e("viewPage"),
-          onClick: () => router.push(`/startup/${f.slug}`),
+          // An anonymous project's page lives at its public placeholder slug.
+          onClick: () =>
+            router.push(
+              `/startup/${startup.anonymous ? startup.slug : f.slug}`,
+            ),
         },
       });
       router.refresh();
@@ -756,6 +767,12 @@ export function StartupEditForm({
             {section(
               "basics",
               <>
+                {anonymousReady && (
+                  <AnonymousPanel
+                    startupId={startup.id}
+                    anonymous={Boolean(startup.anonymous)}
+                  />
+                )}
                 <Field id="name" label={t("name")} htmlFor="name-input">
                   <input
                     id="name-input"

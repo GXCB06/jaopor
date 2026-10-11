@@ -1,5 +1,7 @@
+import { EyeOffIcon } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { ANON_NAME } from "@/lib/anonymous";
 import { formatPct, money } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +40,12 @@ export function StartupLogo({
       )}
       style={{ width: size, height: size }}
     >
-      {name.slice(0, 1)}
+      {/* An anonymous project (placeholder name, no logo) gets a "hidden" mark, not an "A". */}
+      {name === ANON_NAME ? (
+        <EyeOffIcon className="size-1/2" aria-hidden="true" />
+      ) : (
+        name.slice(0, 1)
+      )}
     </span>
   );
 }

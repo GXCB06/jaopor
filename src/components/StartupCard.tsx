@@ -1,5 +1,6 @@
 import { ShieldCheckIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { ProjectName } from "@/components/core/ProjectName";
 import { Link } from "@/i18n/navigation";
 import type { StartupRow } from "@/lib/data/startups";
 import type { LookingFor } from "@/lib/links";
@@ -280,7 +281,7 @@ export function StartupCard({
                 large ? "text-body font-bold" : "text-xs",
               )}
             >
-              {startup.name}
+              <ProjectName name={startup.name} slug={startup.slug} />
             </h3>
             {large ? (
               <span className="mt-1 inline-flex rounded-sm border bg-secondary px-1.5 text-3xs text-muted-foreground">

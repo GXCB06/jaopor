@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { StartupWizard } from "@/components/wizard/StartupWizard";
+import { anonymousModeReady } from "@/lib/data/anonymous";
 import { requireUser } from "@/lib/auth";
 import { githubLoginOf } from "@/lib/data/connections";
 import { getMyProfile } from "@/lib/data/me";
@@ -26,7 +27,10 @@ export default async function NewStartupPage({
   // The project's province starts as the founder's own (Olympics; UX audit M-10). `province` is a
   // visibility-controlled column clients can't select, so it's read server-side like the dashboard
   // does; an empty field (the founder picks) if that fails.
-  const me = await getMyProfile(user.id).catch(() => null);
+  const [me, anonymousReady] = await Promise.all([
+    getMyProfile(user.id).catch(() => null),
+    anonymousModeReady(),
+  ]);
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8">
@@ -37,6 +41,7 @@ export default async function NewStartupPage({
         userId={user.id}
         githubLogin={githubLoginOf(user)}
         defaultProvince={me?.province ?? ""}
+        anonymousReady={anonymousReady}
       />
     </main>
   );

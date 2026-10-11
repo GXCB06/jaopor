@@ -1,4 +1,5 @@
 import { serverEnv } from "@/lib/env";
+import { withRealLinks } from "@/lib/data/anonymous";
 import { ownWebsiteHost } from "@/lib/links";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -46,11 +47,13 @@ export async function POST(req: Request) {
     if (!PROJECT_ID.test(project) || isBot(ua) || !ip) return done();
 
     const admin = createAdminClient();
-    const { data: startup } = await admin
+    const { data: row } = await admin
       .from("startups")
       .select("id, website_url, is_demo, owner_verified_at")
       .eq("id", Number(project))
       .maybeSingle();
+    // An anonymous project's website lives in its private identity (lib/data/anonymous.ts).
+    const startup = row ? await withRealLinks(admin, row) : null;
     // Owner verified: our server has seen this project's snippet on the website. Without it the
     // Origin check alone could be faked by a non-browser client.
     if (!startup || startup.is_demo || !startup.owner_verified_at)

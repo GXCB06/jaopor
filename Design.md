@@ -722,6 +722,16 @@ Motion shows the page arriving and the data being drawn (a section, a line, a so
 - **First-verify stamp (M2):** right after a source connects in VerifyPanel, the check pops in (scale 0.4 → 1.15 → 1, 500 ms) with one ring that expands and fades, once. Rows that were already connected never animate.
 - **Later (M3):** like burst, hover / press feedback, skeleton shimmer, a "recently verified" ticker from real events only.
 
+### Anonymous projects (2026-10-11, owner request; TrustMRR's anonymous mode as the reference)
+
+A project can be listed **without its identity**. Visitors see its verified numbers and charts, category, province, tagline, description, story, posts and the owner; they do **not** see the name, logo, any link (website, App Store, Google Play, LINE OA, GitHub, repo), screenshots, demo video or the page's old URLs. Unlike TrustMRR, nothing is deleted: the real details are kept and turning the mode off restores them, old URLs included.
+
+- **Enforced in the database** (migration `anonymous_mode`): while `is_anonymous`, the public row holds placeholders (name "Anonymous", slug `anon-<10 hex>`, no logo or links), the real identity sits in a private table that only the owner (`startup_identity()`) and the server read, and screenshots are hidden by RLS. Every list, search, embed, OG image and API therefore shows nothing identifying without per-surface filters. The slug shape `anon-<10 hex>` is reserved for anonymous projects, so the UI recognises one from the slug alone (`isAnonymousSlug`).
+- **Display:** the name reads "ผลงานไม่เปิดเผยชื่อ" / "Anonymous project" (`ProjectName`); the logo tile shows `EyeOff` instead of a letter. The project page adds a chip "ไม่เปิดเผยตัวตน" (`rounded-full border text-2xs`, `EyeOff`) next to the H1 and, under the header, a dashed note (`rounded-lg border border-dashed p-3 text-caption text-muted-foreground`) saying the owner keeps the name, logo and links private while the numbers are still checked against the real source.
+- **Add-project wizard (step 1):** a checkbox card under the logo, "ไม่เปิดเผยชื่อผลงาน (Anonymous)" + hint; the live preview card switches to the anonymous look. The row is masked before it is ever visible.
+- **Edit page (basics, first block):** "โหมดไม่เปิดเผยตัวตน (Anonymous)" switch card (`rounded-lg border p-4`, on = `border-brand/40 bg-brand/5`), with what others won't see, what they still see, a `text-warning` line to keep the tagline / description / posts free of the name, and (when off) that the page gets a new link. Saves on its own after a ConfirmDialog. The owner keeps seeing and editing the real name, logo and links; edits are stored privately while the mode is on. Owner views mark the project with the same chip.
+- Hidden until the migration is applied (no switch, no checkbox).
+
 ### Disclosure levels (R2, 2026-10-11, owner decisions O1–O5; spec: docs/DISCLOSURE_SPEC.md)
 
 The owner picks, per group (`revenue` · `users` · `traffic` · `build`), what visitors see. Verified ≠ visible: the level never changes what was verified.
