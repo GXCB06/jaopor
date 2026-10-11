@@ -12,6 +12,83 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-11 — R2 steps 2–6: disclosure levels (Design.md, logic + tests, migration written, RLS tests, surface audit) — NOT applied, NOT committed
+
+**Done (owner decisions O1–O5 approved 2026-10-11; O4 = precomputed `public_*` columns):**
+
+- **Design.md §7 "Disclosure levels":**
+  - five levels with th / en sentences;
+  - O1 defaults;
+  - the "ใครเห็นตัวเลขนี้?" chooser with a visitor preview;
+  - display per level;
+  - the dashboard line "คนอื่นเห็น: …";
+  - O5 FX rule: THB from the stored `fx_rates` row of the sync day, never a live call, with the rate day stored for audit.
+- **`src/lib/disclosure.ts` + 87 table-driven tests:**
+  - levels, groups and group → column map;
+  - O1 defaults;
+  - `parseDisclosure` (drops unknown keys and levels);
+  - THB money ladder and 1–2.5–5–10 count ladder (`bandFor`), `thbFromUsdCents`;
+  - whole-percent `growthPercent` (no −0);
+  - `effectiveLevel` (growth → badge fallback);
+  - the spec §6 level × surface matrix (`shownOn`);
+  - `publicProofLevel` (O2: private doesn't count).
+- **Migration `supabase/migrations/20261011130000_disclosure_levels.sql`, written only, NOT APPLIED.** The CLI's timestamp sorted before the applied funnel migration, so it was renamed. Contents:
+  - `metric_disclosure` plus about 40 `public_*` columns;
+  - immutable helpers;
+  - a BEFORE INSERT/UPDATE trigger (SECURITY INVOKER, `search_path=''`) that validates levels, applies O1 defaults on a first connection, and computes every `public_*` value. Clients have no write grant on them, and the trigger overwrites them on every write;
+  - backfill: existing data stays `exact`, and `updated_at` is untouched;
+  - revoke of every raw metric column, `proof_level` and `metric_disclosure` from anon / authenticated, with column grants on the public set;
+  - owner `update(metric_disclosure)` and `get_my_startup_metrics()` (definer, `owner_id = auth.uid()`);
+  - snapshot policies public only at `exact`, owners always;
+  - `search_startups`, `province_leaderboard` and the heatmap materialized view rebuilt on `public_*`;
+  - rollback notes.
+- **`supabase/tests/rls_smoke.sql`:**
+  - T125 updated: raw `proof_level` is no longer public; `public_proof_level` is;
+  - T146–T160 appended. They pass only after the migration is applied.
+- **`docs/DISCLOSURE_SURFACE_AUDIT.md`:**
+  - A: 8 paths that break on apply (anon / cookie `select *`, embeds, owner pages);
+  - B: 5 admin paths that need rules in code;
+  - C: 10 render surfaces;
+  - D: tests;
+  - E: size, about 4–6 days plus owner UI. Deploy order: code with a compatibility layer first, then apply;
+  - F: residual risks.
+
+**Verified:**
+- typecheck ✓ · lint ✓ · vitest 540 passed / 17 skipped (+87).
+- **Dry run on the remote DB inside `begin … rollback`:**
+  - first a probe confirmed rollback leaves nothing;
+  - then the whole migration + T125 + T146–T160 ran, and every line matched its expectation. That covers:
+    - raw columns denied to anon and to another user (direct select);
+    - O1 defaults;
+    - exact / band (฿1k–5k at a test rate) / growth (18%) / growth → badge / private (no provider, no sync time, proof 0);
+    - sync recompute;
+    - snapshots 1/1/1 at exact and 0/0/0 hidden, owner 1/1/1;
+    - search masked;
+    - Olympics exact-only;
+    - heatmap +1 only at exact;
+    - backfill complete;
+    - helper and trigger privileges and search_path.
+  - Afterwards: no new column, function, policy, test user or project remained.
+  - **Advisors not run** (they need the applied schema).
+
+**Not changed:** no migration applied, no commit, no surface code, no setting, no homepage files.
+**Next:** owner review of the migration + audit; then the compatibility-layer code (audit A–C) → apply after the post with approval → advisors + RLS smoke + types.
+
+## 2026-10-11 — R2 step 1 spike: masked view fails, propose precomputed `public_*` columns (waiting for the owner)
+
+**Done:**
+
+- **M2 pushed** (`24774a4`) and verified on production: e2e 133 passed / 1 skipped / 0 failed, including the founder-profile "request on the first screen" test that failed at 375 px before.
+- **Spike for DISCLOSURE_SPEC §4.2** (remote DB, every statement inside a DO block that ends in `raise exception`, so nothing was kept):
+  - **Invoker view** (`security_invoker = true`) with the raw metric column revoked from `anon`: **permission denied**. A view that computes a band must read the raw value, and an invoker view reads it with the visitor's rights.
+  - **Owner-rights view** (the default): the owner is `postgres`, which has `rolbypassrls = true`, and `startups` does not force RLS, so the view **ignores row-level security**. With a test project set to `private`, anon saw it through the view (1 row) but not through the table (0 rows). It would also be flagged by the Supabase advisor (security-definer view) and would need every row rule rewritten by hand.
+  - **PostgREST embed through a view** (`owner:profiles!startups_owner_id_fkey`) can't be tested with a rollback: PostgREST builds its schema cache from committed objects only. It would need a committed view, i.e. a schema change, which the brief doesn't allow. Untested, but moot after the two results above.
+- **Recommendation:** the spec's alternative. Precomputed `public_*` columns on `startups`, written by a `security definer` trigger whenever a metric or `metric_disclosure` changes (the sync writes metrics through the service role, so every write path is covered). Raw metric columns are revoked from `anon` / `authenticated`, and the `public_*` columns are granted. RLS on `startups` keeps working unchanged, the owner embed keeps working (same table), and there's no definer view for the advisor to flag. Snapshot policies check the level through a `security definer` helper, so `metric_disclosure` itself needn't be public.
+
+**Not changed:** no file other than this log and Project.md; no migration, commit or setting. Steps 2–6 of the R2 brief are on hold until the owner decides (the brief: stop and wait if the spike fails).
+**Verified:** the two rolled-back SQL spikes above; production e2e after the M2 deploy.
+**Next:** owner decision on the `public_*` approach (O4) → R2 steps 2–6.
+
 ## 2026-10-11 — Revamp M2: card rise, rolling numbers on cards + leaderboard, rank-change slide, first-verify stamp; founder request on the phone's first screen
 
 **Done (Design.md §7 Motion + §5 Builder profile first):**

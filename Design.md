@@ -712,6 +712,22 @@ Motion shows the data (a number arriving, a line being drawn, a source that is l
 - **First-verify stamp (M2):** right after a source connects in VerifyPanel, the check pops in (scale 0.4 → 1.15 → 1, 500 ms) with one ring that expands and fades, once. Rows that were already connected never animate.
 - **Later (M3):** like burst, hover / press feedback, skeleton shimmer, a "recently verified" ticker from real events only.
 
+### Disclosure levels (R2, 2026-10-11, owner decisions O1–O5; spec: docs/DISCLOSURE_SPEC.md)
+
+The owner picks, per group (`revenue` · `users` · `traffic` · `build`), what visitors see. Verified ≠ visible: the level never changes what was verified.
+
+- **Levels (th / en, one plain sentence each, no pressure, no shame):**
+  - `exact` — "แสดงตัวเลขจริง" / "Show the exact number"
+  - `band` — "แสดงเป็นช่วง เช่น ฿10k–25k" / "Show a range, e.g. ฿10k–25k"
+  - `growth` — "แสดงแค่การเติบโต (%)" / "Show growth only (%)"
+  - `badge` — "แสดงแค่ป้ายยืนยัน ไม่มีตัวเลข" / "Show the verified badge only"
+  - `private` — "ไม่แสดงต่อสาธารณะ (คุณยังเห็นเอง)" / "Hide from the public (you still see it)"; hides the badge too (O2) and doesn't count toward the public proof level.
+- **Defaults (O1):** new `revenue` / `users` connections → `badge`; `traffic` / `build` → `exact`; existing projects stay `exact`. Visitors are never told when a level changed (O3).
+- **Chooser:** "ใครเห็นตัวเลขนี้?" right after a source connects and in project settings: a radio list (`rounded-lg border`, selected `border-brand bg-brand/5`), and beside it a **preview of what visitors see** (the real card + StatCard at that level).
+- **Display:** `band` = range text in the value slot (`tabular-nums`, no rolling); `growth` = GrowthValue + "เทียบ 30 วันก่อน", no chart axis values; `badge` = VerifiedBadge with source and checked-at, no figure; `private` = nothing. Wording rule unchanged: "ยืนยัน" only for what a source confirmed; JaoPor / analytics counts say "นับโดย".
+- **Owner dashboard line:** next to each number, `text-caption text-muted-foreground` "คนอื่นเห็น: {level label}" / "Others see: {level label}".
+- **Bands (O5):** money in THB-equivalent from the stored daily `fx_rates` row for the sync day (never an FX call per write); the rate day used is stored with the public value so a band can be audited. Users / visitors / commits use their own units on a 1–2.5–5–10 ladder.
+
 ## 8. Responsive
 
 - Test at **375**, 768, 1024, 1440, in dark and light.

@@ -924,9 +924,11 @@ begin
   exception when generated_always then out := out || 'T124 server sets proof_level: refused (good) | ';
   end;
 
-  -- T125: visitors can read the badge and the order key (public profile / lists).
-  out := out || format('T125 anon reads owner_verified_at=%s proof_level=%s (expect true, true) | ',
+  -- T125: visitors can read the badge and the public order key (public profile / lists). Since
+  -- disclosure_levels the raw proof_level is hidden (a private group must not raise it publicly).
+  out := out || format('T125 anon reads owner_verified_at=%s public_proof_level=%s proof_level=%s (expect true, true, false) | ',
     has_column_privilege('anon', 'public.startups', 'owner_verified_at', 'SELECT'),
+    has_column_privilege('anon', 'public.startups', 'public_proof_level', 'SELECT'),
     has_column_privilege('anon', 'public.startups', 'proof_level', 'SELECT'));
 
   -- T126: trigger function: not callable by clients, fixed search_path, fires on website_url only.
@@ -1138,6 +1140,211 @@ begin
        where proname in ('log_add_event', 'log_verify_result', 'prune_funnel_events')
          and prosecdef and 'search_path=""' = any (proconfig)));
 
+  -- T146–T160: disclosure levels (migration 20261011130000_disclosure_levels; NOT APPLIED until
+  -- the owner approves, so these lines only pass after it is applied). Fresh project for A.
+  execute 'reset role';
+  insert into public.fx_rates (day, usd_thb) values (current_date, 35)
+    on conflict (day) do update set usd_thb = 35;
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  insert into public.startups (owner_id, slug, name, website_url)
+  values (a, 'rls-disclosure', 'Disclosure', 'https://disclosure.test') returning id into pid;
+  execute 'reset role';
+
+  -- T146: no raw metric column is readable by anon or authenticated; the public twins are.
+  out := out || format('T146 raw select anon/auth (mrr, rev30, visitors, commits, status, proof, disclosure, active_users, provider): %s (expect all f); public_mrr anon=%s (expect t) | ',
+    concat_ws(',',
+      has_column_privilege('anon', 'public.startups', 'mrr_cents', 'SELECT'),
+      has_column_privilege('authenticated', 'public.startups', 'mrr_cents', 'SELECT'),
+      has_column_privilege('anon', 'public.startups', 'revenue_30d_cents', 'SELECT'),
+      has_column_privilege('anon', 'public.startups', 'visitors_30d', 'SELECT'),
+      has_column_privilege('anon', 'public.startups', 'build_commits', 'SELECT'),
+      has_column_privilege('anon', 'public.startups', 'verification_status', 'SELECT'),
+      has_column_privilege('anon', 'public.startups', 'proof_level', 'SELECT'),
+      has_column_privilege('authenticated', 'public.startups', 'metric_disclosure', 'SELECT'),
+      has_column_privilege('authenticated', 'public.startups', 'active_users', 'SELECT'),
+      has_column_privilege('anon', 'public.startups', 'verified_provider', 'SELECT')),
+    has_column_privilege('anon', 'public.startups', 'public_mrr_cents', 'SELECT'));
+
+  -- The server (service role) connects Stripe and a visitor counter.
+  update public.startups
+     set verification_status = 'verified', verified_provider = 'stripe', last_synced_at = now(),
+         mrr_cents = 6900, revenue_30d_cents = 5900, revenue_prev_30d_cents = 5000,
+         revenue_all_time_cents = 19800, visitors_30d = 9, visitors_prev_30d = 6
+   where id = pid;
+
+  -- T147: O1 defaults on the first connection: revenue → badge, traffic → exact.
+  select to_jsonb(s) into j from public.startups s where id = pid;
+  out := out || format('T147 defaults: disclosure=%s; revenue level=%s mrr=%s provider=%s; traffic level=%s visitors=%s (expect revenue badge + traffic exact; badge, null, stripe; exact, 9) | ',
+    j -> 'metric_disclosure', j ->> 'public_revenue_level', coalesce(j ->> 'public_mrr_cents', 'null'),
+    j ->> 'public_verified_provider', j ->> 'public_traffic_level', j ->> 'public_visitors_30d');
+
+  -- T148: anon asking for the raw column directly is refused, even on a published project.
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  execute 'set local role anon';
+  begin
+    perform s.mrr_cents from public.startups s where s.id = pid;
+    out := out || 'T148 anon selects mrr_cents: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T148 anon selects mrr_cents: denied (good) | ';
+  end;
+  begin
+    perform s.verification_status from public.startups s where s.id = pid;
+    out := out || 'T148b anon selects verification_status: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T148b anon selects verification_status: denied (good) | ';
+  end;
+  execute 'reset role';
+
+  -- T149: another signed-in user can't read raw values or change the levels.
+  perform set_config('request.jwt.claims', json_build_object('sub', cs[3], 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  begin
+    perform s.revenue_30d_cents from public.startups s where s.id = pid;
+    out := out || 'T149 other user selects revenue_30d_cents: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T149 other user selects revenue_30d_cents: denied (good) | ';
+  end;
+  update public.startups set metric_disclosure = '{"revenue": "exact"}' where id = pid;
+  get diagnostics n = row_count;
+  out := out || format('T149b other user changes levels: %s rows (expect 0) | ', n);
+  out := out || format('T149c other user get_my_startup_metrics: %s (expect null) | ',
+    coalesce(public.get_my_startup_metrics(pid)::text, 'null'));
+  execute 'reset role';
+
+  -- T150: the owner reads own raw values, sets levels, can't write public_* or bad levels.
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  out := out || format('T150 owner get_my_startup_metrics mrr=%s (expect 6900) | ',
+    public.get_my_startup_metrics(pid) ->> 'mrr_cents');
+  begin
+    update public.startups set public_mrr_cents = 1 where id = pid;
+    out := out || 'T150b owner writes public_mrr_cents: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T150b owner writes public_mrr_cents: denied (good) | ';
+  end;
+  begin
+    update public.startups set metric_disclosure = '{"revenue": "everyone"}' where id = pid;
+    out := out || 'T150c bad level: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T150c bad level: refused (good) | ';
+  end;
+  begin
+    update public.startups set metric_disclosure = '{"money": "exact"}' where id = pid;
+    out := out || 'T150d bad group: ALLOWED (BAD) | ';
+  exception when check_violation then out := out || 'T150d bad group: refused (good) | ';
+  end;
+
+  -- T151: each level, as the owner sets it (public_* recomputed by the trigger).
+  update public.startups set metric_disclosure = '{"revenue": "exact", "traffic": "exact"}' where id = pid;
+  execute 'reset role';
+  select to_jsonb(s) into j from public.startups s where id = pid;
+  out := out || format('T151 exact: mrr=%s all-time=%s growth=%s%% proof=%s (expect 6900, 19800, 18, 3) | ',
+    j ->> 'public_mrr_cents', j ->> 'public_revenue_all_time_cents', j ->> 'public_revenue_growth_pct',
+    j ->> 'public_proof_level');
+  update public.startups set metric_disclosure = '{"revenue": "band", "traffic": "band"}' where id = pid;
+  select to_jsonb(s) into j from public.startups s where id = pid;
+  out := out || format('T151b band: mrr=%s band=%s-%s THB fx_day=today:%s visitors band=%s-%s growth=%s (expect null, 1000-5000, t, 0-10, null) | ',
+    coalesce(j ->> 'public_mrr_cents', 'null'), j ->> 'public_mrr_band_lo_thb', j ->> 'public_mrr_band_hi_thb',
+    (j ->> 'public_band_fx_day')::date = current_date, j ->> 'public_visitors_band_lo', j ->> 'public_visitors_band_hi',
+    coalesce(j ->> 'public_revenue_growth_pct', 'null'));
+  update public.startups set metric_disclosure = '{"revenue": "growth", "traffic": "growth"}' where id = pid;
+  select to_jsonb(s) into j from public.startups s where id = pid;
+  out := out || format('T151c growth: level=%s pct=%s mrr=%s band=%s visitors pct=%s visitors=%s (expect growth, 18, null, null, 50, null) | ',
+    j ->> 'public_revenue_level', j ->> 'public_revenue_growth_pct', coalesce(j ->> 'public_mrr_cents', 'null'),
+    coalesce(j ->> 'public_mrr_band_lo_thb', 'null'), j ->> 'public_visitors_growth_pct',
+    coalesce(j ->> 'public_visitors_30d', 'null'));
+  update public.startups set revenue_prev_30d_cents = 0 where id = pid;
+  select to_jsonb(s) into j from public.startups s where id = pid;
+  out := out || format('T151d growth without a previous period falls back to: %s pct=%s (expect badge, null) | ',
+    j ->> 'public_revenue_level', coalesce(j ->> 'public_revenue_growth_pct', 'null'));
+  update public.startups set metric_disclosure = '{"revenue": "private", "traffic": "private"}' where id = pid;
+  select to_jsonb(s) into j from public.startups s where id = pid;
+  out := out || format('T151e private: level=%s provider=%s synced=%s traffic=%s proof=%s (expect null x4, 0) | ',
+    coalesce(j ->> 'public_revenue_level', 'null'), coalesce(j ->> 'public_verified_provider', 'null'),
+    coalesce(j ->> 'public_last_synced_at', 'null'), coalesce(j ->> 'public_traffic_level', 'null'),
+    j ->> 'public_proof_level');
+
+  -- T152: a sync that changes the raw value recomputes the public one at exact.
+  update public.startups set metric_disclosure = '{"revenue": "exact", "traffic": "exact"}' where id = pid;
+  update public.startups set mrr_cents = 7000 where id = pid;
+  out := out || format('T152 sync at exact: public_mrr=%s (expect 7000) | ',
+    (select public_mrr_cents from public.startups where id = pid));
+
+  -- T153–T155: history follows the level (anon); owners always see their own.
+  insert into public.revenue_snapshots (startup_id, day, revenue_cents, mrr_cents) values (pid, current_date, 100, 7000);
+  insert into public.traffic_snapshots (startup_id, day, visitors) values (pid, current_date, 3);
+  update public.startups set build_commits = 5, build_synced_at = now() where id = pid;  -- build defaults to exact
+  insert into public.build_activity (startup_id, day, commits) values (pid, current_date, 2);
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  execute 'set local role anon';
+  out := out || format('T153 anon history at exact: revenue=%s traffic=%s build=%s (expect 1, 1, 1) | ',
+    (select count(*) from public.revenue_snapshots where startup_id = pid),
+    (select count(*) from public.traffic_snapshots where startup_id = pid),
+    (select count(*) from public.build_activity where startup_id = pid));
+  execute 'reset role';
+  update public.startups set metric_disclosure = '{"revenue": "badge", "traffic": "band", "build": "growth"}' where id = pid;
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  execute 'set local role anon';
+  out := out || format('T154 anon history at badge/band/growth: revenue=%s traffic=%s build=%s (expect 0, 0, 0) | ',
+    (select count(*) from public.revenue_snapshots where startup_id = pid),
+    (select count(*) from public.traffic_snapshots where startup_id = pid),
+    (select count(*) from public.build_activity where startup_id = pid));
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  out := out || format('T155 owner still sees own history: revenue=%s traffic=%s build=%s (expect 1, 1, 1) | ',
+    (select count(*) from public.revenue_snapshots where startup_id = pid),
+    (select count(*) from public.traffic_snapshots where startup_id = pid),
+    (select count(*) from public.build_activity where startup_id = pid));
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', cs[3], 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  out := out || format('T155b other user sees hidden history: revenue=%s (expect 0) | ',
+    (select count(*) from public.revenue_snapshots where startup_id = pid));
+  execute 'reset role';
+
+  -- T156: search returns no hidden figure (badge) and still says it is verified.
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  execute 'set local role anon';
+  select to_jsonb(r) into j from public.search_startups('rls-disclosure') r where r.id = pid;
+  out := out || format('T156 search at badge: mrr=%s status=%s provider=%s (expect null, verified, stripe) | ',
+    coalesce(j ->> 'mrr_cents', 'null'), j ->> 'verification_status', j ->> 'verified_provider');
+  execute 'reset role';
+
+  -- T157: the province leaderboard counts exact values only.
+  update public.startups set province = 'mukdahan', metric_disclosure = '{"revenue": "badge", "traffic": "exact", "build": "exact"}' where id = pid;
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  execute 'set local role anon';
+  out := out || format('T157 Olympics mrr includes the badge project: %s; visitors includes it at exact: %s (expect false, true) | ',
+    coalesce((select bool_or(t ->> 'slug' = 'rls-disclosure') from public.province_leaderboard('mrr') l, jsonb_array_elements(l.top) t), false),
+    coalesce((select bool_or(t ->> 'slug' = 'rls-disclosure') from public.province_leaderboard('visitors') l, jsonb_array_elements(l.top) t), false));
+  execute 'reset role';
+
+  -- T158: the heatmap counts a revenue day only at exact.
+  perform public.refresh_activity();
+  n := (select coalesce(sum(score), 0) from private.user_activity_days where user_id = a and day = current_date);
+  update public.startups set metric_disclosure = '{"revenue": "exact", "traffic": "exact", "build": "exact"}' where id = pid;
+  perform public.refresh_activity();
+  out := out || format('T158 heatmap today: revenue at badge %s -> at exact %s (expect +1) | ',
+    n, (select coalesce(sum(score), 0) from private.user_activity_days where user_id = a and day = current_date));
+
+  -- T159: backfill shape: every row with data carries an explicit level for that group.
+  out := out || format('T159 rows with data but no explicit level: %s (expect 0) | ',
+    (select count(*) from public.startups
+      where (verification_status = 'verified' and not metric_disclosure ? 'revenue')
+         or (visitors_30d is not null and not metric_disclosure ? 'traffic')
+         or (build_commits is not null and not metric_disclosure ? 'build')
+         or (active_users is not null and not metric_disclosure ? 'users')));
+
+  -- T160: no client can call the trigger or helpers; fixed search_path everywhere; the owner read
+  -- is definer + search_path and not callable by anon.
+  out := out || format('T160 trigger/helpers callable by authenticated: %s (expect f,f,f,f); get_my_startup_metrics anon=%s auth=%s (expect f, t); configs=%s | ',
+    concat_ws(',',
+      has_function_privilege('authenticated', 'private.startups_public_metrics()', 'EXECUTE'),
+      has_function_privilege('authenticated', 'private.disclosure_band(numeric, numeric[])', 'EXECUTE'),
+      has_function_privilege('authenticated', 'private.disclosure_growth(numeric, numeric)', 'EXECUTE'),
+      has_function_privilege('authenticated', 'private.disclosure_level(boolean, text, boolean, boolean)', 'EXECUTE')),
+    has_function_privilege('anon', 'public.get_my_startup_metrics(bigint)', 'EXECUTE'),
+    has_function_privilege('authenticated', 'public.get_my_startup_metrics(bigint)', 'EXECUTE'),
+    (select string_agg(p.proname || '=' || p.prosecdef || ':' || coalesce(array_to_string(p.proconfig, ','), 'none'), ' ' order by p.proname)
+       from pg_proc p
+      where p.proname in ('startups_public_metrics', 'disclosure_band', 'disclosure_growth', 'disclosure_level', 'get_my_startup_metrics')));
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;
 end $$;
