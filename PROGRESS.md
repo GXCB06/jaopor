@@ -37,6 +37,8 @@
 - e2e local: 123 passed / 0 failed / 17 skipped.
 - Browser: `/th` and `/en` at 1280 and 375. Line 1 fits on one line at 375 in Thai; English wraps in balance. No sideways scroll.
 
+**Production** (pushed `8567776`, owner "push"): e2e against jaopor.vercel.app 137 passed / 0 failed. The signed-in home shows the new hero and the category rail.
+
 **Not verified:** the blur with a real anonymous project. None is listed yet; covered by the unit test and typecheck.
 
 ## 2026-10-12 — Olympics pioneers/newest, home category rail, category suggestion, hero constellation (prototype)
