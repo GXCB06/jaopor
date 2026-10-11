@@ -37,44 +37,44 @@ Loop: paste one link (web, App Store/Play, LINE OA, GitHub) → public profile �
 
 Status: ☐ not started · ◐ in progress · ☑ done
 
-| Area           | Feature                                                                                                                       | Phase | Status |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----- | ------ |
-| Foundation     | Next.js + shadcn + Supabase + i18n scaffold                                                                                   | 0     | ☑      |
-| Foundation     | Harness (memory, MCP, permissions, hooks, observability)                                                                      | 0     | ☑      |
-| Auth           | Sign in (Google, GitHub) — code done, OAuth apps pending                                                                      | 1     | ◐      |
-| Verification   | `RevenueProvider` abstraction                                                                                                 | 1     | ☑      |
-| Verification   | Stripe restricted-key connector                                                                                               | 1     | ◐      |
-| Verification   | Metrics engine (MRR, 30d, all-time, subscriptions, customers, growth)                                                         | 1     | ☑      |
-| Verification   | Scheduled sync + "Verified with X · last updated" stamp                                                                       | 1     | ◐      |
-| Verification   | RevenueCat (apps: MRR, revenue, active users; charts-only key) — pending a real-key check                                     | 1     | ◐      |
-| Verification   | LemonSqueezy / Polar / Paddle / Creem / Dodo / Superwall / Whop / App Store Connect                                           | 1–2   | ☐      |
-| Profile        | Add wizard: one auto-detected link (web / App Store / Play / LINE OA / GitHub) → VerifyPanel                                  | 1     | ◐      |
-| Profile        | "Looking for" asks (users, feedback, testers, co-founder, buyer, investor) + build story                                      | 1     | ☑      |
-| Profile        | `/startup/[slug]` (Figma v2): stat tiles, chart card (range/compare/trend), insights bento, more startups; screenshot pending | 1     | ◐      |
-| Discovery      | Homepage (Figma v2): hero, `/` search, recently listed, top traction, leaderboard with metric switch                          | 1     | ☑      |
-| Discovery      | `/startups` directory with filter sidebar + sort ☑; category / country / tech-stack / channel pages ☐                         | 1     | ◐      |
-| Distribution   | OG share cards, embeddable SVG badge, **ShareStudio** (badge / chart / calendar PNGs + thread post)                           | 1     | ☑      |
-| Distribution   | `llms.txt` + AI-readable Markdown per startup                                                                                 | 1     | ☐      |
-| Monetization   | Sponsor rails (left/right) + Advertise page                                                                                   | 1     | ☐      |
-| Admin          | Moderation, reports, badge revoke                                                                                             | 1     | ☐      |
-| Marketplace    | Listing (asking price, margin, reason), auto multiple                                                                         | 2     | ☐      |
-| Marketplace    | `/acquire` filters + "best deals" ranking                                                                                     | 2     | ☐      |
-| Marketplace    | Save, view counter, price-drop alerts                                                                                         | 2     | ☐      |
-| Marketplace    | Contact seller → offer → realtime chat; buyer & seller dashboards                                                             | 2     | ☐      |
-| Monetization   | Listing tiers Starter / Growth / Scale (visibility, card color, pin, newsletter)                                              | 2     | ☐      |
-| Deal flow      | NDA → LOI → APA (TH/EN, THB), escrow (Thai option; Escrow.com has no THB)                                                     | 3     | ☐      |
-| Monetization   | 3% closing fee, affiliate program, add-ons, buyer alerts (filters + AI)                                                       | 3     | ☐      |
-| Distribution   | Newsletter, LINE / Telegram alerts                                                                                            | 3     | ☐      |
-| Data           | Stats page, Revenue/LOC, Domain Rating, Olympics, Top 100, compare startups                                                   | 4     | ☐      |
-| Community      | Feed + posting streaks, founder chats, co-founder finder                                                                      | 4     | ☐      |
-| Community      | Tier-locked founder chat rooms, list mode (mobile) — see docs/research §1                                                     | 2     | ☐      |
-| Community      | "Founder Town" pixel-town chat (desktop), in-world sponsor billboards                                                         | 4     | ☐      |
-| Engagement     | "$1 vs $1M" guessing game, startup-vs-startup compare pages                                                                   | 4     | ☐      |
-| Marketplace    | Card social proof (views, saves), struck-through price drop, copy link, stealth mode                                          | 2     | ☐      |
-| AI layer       | Public API, JaoPor MCP server                                                                                                 | 4     | ☐      |
-| Differentiator | Build proof (GitHub public repos) + traffic proof (Plausible, Umami) — pending real-key checks                                | 1     | ◐      |
-| Differentiator | Traffic proof without an analytics tool (our own snippet ☑), Cloudflare ☑, PostHog, GA4                                       | 2     | ☐      |
-| Foundation     | Light / dark theme (dark default, header toggle)                                                                              | 1     | ☑      |
+| Area           | Feature                                                                                                                                            | Phase | Status |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | ------ |
+| Foundation     | Next.js + shadcn + Supabase + i18n scaffold                                                                                                        | 0     | ☑      |
+| Foundation     | Harness (memory, MCP, permissions, hooks, observability)                                                                                           | 0     | ☑      |
+| Auth           | Sign in (Google, GitHub) — code done, OAuth apps pending                                                                                           | 1     | ◐      |
+| Verification   | `RevenueProvider` abstraction                                                                                                                      | 1     | ☑      |
+| Verification   | Stripe restricted-key connector                                                                                                                    | 1     | ◐      |
+| Verification   | Metrics engine (MRR, 30d, all-time, subscriptions, customers, growth)                                                                              | 1     | ☑      |
+| Verification   | Scheduled sync + "Verified with X · last updated" stamp                                                                                            | 1     | ◐      |
+| Verification   | RevenueCat (apps: MRR, revenue, active users; charts-only key) — pending a real-key check                                                          | 1     | ◐      |
+| Verification   | LemonSqueezy / Polar / Paddle / Creem / Dodo / Superwall / Whop / App Store Connect                                                                | 1–2   | ☐      |
+| Profile        | Add wizard: one auto-detected link (web / App Store / Play / LINE OA / GitHub) → VerifyPanel                                                       | 1     | ◐      |
+| Profile        | "Looking for" asks (users, feedback, testers, co-founder, buyer, investor) + build story                                                           | 1     | ☑      |
+| Profile        | `/startup/[slug]` (Figma v2): stat tiles, chart card (range/compare/trend), insights bento, more startups; screenshot pending                      | 1     | ◐      |
+| Discovery      | Homepage (Figma v2): hero, `/` search, recently listed, top traction, leaderboard with metric switch                                               | 1     | ☑      |
+| Discovery      | `/startups` directory with filter sidebar + sort ☑; category / country / tech-stack / channel pages ☐                                              | 1     | ◐      |
+| Distribution   | OG share cards, embeddable SVG badge, **ShareStudio** (badge / chart / calendar PNGs + thread post)                                                | 1     | ☑      |
+| Distribution   | `llms.txt` + AI-readable Markdown per startup                                                                                                      | 1     | ☐      |
+| Monetization   | Sponsor rails (left/right) + Advertise page                                                                                                        | 1     | ☐      |
+| Admin          | Moderation, reports, badge revoke                                                                                                                  | 1     | ☐      |
+| Marketplace    | Listing (asking price, margin, reason), auto multiple                                                                                              | 2     | ☐      |
+| Marketplace    | `/acquire` filters + "best deals" ranking                                                                                                          | 2     | ☐      |
+| Marketplace    | Save, view counter, price-drop alerts                                                                                                              | 2     | ☐      |
+| Marketplace    | Contact seller → offer → realtime chat; buyer & seller dashboards                                                                                  | 2     | ☐      |
+| Monetization   | Listing tiers Starter / Growth / Scale (visibility, card color, pin, newsletter)                                                                   | 2     | ☐      |
+| Deal flow      | NDA → LOI → APA (TH/EN, THB), escrow (Thai option; Escrow.com has no THB)                                                                          | 3     | ☐      |
+| Monetization   | 3% closing fee, affiliate program, add-ons, buyer alerts (filters + AI)                                                                            | 3     | ☐      |
+| Distribution   | Newsletter, LINE / Telegram alerts                                                                                                                 | 3     | ☐      |
+| Data           | Stats page, Revenue/LOC, Domain Rating, Olympics, Top 100, compare startups                                                                        | 4     | ☐      |
+| Community      | Feed + posting streaks, founder chats, co-founder finder                                                                                           | 4     | ☐      |
+| Community      | Tier-locked founder chat rooms, list mode (mobile) — see docs/research §1                                                                          | 2     | ☐      |
+| Community      | "Founder Town" pixel-town chat (desktop), in-world sponsor billboards                                                                              | 4     | ☐      |
+| Engagement     | "$1 vs $1M" guessing game, startup-vs-startup compare pages                                                                                        | 4     | ☐      |
+| Marketplace    | Card social proof (views, saves), struck-through price drop, copy link, stealth mode                                                               | 2     | ☐      |
+| AI layer       | Public API, JaoPor MCP server                                                                                                                      | 4     | ☐      |
+| Differentiator | Build proof (GitHub public repos) + traffic proof (Plausible, Umami) — pending real-key checks                                                     | 1     | ◐      |
+| Differentiator | Traffic proof without an analytics tool (our own snippet ☑), Cloudflare ☑, GA4 ◐ (code ready 2026-10-11; owner setup + migration pending), PostHog | 2     | ◐      |
+| Foundation     | Light / dark theme (dark default, header toggle)                                                                                                   | 1     | ☑      |
 
 ## 4. Roadmap
 
@@ -198,13 +198,14 @@ Status: ☐ not started · ◐ in progress · ☑ done
 
 ### Sources of verified numbers (`src/lib/sources`)
 
-| Kind    | Source     | Credential (read-only proof)                                              | Belongs-to-project proof                                | Writes                                                   |
-| ------- | ---------- | ------------------------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------- |
-| revenue | Stripe     | `rk_` restricted key; empty-body update probes must be 403                | owner connects it                                       | MRR, 30d, prev 30d, all-time, subs, customers + daily    |
-| revenue | RevenueCat | v2 `sk_` key + project id; customers/apps reads must be 403 (charts-only) | owner connects it                                       | MRR, 30d, prev, all-time, subs, active users + 1 row/day |
-| traffic | Plausible  | Stats API key; Sites API must refuse it                                   | site domain = website host (or subdomain)               | visitors 30d / prev 30d + daily                          |
-| traffic | Umami      | public share link (view-only token); SSRF-guarded fetch                   | website domain in Umami = website host                  | visitors 30d / prev 30d + daily                          |
-| build   | GitHub     | none (public repo, our optional no-permission token)                      | repo owner = founder's GitHub login / public org member | commits, first commit, Claude co-authored, stars         |
+| Kind    | Source             | Credential (read-only proof)                                                                                            | Belongs-to-project proof                                   | Writes                                                   |
+| ------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------- |
+| revenue | Stripe             | `rk_` restricted key; empty-body update probes must be 403                                                              | owner connects it                                          | MRR, 30d, prev 30d, all-time, subs, customers + daily    |
+| revenue | RevenueCat         | v2 `sk_` key + project id; customers/apps reads must be 403 (charts-only)                                               | owner connects it                                          | MRR, 30d, prev, all-time, subs, active users + 1 row/day |
+| traffic | Plausible          | Stats API key; Sites API must refuse it                                                                                 | site domain = website host (or subdomain)                  | visitors 30d / prev 30d + daily                          |
+| traffic | Umami              | public share link (view-only token); SSRF-guarded fetch                                                                 | website domain in Umami = website host                     | visitors 30d / prev 30d + daily                          |
+| traffic | Google Analytics 4 | none from the founder: they add JaoPor's service account as a Viewer; our token has only the `analytics.readonly` scope | a web stream of the property = website host (or subdomain) | visitors 30d / prev 30d + daily (Total users)            |
+| build   | GitHub             | none (public repo, our optional no-permission token)                                                                    | repo owner = founder's GitHub login / public org member    | commits, first commit, Claude co-authored, stars         |
 
 Rules: reject anything that can write; one source per kind per startup (connecting another replaces it and clears its numbers); aggregate data only (no customer PII); revenue normalized to USD; self-typed numbers are never shown as verified.
 
@@ -318,9 +319,15 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 | 2026-10-11 | **GA4 re-enabled (`G-JYPJ2RFH4N`):** the built-in default is restored in `src/lib/analytics/ga.ts`; production renders GA with no env var, `NEXT_PUBLIC_GA_ID` still overrides and empty / `off` disables; /privacy §6/§8 restore the `_ga` / Google Analytics disclosure                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Owner reversed the earlier same-day GA-off decision and pasted the tag to install it. Kept the production-only gate. The pre-consent load remains a known PDPA gap (no banner yet)                                                                                                                                                              |
 | 2026-10-11 | **Homepage positioning copy:** H1 "1 คน + 1 Startup / ดูผลงานจริง ตัวเลขจริง" + belief line "คนตัวเล็กก็ทำสิ่งที่ยิ่งใหญ่ได้" (EN "1 person + 1 startup / Real work. Real numbers." + "Ordinary people can achieve extraordinary things."); the "AI" framing is out of the site headline, meta title/description and footer tagline; the subline names what can be listed and how numbers are verified, and says "จะเพิ่งเริ่มหรือมีผู้ใช้แล้วก็ลงได้" (not "even without revenue", which reads as condescending). Community posts (Claude Thailand) keep the AI angle because that group's rules require it                                                                                                                                                             | Owner: builders and business owners should not be tied to the AI label (a friend reported brand-harm worries). Supersedes the 2026-10-10 "homepage copy only as a separately reviewed task" caveat for these strings. The wider brand system (share cards, badges, filters, ASEAN naming) waits for user interviews (docs/MAJOR_REVAMP_PLAN.md) |
 | 2026-10-11 | **Product direction: major revamp** ([docs/MAJOR_REVAMP_PLAN.md](docs/MAJOR_REVAMP_PLAN.md)): privacy-first proof with five per-group disclosure levels (exact / band / growth / badge / private, enforced in the database, applied after the post) · a per-project switch to hide the AI label on visitor surfaces (shown by default) · motion without a library (Design.md rules, reduced-motion respected), foundation + verified numbers first · audit backlog B2–C3 after R2/R3                                                                                                                                                                                                                                                                                     | Builders won't disclose money or customer numbers publicly; proof must not require exposure. Motion should show the data (Finsepa, Bencho studied 2026-10-11), not decorate it. Owner, 2026-10-11                                                                                                                                               |
+| 2026-10-11 | **Google Analytics 4 as a visitor source:** founders add JaoPor's service-account email as a Viewer and paste the Property ID; JaoPor mints tokens with the `analytics.readonly` scope only; ownership = a property web stream matches the website; visitors = GA4 Total users (counted)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Owner chose it over OAuth (needs weeks of Google app verification for the readonly scope) and over founder-pasted service-account keys (a full private key per founder, not provably read-only). No founder secret is stored, and the scope makes writes impossible whatever role is granted. Owner, 2026-10-11                                 |
 
 ## 7. Open items
 
+- [ ] (2026-10-11) **Google Analytics source (code ready, hidden until set up):** owner tasks:
+  - create a Google Cloud service account and enable the Google Analytics **Data** API and **Admin** API;
+  - add its JSON key as `GA4_SERVICE_ACCOUNT_JSON` and its email as `NEXT_PUBLIC_GA4_SERVICE_EMAIL` in Vercel (Claude never handles keys);
+  - approve applying `20261011125000_ga4_traffic_source.sql`;
+  - one live connect on a real GA4 property to compare with the GA dashboard (±5%).
 - [x] (2026-10-07) **Visitor wording:** owner chose "counted" for visitors (kept on the leaderboard and Olympics); applied everywhere; /security intro and /privacy §3 title approved and updated the same day.
 - [ ] (2026-10-08) **UX/UI audit review** ([docs/UX_UI_PRODUCT_AUDIT.md](docs/UX_UI_PRODUCT_AUDIT.md)): owner decided on 2026-10-08: demos deleted, slug renamed to `jaopor` in the DB, glossary ผลงาน / project (applied). Phase 1 done 2026-10-08 (M-3, M-4, M-5, M-6); Phase 2 done 2026-10-08 (M-8, M-9, M-10, S-1, S-2); Phase 3 done 2026-10-08 (S-3, S-4, S-6, S-8, S-12, C-3). Editable link (S-9) done 2026-10-08; Phase 4 done 2026-10-08 (M-11, S-18, C-4); hide for now (S-10) and Phase 5 done 2026-10-08 (S-6, S-11, S-14, S-16, S-17, DS-1 colour, DS-3, DS-4). Phase 6 done 2026-10-08 (C-1, C-2, C-5, C-6, C-8, C-9, C-11, C-12, C-13, C-14). Later: a shared Badge / ProofMark component. Open owner decisions: enable Supabase manual linking (GitHub), backfill the jaopor-pdt0 rename, deduct Stripe coupons from MRR, the funnel counts, milestones in ฿ on English pages (S-13).
 - [ ] (2026-10-10) **Master UX/UI audit** ([docs/UX_UI_MASTER_AUDIT.md](docs/UX_UI_MASTER_AUDIT.md)): Phase 1 (audit) done. The owner decided all 8 questions on 2026-10-10 (§6).

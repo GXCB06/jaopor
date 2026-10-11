@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   METRICS,
   SOURCE_KIND,
+  SOURCE_NAME,
   SOURCES,
   sourcesOfKind,
   type SourceId,
@@ -25,6 +26,7 @@ describe("sources catalog — metric mapping", () => {
       "plausible",
       "umami",
       "cloudflare",
+      "ga4",
     ]);
   });
 
@@ -43,9 +45,10 @@ describe("sources catalog — metric mapping", () => {
     expect([...grouped].sort()).toEqual([...SOURCES].sort());
   });
 
-  it("never lists Google Analytics (no connector)", () => {
+  it("lists Google Analytics as a visitor source (counted, never revenue)", () => {
+    expect(SOURCE_KIND.ga4).toBe("traffic");
+    expect(SOURCE_NAME.ga4).toBe("Google Analytics");
     const all: readonly string[] = SOURCES;
-    expect(all).not.toContain("ga4");
     expect(all).not.toContain("google-analytics" as SourceId);
   });
 });

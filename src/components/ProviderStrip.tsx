@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { BRAND_ICONS, type BrandIconId } from "@/lib/brand-icons";
+import { ga4ServiceEmail } from "@/lib/public-env";
 import { cn } from "@/lib/utils";
 
 // Design.md §5 ProviderStrip — "Numbers verified by:" + the real provider logos (Simple Icons, CC0).
@@ -13,6 +14,10 @@ const LIVE: Item[] = [
   { id: "plausible", name: "Plausible" },
   { id: "umami", name: "Umami" },
   { id: "cloudflare", name: "Cloudflare" },
+  // Offered only once JaoPor's GA4 service account is configured (lib/public-env).
+  ...(ga4ServiceEmail
+    ? [{ id: "ga4" as const, name: "Google Analytics" }]
+    : []),
   { id: "github", name: "GitHub" },
 ];
 const UPCOMING: Item[] = [

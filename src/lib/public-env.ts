@@ -5,6 +5,13 @@
 // is normalized instead of trusted (an invalid NEXT_PUBLIC_SITE_URL once broke the Vercel build).
 // NOTE: each NEXT_PUBLIC_* must be read as a literal `process.env.X` so Next can inline it.
 
+/**
+ * The email of JaoPor's Google service account (not a secret: founders add it as a Viewer on their
+ * GA4 property). Unset → the Google Analytics source is hidden.
+ */
+export const ga4ServiceEmail =
+  process.env.NEXT_PUBLIC_GA4_SERVICE_EMAIL?.trim() || null;
+
 /** Empty/whitespace → undefined. */
 function clean(value: string | undefined): string | undefined {
   const v = value?.trim();

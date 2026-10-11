@@ -35,6 +35,7 @@ export const VERIFY_SOURCES = [
   "plausible",
   "umami",
   "cloudflare",
+  "ga4",
   "github",
 ] as const;
 export type VerifySource = (typeof VERIFY_SOURCES)[number];

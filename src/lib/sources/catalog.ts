@@ -9,6 +9,7 @@ export const SOURCES = [
   "plausible",
   "umami",
   "cloudflare",
+  "ga4",
   "github",
 ] as const;
 export type SourceId = (typeof SOURCES)[number];
@@ -18,7 +19,7 @@ export type SourceKind = "revenue" | "traffic" | "build";
 /**
  * The three things a founder can prove, in the order the VerifyPanel chooser shows them
  * (Design.md §5 VerifyPanel chooser): revenue/MRR, visitors, build proof. A metric owns the
- * supported sources for it, so an unsupported one (Google Analytics) can never appear.
+ * supported sources for it, so an unsupported one can never appear.
  */
 export const METRICS: readonly SourceKind[] = ["revenue", "traffic", "build"];
 
@@ -29,6 +30,7 @@ export const SOURCE_KIND: Record<SourceId, SourceKind> = {
   plausible: "traffic",
   umami: "traffic",
   cloudflare: "traffic",
+  ga4: "traffic",
   github: "build",
 };
 
@@ -39,6 +41,7 @@ export const SOURCE_NAME: Record<SourceId, string> = {
   plausible: "Plausible",
   umami: "Umami",
   cloudflare: "Cloudflare",
+  ga4: "Google Analytics",
   github: "GitHub",
 };
 
@@ -58,4 +61,6 @@ export type ConnectInput = {
   siteId?: string;
   shareUrl?: string;
   repo?: string;
+  /** Google Analytics 4 Property ID (or a GA URL containing it). */
+  propertyId?: string;
 };

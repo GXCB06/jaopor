@@ -625,6 +625,15 @@
       "accountId": "Account ID",
       "key": "API token (Account Analytics: Read)"
     },
+    "ga4": {
+      "howTo1": "Google Analytics → Admin → Property access management → add the email below with the Viewer role (read only)",
+      "howTo2": "Admin → Property details → copy the Property ID (numbers only)",
+      "howTo3": "Paste the Property ID and connect. We check that a web stream of the property points at this project's website. The number shown is Total users, counted by Google Analytics",
+      "propertyId": "GA4 Property ID",
+      "emailLabel": "JaoPor's email (add it as a Viewer in GA4):",
+      "copy": "Copy email",
+      "copied": "Email copied"
+    },
     "choose": {
       "noKey": "No key needed",
       "readKey": "Read-only key",

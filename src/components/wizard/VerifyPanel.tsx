@@ -27,7 +27,7 @@ import {
   type SourceId,
   type SourceKind,
 } from "@/lib/sources/catalog";
-import { publicEnv } from "@/lib/public-env";
+import { ga4ServiceEmail, publicEnv } from "@/lib/public-env";
 import { useConfirm } from "@/components/core/useConfirm";
 import { cn } from "@/lib/utils";
 import { copy } from "@/components/share/copy";
@@ -87,6 +87,7 @@ const FIELDS: Record<SourceId, FieldSpec[]> = {
     { name: "accountId", label: "accountId", placeholder: "0123456789abcdef…" },
     { name: "key", label: "key", secret: true, placeholder: "••••••••" },
   ],
+  ga4: [{ name: "propertyId", label: "propertyId", placeholder: "123456789" }],
   jaopor: [],
   github: [
     { name: "repo", label: "repo", placeholder: "https://github.com/you/app" },
@@ -99,6 +100,7 @@ const HOW_TO: Record<SourceId, number> = {
   plausible: 2,
   umami: 2,
   cloudflare: 3,
+  ga4: 3,
   jaopor: 2,
   github: 2,
 };
@@ -114,7 +116,14 @@ const SETTINGS_URL: Partial<Record<SourceId, { live: string; test?: string }>> =
     plausible: { live: "https://plausible.io/settings/api-keys" },
     umami: { live: "https://cloud.umami.is/" },
     cloudflare: { live: "https://dash.cloudflare.com/profile/api-tokens" },
+    ga4: { live: "https://analytics.google.com/analytics/web/" },
   };
+
+/**
+ * Google Analytics is offered only when JaoPor's service account is configured (its email is
+ * public: founders add it as a Viewer). Without it the source never appears.
+ */
+const available = (s: SourceId) => s !== "ga4" || ga4ServiceEmail !== null;
 
 export function VerifyPanel({
   startupId,
@@ -199,9 +208,10 @@ function VerifyChooser({
 
   // The snippet needs a website; without one only analytics remain (issue 4, metric-first).
   const sourcesFor = (kind: SourceKind): SourceId[] =>
-    kind === "traffic" && !websiteHost
+    (kind === "traffic" && !websiteHost
       ? sourcesOfKind("traffic").filter((s) => s !== "jaopor")
-      : sourcesOfKind(kind);
+      : sourcesOfKind(kind)
+    ).filter(available);
   const metricDone = (kind: SourceKind) =>
     sourcesFor(kind).some((s) => done.includes(s));
 
@@ -517,7 +527,10 @@ function SourceGroup({
   onConnected?: (source: SourceId) => void;
 }) {
   const t = useTranslations("Sources");
-  const sources = sourcesOfKind(kind);
+  // A connected source always shows (even if GA4 were switched off later); others only if offered.
+  const sources = sourcesOfKind(kind).filter(
+    (s) => available(s) || connections.some((c) => c.source === s),
+  );
   const current = connections.find((c) => SOURCE_KIND[c.source] === kind);
   const [selected, setSelected] = useState<SourceId>(
     current?.source ?? sources[0],
@@ -704,6 +717,9 @@ function SourceForm({
       ) : (
         <form onSubmit={submit} className="space-y-3">
           {source === "jaopor" && <SnippetBox projectId={startupId} />}
+          {source === "ga4" && ga4ServiceEmail && (
+            <Ga4EmailBox email={ga4ServiceEmail} />
+          )}
           {source === "stripe" && (
             <p className="text-caption text-muted-foreground">
               {t("stripeReadOnlyNote")}
@@ -818,6 +834,36 @@ function LinkGithub() {
           {t("github.linkFailed")}
         </p>
       )}
+    </div>
+  );
+}
+
+/**
+ * Design.md §5 VerifyPanel, Google Analytics: JaoPor's service-account email, which the founder
+ * adds as a Viewer on their GA4 property (Admin → Property access management).
+ */
+function Ga4EmailBox({ email }: { email: string }) {
+  const t = useTranslations("Sources");
+  return (
+    <div className="space-y-2">
+      <p className="text-caption text-muted-foreground">
+        {t("ga4.emailLabel")}
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <code className="min-w-0 rounded-lg border bg-card px-3 py-2 font-mono text-caption break-all">
+          {email}
+        </code>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="px-3"
+          onClick={() => copy(email, t("ga4.copied"))}
+        >
+          <CopyIcon />
+          {t("ga4.copy")}
+        </Button>
+      </div>
     </div>
   );
 }

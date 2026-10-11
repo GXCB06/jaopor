@@ -23,4 +23,11 @@ export const serverEnv = {
    */
   geminiApiKey: () => process.env.GEMINI_API_KEY?.trim() || undefined,
   geminiModel: () => process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash",
+  /**
+   * Optional: JaoPor's Google service account (the full JSON key) for the Google Analytics source.
+   * Founders add its email as a Viewer on their GA4 property; tokens are minted with the
+   * analytics.readonly scope only. Without it, GA4 stays hidden in the VerifyPanel.
+   */
+  ga4ServiceAccount: () =>
+    process.env.GA4_SERVICE_ACCOUNT_JSON?.trim() || undefined,
 };

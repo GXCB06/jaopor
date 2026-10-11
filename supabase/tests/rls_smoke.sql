@@ -1345,6 +1345,30 @@ begin
     (select string_agg(p.proname || '=' || p.prosecdef || ':' || coalesce(array_to_string(p.proconfig, ','), 'none'), ' ' order by p.proname)
        from pg_proc p
       where p.proname in ('startups_public_metrics', 'disclosure_band', 'disclosure_growth', 'disclosure_level', 'get_my_startup_metrics')));
+  -- T161: Google Analytics is a traffic provider (migration 20261011125000_ga4_traffic_source),
+  -- one traffic source per project, and only the server writes it (no client grant).
+  execute 'reset role';
+  insert into public.provider_connections (startup_id, provider, config, status)
+    values (sid2, 'ga4', '{"propertyId": "123456789"}', 'active');
+  update public.startups set traffic_provider = 'ga4' where id = sid2;
+  begin
+    insert into public.provider_connections (startup_id, provider, config, status)
+      values (sid2, 'plausible', '{}', 'active');
+    out := out || 'T161 second traffic source next to ga4: ALLOWED (BAD) | ';
+  exception when unique_violation then
+    out := out || format('T161 ga4 accepted (traffic_provider=%s); a second traffic source refused (good) | ',
+      (select traffic_provider from public.startups where id = sid2));
+  end;
+  begin
+    perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+    execute 'set local role authenticated';
+    insert into public.provider_connections (startup_id, provider, config, status)
+      values (sid2, 'ga4', '{}', 'active');
+    out := out || 'T161b client writes a ga4 connection: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T161b client writes a ga4 connection: denied (good) | ';
+  end;
+  execute 'reset role';
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;
 end $$;

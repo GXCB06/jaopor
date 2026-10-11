@@ -39,6 +39,13 @@ import {
 } from "@/lib/traffic/types";
 import { fetchUmamiTraffic, parseUmamiShareUrl } from "@/lib/traffic/umami";
 import {
+  assertGa4Property,
+  fetchGa4Traffic,
+  ga4AccessToken,
+  parsePropertyId,
+  parseServiceAccount,
+} from "@/lib/traffic/ga4";
+import {
   SOURCE_KIND,
   sourcesOfKind,
   type ConnectInput,
@@ -235,10 +242,26 @@ async function writeBuild(admin: Admin, startupId: number, repo: string) {
   return null;
 }
 
+/** JaoPor's GA4 service account, or a clear "not available" error (never the founder's fault). */
+function ga4Creds() {
+  const creds = parseServiceAccount(serverEnv.ga4ServiceAccount());
+  if (!creds)
+    throw new ProviderError(
+      "upstream",
+      "Google Analytics isn't available on JaoPor yet.",
+    );
+  return creds;
+}
+
 async function readTraffic(
-  source: "plausible" | "umami" | "cloudflare",
+  source: "plausible" | "umami" | "cloudflare" | "ga4",
   stored: Stored,
 ): Promise<TrafficReading> {
+  if (source === "ga4")
+    return fetchGa4Traffic(
+      await ga4AccessToken(ga4Creds()),
+      stored.config.propertyId ?? "",
+    );
   if (source === "cloudflare")
     return fetchCloudflareTraffic(
       stored.secret ?? "",
@@ -328,6 +351,7 @@ async function pull(
     case "plausible":
     case "umami":
     case "cloudflare":
+    case "ga4":
       return writeTraffic(
         admin,
         startupId,
@@ -622,6 +646,23 @@ async function prepare(
       // Proves the token can read this site's analytics before we store anything.
       await fetchCloudflareTraffic(key, accountId, host);
       return { secret: key, config: { accountId, host }, hint: keyHint(key) };
+    }
+    case "ga4": {
+      // No founder credential: they added JaoPor's service account as a Viewer. Our token only has
+      // the analytics.readonly scope, so it can't write whatever role they granted.
+      const host = requireWebsite(ctx.website);
+      const propertyId = parsePropertyId(input.propertyId ?? "");
+      if (!propertyId)
+        throw new ProviderError(
+          "not_found",
+          "Paste the GA4 Property ID (numbers only, from Admin → Property details).",
+        );
+      const token = await ga4AccessToken(ga4Creds());
+      // Ownership: a web stream of this property points at the project's website.
+      await assertGa4Property(token, propertyId, host);
+      // Proves we can read its numbers before we store anything.
+      await fetchGa4Traffic(token, propertyId);
+      return { secret: null, config: { propertyId }, hint: null };
     }
     case "jaopor": {
       // No credential: our server finds the snippet on the website (Owner verified), then

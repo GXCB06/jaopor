@@ -78,8 +78,18 @@ describe("newAttemptId", () => {
 // same values; this fails the build if they drift apart.
 describe("whitelist parity with the migration SQL", () => {
   const dir = path.join(process.cwd(), "supabase", "migrations");
-  const file = readdirSync(dir).find((f) => f.endsWith("_add_funnel_events.sql"));
-  const sql = file ? readFileSync(path.join(dir, file), "utf8") : "";
+  const file = readdirSync(dir).find((f) =>
+    f.endsWith("_add_funnel_events.sql"),
+  );
+  // Later migrations extend the whitelists (e.g. _ga4_traffic_source adds the ga4 source).
+  const later = readdirSync(dir).filter((f) =>
+    f.endsWith("_ga4_traffic_source.sql"),
+  );
+  const sql = file
+    ? [file, ...later]
+        .map((f) => readFileSync(path.join(dir, f), "utf8"))
+        .join(" ")
+    : "";
 
   it("finds the migration file", () => {
     expect(sql).not.toBe("");

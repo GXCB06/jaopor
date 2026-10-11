@@ -12,6 +12,33 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-11 — Google Analytics 4 as a visitor source (code ready, hidden until the owner sets it up) + homepage copy live
+
+**Done:**
+
+- **Homepage copy deployed** (`eb7a435`, from the Marketing session): `/th` shows "1 คน + 1 Startup"; production e2e 132 passed / 0 failed.
+- **GA4 source** (owner chose: founders add JaoPor's service account as a **Viewer**):
+  - `lib/traffic/ga4.ts`:
+    - an RS256 JWT bearer grant signed with Node `crypto` (no library) and cached ~50 min;
+    - **tokens carry only the `analytics.readonly` scope**, so Google refuses any write whatever role a founder grants;
+    - ownership: a property web stream's `defaultUri` must match the website (`domainMatches`);
+    - visitors = GA4 **Total users** for 30d / prev 30d (one report, two date ranges) + a daily series;
+    - typed errors: our own credentials refused → `upstream` (never blamed on the founder); 403/404 → `not_found` with the fix; 429 → `rate_limited`;
+    - 15 s timeouts; no founder secret stored (`encrypted_key` null; config = `propertyId`).
+  - Registered in the catalog (`ga4`, "Google Analytics", traffic), `sync.ts` (prepare / pull / readTraffic), the env (`GA4_SERVICE_ACCOUNT_JSON` server-only, `NEXT_PUBLIC_GA4_SERVICE_EMAIL` public), the funnel source list, brand icons and the ProviderStrip.
+  - **VerifyPanel:** 3 steps, the email box with a copy button, a Property ID field (accepts the number, `properties/…` or a GA URL), the Open-Google-Analytics link. GA4 is **hidden unless the service email is set**; an existing connection always shows.
+  - Strings `Sources.ga4.*` (th + en). Design.md §5 VerifyPanel updated.
+- **Migration `20261011125000_ga4_traffic_source.sql`, written only, NOT applied:** `ga4` added to the provider / traffic CHECK constraints, the one-traffic-source index and the `log_verify_result` whitelist. RLS smoke T161 added.
+
+**Verified:**
+- unit 574 passed / 17 skipped. New `ga4.test.ts` (17): property-id parsing; token = readonly scope with a verifiable RS256 signature (throwaway key generated in the test) + cache; our credentials refused / broken key → upstream; domain match and mismatch, no web stream, 403 / 429 / 500; report mapping and an empty property. The catalog and funnel-parity tests were updated.
+- typecheck ✓ · lint ✓ · e2e local 117 passed / 0 failed · build ✓.
+- **Dry run on the remote DB in a rolled-back transaction:** ga4 accepted, a second traffic source refused, client writes denied, funnel logs ga4. Production constraint unchanged afterwards.
+- The dev preview had crashed (Windows 0xC0000409) during one e2e run; the rerun was clean.
+
+**Not done (owner):** service account + both APIs enabled + Vercel env vars; approve applying the migration; a live connect against a real property (±5% vs the GA dashboard). Until then GA4 stays hidden.
+**Next:** owner setup → apply the migration → live check.
+
 ## 2026-10-11 — Specs: disclosure levels (R2) and owner outcomes (proposal only)
 
 **Done:**

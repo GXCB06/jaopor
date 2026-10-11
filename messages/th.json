@@ -625,6 +625,15 @@
       "accountId": "Account ID",
       "key": "API token (Account Analytics: Read)"
     },
+    "ga4": {
+      "howTo1": "Google Analytics → Admin → Property access management → เพิ่มอีเมลด้านล่าง เลือกบทบาท Viewer (ดูอย่างเดียว)",
+      "howTo2": "Admin → Property details → คัดลอก Property ID (ตัวเลขล้วน)",
+      "howTo3": "วาง Property ID แล้วกดเชื่อมต่อ เราตรวจว่า web stream ของ property ชี้ไปที่เว็บไซต์ของผลงานนี้ ตัวเลขที่ได้คือจำนวนผู้ใช้ทั้งหมด (Total users) ซึ่งนับโดย Google Analytics",
+      "propertyId": "GA4 Property ID",
+      "emailLabel": "อีเมลของ JaoPor (เพิ่มเป็น Viewer ใน GA4):",
+      "copy": "คัดลอกอีเมล",
+      "copied": "คัดลอกอีเมลแล้ว"
+    },
     "choose": {
       "noKey": "ไม่ต้องใช้คีย์",
       "readKey": "คีย์อ่านอย่างเดียว",
