@@ -114,10 +114,13 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     <main className="mx-auto w-full max-w-5xl px-4">
       <section className="flex flex-col items-center pt-10 pb-10 text-center md:pt-12">
         <BrandPill />
-        <h1 className="mb-3 text-2xl leading-tight font-bold tracking-tight md:text-[2.125rem]">
+        <h1 className="mb-3 text-2xl leading-tight font-bold tracking-tight text-balance md:text-[2.125rem]">
           <span className="block">{t("headline1")}</span>
           <span className="block">{t("headline2")}</span>
         </h1>
+        <p className="mb-3 text-body font-medium text-foreground">
+          {t("tagline")}
+        </p>
         <p className="mb-5 max-w-2xl text-body text-muted-foreground">
           {t("subline")}{" "}
           <Link

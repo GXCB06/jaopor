@@ -179,7 +179,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 ### Hero (home and directory)
 
 - Centered, `pt-10`: **brand pill** = a link home: the mascot (`public/brand/jaopor-mascot.webp`, the winking fedora with a rising chart line, `size-9`) + "JaoPor" (`text-sm font-bold`), same on home and directory → H1 → subline → ProviderStrip → **SearchBar row** (`max-w-xl`) → secondary links row (`text-caption text-faint`, dot separated: เพิ่มผลงาน · กระดานผู้นำ · Dashboard).
-- Home H1 is two deliberate lines: **"1 คน + AI พีคได้แค่ไหน"** / **"ดูผลงานจริง ตัวเลขจริง"** (EN "How far can 1 person + AI go?" / "Real work. Real numbers."), each a `block` span.
+- Home H1 is two deliberate lines: **"1 คน + 1 Startup"** / **"ดูผลงานจริง ตัวเลขจริง"** (EN "1 person + 1 startup" / "Real work. Real numbers."), each a `block` span (2026-10-11: the "AI" framing left the headline; owner decision, Project.md §6). Under the H1 sits one **belief line** ("คนตัวเล็กก็ทำสิ่งที่ยิ่งใหญ่ได้" / "Ordinary people can achieve extraordinary things."): `text-body font-medium text-foreground`, no italics (Thai has no true italic), `mb-3`. Then the subline: it names what can be listed (web, mobile app, LINE OA, game, GitHub), says listing works whether you are just starting or already have users (never phrase it as "even without revenue": it sounds like an excuse), and says how numbers get verified; it never promises outcomes (Voice principle 3). "Startup" (headline, footer) and "SaaS" (hero subline and meta description, in the list of what can be listed) are allowed English words in Thai UI copy.
 
 ### ProviderStrip ("Numbers verified by")
 

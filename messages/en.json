@@ -1,7 +1,7 @@
 {
   "Metadata": {
-    "title": "JaoPor — How far can 1 person + AI go? Real work, real numbers",
-    "description": "The home for things people in Thailand and Asia build with AI (web apps, mobile apps, LINE bots), with revenue and users verified straight from the source. Not screenshots, and never buried in a comment thread."
+    "title": "JaoPor — 1 person + 1 startup. Real work, real numbers",
+    "description": "Discover what people build on JaoPor: websites, apps, games, SaaS, LINE OAs and GitHub projects. Explore the stats their owners connect, from visitors, revenue and MRR to commits. Verified numbers show their source and when they were last checked. List yours with a single link, at any stage."
   },
   "Common": {
     "brand": "JaoPor",
@@ -44,7 +44,7 @@
     "messages": "Messages"
   },
   "Footer": {
-    "tagline": "A dream station for Thai builders working with AI. One project at a time, from every province to ASEAN. Real work, real numbers.",
+    "tagline": "The home for Thai startups and products. One project at a time, from every province to ASEAN. Real work, real numbers.",
     "navigation": "Navigation",
     "browse": "Browse projects",
     "about": "About",
@@ -56,11 +56,12 @@
     "olympics": "Province Olympics"
   },
   "Home": {
-    "subline": "A home for what you build with AI: easy to find, easy to share, and every number shows where it came from. Revenue is verified at the source, not screenshotted.",
+    "tagline": "Ordinary people can achieve extraordinary things.",
+    "subline": "Discover what people build on JaoPor: websites, apps, games, SaaS, LINE OAs and GitHub projects. Explore the stats their owners connect, from visitors, revenue and MRR to commits. Verified numbers show their source and when they were last checked. List yours with a single link, at any stage.",
     "searchPlaceholder": "\"AI tool built with Claude Code\"",
     "recent": "Recently added",
     "emptyRecent": "Nothing here yet. Start with your first project and become Founding JaoPor #1.",
-    "headline1": "How far can 1 person + AI go?",
+    "headline1": "1 person + 1 startup",
     "headline2": "Real work. Real numbers.",
     "verifiedBy": "Numbers from:",
     "comingSoon": "coming soon",

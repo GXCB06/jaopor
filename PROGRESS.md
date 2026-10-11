@@ -12,6 +12,35 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-11 — Specs: disclosure levels (R2) and owner outcomes (proposal only)
+
+**Done:**
+
+- **`docs/DISCLOSURE_SPEC.md`:** detail for pillar P1 / decision D1. Key finding from the code: metric values are plain columns on `startups` with table-level `select` for `anon` and `authenticated`, and the snapshot tables are public, so hiding a number needs masking **in the database** (a masked view and revoked raw-column grants, following the `profiles` precedent), not only in the UI. Covers five levels per group (revenue / users / traffic / build), bands, the surfaces that must respect the level (boards, search RPC, OG, share card, badge, milestones, Olympics), inference risks, tests, order of work, and open questions O1–O5.
+- **`docs/OWNER_OUTCOMES_SPEC.md`:** the "value back" half. Today only builder profile views and own-site visitors are counted; project page views and clicks out are not (the link is a plain `href`). Proposes cookie-free counters like `profile_views` (HMAC under a daily key, no IP), a `sendBeacon` click handler, a dashboard block, and open questions V1–V3.
+- Background research (web, read-only): TrustMRR's FAQ confirms an anonymous mode that hides name/logo/site but keeps verified metrics; Indie Hackers posts and Baremetrics Open Startups show founders often stop sharing numbers as they grow and that partial data can mislead. No survey data on disclosure rates and no Thai data was found.
+
+**Files:** `docs/DISCLOSURE_SPEC.md`, `docs/OWNER_OUTCOMES_SPEC.md`, `Project.md` (§7 pointer)
+**Verified:** read-only review of `database.types.ts`, `20260929050526_schema_v1.sql`, `20260930155147_builder_profiles.sql`, `20261011120000_add_funnel_events.sql`, `src/lib/data/{startups,me}.ts`, `src/lib/leaderboard.ts`, `src/app/api/profile-view/route.ts`, `ScreenshotGallery.tsx`. Nothing built or applied. The badge route, OG image and share-card renderers are listed in the spec as surfaces to audit; they were not read line by line. `supabase/tests/rls_smoke.sql` is modified in the working tree by someone else and was not touched.
+**Next:** owner answers O1–O5 and V1–V3; spike whether PostgREST embeds `owner:profiles` through a view; then R2 per the spec (migration applied only after the 14 Oct post and your approval).
+
+## 2026-10-11 — Homepage positioning copy: "1 คน + 1 Startup", AI framing out of the site headline
+
+**Done:**
+
+- **New hero copy (th + en), owner-written:** H1 "1 คน + 1 Startup / ดูผลงานจริง ตัวเลขจริง"; a belief line under it ("คนตัวเล็กก็ทำสิ่งที่ยิ่งใหญ่ได้" / "Ordinary people can achieve extraordinary things.").
+  - **Thai subline (owner's final text, ~5 lines at 375 px):** "JaoPor คือพื้นที่รวมผลงานของคนที่ลงมือสร้างเอง … พร้อมแสดงยอดผู้เข้าชม รายได้ และ commit ตามที่เจ้าของเชื่อมไว้ ตัวเลขที่ยืนยันแล้วมีป้ายพร้อมแหล่งที่มาและเวลาที่ตรวจ เพิ่มผลงานได้ด้วยลิงก์เดียว จะเพิ่งเริ่มหรือมีผู้ใช้แล้วก็ลงได้". It replaced an invitation-style subline ("วางลิงก์เดียวก็ลงได้…"); the earlier "แม้ยังไม่มีรายได้" was dropped because it read as condescending (owner feedback). A shorter Thai variant (~150 characters) was drafted and declined.
+  - **English subline (shorter, after owner feedback that the first version was long; Claude-edited from the owner's draft):** "Discover what people build on JaoPor: websites, apps, games, SaaS, LINE OAs and GitHub projects. Explore the stats their owners connect, from visitors, revenue and MRR to commits. Verified numbers show their source and when they were last checked. List yours with a single link, at any stage." The English meta description uses the same text; the Thai meta stays the owner's full text.
+  - **Wording notes for the owner:** "Users" was changed to "visitors" (the system verifies visitors, not users, except RevenueCat active users); "Mini-app" was left out (LINE LIFF pages are a generic link type in A1.2, not a listing type); "SaaS" was first English-only, then added to the Thai subline and meta description on the owner's request (Design.md now lists it as an allowed English word in Thai copy).
+- **Meta and footer:** `Metadata.title/description` and `Footer.tagline` no longer say "built with AI" (the OG image reuses `headline1/2`, so it follows). `Metadata.description` holds the owner's full ~370-character text (search/share snippets truncate it; the hero uses the trimmed one). The "สถานีขนส่งฝัน" line left the footer.
+- **Layout:** one new `<p>` for the belief line (`text-body font-medium text-foreground`, no italics for Thai); the H1 gets `text-balance` so "Real work. Real numbers." doesn't orphan a word on phones.
+- **Docs:** Design.md hero bullet; Project.md headline + a §6 decision (the AI angle stays in community posts such as Claude Thailand, as that group's rules require).
+
+**Files:** `messages/th.json`, `messages/en.json`, `src/app/[locale]/page.tsx`, `Design.md`, `Project.md`
+**Verified:** `npm run typecheck` ✓; `npm run lint` ✓; `npx vitest run` → 445 passed / 17 skipped (incl. the messages ICU test); browser check of `/th` at desktop and 375 px (no horizontal scroll, 375 = 375) and `/en` at 375 px (re-checked after `text-balance`: "Real work. / Real numbers." now breaks evenly). **Not run:** Playwright e2e (another chat's dev server holds port 3000) and `npm run build`.
+**Not changed:** the "ลงผลงานของคุณ" button label (still "เพิ่มผลงาน"), the OG/share-card renderer, share text, docs/launch-plan.md (still the old tagline), CLAUDE.md / docs/SPEC.md tagline mentions.
+**Next:** owner review of the live hero on a phone; update launch-plan.md and the Facebook post to match; run e2e + build before pushing.
+
 ## 2026-10-11 — Motion: numbers no longer animate; sections fade up as you scroll (owner request); R2 A–C deployed
 
 **Done:**
