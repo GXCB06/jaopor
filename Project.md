@@ -333,7 +333,7 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 ## 7. Open items
 
 - [ ] **Future page: JaoPor graph ("second brain")** (owner idea 2026-10-12): every project is a node, linked by province, category and builder, and the graph grows as projects are added. It gets its own page, not a hero background, and needs more projects before it looks alive.
-- [ ] **Auto screenshot of a project's website** (owner idea 2026-10-12): proposed; waiting for the owner to choose a capture service and decide whether one image is required.
+- [ ] **Auto screenshot of a project's website** (owner idea 2026-10-12): **later** (owner 2026-10-12). Screenshots stay optional, never required. Proposal on file: a "ถ่ายภาพหน้าเว็บให้" button with a preview the owner approves; not for anonymous projects; App Store screenshots via Apple's lookup API; capture service to be chosen (Microlink free tier recommended).
 
 - [x] **Anonymous mode applied** 2026-10-11 (`anonymous_mode` + `startup_identity_server_only`); founder stays visible (owner decision). Still to do: a signed-in check of the wizard checkbox and the edit-page switch.
 
