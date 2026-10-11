@@ -1083,22 +1083,23 @@ begin
     (select count(*) from analytics.funnel_events where user_id = '00000000-0000-4000-8000-0000000000f1'),
     exists (select 1 from analytics.funnel_events where user_id = '00000000-0000-4000-8000-0000000000f1' and attempt_id = '00000000-0000-4000-8000-00000000ffff'));
   -- T142b: verify_result rows don't count toward the per-user client cap.
-  select count(*) into n from analytics.funnel_events where user_id = a and event <> 'verify_result';
+  -- (sid is OV's project since T120, so the owner here is ov.)
+  select count(*) into n from analytics.funnel_events where user_id = ov and event <> 'verify_result';
   execute 'set local role service_role';
-  perform public.log_verify_result(a, sid, 'stripe', true, null);
+  perform public.log_verify_result(ov, sid, 'stripe', true, null);
   execute 'reset role';
   out := out || format('T142b verify_result not in client cap: client %s→%s (expect same), verify=%s (expect 1) | ',
     n,
-    (select count(*) from analytics.funnel_events where user_id = a and event <> 'verify_result'),
-    (select count(*) from analytics.funnel_events where user_id = a and event = 'verify_result'));
+    (select count(*) from analytics.funnel_events where user_id = ov and event <> 'verify_result'),
+    (select count(*) from analytics.funnel_events where user_id = ov and event = 'verify_result'));
   -- T143: server verify_result — bad source / ok-with-code / bad code / foreign owner add 0; capped 50/project/day.
   execute 'set local role service_role';
-  perform public.log_verify_result(a, sid, 'bogus', true, null);
-  perform public.log_verify_result(a, sid, 'stripe', true, 'invalid_key');
-  perform public.log_verify_result(a, sid, 'stripe', false, 'nope');
-  perform public.log_verify_result(b, sid, 'stripe', true, null);
+  perform public.log_verify_result(ov, sid, 'bogus', true, null);
+  perform public.log_verify_result(ov, sid, 'stripe', true, 'invalid_key');
+  perform public.log_verify_result(ov, sid, 'stripe', false, 'nope');
+  perform public.log_verify_result(a, sid, 'stripe', true, null);
   for i in 1..60 loop
-    perform public.log_verify_result(a, sid, 'github', true, null);
+    perform public.log_verify_result(ov, sid, 'github', true, null);
   end loop;
   execute 'reset role';
   out := out || format('T143 verify_result cap: %s rows for sid (expect 50) | ',
@@ -1135,7 +1136,7 @@ begin
   out := out || format('T145 definer fns fixed search_path: %s (expect 3) | ',
     (select count(*) from pg_proc
        where proname in ('log_add_event', 'log_verify_result', 'prune_funnel_events')
-         and prosecdef and 'search_path=' = any (proconfig)));
+         and prosecdef and 'search_path=""' = any (proconfig)));
 
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;

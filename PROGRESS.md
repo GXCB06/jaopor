@@ -12,6 +12,39 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-11 — Revamp R0: add-project funnel live + motion study
+
+**Done:**
+
+- **Owner adopted the revamp direction** ([docs/MAJOR_REVAMP_PLAN.md](docs/MAJOR_REVAMP_PLAN.md)): D6 apply the funnel now, D1 all five disclosure levels, D2 per-project AI-label switch (shown by default), R2 coded now with its migration applied only after the 14 Oct post, motion foundation + numbers (M1) before the post.
+- **Funnel migration applied** (`add_funnel_events`, from `supabase/migrations/20261011120000_add_funnel_events.sql`, unchanged; its header comment still says "NOT APPLIED" because applied migrations aren't edited):
+  - security advisors: no new WARN (new INFO "RLS enabled, no policy" on `analytics.funnel_events` is by design; the existing leaked-password WARN is an Auth setting);
+  - performance advisors: only INFO (the new indexes are unused so far);
+  - RLS smoke: every line good. Three funnel tests had **test bugs**, not migration bugs: T142b / T143 called `log_verify_result` for user `a` on a project that belongs to `ov` since T120, and T145 compared `search_path=` while Postgres stores `search_path=""`. Fixed in `supabase/tests/rls_smoke.sql` and re-run (verify=1, cap 50, 3 definer functions);
+  - `generate_typescript_types`: identical to the hand-added funnel entries, so `database.types.ts` is unchanged;
+  - test data rolled back (0 funnel rows, 0 test users).
+- **Motion study** (browser, read-only): Finsepa (Framer: 0.4 s fades, ticker marquee, autoplay video, hidden-until-JS content) and Bencho (React + CSS keyframes, `data-in` reveals, 53 reduced-motion blocks, MIT blocks). Findings and the M1 scope are in the revamp plan §P4.
+
+**Not changed:** app code, production data, settings. The deployed wizard now records funnel events (no deploy needed).
+**Files:** `supabase/tests/rls_smoke.sql`, `docs/MAJOR_REVAMP_PLAN.md`, `docs/SESSION_HANDOFF.md`, `Project.md`, `PROGRESS.md`
+**Verified:** `list_migrations` shows `add_funnel_events`; advisors; RLS smoke; typecheck ✓ · lint ✓ · unit 445 passed / 17 skipped.
+**Next:** M1 motion (Design.md first) → R2a.
+
+## 2026-10-11 — Major revamp plan (proposal only)
+
+**Done:**
+
+- **`docs/MAJOR_REVAMP_PLAN.md`:** a proposed plan from two feedback items (builders won't disclose MRR / users; non-developers and investors need an easier way in, "made with AI" can hurt a business brand) plus the Aetox motion suggestion:
+  - five pillars: privacy-first proof (per-metric disclosure levels), visitor-first discovery, a reason to return (in-app → email → LINE), motion, user interviews;
+  - phases R0–R6 merged with the audit's A1–C3;
+  - metrics (no invented targets), risks, and decisions D1–D8 for the owner.
+- **Aetox motion check** (browser, read-only): CSS-only (one keyframe, ~75 transitions, ~12 reveal elements, two canvases, no GSAP/Lenis/Lottie found), so no heavy animation library is needed.
+
+**Not changed:** code, data, migrations (the funnel migration is still pending apply), settings.
+**Files:** `docs/MAJOR_REVAMP_PLAN.md`, `Project.md` (§7 pointer)
+**Verified:** read-only review of Project.md §6/§7, the audit plan and the live Aetox page; nothing built.
+**Next:** owner decisions D1–D8 (esp. D6: apply the funnel migration before the post), then R0.
+
 ## 2026-10-11 — GA4 re-enabled: `G-JYPJ2RFH4N` restored as the built-in default
 
 **Done:**
@@ -31,9 +64,9 @@
 **Done:**
 
 - **Owner picked Option 3 + Option 2** (rejected GA4 + a consent banner): a first-party, cookie-free add-project funnel in Supabase, plus Vercel Web Analytics for landing/traffic pageviews (Hobby plan: pageviews only, no custom events).
-- **GA4 is now off by default** — the hardcoded `G-JYPJ2RFH4N` default is gone; `src/lib/analytics/ga.ts` returns `null` unless `NEXT_PUBLIC_GA_ID` is set, so a production build can't silently enable it. This **supersedes** the 2026-10-10 GA4 entry below. *(**Reversed the same day** — GA is on again with the default restored; see the GA4 re-enable entry above.)*
+- **GA4 is now off by default** — the hardcoded `G-JYPJ2RFH4N` default is gone; `src/lib/analytics/ga.ts` returns `null` unless `NEXT_PUBLIC_GA_ID` is set, so a production build can't silently enable it. This **supersedes** the 2026-10-10 GA4 entry below. _(**Reversed the same day** — GA is on again with the default restored; see the GA4 re-enable entry above.)_
 - **First-party funnel** (migration `20261011120000_add_funnel_events.sql`, **not applied**): new `analytics.funnel_events` table; browser events `add_opened → add_created → verify_chose → add_finished → add_failed` logged from the wizard through a thin `public.log_add_event` invoker; server-only `public.log_verify_result` (from the sources POST in `after()`) and `public.prune_funnel_events` (nightly cron, 180-day retention). Caps 100 client events/user/day + 50 verify results/project/day; every function fails closed.
-- **/privacy updated (th + en):** §2 adds the funnel bullet; §6/§8 drop the GA `_ga` cookies and name Vercel's cookie-free Web Analytics; date bumped to 2026-10-11. *(§6/§8 GA disclosure **restored later the same day** — see the GA4 re-enable entry above.)*
+- **/privacy updated (th + en):** §2 adds the funnel bullet; §6/§8 drop the GA `_ga` cookies and name Vercel's cookie-free Web Analytics; date bumped to 2026-10-11. _(§6/§8 GA disclosure **restored later the same day** — see the GA4 re-enable entry above.)_
 
 **Files:** `supabase/migrations/20261011120000_add_funnel_events.sql`, `supabase/tests/rls_smoke.sql` (T137–T145), `src/lib/analytics/{funnel-types,add-funnel,ga}.ts`, `src/components/wizard/{StartupWizard,VerifyPanel}.tsx`, `src/app/api/startups/[id]/sources/[source]/route.ts`, `src/app/api/cron/sync/route.ts`, `src/app/[locale]/layout.tsx`, `src/lib/supabase/database.types.ts`, `.env.example`, `package.json`
 **Verified:** `npx vitest run` → 445 passed / 17 skipped; `npm run typecheck` ✓; `npm run lint` ✓; `npm run build` ✓; `npx playwright test` → 108 passed / 16 skipped / 0 failed; `.next/server/app/th.html` has no `googletagmanager`.

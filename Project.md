@@ -316,6 +316,7 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 | 2026-10-10 | **Profiles + project page (B1, master audit items 9 · 11 · 6):** phones keep only the founder's identity in the sidebar (bio / links / badges / skills / tools / report move below the main column, `#profile-extras`) and experience moves above the feed; "แชร์โปรไฟล์" uses the native Web Share sheet or copies the canonical `/{locale}/@handle`; the project page splits evidence into a **Proof** container ("ตัวเลขที่ยืนยัน / นับได้": chart + traction tiles) and the narrative into a **Story** container ("เรื่องราวของผลงาน": ปัญหาที่แก้ → คุณค่า → กลุ่มลูกค้า → build story → facts), replacing InsightsGrid. Order: Proof → Story → screenshots → founder message → updates                                                                             | Item 9 was P0 on phones (mobile search traffic); Proof-before-Story follows the audit's "the page's promise is proof" and the owner's 2026-10-10 decision; a single Story container removes the split narrative. **Instagram as a profile link is deferred** — it needs a validation-trigger migration reviewed on its own (open item) |
 | 2026-10-11 | **Launch measurement (Option 3 + 2):** a first-party, cookie-free add funnel in a locked-down `analytics` schema (`analytics.funnel_events`; definer functions only, 180-day retention, per-user/project caps) + **Vercel Web Analytics** for landing pageviews; **GA4 off by default** (no hardcoded ID, `NEXT_PUBLIC_GA_ID` opt-in) | Owner chose a no-banner, PDPA-safe stack over GA4 + consent: first-party data stays ours and needs no cookie notice, and Vercel Web Analytics is cookie-free so /privacy stays truthful without a banner. GA stays behind an env var for a future consented rollout |
 | 2026-10-11 | **GA4 re-enabled (`G-JYPJ2RFH4N`):** the built-in default is restored in `src/lib/analytics/ga.ts`; production renders GA with no env var, `NEXT_PUBLIC_GA_ID` still overrides and empty / `off` disables; /privacy §6/§8 restore the `_ga` / Google Analytics disclosure | Owner reversed the earlier same-day GA-off decision and pasted the tag to install it. Kept the production-only gate. The pre-consent load remains a known PDPA gap (no banner yet) |
+| 2026-10-11 | **Product direction: major revamp** ([docs/MAJOR_REVAMP_PLAN.md](docs/MAJOR_REVAMP_PLAN.md)): privacy-first proof with five per-group disclosure levels (exact / band / growth / badge / private, enforced in the database, applied after the post) · a per-project switch to hide the AI label on visitor surfaces (shown by default) · motion without a library (Design.md rules, reduced-motion respected), foundation + verified numbers first · audit backlog B2–C3 after R2/R3                                                                                                                                                                                                                                                                                     | Builders won't disclose money or customer numbers publicly; proof must not require exposure. Motion should show the data (Finsepa, Bencho studied 2026-10-11), not decorate it. Owner, 2026-10-11                                                                                                                                               |
 
 ## 7. Open items
 
@@ -332,6 +333,8 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
     - persisting a founder-chosen link type for unknown domains (a column);
     - Instagram on profiles (validation trigger migration);
     - a stale-data rule for the counted / build boards.
+- [ ] (2026-10-11) **Major revamp plan** ([docs/MAJOR_REVAMP_PLAN.md](docs/MAJOR_REVAMP_PLAN.md)): **direction adopted 2026-10-11.** Decided: D1 all five disclosure levels, D2 per-project AI-label switch (shown by default), D6 funnel applied (done), motion foundation + numbers before the post (M1), R2 coded now with its migration applied only after the 14 Oct post. Still open: D3 visitor-first section order, D4 notification channels, D5 rest of motion (after R2), D7 interviews, D8 PDPA banner.
+  - **R0 done** (funnel live). **Next:** M1 → R2a–R2e.
 - [x] (2026-10-10) **Google Analytics tag** (`G-JYPJ2RFH4N`): **re-enabled 2026-10-11** — the built-in default is back in `src/lib/analytics/ga.ts`, so production loads GA with **no env var set** (`NEXT_PUBLIC_GA_ID` still overrides; empty / `off` disables). Reverses the earlier same-day GA-off decision; /privacy §6/§8 restore the `_ga` / Google Analytics disclosure. **No consent banner** — the pre-consent load makes the PDPA opt-in question (§7) still open.
 
 - [ ] (2026-10-08) **Launch gate** ([docs/LAUNCH_READINESS_REPORT.md](docs/LAUNCH_READINESS_REPORT.md) §10):
@@ -348,7 +351,7 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
     - the plan decision;
     - anonymous-write caps;
     - JaoPor's own page;
-    - the funnel analytics (**implemented 2026-10-11**, migration pending apply).
+    - the funnel analytics (**implemented and applied 2026-10-11**).
   - Owner decisions pending.
 - [ ] (2026-10-09) **Hardening pass** ([docs/LAUNCH_HARDENING.md](docs/LAUNCH_HARDENING.md)).
   - **Done in code:**
@@ -364,7 +367,7 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
   - **Proposed, waiting for approval:**
     - the `profile_views` per-profile daily cap + 30-day retention + the /privacy bullet (§H);
     - Vercel Firewall rules for the anonymous endpoints.
-- [x] (2026-10-08) **Add-project funnel analytics:** **implemented 2026-10-11** (Option 3, owner-approved from [docs/ADD_STARTUP_ANALYTICS_MIGRATION.md](docs/ADD_STARTUP_ANALYTICS_MIGRATION.md)): migration `20261011120000_add_funnel_events.sql` + RLS smoke T137–T145 + wizard/server wiring + /privacy wording (th/en). **Not applied** — applying the migration, running T137–T145 and regenerating `database.types.ts` await the owner.
+- [x] (2026-10-08) **Add-project funnel analytics:** **implemented 2026-10-11** (Option 3, owner-approved from [docs/ADD_STARTUP_ANALYTICS_MIGRATION.md](docs/ADD_STARTUP_ANALYTICS_MIGRATION.md)): migration `20261011120000_add_funnel_events.sql` + RLS smoke T137–T145 + wizard/server wiring + /privacy wording (th/en). **Applied 2026-10-11** (owner decision D6): advisors no new WARN, RLS smoke all good, types unchanged.
 - [ ] (2026-10-08) /privacy doesn't mention profile-view counting (`profile_views`, kept indefinitely): needs owner-approved wording + a retention period.
 - [ ] Analytics connections keep their last numbers after a failed sync, and changing the website doesn't re-check an analytics domain (existed before round 3; clearing would delete data).
 
