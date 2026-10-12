@@ -156,8 +156,10 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [x] Study the Lovable landing and agree the plan (2026-10-12)
 - [x] A. App: `GET /api/public/landing` + `lib/public-landing.ts` + tests (2026-10-12)
 - [x] B. `jaopor-landing` built locally (Next.js, th + en, dark + light, live data; no mock rows, so no sample labels) (2026-10-12)
-- [ ] B2. Create the GitHub repo, push the app (endpoint) then the landing
-- [ ] C. Vercel rewrites: landing answers `/`, the app keeps `/th`, `/en`, `/api`
+- [x] B2. GitHub repo `GXCB06/jaopor-landing` (private), Vercel project `jaopor-landing` (deployed by hand; git link failed with a 500), app pushed with the endpoint (2026-10-12)
+- [ ] C. Multi-zone: landing answers `/`, the app keeps `/th`, `/en`, `/api`. **Built and verified on the `landing-zone` preview (2026-10-12); merge to master waits for the owner's go**
+- [x] Landing hero: space backdrop (spotlight, stars, horizon, mouse light), language switch keeps the scroll (2026-10-12)
+- [ ] Landing: Proof Flow animation (sources → project → verified / counted) and the "add a project" steps from the owner's screens
 - [ ] Later: restyle the app toward the landing (tokens → chrome → home; never data screens)
 
 ### Later — Verified audience

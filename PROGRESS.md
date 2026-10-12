@@ -41,6 +41,7 @@
 **Not verified:** feed and builders with real data locally (they need the secret key); production screenshots are from before the change.
 
 **Production** (pushed `0714a26`, owner "push"): the first e2e run failed `motion.spec` "sections below the fold fade up once" at 375.
+
 - Cause: the test took the first `<section>` in the DOM as on screen, but the new cover and identity column push the profile's first section below the fold, so it rightly waits.
 - The test now checks the first section that is actually on screen.
 - Motion spec ×3 on production 27 / 27; full production e2e 139 passed / 0 failed.
@@ -116,6 +117,31 @@
 - typecheck ✓ · lint ✓ · e2e project / pages / readability / a1: 80 passed.
 - Browser at 1280: after scrolling 1,500 px the column is still at the top.
 - Browser at 375: the bar shows after scrolling past the name; no sideways scroll.
+
+## 2026-10-12 — App pushed; landing as a zone at `/` (preview verified, not merged); space hero; language-jump fix
+
+**Done** (owner: "follow your advice" = push the app, then step C; then: a hero background like aona.co.th, and the language switch still jumped to the footer):
+
+- **App pushed to master** (`c6dc16c..f0c7cec`, with four profile commits from another session; the clean HEAD passed typecheck and 628 tests in a throw-away worktree first). Production now serves the new logo (favicon 12,858 B = the new ICO) and `topMrrSeries` (revenue, 30 points).
+- **Step C, multi-zone, on branch `landing-zone` only** (worktree `C:\Users\ACER\mrr-landing-zone`, **not merged to master**):
+  - `next.config.ts`: `beforeFiles` rewrites `/` and `/landing/:path*` to `https://jaopor-landing.vercel.app` (`LANDING_ORIGIN` overrides).
+  - `src/proxy.ts`: `/` and `/landing/*` skip the locale redirect and the session refresh.
+  - Landing: `assetPrefix: "/landing"`, public files moved to `public/landing/`, the share card is now `GET /landing/og` with an explicit `og:image` (a metadata file under `[locale]` would have been advertised as `/en/opengraph-image`, which on the shared domain is the app's card).
+- **Space hero** (landing, dark theme only; light keeps the soft wash): our own CSS and one small canvas after reading how aona's hero is layered. Blue spotlight and soft beam from the top edge, ~170 slowly twinkling stars, a curved glowing horizon, and a light that follows a real mouse. Canvas ~30 fps, only while visible; still with reduced motion; no touch-pointer light. Nothing copied (no logo or images).
+- **Language switch jump, really fixed.** I had only tested from mid-page. From the hero the page smooth-scrolled to ~6,200 of 7,000 px (`router.refresh()` plus smooth scroll). The switch now sets `NEXT_LOCALE` and reloads, so the browser keeps the position.
+- Nav labels no longer wrap at 1024 px in English.
+
+**Files:** app branch `landing-zone`: `next.config.ts`, `src/proxy.ts`; landing repo: `HeroBackdrop`, `Hero`, `Nav`, `globals.css`, `next.config.ts`, `src/proxy.ts`, `src/app/landing/og/route.tsx`, `[locale]/layout.tsx`, `public/landing/*`
+
+**Verified:**
+
+- Landing deployed to `jaopor-landing.vercel.app` (assets under `/landing/_next/...`, `/landing/og` 200).
+- App preview of `landing-zone` (opened in the owner's Chrome, which is signed in to Vercel): `/` is the landing, 0 of 11 images broken, `og:image` is `/landing/og` and returns a PNG; `/th`, `/en`, `/th/startups`, `/api/public/landing`, `/icon.png`, `/landing/product/home.webp` all 200; the language switch en → th kept the scroll at the top.
+- Dev server, language switch from y = 0 and y = 450: scroll kept (0 → 0, 450 → 451).
+
+**Not verified:** a phone, Safari / Firefox, the star canvas CPU use over time, the beam and horizon on very wide screens; the light theme hero by eye on the preview; Search Console / LINE / Facebook share previews; the app e2e suite on the branch. A local `npm run build` of the landing was skipped this round (a dev server from another session holds `.next`), Vercel built it instead.
+**Known risks of the cut-over:** `/` depends on the landing project being up; the old `/` redirect to `/th` goes away (bookmarks of `/` now show the landing); both zones set the `NEXT_LOCALE` cookie.
+**Next:** the owner's go to merge `landing-zone` into master (production `/` changes for everyone). Then the Proof Flow animation and the "add a project" steps (waiting for screens). The worktree and its `node_modules` junction can be removed after the merge.
 
 ## 2026-10-12 — Landing: real product screenshots, chart from real history, new logo, language-switch fix
 
