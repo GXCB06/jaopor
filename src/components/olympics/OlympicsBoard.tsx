@@ -14,10 +14,7 @@ import { Fragment, useState } from "react";
 import { StartupLogo } from "@/components/StartupBits";
 import { Link } from "@/i18n/navigation";
 import { localizedName } from "@/lib/config/localized";
-import {
-  getProvince,
-  getRegion,
-} from "@/lib/config/provinces";
+import { getProvince, getRegion } from "@/lib/config/provinces";
 import { setMyProvince, useMyProvince } from "@/lib/my-province";
 import {
   gapToNext,
@@ -27,6 +24,7 @@ import {
 } from "@/lib/olympics";
 import { normalizeSearch } from "@/lib/search-text";
 import { cn } from "@/lib/utils";
+import { Medal } from "@/components/core/Medal";
 import { OlympicValue } from "./OlympicValue";
 import { ProvinceBadge } from "./ProvinceBadge";
 
@@ -77,18 +75,22 @@ function Growth({ value }: { value: number | null }) {
 }
 
 /**
- * Design.md §5 OlympicsBoard (Olympics v3): the visitor's province bar ("you are #9, ฿X to pass
- * #8"), a province search, and the standings table from #4 with expandable rows (top projects +
- * share bars). The visitor's own row is highlighted.
+ * Design.md §5 OlympicsBoard (Olympics v4): the visitor's province bar ("you are #9, ฿X to pass
+ * #8"), a province search, and the standings table from #1 (medals on #1–3, a bar against the
+ * leader on every row) with expandable rows (top projects + share bars). With the desktop podium
+ * on, #1–3 hide from md up. The visitor's own row is highlighted.
  */
 export function OlympicsBoard({
   board,
   metric,
   thbPerUsd,
+  podiumShown = false,
 }: {
   board: ProvinceRank[];
   metric: OlympicMetric;
   thbPerUsd: number | null;
+  /** The page shows podium cards for #1–3 (desktop only): those rows hide from md up. */
+  podiumShown?: boolean;
 }) {
   const t = useTranslations("Olympics");
   const locale = useLocale();
@@ -105,7 +107,8 @@ export function OlympicsBoard({
       other: locale === "th" ? p.nameEn : p.nameTh,
     };
   };
-  // Searching looks at the whole board (incl. the podium); otherwise the table starts at #4.
+  // Olympics v4: the table starts at #1 on every screen (phones used to get #1–3 as stacked
+  // cards); with the desktop podium on, #1–3 hide from md up. Search looks at the whole board.
   const rows = q
     ? board.filter((r) => {
         const p = getProvince(r.province)!;
@@ -113,8 +116,11 @@ export function OlympicsBoard({
           normalizeSearch(v).includes(q),
         );
       })
-    : board.slice(3);
+    : board;
   const shown = showAll || q ? rows : rows.slice(0, PAGE);
+  const onPodium = (rank: number) => podiumShown && !q && rank <= 3;
+  // Each row's bar: its total against the leader's (the race at a glance).
+  const leader = board[0]?.total ?? 0;
   const value = (v: number) => (
     <OlympicValue value={v} metric={metric} thbPerUsd={thbPerUsd} />
   );
@@ -217,15 +223,21 @@ export function OlympicsBoard({
           <table className="w-full table-fixed text-left">
             <thead>
               <tr className="border-b text-2xs font-bold tracking-wider text-faint uppercase">
-                <th className="w-10 py-2.5 pl-4 font-bold">#</th>
-                <th className="w-12 py-2.5 font-bold">
+                <th className="w-12 py-2.5 pl-4 font-bold sm:w-14">#</th>
+                <th className="hidden w-12 py-2.5 font-bold sm:table-cell">
                   <span className="sr-only">{t("change")}</span>
                 </th>
                 <th className="py-2.5 pr-2 font-bold">{t("province")}</th>
-                <th className="hidden w-16 px-2 py-2.5 text-right font-bold md:table-cell">
+                {/* On the projects board this would repeat the value column. */}
+                <th
+                  className={cn(
+                    "hidden w-16 px-2 py-2.5 text-right font-bold",
+                    metric !== "projects" && "md:table-cell",
+                  )}
+                >
                   {t("projects")}
                 </th>
-                <th className="w-28 px-2 py-2.5 text-right font-bold sm:w-32">
+                <th className="w-24 px-2 py-2.5 text-right font-bold sm:w-32">
                   {t(`metrics.${metric}`)}
                 </th>
                 <th className="hidden w-20 px-2 py-2.5 text-right font-bold sm:table-cell">
@@ -252,12 +264,13 @@ export function OlympicsBoard({
                         "border-b transition-colors last:border-b-0 hover:bg-accent/40",
                         isMine &&
                           "bg-brand/5 shadow-[inset_3px_0_0_var(--brand)]",
+                        onPodium(row.rank) && "md:hidden",
                       )}
                     >
                       <td className="py-3 pl-4 text-xs font-bold tabular-nums">
-                        {row.rank}
+                        {row.rank <= 3 ? <Medal rank={row.rank} /> : row.rank}
                       </td>
-                      <td className="py-3">
+                      <td className="hidden py-3 sm:table-cell">
                         <RankChange row={row} metric={metric} />
                       </td>
                       <td className="py-3 pr-2">
@@ -267,7 +280,7 @@ export function OlympicsBoard({
                         >
                           <ProvinceBadge
                             region={p.region}
-                            className="h-8 w-11"
+                            className="hidden h-8 w-11 sm:block"
                           />
                           <span className="min-w-0">
                             <span className="block truncate text-xs font-semibold group-hover:underline">
@@ -278,13 +291,35 @@ export function OlympicsBoard({
                                 </span>
                               )}
                             </span>
-                            <span className="block truncate text-2xs text-faint">
-                              {localizedName(getRegion(p.region), locale)}
+                            <span className="flex min-w-0 items-center gap-1.5 text-2xs text-faint">
+                              <span className="truncate">
+                                {localizedName(getRegion(p.region), locale)}
+                              </span>
+                              {/* Phones: the rank change moves here (its column is hidden). */}
+                              <span className="sm:hidden">
+                                <RankChange row={row} metric={metric} />
+                              </span>
+                            </span>
+                            <span
+                              aria-hidden="true"
+                              className="mt-1 block h-1 w-full max-w-36 overflow-hidden rounded-full bg-secondary"
+                            >
+                              <span
+                                className="block h-full rounded-full bg-brand/70"
+                                style={{
+                                  width: `${leader > 0 ? Math.max(4, (row.total / leader) * 100) : 0}%`,
+                                }}
+                              />
                             </span>
                           </span>
                         </Link>
                       </td>
-                      <td className="hidden px-2 py-3 text-right text-xs text-muted-foreground tabular-nums md:table-cell">
+                      <td
+                        className={cn(
+                          "hidden px-2 py-3 text-right text-xs text-muted-foreground tabular-nums",
+                          metric !== "projects" && "md:table-cell",
+                        )}
+                      >
                         {row.startups}
                       </td>
                       <td className="px-2 py-3 text-right text-xs font-bold tabular-nums">
@@ -325,7 +360,12 @@ export function OlympicsBoard({
                       </td>
                     </tr>
                     {isOpen && (
-                      <tr className="border-b bg-background/40 last:border-b-0">
+                      <tr
+                        className={cn(
+                          "border-b bg-background/40 last:border-b-0",
+                          onPodium(row.rank) && "md:hidden",
+                        )}
+                      >
                         <td colSpan={8} className="px-4 py-3 sm:pl-24">
                           <ul className="space-y-2.5">
                             {row.top.map((s) => {
@@ -343,7 +383,10 @@ export function OlympicsBoard({
                                       href={`/startup/${s.slug}`}
                                       className="min-w-0 truncate font-semibold hover:underline"
                                     >
-                                      <ProjectName name={s.name} slug={s.slug} />
+                                      <ProjectName
+                                        name={s.name}
+                                        slug={s.slug}
+                                      />
                                     </Link>
                                     <span className="text-2xs text-faint tabular-nums">
                                       {Math.round(pct)}%
@@ -392,7 +435,11 @@ export function OlympicsBoard({
               onClick={() => setShowAll(true)}
               className="w-full border-t py-2.5 text-caption text-muted-foreground hover:bg-accent/40 hover:text-foreground"
             >
-              {t("showRanks", { from: PAGE + 4, to: board.length })} ↓
+              {t("showRanks", {
+                from: rows[PAGE]?.rank ?? PAGE + 1,
+                to: board.length,
+              })}{" "}
+              ↓
             </button>
           )}
         </div>

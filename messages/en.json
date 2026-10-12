@@ -941,6 +941,7 @@
     "addCta": "Add a project"
   },
   "Olympics": {
+    "unlocked": "{n} of {total} provinces unlocked",
     "pioneersTitle": "Province pioneers",
     "pioneersSub": "The first project from each province. List first and your name stays here.",
     "firstIn": "First in {province}",
@@ -964,7 +965,7 @@
     "eyebrow": "JaoPor Olympics · season {year}",
     "statProvinces": "Provinces competing",
     "statTotal": "{metric}, nationwide",
-    "statTotalProjects": "Scored projects, nationwide",
+    "statTotalProjects": "Scored projects",
     "linkCopied": "Link copied",
     "regionEmpty": "no projects yet",
     "podium": "Top 3",
@@ -1032,6 +1033,8 @@
     "others": "Other categories"
   },
   "Live": {
+    "showDetails": "Show viewer details",
+    "hideDetails": "Hide details",
     "watchingNow": "browsing JaoPor right now",
     "title": "Who's here right now",
     "watching": "people on JaoPor",

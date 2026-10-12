@@ -84,3 +84,33 @@ describe("messages", () => {
     expect(mismatched).toEqual([]);
   });
 });
+
+// A key written twice in one object silently loses the first value (JSON.parse keeps the last):
+// on 2026-10-12 a new Olympics.coverage hid behind an older one and the page showed the raw key.
+describe("message files", () => {
+  it.each(["th", "en"])(
+    "%s.json has no duplicate keys in any object",
+    async (loc) => {
+      const { readFileSync } = await import("node:fs");
+      const { join } = await import("node:path");
+      const text = readFileSync(
+        join(process.cwd(), "messages", `${loc}.json`),
+        "utf8",
+      );
+      const dupes: string[] = [];
+      // Track the keys of each open object while scanning the raw text (strings skipped).
+      const stack: Set<string>[] = [];
+      const re = /"((?:[^"\\]|\\.)*)"\s*(:)?|[{}]/g;
+      for (let m = re.exec(text); m; m = re.exec(text)) {
+        if (m[0] === "{") stack.push(new Set());
+        else if (m[0] === "}") stack.pop();
+        else if (m[2]) {
+          const keys = stack[stack.length - 1];
+          if (keys.has(m[1])) dupes.push(m[1]);
+          keys.add(m[1]);
+        }
+      }
+      expect(dupes).toEqual([]);
+    },
+  );
+});

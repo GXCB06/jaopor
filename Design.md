@@ -465,7 +465,20 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
   - The header's "จังหวัดที่ลงแข่ง" and "ผลงานที่นับคะแนน รวมทั้งประเทศ" (projects board) use the competition.
   - "นับคะแนนยังไง" says the team's projects aren't scored.
 
-#### Proposal — Olympics v4 (2026-10-12, **not built; waiting for owner review**)
+#### Olympics v4 — part 1 built (2026-10-12, owner: "อันดับเรียงเป็นการ์ด … unsatisfying" on phones)
+
+- **Ranking rows on every screen:** the table starts at #1, with a Medal for #1–3 in a `w-12 sm:w-14` rank column.
+  - Each row carries a bar of its total against the leader's (`h-1 max-w-36 bg-brand/70`, at least 4% so it shows).
+  - **Phones:** the rank-change column and the ProvinceBadge hide; the change moves beside the region name and the value column narrows to `w-24`.
+  - On the projects board the "ผลงาน" count column is hidden (it repeated the value).
+- **Podium cards:** desktop only (`hidden md:block`), and only once **5** provinces compete (`PODIUM_MIN`). Then #1–3 hide from the table from `md` up.
+- **Coverage bar** under the subtitle: "ปลดล็อกแล้ว {n} จาก {total} จังหวัด" + % (`h-2 rounded-full bg-secondary`, fill `bg-brand`).
+  - `n` = provinces with a published project (listing counts).
+  - The header stat label on the projects board is "ผลงานที่นับคะแนน".
+- **Map card on phones** sits right after the ranking (`lg:hidden`); on desktop it stays in the sidebar.
+- **Not built yet (rest of the proposal):** the map as the hero, a sticky your-province bar, region chips → select on phones, and search inside the table header.
+
+#### Proposal — Olympics v4 (2026-10-12; part 1 above is built, the rest waits for owner review)
 
 **Owner feedback:** the board "doesn't look attractive", and on phones it "เรียงเป็นก้อน" (stacks into blocks).
 
@@ -546,6 +559,9 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - `rounded-xl border bg-card` section after the card rows. Header: status dot (positive pulse = live, warning = fallback, faint = connecting) + title; right: "ทั่วโลก / ประเทศไทย" toggle (`h-7 border` button) and × (hides the section, remembered; a small "แสดงคนที่กำลังดู JaoPor" link brings it back).
 - Body `h-[420px] sm:h-[460px]` at every count (the round C compact height for ≤ 3 viewers was reverted on 2026-10-07: the map became too small to see the pins, and the 4-row feed overlapped the stats overlay): Thailand silhouette (`fill-muted-foreground/15`) with one pin per province at its centre (brand circle + DiceBear avatar, positive count badge when > 1); world view = MapLibre (OpenFreeMap dark, loaded on demand) with avatar markers at the coarse coordinates.
 - **Map placement (layout audit 2026-10-12):** from `sm` the Thailand map is centred in the space right of the overlay (`sm:pl-64`), no longer pushed to the right edge. That left a wide empty band between the overlay and the map. The height stays as above.
+- **Collapsible stats overlay (owner 2026-10-12):** the overlay's count line is a button (`aria-expanded`, chevron).
+  - Phones start collapsed: one line "{n} คนกำลังดู JaoPor ⌄", so the map shows. From `sm` it starts open.
+  - The activity feed shows the 2 latest on phones (4 from `sm`).
 - **Few viewers (audit 2026-10-12):** below **5** viewers (`LIVE_MAP_MIN`) the map, overlay and world toggle give way to one line under the header: "**{n} คน** กำลังดู JaoPor อยู่ตอนนี้". The opt-out / privacy footer stays. The map returns by itself at 5. The board stays on (owner asked for it back on 2026-10-11).
 - Overlay top-left (`w-56 rounded-lg border bg-background/85 backdrop-blur`): big count + "คนกำลังดู JaoPor", rows ประเทศ / อุปกรณ์ / หน้า (top 3, fixed section labels only, never slugs), "+n คนจากต่างประเทศ". Fallback shows the count + "แสดงจำนวนโดยประมาณ".
 - Feed bottom-left: last 4 page views as `bg-background/85` rows: avatar, "{ชื่อ} เปิด{หน้า}", "เมื่อสักครู่ / n นาทีที่แล้ว".

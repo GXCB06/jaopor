@@ -356,7 +356,9 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
   - [ ] Supply: concierge onboarding of 30–50 projects (owner).
   - [x] Team project out of every competition incl. Olympics (owner policy 2026-10-12).
   - [ ] Landing site: read `featured` / `team` from the landing API and show the disclosure; deploy together with the app.
-  - [ ] Owner review: Olympics v4 proposal and tabs proposal (Design.md).
+  - [x] Olympics v4 part 1 (rows, medals, bars, gated podium, coverage bar).
+  - [ ] Owner review: rest of Olympics v4 and the tabs proposal (Design.md).
+  - [ ] Aetox text: owner's choice (tagline ≤ 140 chars vs description) and the project owner's consent.
 
 - [ ] **Landing repo** (2026-10-12): the owner creates the GitHub repo (or approves `gh repo create`); pick the production domain (only `jaopor.vercel.app` exists); review the landing's light palette (made and contrast-checked 2026-10-12); add a province count to the API (the landing's provinces tab only counts the 12 most recent projects); Thai-aware OG image.
 

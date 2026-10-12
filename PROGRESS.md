@@ -12,6 +12,29 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-12 — Olympics ranking as rows (v4 part 1), collapsible live stats on phones, duplicate-key guard
+
+**Done** (owner: ranking "เรียงเป็นการ์ด … unsatisfying" on phones; live stats overlay covers the map):
+
+- **Olympics v4 part 1:**
+  - The table starts at #1 everywhere, with medals on #1–3 and a bar against the leader on every row.
+  - Phones drop the change column and the badge (the change shows beside the region).
+  - The podium shows only on desktop with ≥ 5 competing provinces.
+  - Coverage bar "ปลดล็อกแล้ว N จาก 77 จังหวัด" (listing counts).
+  - The map card moves right under the ranking on phones; the duplicate "ผลงาน" column is hidden on the projects board.
+  - Phone page 4,962 → 4,323 px.
+- **Live board:**
+  - The stats overlay collapses to one line on phones (open from `sm`); the activity feed shows 2 items on phones.
+  - Checked by temporarily lowering the map threshold, then restored to 5.
+- **Bug found and guarded:** a new `Olympics.coverage` hid behind an existing key of the same name (JSON keeps the last one). Renamed to `unlocked`.
+  - New test: no duplicate keys in any object of th.json / en.json (verified to catch nested and top-level duplicates).
+- **Aetox description:** not changed. It's another owner's project (Chayapol Promsavana), and the text is 189 characters while `tagline` is capped at 140 by a DB check. Waiting for the owner's choice.
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit 640 passed / 17 skipped · e2e local 121 passed / 0 failed / 21 skipped · build ✓.
+- Screenshots at 1440 and 375 (Olympics, live board).
+
 ## 2026-10-12 — Review follow-up: one competition gate, per-metric home boards, MRR notes per source, Olympics + tabs proposals
 
 **Done** (owner approved A, B, C locally; D decided, landing repo untouched; E as a Design.md proposal; not pushed, `8e08fc3` not amended):

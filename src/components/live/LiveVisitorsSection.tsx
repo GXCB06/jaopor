@@ -1,6 +1,12 @@
 "use client";
 
-import { EyeIcon, GlobeIcon, MapIcon, XIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  EyeIcon,
+  GlobeIcon,
+  MapIcon,
+  XIcon,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -72,6 +78,12 @@ export function LiveVisitorsSection() {
   const { status, optedOut, me, visitors, events, fallbackCount } = useLive();
   const hidden = useSyncExternalStore(subscribeHidden, readHidden, () => false);
   const [world, setWorld] = useState(false);
+  // Stats overlay: one line on phones (the map shows), open from sm.
+  const [statsOpen, setStatsOpen] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the viewport once after mount
+    if (window.matchMedia("(min-width: 640px)").matches) setStatsOpen(true);
+  }, []);
   const [now, setNow] = useState(() => Date.now());
   const ref = useRef<HTMLElement>(null);
 
@@ -244,58 +256,76 @@ export function LiveVisitorsSection() {
             </div>
           )}
 
-          {/* Stats overlay */}
-          <div className="absolute top-3 left-3 w-56 rounded-lg border bg-background/85 p-3 backdrop-blur sm:top-4 sm:left-4">
-            <p className="flex items-baseline gap-1.5">
+          {/* Stats overlay. Collapsible (owner 2026-10-12): on phones it starts as one line so the
+              map shows; from sm it starts open. */}
+          <div className="absolute top-3 left-3 w-56 max-w-[calc(100%-1.5rem)] rounded-lg border bg-background/85 p-3 backdrop-blur sm:top-4 sm:left-4">
+            <button
+              type="button"
+              onClick={() => setStatsOpen((o) => !o)}
+              aria-expanded={statsOpen}
+              aria-controls="live-stats"
+              aria-label={statsOpen ? t("hideDetails") : t("showDetails")}
+              className="flex w-full items-baseline gap-1.5 text-left"
+            >
               <span className="text-2xl font-bold tabular-nums">
                 {count ?? "–"}
               </span>
               <span className="text-caption text-muted-foreground">
                 {t("watching")}
               </span>
-            </p>
-            {status === "fallback" && (
-              <p className="mt-1 text-2xs text-warning">{t("approx")}</p>
-            )}
-            {status !== "fallback" && all.length > 0 && (
-              <dl className="mt-2 space-y-1.5 text-2xs">
-                <Row
-                  label={t("countries")}
-                  items={top(
-                    all.map((v) => v.country ?? "??"),
-                    3,
-                  ).map(([c, n]) => [
-                    c === "??" ? t("unknown") : countryName(c),
-                    n,
-                  ])}
-                />
-                <Row
-                  label={t("devices")}
-                  items={top(
-                    all.map((v) => v.device),
-                    2,
-                  ).map(([d, n]) => [t(`device.${d}`), n])}
-                />
-                <Row
-                  label={t("pages")}
-                  items={top(
-                    all.map((v) => pageSection(v.path)),
-                    3,
-                  ).map(([s, n]) => [t(`sections.${s as PageSection}`), n])}
-                />
-              </dl>
-            )}
-            {!world && abroad > 0 && (
-              <p className="mt-2 text-2xs text-muted-foreground">
-                {t("abroad", { n: abroad })}
-              </p>
-            )}
+              <ChevronDownIcon
+                aria-hidden="true"
+                className={cn(
+                  "ml-auto size-4 shrink-0 self-center text-faint transition-transform duration-(--motion-fast)",
+                  statsOpen && "rotate-180",
+                )}
+              />
+            </button>
+            <div id="live-stats" hidden={!statsOpen}>
+              {status === "fallback" && (
+                <p className="mt-1 text-2xs text-warning">{t("approx")}</p>
+              )}
+              {status !== "fallback" && all.length > 0 && (
+                <dl className="mt-2 space-y-1.5 text-2xs">
+                  <Row
+                    label={t("countries")}
+                    items={top(
+                      all.map((v) => v.country ?? "??"),
+                      3,
+                    ).map(([c, n]) => [
+                      c === "??" ? t("unknown") : countryName(c),
+                      n,
+                    ])}
+                  />
+                  <Row
+                    label={t("devices")}
+                    items={top(
+                      all.map((v) => v.device),
+                      2,
+                    ).map(([d, n]) => [t(`device.${d}`), n])}
+                  />
+                  <Row
+                    label={t("pages")}
+                    items={top(
+                      all.map((v) => pageSection(v.path)),
+                      3,
+                    ).map(([s, n]) => [t(`sections.${s as PageSection}`), n])}
+                  />
+                </dl>
+              )}
+              {!world && abroad > 0 && (
+                <p className="mt-2 text-2xs text-muted-foreground">
+                  {t("abroad", { n: abroad })}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Activity feed */}
           <ol
             aria-label={t("feed")}
-            className="absolute bottom-3 left-3 w-64 max-w-[calc(100%-1.5rem)] space-y-1.5 sm:bottom-4 sm:left-4"
+            // Phones: the 2 latest only, so the feed covers less of the map.
+            className="absolute bottom-3 left-3 w-64 max-w-[calc(100%-1.5rem)] space-y-1.5 sm:bottom-4 sm:left-4 max-sm:[&>li:nth-child(n+3)]:hidden"
           >
             {events.slice(0, 4).map((e) => (
               <li

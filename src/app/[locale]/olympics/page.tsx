@@ -54,6 +54,8 @@ export async function generateMetadata({
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
 const OPEN_CHIPS = 10;
+/** The podium cards show (desktop only) once this many provinces compete (Olympics v4). */
+const PODIUM_MIN = 5;
 
 // Design.md §6 Olympics page (v3, 2026-10-01: Claude Design structure + our open-spot podium and
 // map): season header + national stats · podium cards · metric/region controls · your province +
@@ -68,15 +70,14 @@ export default async function OlympicsPage({
   const metric = parseMetric(one(sp.metric));
   const region = parseRegion(one(sp.region));
 
-  const [t, common, national, thbPerUsd, activity, listed] =
-    await Promise.all([
-      getTranslations("Olympics"),
-      getTranslations("Common"),
-      getProvinceLeaderboard(metric),
-      getThbPerUsd(),
-      getProjectActivity().catch(() => []),
-      getProvinceProjectCounts().catch(() => ({}) as Record<string, number>),
-    ]);
+  const [t, common, national, thbPerUsd, activity, listed] = await Promise.all([
+    getTranslations("Olympics"),
+    getTranslations("Common"),
+    getProvinceLeaderboard(metric),
+    getThbPerUsd(),
+    getProjectActivity().catch(() => []),
+    getProvinceProjectCounts().catch(() => ({}) as Record<string, number>),
+  ]);
   // Logo URLs resolved here: the board below is a client component.
   const board = (
     region ? await getProvinceLeaderboard(metric, region) : national
@@ -99,6 +100,32 @@ export default async function OlympicsPage({
     REGION_LIST.map((r) => [r.slug, localizedName(r, locale)]),
   ) as Record<Region, string>;
   const ranks = Object.fromEntries(national.map((r) => [r.province, r.rank]));
+  // Olympics v4 (Design.md): the map card sits in the sidebar on desktop and right under the
+  // ranking on phones (it used to be near the end of a ~5,000 px page).
+  const regionCard = (
+    <Card className="p-4">
+      <h2 className="mb-3 text-xs font-semibold">{t("regionsTitle")}</h2>
+      <div className="mb-3 flex h-36 justify-center">
+        <OlympicsMap
+          active={regions.filter((r) => r.provinces > 0).map((r) => r.region)}
+          selected={region}
+          metric={metric}
+          names={regionNames}
+        />
+      </div>
+      <RegionStandings
+        standings={regions}
+        selected={region}
+        metric={metric}
+        thbPerUsd={thbPerUsd}
+      />
+    </Card>
+  );
+  // Podium cards only on desktop and only with enough provinces: a podium of 2–3 reads as empty,
+  // and on phones three cards stacked into blocks (owner 2026-10-12). Rows carry the medals instead.
+  const showPodium = board.length >= PODIUM_MIN;
+  const unlocked = Object.keys(listed).length;
+
   const regionHref = (r: Region | null) => ({
     pathname: "/olympics" as const,
     query: {
@@ -149,6 +176,28 @@ export default async function OlympicsPage({
           <p className="mt-2 max-w-xl text-body text-muted-foreground">
             {t("subtitle")}
           </p>
+          {/* Coverage (Olympics v4): provinces with a published project, listing counts. */}
+          <div className="mt-4 max-w-sm space-y-1.5">
+            <p className="flex items-baseline justify-between gap-3 text-caption">
+              <span className="font-semibold">
+                {t("unlocked", { n: unlocked, total: PROVINCE_LIST.length })}
+              </span>
+              <span className="text-faint tabular-nums">
+                {Math.round((unlocked / PROVINCE_LIST.length) * 100)}%
+              </span>
+            </p>
+            <span
+              aria-hidden="true"
+              className="block h-2 overflow-hidden rounded-full bg-secondary"
+            >
+              <span
+                className="block h-full rounded-full bg-brand"
+                style={{
+                  width: `${Math.max(2, (unlocked / PROVINCE_LIST.length) * 100)}%`,
+                }}
+              />
+            </span>
+          </div>
           {/* The header has no leaderboard link since Phase 10c (Figma 160-555): it lives here. */}
           <Link
             href={{ pathname: "/", hash: "leaderboard" }}
@@ -184,10 +233,16 @@ export default async function OlympicsPage({
         </div>
       </header>
 
-      {/* Podium */}
-      <section aria-label={t("podium")} className="mt-8">
-        <Podium top={board.slice(0, 3)} metric={metric} thbPerUsd={thbPerUsd} />
-      </section>
+      {/* Podium: desktop only, from PODIUM_MIN competing provinces (Olympics v4). */}
+      {showPodium && (
+        <section aria-label={t("podium")} className="mt-8 hidden md:block">
+          <Podium
+            top={board.slice(0, 3)}
+            metric={metric}
+            thbPerUsd={thbPerUsd}
+          />
+        </section>
+      )}
 
       {/* Controls */}
       <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -227,7 +282,13 @@ export default async function OlympicsPage({
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-4">
-          <OlympicsBoard board={board} metric={metric} thbPerUsd={thbPerUsd} />
+          <OlympicsBoard
+            board={board}
+            metric={metric}
+            thbPerUsd={thbPerUsd}
+            podiumShown={showPodium}
+          />
+          <div className="lg:hidden">{regionCard}</div>
 
           {open.length > 0 && (
             <Card className="p-5">
@@ -295,25 +356,7 @@ export default async function OlympicsPage({
         </div>
 
         <aside className="space-y-4">
-          <Card className="p-4">
-            <h2 className="mb-3 text-xs font-semibold">{t("regionsTitle")}</h2>
-            <div className="mb-3 flex h-36 justify-center">
-              <OlympicsMap
-                active={regions
-                  .filter((r) => r.provinces > 0)
-                  .map((r) => r.region)}
-                selected={region}
-                metric={metric}
-                names={regionNames}
-              />
-            </div>
-            <RegionStandings
-              standings={regions}
-              selected={region}
-              metric={metric}
-              thbPerUsd={thbPerUsd}
-            />
-          </Card>
+          <div className="hidden lg:block">{regionCard}</div>
 
           {rising.length > 0 && (
             <Card className="p-4">
@@ -347,7 +390,6 @@ export default async function OlympicsPage({
           )}
 
           <ShareRankCard ranks={ranks} />
-
         </aside>
       </div>
 

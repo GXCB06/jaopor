@@ -937,6 +937,7 @@
     "addCta": "เพิ่มผลงาน"
   },
   "Olympics": {
+    "unlocked": "ปลดล็อกแล้ว {n} จาก {total} จังหวัด",
     "pioneersTitle": "ผู้บุกเบิกจังหวัด",
     "pioneersSub": "ผลงานชิ้นแรกของแต่ละจังหวัด ใครลงก่อนได้ชื่ออยู่ตรงนี้",
     "firstIn": "คนแรกของ{province}",
@@ -960,7 +961,7 @@
     "eyebrow": "JaoPor Olympics · ฤดูกาล {year}",
     "statProvinces": "จังหวัดที่ลงแข่ง",
     "statTotal": "{metric} รวมทั้งประเทศ",
-    "statTotalProjects": "ผลงานที่นับคะแนน รวมทั้งประเทศ",
+    "statTotalProjects": "ผลงานที่นับคะแนน",
     "linkCopied": "คัดลอกลิงก์แล้ว",
     "regionEmpty": "ยังไม่มีผลงาน",
     "podium": "3 อันดับแรก",
@@ -1028,6 +1029,8 @@
     "others": "หมวดหมู่อื่น"
   },
   "Live": {
+    "showDetails": "ดูรายละเอียดคนที่กำลังดู",
+    "hideDetails": "ย่อรายละเอียด",
     "watchingNow": "กำลังดู JaoPor อยู่ตอนนี้",
     "title": "ตอนนี้มีคนดูอยู่",
     "watching": "คนกำลังดู JaoPor",
