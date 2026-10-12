@@ -82,6 +82,13 @@
 - At 375: scrollWidth 375 = clientWidth, and the caret blinks at the end.
 - Unit tests for `typedGlyphs` / `plainText` / `gradientAt`.
 
+**Production** (pushed `604c738`, owner "push and commit"):
+
+- jaopor.vercel.app serves the typed headline and the top-edge light.
+- Production e2e, run three times:
+  - Run 1 (right after the deploy): 133 passed, 6 flaky (passed on retry, likely first loads).
+  - The final clean run: 138 passed / 0 failed / 0 flaky.
+
 **Files:** `src/lib/motion/typing.ts` (+ test), `src/components/home/TypedHeadline.tsx`, `src/components/BrandLogo.tsx`, `src/app/globals.css`, `src/app/[locale]/page.tsx`, `Design.md`
 
 ## 2026-10-12 — Hero in the Aetox look: blue → cyan highlight, moving spotlight
