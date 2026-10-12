@@ -29,6 +29,13 @@ export type CardTheme = keyof typeof CARD_THEME;
 /** Brand mark tile colour (indigo, `--brand` / `--chart-1`). */
 export const BRAND_HEX = "#6e6cf3";
 
+/** Hero blues (`--hero-grad-from/via/to`, light theme): the profile cover gradient on the OG card. */
+export const HERO_HEX = {
+  from: "#1251fd",
+  via: "#2563eb",
+  to: "#0e7490",
+} as const;
+
 // Spec 6.5 order: blue, purple, indigo, sky, cyan, teal, emerald, lime, amber, orange, rose, pink.
 export const SWATCHES = {
   blue: "#3b82f6",

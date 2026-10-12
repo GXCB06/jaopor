@@ -12,6 +12,30 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-12 — Early-stage projects: no-numbers cards, wizard stage choice, OG card in the profile layout
+
+**Done** (owner: "ทำเลยครับ" to the order 2 → 6 → 3):
+
+- **Projects with no public numbers** (the right column used to be headings with nothing under them):
+  - Visitors get "ผลงานช่วงเริ่มต้น" (`NoNumbersCard`): one sentence, "ลองใช้งาน ↗" and "ดูโปรไฟล์ผู้สร้าง".
+  - The owner gets "อัปเกรดเป็นตัวเลขยืนยัน" with GitHub commits and the JaoPor counter first (no key), then revenue. Each opens the editor's chooser at that metric.
+  - "เกี่ยวกับ" without a description renders nothing for visitors.
+  - Section tabs only appear with 3 or more parts. Parts known to be empty are filtered on the server, so the tab row never shows and then disappears.
+- **Wizard step 2 asks the stage first:** "ยังไม่มีรายได้ / กำลังสร้าง" or "มีรายได้แล้ว".
+  - The early choice reorders the chooser (build · visitors · revenue) and makes "ไปหน้าผลงานเลย" the main button.
+  - New `VerifyPanel` `order` prop.
+- **OG image in the profile layout:**
+  - The cover is a band across the top (the same screenshot the page uses; `ogCoverDataUri` now prefers the first desktop shot and takes a size), else the hero-blue gradient (`HERO_HEX`).
+  - The logo overlaps the band, with name + tagline beside it. The tagline is cut at a word with "…". Projects with no numbers get an "ผลงานช่วงเริ่มต้น" pill.
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit 627 passed / 17 skipped · e2e local 123 passed / 0 failed.
+- Browser at 375 (aetox-harness, visitor): gradient cover, early-stage card, no tabs, no sideways scroll.
+- OG rendered and checked for jaopor (cover, 3 numbers) and aetox-harness (gradient, early pill), th and en.
+
+**Not verified:** the owner upgrade card and the wizard stage choice in a browser. Both need a signed-in session.
+
 ## 2026-10-12 — Product Profile: section tabs and shorter insights
 
 **Done** (owner: "i like it proceed the rest", proposals 4–5):

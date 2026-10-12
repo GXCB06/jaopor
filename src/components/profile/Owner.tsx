@@ -1,6 +1,15 @@
 "use client";
 
-import { CheckCircle2Icon, PencilIcon } from "lucide-react";
+import {
+  ArrowUpRightIcon,
+  ChartColumnIcon,
+  CheckCircle2Icon,
+  ChevronRightIcon,
+  CreditCardIcon,
+  GitCommitHorizontalIcon,
+  PencilIcon,
+  SproutIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   createContext,
@@ -225,6 +234,99 @@ export function OwnerBar({ done }: { done: Record<StepId, boolean> }) {
           );
         })}
       </ol>
+    </section>
+  );
+}
+
+/**
+ * Design.md §5 Profile layout, no public numbers yet: visitors get "ผลงานช่วงเริ่มต้น" (try it,
+ * see the builder) instead of an "unverified" line; the owner gets the upgrade card with the
+ * low-effort sources first, each opening the editor's chooser at that metric.
+ */
+export function NoNumbersCard({
+  tryUrl,
+  builderHandle,
+}: {
+  tryUrl: string | null;
+  builderHandle: string | null;
+}) {
+  const { isOwner, startupId } = useContext(Ctx);
+  const t = useTranslations("Profile");
+  if (isOwner) {
+    const rows = [
+      { anchor: "verify-build", icon: GitCommitHorizontalIcon, id: "build" },
+      { anchor: "verify-traffic", icon: ChartColumnIcon, id: "traffic" },
+      { anchor: "verify-revenue", icon: CreditCardIcon, id: "revenue" },
+    ] as const;
+    return (
+      <section className="space-y-4 rounded-xl border border-brand/40 bg-brand/5 p-5">
+        <div className="space-y-1">
+          <h2 className="text-base font-bold">{t("upgrade.title")}</h2>
+          <p className="text-caption text-muted-foreground">
+            {t("upgrade.body")}
+          </p>
+        </div>
+        <ul className="grid gap-2">
+          {rows.map(({ anchor, icon: Icon, id }) => (
+            <li key={id}>
+              <Link
+                href={`/dashboard/${startupId}/edit#${anchor}`}
+                className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2.5 transition-colors hover:bg-accent"
+              >
+                <Icon
+                  className="size-4 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold">
+                    {t(`upgrade.${id}`)}
+                  </span>
+                  <span className="block text-caption text-muted-foreground">
+                    {t(`upgrade.${id}Hint`)}
+                  </span>
+                </span>
+                <ChevronRightIcon
+                  className="size-4 shrink-0 text-faint"
+                  aria-hidden="true"
+                />
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <p className="text-caption text-faint">{t("upgrade.note")}</p>
+      </section>
+    );
+  }
+  return (
+    <section className="flex flex-col items-start gap-4 rounded-xl border border-dashed bg-card p-5 sm:flex-row sm:items-center">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary">
+        <SproutIcon className="size-4 text-positive" aria-hidden="true" />
+      </span>
+      <div className="min-w-0 flex-1 space-y-1">
+        <h2 className="text-sm font-bold">{t("early.title")}</h2>
+        <p className="text-caption text-muted-foreground">{t("early.body")}</p>
+      </div>
+      <div className="flex shrink-0 flex-wrap gap-2">
+        {tryUrl && (
+          <a
+            href={tryUrl}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="inline-flex h-8 items-center gap-1 rounded-md bg-primary px-3 text-caption font-medium text-primary-foreground hover:opacity-90"
+          >
+            {t("early.try")}
+            <ArrowUpRightIcon className="size-3.5" aria-hidden="true" />
+          </a>
+        )}
+        {builderHandle && (
+          <Link
+            href={`/u/${builderHandle}`}
+            className="inline-flex h-8 items-center rounded-md border bg-background px-3 text-caption font-medium hover:bg-accent"
+          >
+            {t("early.builder")}
+          </Link>
+        )}
+      </div>
     </section>
   );
 }

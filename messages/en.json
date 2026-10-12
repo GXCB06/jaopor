@@ -181,6 +181,23 @@
     "welcomeClose": "Close welcome message"
   },
   "Profile": {
+    "early": {
+      "title": "Early-stage project",
+      "body": "The owner hasn't connected real numbers yet. Try it out, and check back here for progress.",
+      "try": "Try it",
+      "builder": "See the builder"
+    },
+    "upgrade": {
+      "title": "Upgrade to verified numbers",
+      "body": "Projects with verified numbers get the ✓ badge and a place on the leaderboard. No revenue needed to start; it takes about a minute.",
+      "build": "Commits on GitHub",
+      "buildHint": "No key needed. Shows this project is really being built",
+      "traffic": "Visitors",
+      "trafficHint": "Add JaoPor's counter to your site. No key needed",
+      "revenue": "Revenue",
+      "revenueHint": "Stripe or RevenueCat with a read-only key",
+      "note": "Until you connect a number, others see the “Early-stage project” card here."
+    },
     "tabs": {
       "label": "Sections of this page",
       "numbers": "Numbers",
@@ -325,6 +342,14 @@
     "titleContact": "Sign in to send a request"
   },
   "Wizard": {
+    "stage": {
+      "title": "Where is your project right now?",
+      "early": "No revenue yet / still building",
+      "earlyHint": "Show commits and visitors now. No key needed",
+      "revenue": "Already making money",
+      "revenueHint": "Verify revenue and MRR with a read-only key"
+    },
+    "publishNow": "Go to my project page",
     "title": "Add your project",
     "step": "Step {current} of {total}",
     "stepBasics": "List it",

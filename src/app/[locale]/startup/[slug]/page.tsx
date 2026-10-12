@@ -22,6 +22,7 @@ import {
   EmptyOwnerCard,
   OwnerBar,
   OwnerProvider,
+  NoNumbersCard,
   UnverifiedLine,
 } from "@/components/profile/Owner";
 import {
@@ -238,6 +239,13 @@ export default async function StartupPage({ params }: Props) {
     verified && !startup.is_demo && isSource(startup.verified_provider)
       ? SOURCE_NAME[startup.verified_provider]
       : null;
+
+  // Design.md §5 Profile layout, no public numbers yet: the early-stage / upgrade card.
+  const noNumbers =
+    !startup.is_demo &&
+    !verified &&
+    !tractionFirst &&
+    !isNonExact(startup.disclosure.revenue);
 
   // Design.md §5 Profile layout, headline number: the strongest number that is public at its
   // exact value (masked groups arrive as null). Never for demos.
@@ -566,12 +574,20 @@ export default async function StartupPage({ params }: Props) {
 
             <SectionTabs
               label={t("tabs.label")}
+              // Parts known to be empty are left out here (no row that shows and then goes);
+              // the insights block is checked in the browser.
               tabs={[
                 { id: "numbers", label: t("tabs.numbers") },
-                { id: "shots", label: t("tabs.shots") },
-                { id: "about", label: t("tabs.about") },
+                ...(shots.length > 0 || startup.demo_video_url
+                  ? [{ id: "shots", label: t("tabs.shots") }]
+                  : []),
+                ...(startup.description
+                  ? [{ id: "about", label: t("tabs.about") }]
+                  : []),
                 { id: "insights", label: t("tabs.insights") },
-                { id: "updates", label: t("tabs.updates") },
+                ...(updates.length > 0
+                  ? [{ id: "updates", label: t("tabs.updates") }]
+                  : []),
               ]}
             />
 
@@ -644,8 +660,16 @@ export default async function StartupPage({ params }: Props) {
                   />
                 )}
               </div>
-              {!verified && !startup.is_demo && (
-                <UnverifiedLine items={[t("allTime"), t("mrr")]} />
+              {noNumbers ? (
+                <NoNumbersCard
+                  tryUrl={primary?.url ?? null}
+                  builderHandle={owner?.handle ?? null}
+                />
+              ) : (
+                !verified &&
+                !startup.is_demo && (
+                  <UnverifiedLine items={[t("allTime"), t("mrr")]} />
+                )
               )}
             </section>
 
@@ -685,11 +709,11 @@ export default async function StartupPage({ params }: Props) {
 
             {!tractionFirst && <TractionTiles startup={startup} />}
 
-            <section id="about" className="scroll-mt-40 lg:scroll-mt-28 space-y-3 pt-2">
-              <h2 className="text-lg font-bold tracking-tight">
-                {t("aboutTitle", { name: displayName })}
-              </h2>
-              {startup.description ? (
+            {startup.description ? (
+              <section id="about" className="scroll-mt-40 space-y-3 pt-2 lg:scroll-mt-28">
+                <h2 className="text-lg font-bold tracking-tight">
+                  {t("aboutTitle", { name: displayName })}
+                </h2>
                 <div className="font-prose text-body leading-relaxed text-muted-foreground">
                   <ClampedText
                     text={startup.description}
@@ -697,14 +721,17 @@ export default async function StartupPage({ params }: Props) {
                     less={t("readLess")}
                   />
                 </div>
-              ) : (
+              </section>
+            ) : (
+              // Visitors see nothing here (no lone heading); the owner gets the prompt.
+              <div id="about" className="scroll-mt-40 lg:scroll-mt-28">
                 <EmptyOwnerCard
                   field="description"
                   label={t("description")}
                   className="w-fit"
                 />
-              )}
-            </section>
+              </div>
+            )}
 
             <LookingForBanner startup={startup} />
 

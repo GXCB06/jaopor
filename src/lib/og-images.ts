@@ -56,20 +56,22 @@ export async function logoDataUri(
   }
 }
 
-/** Spec 6.4 OG image: the cover screenshot (first by position) as a 1200×630 JPEG data URI. */
+/**
+ * Spec 6.4 OG image: the cover screenshot as a JPEG data URI, the same one the profile page uses
+ * as its cover (the first desktop screenshot, else the first by position). `size` defaults to a
+ * full 1200×630 card; the OG card uses it as a band across the top.
+ */
 export async function ogCoverDataUri(
   startupId: number,
+  size: { width: number; height: number } = { width: 1200, height: 630 },
 ): Promise<string | null> {
   try {
-    const [cover] = await getScreenshots(startupId);
+    const shots = await getScreenshots(startupId);
+    const cover = shots.find((s) => s.kind === "desktop") ?? shots[0];
     if (!cover) return null;
     const bytes = await fetchBytes(screenshotUrl(cover.path));
     if (!bytes) return null;
-    return await toDataUri(
-      bytes,
-      { width: 1200, height: 630, fit: "cover" },
-      "jpeg",
-    );
+    return await toDataUri(bytes, { ...size, fit: "cover" }, "jpeg");
   } catch {
     // A missing or broken cover must never break the share card.
     return null;

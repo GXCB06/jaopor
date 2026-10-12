@@ -132,6 +132,7 @@ export function VerifyPanel({
   githubLogin,
   onConnected,
   attemptId,
+  order,
 }: {
   startupId: number;
   connections: ConnectionInfo[];
@@ -140,6 +141,8 @@ export function VerifyPanel({
   onConnected?: (source: SourceId) => void;
   /** Add-project funnel attempt (fired on the metric choice); omitted on the edit page. */
   attemptId?: string;
+  /** Order of the chooser's metric rows (wizard stage choice); default revenue first. */
+  order?: readonly SourceKind[];
 }) {
   const t = useTranslations("Sources");
   if (connections.length === 0)
@@ -150,6 +153,7 @@ export function VerifyPanel({
         githubLogin={githubLogin}
         onConnected={onConnected}
         attemptId={attemptId}
+        order={order}
       />
     );
   return (
@@ -189,12 +193,14 @@ function VerifyChooser({
   githubLogin,
   onConnected,
   attemptId,
+  order = METRICS,
 }: {
   startupId: number;
   websiteHost: string | null;
   githubLogin: string | null;
   onConnected?: (source: SourceId) => void;
   attemptId?: string;
+  order?: readonly SourceKind[];
 }) {
   const t = useTranslations("Sources");
   // Which metric is expanded (null = the three metric rows).
@@ -250,7 +256,7 @@ function VerifyChooser({
 
       {metric === null ? (
         <div className="grid gap-2">
-          {METRICS.map((kind) => {
+          {order.map((kind) => {
             const Icon = METRIC_ICON[kind];
             const isDone = metricDone(kind);
             const names = sourcesFor(kind)

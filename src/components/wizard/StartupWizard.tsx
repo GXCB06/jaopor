@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon, CreditCardIcon, SproutIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
@@ -22,7 +22,7 @@ import {
   type LinkColumn,
 } from "@/lib/links";
 import type { SiteAutofill } from "@/lib/net/link-preview";
-import { SOURCE_KIND } from "@/lib/sources/catalog";
+import { SOURCE_KIND, type SourceKind } from "@/lib/sources/catalog";
 import { createClient } from "@/lib/supabase/client";
 import { revalidateStartup } from "@/app/actions/revalidate";
 import { useSessionDraft } from "@/lib/use-session-draft";
@@ -89,6 +89,9 @@ export async function uploadLogo(userId: string, file: File): Promise<string> {
   return path;
 }
 
+/** Step 2 order for a project without revenue yet: no-key proof first (Design.md §5). */
+const EARLY_ORDER: readonly SourceKind[] = ["build", "traffic", "revenue"];
+
 /** Identifies the logo shown on step 1, so going back and saving uploads only a changed logo. */
 function logoKey(file: File | null, auto: string | null): string | null {
   if (file) return `file:${file.name}:${file.size}:${file.lastModified}`;
@@ -122,6 +125,8 @@ export function StartupWizard({
   const router = useRouter();
 
   const [step, setStep] = useState<1 | 2>(1);
+  // Step 2 stage choice (not stored): "early" puts the no-key proof first.
+  const [stage, setStage] = useState<"early" | "revenue" | null>(null);
   // One random id per add-project attempt; kept in the session draft so a refresh continues it.
   const [attemptId, setAttemptId] = useState(() => newAttemptId());
   // The project created by step 1. Going back to step 1 edits it instead of creating another.
@@ -653,7 +658,53 @@ export function StartupWizard({
       {/* Hidden, not unmounted, on the way back to step 1: sources connected here stay marked. */}
       {saved && (
         <div className="space-y-5" hidden={step !== 2}>
+          {/* Design.md §5 VerifyPanel chooser, stage first: no revenue yet → no-key proof first. */}
+          <fieldset className="space-y-2">
+            <legend className="mb-2 text-sm font-semibold">
+              {t("stage.title")}
+            </legend>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {(
+                [
+                  ["early", SproutIcon],
+                  ["revenue", CreditCardIcon],
+                ] as const
+              ).map(([id, Icon]) => (
+                <label
+                  key={id}
+                  className={cn(
+                    "flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
+                    stage === id
+                      ? "border-brand bg-brand/5"
+                      : "bg-card hover:bg-accent",
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="stage"
+                    value={id}
+                    checked={stage === id}
+                    onChange={() => setStage(id)}
+                    className="sr-only"
+                  />
+                  <Icon
+                    className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold">
+                      {t(`stage.${id}`)}
+                    </span>
+                    <span className="block text-caption text-muted-foreground">
+                      {t(`stage.${id}Hint`)}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <VerifyPanel
+            order={stage === "early" ? EARLY_ORDER : undefined}
             startupId={saved.id}
             connections={[]}
             websiteHost={ownWebsiteHost(saved.website)}
@@ -680,11 +731,15 @@ export function StartupWizard({
               {verified ? "" : t("verifyLater")}
             </p>
             <Button
-              variant={verified ? "default" : "outline"}
+              variant={verified || stage === "early" ? "default" : "outline"}
               onClick={goToProfile}
               className="px-4"
             >
-              {verified ? t("goToProfile") : t("skipToProfile")}
+              {verified
+                ? t("goToProfile")
+                : stage === "early"
+                  ? t("publishNow")
+                  : t("skipToProfile")}
             </Button>
           </div>
         </div>

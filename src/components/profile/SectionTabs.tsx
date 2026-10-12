@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 // Design.md §5 Profile layout, section tabs (owner 2026-10-12): a row of links to the parts of a
 // long project page, pinned under the header (and under the phone identity bar) while the right
 // column scrolls. The tab of the part on screen is marked. Tabs whose part renders nothing for
-// this visitor (e.g. no screenshots) are dropped after the first paint; the row keeps its height.
+// this visitor (e.g. no screenshots) are dropped after the first paint; with fewer than three
+// parts left the row goes away.
 
 export type SectionTab = { id: string; label: string };
 
@@ -18,9 +19,11 @@ export function SectionTabs({
   label: string;
 }) {
   const [shown, setShown] = useState(tabs);
+  const few = tabs.length < 3;
   const [active, setActive] = useState(tabs[0]?.id ?? "");
 
   useEffect(() => {
+    if (few) return;
     const present = tabs.filter((tab) => {
       const el = document.getElementById(tab.id);
       return el !== null && el.offsetHeight > 0;
@@ -42,9 +45,10 @@ export function SectionTabs({
       if (el) io.observe(el);
     }
     return () => io.disconnect();
-  }, [tabs]);
+  }, [tabs, few]);
 
-  if (shown.length < 2) return null;
+  // A short page needs no tabs: only with three or more parts that have content.
+  if (few || shown.length < 3) return null;
   return (
     <nav
       aria-label={label}
