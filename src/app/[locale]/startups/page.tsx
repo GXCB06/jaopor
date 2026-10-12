@@ -25,13 +25,15 @@ import { isProvince } from "@/lib/config/provinces";
 import { categoryName } from "@/lib/config/display";
 import { aiToolLabel } from "@/lib/config/stack";
 import { joinList, parseList } from "@/lib/url-list";
+import { localeAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/startups">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Directory" });
-  return { title: t("title") };
+  // Filtered views (?category=…) all point at the one directory URL.
+  return { title: t("title"), alternates: localeAlternates(locale, "/startups") };
 }
 
 const pick = <T extends string>(list: readonly T[], v: string | undefined) =>

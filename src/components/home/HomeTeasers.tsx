@@ -8,7 +8,7 @@ import { CATEGORY_LIST } from "@/lib/config/categories";
 import { localizedName } from "@/lib/config/localized";
 import { getProvince } from "@/lib/config/provinces";
 import { getCategoryCounts, getProvinceLeaderboard } from "@/lib/data/startups";
-import { DEFAULT_METRIC } from "@/lib/olympics";
+import { DEFAULT_METRIC, isMoneyMetric } from "@/lib/olympics";
 import { cn } from "@/lib/utils";
 
 /**
@@ -89,14 +89,22 @@ export async function HomeTeasers({ thbPerUsd }: { thbPerUsd: number | null }) {
                       {localizedName(p, locale)}
                     </span>
                     <span className="shrink-0 text-xs font-bold tabular-nums">
-                      <Money cents={row.total} thbPerUsd={thbPerUsd} />
+                      {/* The default board may count projects, not money (audit 2026-10-12: it
+                          showed ฿0 for a count of 1). */}
+                      {isMoneyMetric(DEFAULT_METRIC) ? (
+                        <Money cents={row.total} thbPerUsd={thbPerUsd} />
+                      ) : (
+                        t("olympicsTeaserCount", { n: row.total })
+                      )}
                     </span>
                   </Link>
                 </li>
               );
             })}
           </ol>
-          <p className="mt-3 text-2xs text-faint">{t("olympicsTeaserSub")}</p>
+          <p className="mt-3 text-2xs text-faint">
+            {t(`olympicsTeaserSub.${isMoneyMetric(DEFAULT_METRIC) ? "money" : "projects"}`)}
+          </p>
         </Card>
       )}
     </section>

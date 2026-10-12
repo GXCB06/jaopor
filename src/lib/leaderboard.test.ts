@@ -158,3 +158,12 @@ describe("rankBoard", () => {
     expect(rank([])).toEqual([]);
   });
 });
+
+describe("team projects (lib/team)", () => {
+  it("never rank on any board, other slugs still do", () => {
+    for (const m of BOARD_METRICS) {
+      expect(isBoardEligible(row({ slug: "jaopor" }), m)).toBe(false);
+      expect(isBoardEligible(row({ slug: "someone-else" }), m)).toBe(true);
+    }
+  });
+});

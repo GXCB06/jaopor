@@ -5,6 +5,7 @@ import {
   FlaskConicalIcon,
   MapPinIcon,
   EyeOffIcon,
+  UsersIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -16,6 +17,7 @@ import {
 import { VerifiedBadge } from "@/components/core/VerifiedBadge";
 import { syncedRecently } from "@/lib/motion/live";
 import { ProjectName } from "@/components/core/ProjectName";
+import { isTeamProject } from "@/lib/team";
 import { isAnonymousSlug } from "@/lib/anonymous";
 import { DisclosedStat, isNonExact } from "@/components/profile/DisclosedStat";
 import {
@@ -80,6 +82,7 @@ import { logoUrl } from "@/lib/supabase/public";
 import { LiveViewersPill } from "@/components/live/LiveViewersPill";
 import { categoryName, provinceName } from "@/lib/config/display";
 import { DEFAULT_METRIC, provinceRank } from "@/lib/olympics";
+import { localeAlternates } from "@/lib/seo";
 
 export const revalidate = 60;
 
@@ -115,7 +118,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: { canonical: `/${locale}/startup/${startup.slug}` },
+    alternates: localeAlternates(locale, `/startup/${startup.slug}`),
     openGraph: {
       type: "website",
       siteName: "JaoPor",
@@ -256,6 +259,8 @@ export default async function StartupPage({ params }: Props) {
     value: React.ReactNode;
     label: string;
     source: string | null;
+    /** Why the number may look odd next to the others (MRR above revenue so far). */
+    note?: string;
   } | null = startup.is_demo
     ? null
     : verified && startup.mrr_cents !== null && startup.mrr_cents > 0
@@ -265,6 +270,13 @@ export default async function StartupPage({ params }: Props) {
           ),
           label: t("mrr"),
           source: verifiedSource && t("chartStamp", { source: verifiedSource }),
+          // MRR is the price of today's active subscriptions (annual ÷ 12, no discounts), so it can
+          // be above the money received so far (lib/revenue/metrics.ts).
+          note:
+            startup.revenue_all_time_cents !== null &&
+            startup.mrr_cents > startup.revenue_all_time_cents
+              ? t("mrrAboveRevenue")
+              : undefined,
         }
       : verified && startup.revenue_30d_cents !== null
         ? {
@@ -401,6 +413,13 @@ export default async function StartupPage({ params }: Props) {
                 </span>
               )}
               <FoundingBadge n={startup.founding_number} />
+              {isTeamProject(startup.slug) && (
+                // lib/team: the team's own project is listed, never ranked (audit 2026-10-12).
+                <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs text-muted-foreground">
+                  <UsersIcon className="size-3" aria-hidden="true" />
+                  {t("teamProject")}
+                </span>
+              )}
               {!startup.is_demo && (
                 <VerifiedBadge
                   source={verifiedSource}
@@ -456,6 +475,11 @@ export default async function StartupPage({ params }: Props) {
                     </>
                   )}
                 </p>
+                {headline.note && (
+                  <p className="mt-1.5 text-caption leading-relaxed text-faint">
+                    {headline.note}
+                  </p>
+                )}
               </div>
             )}
 

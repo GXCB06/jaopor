@@ -14,6 +14,9 @@ test("leaderboard labels carry the period and the footer defines the board", asy
   const board = page.locator("#leaderboard");
   await expect(board).toBeVisible();
   const select = board.getByRole("combobox");
+  // The home board opens at 3 rankable projects (audit 2026-10-12); before that it's the
+  // "opens when…" card, checked in the next test.
+  test.skip((await select.count()) === 0, "home leaderboard not open yet");
   await select.click();
   for (const label of [
     "MRR ปัจจุบัน",
@@ -29,6 +32,20 @@ test("leaderboard labels carry the period and the footer defines the board", asy
   await page.getByRole("option", { name: "ผู้เข้าชม 30 วัน" }).click();
   await expect(board).toContainText("นับโดยสคริปต์ JaoPor");
   await expectNoHorizontalScroll(page, "/th");
+});
+
+test("before it opens, the home leaderboard says when and links to adding a project", async ({
+  page,
+}) => {
+  await page.goto("/th");
+  const board = page.locator("#leaderboard");
+  await expect(board).toBeVisible();
+  test.skip(
+    (await board.getByRole("combobox").count()) > 0,
+    "home leaderboard is open",
+  );
+  await expect(board).toContainText("กระดานผู้นำจะเปิดเมื่อ");
+  await expect(board.getByRole("link")).toHaveAttribute("href", "/th/new");
 });
 
 test("a contact link sends a signed-out visitor to sign-in and back, same topic", async ({

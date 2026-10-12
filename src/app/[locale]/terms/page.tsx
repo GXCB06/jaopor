@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { DocPage } from "@/components/DocPage";
 import { routing } from "@/i18n/routing";
+import { localeAlternates } from "@/lib/seo";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -15,7 +16,7 @@ export async function generateMetadata({
   return {
     title: t("metaTitle"),
     description: t("intro"),
-    alternates: { canonical: `/${locale}/terms` },
+    alternates: localeAlternates(locale, `/terms`),
   };
 }
 

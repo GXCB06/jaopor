@@ -2,6 +2,7 @@ import type { Screenshot } from "@/lib/media";
 import "server-only";
 import type { BoardMetric } from "@/lib/leaderboard";
 import { BOARD_DEFINITIONS, isBoardEligible } from "@/lib/leaderboard";
+import { isTeamProject } from "@/lib/team";
 import type { AiTool, Category } from "@/lib/catalog";
 import type { Region } from "@/lib/config/provinces";
 import type { LookingFor } from "@/lib/links";
@@ -340,6 +341,8 @@ export async function getRank(startup: StartupRow): Promise<number | null> {
   // R2: a rank reveals order, so only an exact MRR ranks (mrr_cents is null otherwise).
   if (startup.verification_status !== "verified" || startup.mrr_cents === null)
     return null;
+  // The team's own projects never rank (lib/team).
+  if (isTeamProject(startup.slug)) return null;
   const mode = await schemaMode();
   const { count, error } = await withRevenueShown(
     mode,

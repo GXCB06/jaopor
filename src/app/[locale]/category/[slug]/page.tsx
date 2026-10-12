@@ -14,6 +14,7 @@ import {
 import { localizedName } from "@/lib/config/localized";
 import { getThbPerUsd } from "@/lib/data/fx";
 import { getCategoryCounts, listStartups } from "@/lib/data/startups";
+import { EMPTY_PAGE_ROBOTS, localeAlternates } from "@/lib/seo";
 
 export const revalidate = 60;
 
@@ -28,11 +29,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   const c = getCategory(slug);
   if (!c) return {};
-  const t = await getTranslations({ locale, namespace: "Category" });
+  const [t, counts] = await Promise.all([
+    getTranslations({ locale, namespace: "Category" }),
+    getCategoryCounts().catch(() => null),
+  ]);
   return {
+    // Nothing listed yet: keep it out of search results until it has a project (SEO, audit 2026-10-12).
+    ...(counts && !counts[c.slug] ? { robots: EMPTY_PAGE_ROBOTS } : {}),
     title: t("title", { name: localizedName(c, locale) }),
     description: locale === "th" ? c.descTh : c.descEn,
-    alternates: { canonical: `/${locale}/category/${c.slug}` },
+    alternates: localeAlternates(locale, `/category/${c.slug}`),
   };
 }
 

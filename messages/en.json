@@ -74,7 +74,11 @@
     "exploreAll": "Explore all projects",
     "categoriesTeaser": "Explore categories",
     "olympicsTeaser": "Province Olympics",
-    "olympicsTeaserSub": "Ranked by verified revenue, last 30 days"
+    "olympicsTeaserSub": {
+      "money": "Ranked by verified revenue, last 30 days",
+      "projects": "Ranked by the number of projects in each province"
+    },
+    "olympicsTeaserCount": "{n, plural, one {# project} other {# projects}}"
   },
   "Catalog": {
     "audience": {
@@ -111,6 +115,7 @@
     "ownerVerified": "Owner verified"
   },
   "Leaderboard": {
+    "soon": "The leaderboard opens once at least {min} projects have verified numbers. {n} so far. Connect yours to be among the first on it.",
     "rank": "#",
     "startup": "Project",
     "founder": "Founder",
@@ -181,6 +186,8 @@
     "welcomeClose": "Close welcome message"
   },
   "Profile": {
+    "teamProject": "By the JaoPor team · not ranked",
+    "mrrAboveRevenue": "MRR is the price of the subscriptions active today (annual plans per month, before discounts), so it can be higher than the revenue received so far.",
     "early": {
       "title": "Early-stage project",
       "body": "The owner hasn't connected real numbers yet. Try it out, and check back here for progress.",
@@ -1020,6 +1027,7 @@
     "others": "Other categories"
   },
   "Live": {
+    "watchingNow": "browsing JaoPor right now",
     "title": "Who's here right now",
     "watching": "people on JaoPor",
     "world": "World",

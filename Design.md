@@ -145,6 +145,14 @@ Where the warmth goes: welcome moments, empty states, Add-project intro, the pos
 - **Container (layout audit 2026-10-12):** one public container, **`max-w-6xl px-4`**, the same as the site header and footer, so every page's left edge lines up with the logo. It applies to home, project profile, directories, feed and Olympics. Only forms keep `max-w-5xl` (the project edit page) for line length. No horizontal scroll at 375px.
 - **Sparse grids:** a grid never leaves whole empty columns because of a low count. Home card rows use fewer, wider columns: 3 cards → 3 columns, 4 → 4 (2×2 at `md`), 5 or more → 5. Directory grids with a sidebar (`/startups`, `/builders`) are `sm:2 · xl:3` columns. Grids beside a sidebar use `minmax(0,1fr)` so long content can't widen them.
 - **Section rhythm on home:** sections are `mt-12` apart. A section heading outside a card is `text-lg font-bold tracking-tight`; a heading inside a card is `text-base font-bold` (`text-sm` below `sm` where the row also holds controls, e.g. the LeaderboardCard).
+- **SEO (product audit 2026-10-12):**
+  - Every public page's metadata uses `localeAlternates(locale, path)` (`lib/seo`): canonical plus `hreflang` th / en / x-default. `/startups` with filters points at `/startups`.
+  - Category and province pages with 0 projects are `noindex, follow` (`EMPTY_PAGE_ROBOTS`).
+  - `app/robots.ts` allows the site and keeps out `/api`, dashboard, new, onboarding and login.
+  - `app/sitemap.ts` lists static pages, published non-anonymous projects, directory builders, and non-empty categories and provinces, in both languages with alternates; revalidated hourly.
+- **Thresholded home (product audit 2026-10-12):** a module that would show too little data gives way to something honest instead of looking empty:
+  - the leaderboard opens at 3 rankable projects (§5 LeaderboardCard);
+  - the live board becomes one line below 5 viewers (§5 LiveVisitorsSection).
 - **Radius:** `--radius: 0.5rem`. Compact cards and dropdown buttons `rounded-lg` (8); profile tiles, insight cards, chart card, leaderboard, large cards `rounded-xl` (12); buttons/inputs `rounded-md` (6); pills `rounded-full`; tags `rounded-sm` (4).
 - **Spacing:** compact card `p-3`, large card / tile `p-4`, chart card `p-6`; section gap `mt-9` (36), `mt-12` between home sections; grids `gap-3`.
 - **Elevation:** none. Separation from `bg-card` + `border`.
@@ -247,6 +255,10 @@ Rule for **every** list that drops from a control (selects, filters, action menu
 
 ### LeaderboardCard
 
+
+- **Before it opens (audit 2026-10-12):** the home shows the board only when at least **3** projects can rank on some board (`RANKED_MIN`).
+  - Until then, the same `#leaderboard` anchor holds a `rounded-xl border border-dashed bg-card p-5` card: a Trophy in a `size-10 rounded-full bg-secondary` circle, "กระดานผู้นำ", and "กระดานผู้นำจะเปิดเมื่อมีผลงานที่ยืนยันตัวเลขอย่างน้อย 3 ชิ้น ตอนนี้มี {n} ชิ้น …", plus a primary "ยืนยันตัวเลขของคุณ" → `/new`.
+- **The team's own projects never rank** (`lib/team`, owner decision 2026-10-12): they're left out of every board (and so out of the landing API's board) and out of the profile's "อันดับ #n". They stay listed and verified like any project.
 - Founder column (2026-10-07): the JaoPor display name (fallback `@handle`) with the profile photo, linking to `/u/{handle}`; never the X handle (the rest of the site names people by their JaoPor profile).
 
 - One `rounded-xl border bg-card` container with `id="leaderboard"`.
@@ -275,6 +287,8 @@ Rule for **every** list that drops from a control (selects, filters, action menu
   - "More startups" and QuickSearch stay full width under the grid.
   - **Cover (owner 2026-10-12):** a full-width banner above the grid (`h-32 sm:h-44 lg:h-52 rounded-2xl border`), `ProfileCover`: the first desktop screenshot (`object-cover object-top`), else a gradient in the hero blues (`--hero-grad-from/via/to`) with a faint dot grid; a `from-background/60` fade at the bottom. The logo overlaps its bottom edge (`-mt-14` / `lg:-mt-16`, `ring-4 ring-background`), above the name at every width. Anonymous projects have no public screenshots, so they always get the gradient.
   - **Headline number:** under the badges, the strongest number public at its exact value, `text-3xl font-bold tabular-nums`, with "{label} · ยืนยันผ่าน {source}" (`text-caption`): MRR → revenue 30 days → visitors 30 days ("นับโดย {source}") → total commits. None for demos.
+  - **Team project label:** the team's own project (`lib/team`) carries a chip "ผลงานของทีม JaoPor · ไม่จัดอันดับ" (`rounded-full border text-2xs text-muted-foreground`, Users icon) in the badges row.
+  - **MRR above revenue so far:** when the headline is MRR and MRR > all-time revenue, a `text-caption text-faint` line under it explains that MRR is the price of today's active subscriptions (annual ÷ 12, before discounts), so it can be higher than the money received so far.
   - **Order in the right column (owner 2026-10-12):** stats → chart → **screenshots** → traction tiles → เกี่ยวกับ → … (visuals early).
   - **Section tabs (owner 2026-10-12):** at the top of the right column, `SectionTabs`: ตัวเลข · ภาพผลงาน · เกี่ยวกับ · ข้อมูลเชิงลึก · อัปเดต (links to `#numbers` `#shots` `#about` `#insights` `#updates`). Sticky (`top-14` from `lg`; `top-[6.5rem]` below it, under the identity bar), `bg-background/95 backdrop-blur border-b`, `h-10` tabs in `text-caption font-semibold`; the part on screen gets `border-b-2 border-brand text-foreground` and `aria-current="location"`. Tabs whose part renders nothing for this visitor drop out after the first paint; the row hides below 2 tabs. Parts carry `scroll-mt-40 lg:scroll-mt-28`. Scrolls sideways on phones.
   - **Shorter insights:** InsightsGrid sits in `ShowMore` (first 26rem, a fade into the background, then "ดูข้อมูลเชิงลึกทั้งหมด ⌄" / "ย่อ"). It only clips after the script has measured it as taller, so the full text is in the HTML.
@@ -406,6 +420,8 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
 
 ### HomeTeasers (home, spec 6.2, Phase 7)
 
+
+- **Olympics teaser value (fix 2026-10-12):** the value follows the default Olympics metric. It shows a project count ("{n} ผลงาน") when the board counts projects, money only for money metrics, and the subtitle says which. It used to format a count of 1 as "฿0".
 - After the LeaderboardCard: `grid gap-3 md:grid-cols-2`. Left `Card p-5` "สำรวจหมวดหมู่" + "ดูทั้งหมด ›" (`text-caption text-faint`) → 8 busiest categories as chips (`rounded-full border bg-secondary px-2.5 py-1 text-caption`, lucide icon `size-3.5`, bold count when > 0) → `/startups?category=`. Right `Card p-5` "โอลิมปิกจังหวัด" → top 3 provinces (Medal · ProvinceBadge `h-8 w-11` · name · total) + caption "จัดอันดับจากรายได้ที่ยืนยันแล้ว". No ranked province → the Olympics card is omitted and categories take the full width.
 - Home CTA rule: "+ เพิ่มผลงาน" in the header, the hero and next to the bottom search (owner request 2026-10-07: a visitor who scrolled to the end should be able to add without scrolling back up). The hero sub-links are หมวดหมู่ · โอลิมปิก · กระดานผู้นำ; the "Recently added" empty state has no button; the bottom QuickSearch section renders without its chips (`chips={false}`).
 - Hero "ดูผลงานทั้งหมด {n} ชิ้น" shows the number only from 20 projects ("ดูผลงานทั้งหมด" below).
@@ -432,6 +448,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - `rounded-xl border bg-card` section after the card rows. Header: status dot (positive pulse = live, warning = fallback, faint = connecting) + title; right: "ทั่วโลก / ประเทศไทย" toggle (`h-7 border` button) and × (hides the section, remembered; a small "แสดงคนที่กำลังดู JaoPor" link brings it back).
 - Body `h-[420px] sm:h-[460px]` at every count (the round C compact height for ≤ 3 viewers was reverted on 2026-10-07: the map became too small to see the pins, and the 4-row feed overlapped the stats overlay): Thailand silhouette (`fill-muted-foreground/15`) with one pin per province at its centre (brand circle + DiceBear avatar, positive count badge when > 1); world view = MapLibre (OpenFreeMap dark, loaded on demand) with avatar markers at the coarse coordinates.
 - **Map placement (layout audit 2026-10-12):** from `sm` the Thailand map is centred in the space right of the overlay (`sm:pl-64`), no longer pushed to the right edge. That left a wide empty band between the overlay and the map. The height stays as above.
+- **Few viewers (audit 2026-10-12):** below **5** viewers (`LIVE_MAP_MIN`) the map, overlay and world toggle give way to one line under the header: "**{n} คน** กำลังดู JaoPor อยู่ตอนนี้". The opt-out / privacy footer stays. The map returns by itself at 5. The board stays on (owner asked for it back on 2026-10-11).
 - Overlay top-left (`w-56 rounded-lg border bg-background/85 backdrop-blur`): big count + "คนกำลังดู JaoPor", rows ประเทศ / อุปกรณ์ / หน้า (top 3, fixed section labels only, never slugs), "+n คนจากต่างประเทศ". Fallback shows the count + "แสดงจำนวนโดยประมาณ".
 - Feed bottom-left: last 4 page views as `bg-background/85` rows: avatar, "{ชื่อ} เปิด{หน้า}", "เมื่อสักครู่ / n นาทีที่แล้ว".
 - Footer `border-t text-2xs`: "คุณแสดงเป็น “{ชื่อ}” · ไม่แสดงตัวฉัน" (opt-out; then "คุณไม่ได้แสดงตัว · แสดงตัวอีกครั้ง") + "ไม่ระบุตัวตน · ตำแหน่งระดับจังหวัด/ประเทศ".

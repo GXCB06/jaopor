@@ -7,6 +7,7 @@ import { CATEGORY_LIST } from "@/lib/config/categories";
 import { localizedName } from "@/lib/config/localized";
 import { getCategoryCounts } from "@/lib/data/startups";
 import { cn } from "@/lib/utils";
+import { localeAlternates } from "@/lib/seo";
 
 export const revalidate = 60;
 
@@ -18,6 +19,7 @@ export async function generateMetadata({
   return {
     title: t("title"),
     description: t("subtitle", { n: CATEGORY_LIST.length }),
+    alternates: localeAlternates(locale, "/categories"),
   };
 }
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { LiveOptOutControl } from "@/components/live/LiveOptOutControl";
 import { routing } from "@/i18n/routing";
+import { localeAlternates } from "@/lib/seo";
 
 type Item = { b?: string; t: string };
 type Section = { id?: string; title: string; body?: string; items?: Item[] };
@@ -18,7 +19,7 @@ export async function generateMetadata({
   return {
     title: t("metaTitle"),
     description: t("intro"),
-    alternates: { canonical: `/${locale}/privacy` },
+    alternates: localeAlternates(locale, `/privacy`),
   };
 }
 

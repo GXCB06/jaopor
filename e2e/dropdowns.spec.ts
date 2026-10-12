@@ -55,12 +55,16 @@ test("directory filters: several categories at once, list opens below and fits",
   ).toHaveValue("saas,fintech");
 });
 
-test("leaderboard metric list opens below its button", async ({ page }) => {
-  await page.goto("/th");
-  const board = page.locator("#leaderboard");
-  await board.scrollIntoViewIfNeeded();
+// The Olympics province picker: always on the page, and its 77 options need the room below. (The
+// home leaderboard's list was used before; that board now opens only at 3 rankable projects.)
+const provincePicker = (page: import("@playwright/test").Page) =>
   // CSS, not role: an open Radix Select hides the rest of the page from the a11y tree.
-  const trigger = board.locator('[role="combobox"]');
+  page.locator('main button[role="combobox"]').first();
+
+test("the province list opens below its button", async ({ page }) => {
+  await page.goto("/th/olympics");
+  const trigger = provincePicker(page);
+  await trigger.scrollIntoViewIfNeeded();
   await trigger.click();
   await expectBelowAndOnScreen(page, trigger, page.getByRole("listbox"));
 });
@@ -68,8 +72,8 @@ test("leaderboard metric list opens below its button", async ({ page }) => {
 test("a dropdown near the bottom of the screen still opens below (the page makes room)", async ({
   page,
 }) => {
-  await page.goto("/th");
-  const trigger = page.locator('#leaderboard [role="combobox"]');
+  await page.goto("/th/olympics");
+  const trigger = provincePicker(page);
   // Put the button 60 px above the bottom edge and click at once (mid scroll-reveal).
   await trigger.evaluate((el) => {
     const r = el.getBoundingClientRect();

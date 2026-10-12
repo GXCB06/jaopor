@@ -31,6 +31,7 @@ import { joinList, parseList } from "@/lib/url-list";
 import { listBuilders } from "@/lib/data/builder";
 import { getThbPerUsd } from "@/lib/data/fx";
 import { PROFILE_STATUSES, type ProfileStatus } from "@/lib/profile";
+import { localeAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -40,7 +41,7 @@ export async function generateMetadata({
   return {
     title: t("title"),
     description: t("metaDescription"),
-    alternates: { canonical: `/${locale}/builders` },
+    alternates: localeAlternates(locale, `/builders`),
   };
 }
 

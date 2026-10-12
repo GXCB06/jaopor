@@ -12,6 +12,43 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-12 — Audit fixes 1–2: trust wording in the product, SEO basics, thresholded home
+
+**Done** (owner: "ทำเลย" to the audit's first two tasks, product-repo parts; the landing repo is waiting for approval):
+
+- **Team project:** new `lib/team` (`TEAM_PROJECT_SLUGS = ["jaopor"]`).
+  - JaoPor stays listed and verified, with the chip "ผลงานของทีม JaoPor · ไม่จัดอันดับ".
+  - It's excluded from every leaderboard (`isBoardEligible`, so also the landing API's board) and from the profile rank. Unit test added.
+- **MRR > revenue so far:** a one-line explanation under the headline MRR, matching how `lib/revenue/metrics.ts` computes it (active subscriptions, annual ÷ 12, before discounts).
+- **SEO:**
+  - `localeAlternates` (canonical + hreflang th/en/x-default) on every public page.
+  - `/startups` filters canonicalise to `/startups`.
+  - `noindex, follow` on 0-project category and province pages.
+  - `app/robots.ts` and `app/sitemap.ts` (36 URLs locally; builders are added where the server key exists).
+- **Thresholded home:**
+  - The leaderboard opens at 3 rankable projects (an "opens when…" card until then).
+  - The live board becomes one line below 5 viewers (the board stays, as the owner asked).
+- **Bug fixes:**
+  - The home Olympics teaser showed "฿0" for project counts; it now shows "1 ผลงาน" with a matching subtitle.
+  - The Olympics "จังหวัดของคุณ" row ran 3 px past the screen at 375 (caught by the updated dropdown e2e); the row now wraps.
+- **e2e:**
+  - Leaderboard tests skip while the board is closed; a new test checks the closed card and its `/th/new` link.
+  - Dropdown tests now use the Olympics province picker (always present, 77 options).
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit 629 passed / 17 skipped · e2e local 121 passed / 0 failed · build ✓ (robots.txt, sitemap.xml).
+- `curl`:
+  - robots and sitemap served;
+  - project page has canonical + 3 hreflang links;
+  - `/th/category/education` (0) is noindex, `/th/category/ai` is indexable.
+- Browser:
+  - home shows the leaderboard card ("ตอนนี้มี 0 ชิ้น"), the live board as one line, and the Olympics teaser counts;
+  - `/th/startup/jaopor` shows the team chip, the MRR note and no "อันดับ #1" on all-time revenue.
+
+**Not done (needs approval):** landing repo fixes (OG image 404, canonical, CTA targets, "Pending" / "VERIFIED SOURCES ONLY" wording).
+**Next:** owner review, then push; contact-request email after a domain is chosen.
+
 ## 2026-10-12 — Layout balance audit: one container, sparse grids, home rhythm, feed and Olympics columns
 
 **Done** (owner brief "Layout Balance & Composition Audit"; local only, not pushed):

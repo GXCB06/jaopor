@@ -36,6 +36,7 @@ import {
 } from "@/lib/olympics";
 import { logoUrl } from "@/lib/supabase/public";
 import { cn } from "@/lib/utils";
+import { localeAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -45,7 +46,7 @@ export async function generateMetadata({
   return {
     title: t("title"),
     description: t("subtitle"),
-    alternates: { canonical: `/${locale}/olympics` },
+    alternates: localeAlternates(locale, `/olympics`),
   };
 }
 

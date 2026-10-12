@@ -1,3 +1,5 @@
+import { isTeamProject } from "@/lib/team";
+
 // Leaderboard rules (UX master audit A1.3): what each board ranks, over which period, which
 // projects may appear, and how equal values are ranked. Pure and client-safe, so the board, the
 // data layer and the tests share one definition.
@@ -70,6 +72,8 @@ export const BOARD_DEFINITIONS: Record<BoardMetric, BoardDefinition> = {
 
 /** The project fields the rules read. */
 export type BoardCandidate = {
+  /** For the team-project rule (lib/team); rows without it are judged on the rest. */
+  slug?: string;
   is_demo: boolean;
   status: string;
   verification_status: string;
@@ -93,6 +97,8 @@ export function isBoardEligible(
   metric: BoardMetric,
 ): boolean {
   if (row.is_demo || row.status !== "published") return false;
+  // The team's own projects are listed but never ranked (lib/team, audit 2026-10-12).
+  if (isTeamProject(row.slug)) return false;
   if (boardValue(row, metric) === null) return false;
   if (
     BOARD_DEFINITIONS[metric].verifiedRevenueOnly &&

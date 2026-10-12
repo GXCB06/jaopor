@@ -1,3 +1,4 @@
+import { TrophyIcon } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { HeroBrand, HeroLight } from "@/components/BrandLogo";
 import { LeaderboardCard, type BoardRow } from "@/components/LeaderboardCard";
@@ -24,8 +25,20 @@ import { growthPct } from "@/lib/format";
 import { boardValue, rankBoard } from "@/lib/leaderboard";
 import { logoUrl } from "@/lib/supabase/public";
 import { cn } from "@/lib/utils";
+import type { Metadata } from "next";
+import { localeAlternates } from "@/lib/seo";
 
 export const revalidate = 60;
+
+/** The home leaderboard opens once this many projects can rank (audit 2026-10-12). */
+const RANKED_MIN = 3;
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]">): Promise<Metadata> {
+  const { locale } = await params;
+  return { alternates: localeAlternates(locale, "") };
+}
 
 const int = (n: number | null) => (n === null ? "–" : n.toLocaleString("en"));
 
@@ -82,10 +95,11 @@ function boardRow(
 export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [t, common, nav] = await Promise.all([
+  const [t, common, nav, lb] = await Promise.all([
     getTranslations("Home"),
     getTranslations("Common"),
     getTranslations("Nav"),
+    getTranslations("Leaderboard"),
   ]);
 
   const [thbPerUsd, recent, traction, counts, ...lists] = await Promise.all([
@@ -109,6 +123,9 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
   const dot = <span aria-hidden="true">·</span>;
   const subLink = "hover:text-foreground";
+
+  // Projects that can rank on at least one board (the team's own never do, lib/team).
+  const rankedCount = Math.max(...BOARD_METRICS.map((m) => boards[m].length));
 
   const shownRecent = new Set(recent.slice(0, 6).map((s) => s.id));
   const freshTraction = traction.filter((s) => !shownRecent.has(s.id));
@@ -187,7 +204,35 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
       <LiveVisitorsSection />
       <div className="mt-12">
-        <LeaderboardCard boards={boards} thbPerUsd={thbPerUsd} />
+        {/* Thresholded home (audit 2026-10-12): a board of one or two rows reads as empty, so it
+            opens once RANKED_MIN projects can rank; until then, say when and how to get on it. */}
+        {rankedCount >= RANKED_MIN ? (
+          <LeaderboardCard boards={boards} thbPerUsd={thbPerUsd} />
+        ) : (
+          <section
+            id="leaderboard"
+            className="flex scroll-mt-20 flex-col gap-4 rounded-xl border border-dashed bg-card p-5 sm:flex-row sm:items-center"
+          >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary">
+              <TrophyIcon
+                className="size-4 text-muted-foreground"
+                aria-hidden="true"
+              />
+            </span>
+            <div className="min-w-0 flex-1 space-y-1">
+              <h2 className="text-base font-bold">{lb("title")}</h2>
+              <p className="text-caption text-muted-foreground">
+                {lb("soon", { min: RANKED_MIN, n: rankedCount })}
+              </p>
+            </div>
+            <Link
+              href="/new"
+              className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-primary px-4 text-caption font-semibold text-primary-foreground hover:opacity-90"
+            >
+              {lb("emptyCta")}
+            </Link>
+          </section>
+        )}
       </div>
       <HomeTeasers thbPerUsd={thbPerUsd} />
       <QuickSearchSection chips={false} />

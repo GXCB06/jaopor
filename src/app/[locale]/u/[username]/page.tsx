@@ -62,6 +62,7 @@ import { renderNow } from "@/lib/posts";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { logoUrl } from "@/lib/supabase/public";
 import { cn } from "@/lib/utils";
+import { localeAlternates } from "@/lib/seo";
 
 type Props = PageProps<"/[locale]/u/[username]">;
 
@@ -73,7 +74,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${name} (@${p.handle})`,
     description: p.headline ?? p.bio ?? undefined,
-    alternates: { canonical: `/${locale}/u/${p.handle}` },
+    alternates: localeAlternates(locale, `/u/${p.handle}`),
   };
 }
 

@@ -19,6 +19,7 @@ import { POST_TYPES, renderNow } from "@/lib/posts";
 import { createClient } from "@/lib/supabase/server";
 import { logoUrl } from "@/lib/supabase/public";
 import { cn } from "@/lib/utils";
+import { localeAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -28,7 +29,7 @@ export async function generateMetadata({
   return {
     title: t("title"),
     description: t("metaDescription"),
-    alternates: { canonical: `/${locale}/feed` },
+    alternates: localeAlternates(locale, `/feed`),
   };
 }
 

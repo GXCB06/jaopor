@@ -12,6 +12,7 @@ import { PROVINCE_LIST, getProvince, getRegion } from "@/lib/config/provinces";
 import { getThbPerUsd } from "@/lib/data/fx";
 import { getProvinceLeaderboard, listStartups } from "@/lib/data/startups";
 import { DEFAULT_METRIC, provinceRank } from "@/lib/olympics";
+import { EMPTY_PAGE_ROBOTS, localeAlternates } from "@/lib/seo";
 
 export const revalidate = 60;
 
@@ -26,15 +27,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   const p = getProvince(slug);
   if (!p) return {};
-  const t = await getTranslations({ locale, namespace: "Province" });
+  const [t, ranked] = await Promise.all([
+    getTranslations({ locale, namespace: "Province" }),
+    getProvinceLeaderboard("projects").catch(() => null),
+  ]);
   const name = localizedName(p, locale);
+  const listed = ranked?.find((r) => r.province === p.slug)?.total ?? 0;
   return {
+    // Nothing listed yet: keep it out of search results until it has a project (SEO, audit 2026-10-12).
+    ...(ranked && listed === 0 ? { robots: EMPTY_PAGE_ROBOTS } : {}),
     title: t("title", { name }),
     description: t("subtitle", {
       name,
       region: localizedName(getRegion(p.region), locale),
     }),
-    alternates: { canonical: `/${locale}/province/${p.slug}` },
+    alternates: localeAlternates(locale, `/province/${p.slug}`),
   };
 }
 

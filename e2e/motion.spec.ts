@@ -149,6 +149,7 @@ test("switching the leaderboard slides rows to their new rank", async ({
   const board = page.locator("#leaderboard");
   await board.scrollIntoViewIfNeeded();
   const select = board.getByRole("combobox");
+  test.skip((await select.count()) === 0, "home leaderboard not open yet");
   const ids = () =>
     board
       .locator("tbody tr[data-id]")

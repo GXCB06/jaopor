@@ -6,6 +6,7 @@ import { PostCard } from "@/components/posts/PostCard";
 import { Link } from "@/i18n/navigation";
 import { getComments, getPost, viewerId } from "@/lib/data/posts";
 import { renderNow } from "@/lib/posts";
+import { localeAlternates } from "@/lib/seo";
 
 type Props = PageProps<"/[locale]/post/[id]">;
 
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description: post.body.slice(0, 160),
-    alternates: { canonical: `/${locale}/post/${post.id}` },
+    alternates: localeAlternates(locale, `/post/${post.id}`),
     openGraph: { title, description: post.body.slice(0, 200), type: "article" },
   };
 }

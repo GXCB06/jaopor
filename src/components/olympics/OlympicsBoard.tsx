@@ -178,7 +178,9 @@ export function OlympicsBoard({
             </button>
           </>
         ) : (
-          <label className="flex min-w-0 flex-1 items-center gap-2">
+          // Wraps on narrow phones: the picker drops under the question instead of running past the
+          // screen edge (found by the dropdown e2e at 375 px, 2026-10-12).
+          <label className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
             <span className="text-muted-foreground">{t("finderTitle")}</span>
             <span className="min-w-40 flex-1 sm:max-w-56">
               <ChoiceSelect
