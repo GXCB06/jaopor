@@ -53,8 +53,24 @@ export function HeroBrand() {
       />
       <span className="text-4xl font-extrabold tracking-[-0.02em] md:text-5xl">
         {t("brand")}
-        <span className="text-brand-logo">.</span>
+        <span className="text-hero-gradient">.</span>
       </span>
     </p>
+  );
+}
+
+/**
+ * Home hero background (Design.md §5 Hero light): a spotlight from the top with slowly swaying
+ * beams, full window width, CSS only. Decorative; the wrapper in the layout clips its sides.
+ */
+export function HeroLight() {
+  return (
+    <div
+      aria-hidden="true"
+      className="hero-light pointer-events-none absolute top-0 left-1/2 -z-10 h-[44rem] w-screen max-w-none -translate-x-1/2 overflow-hidden"
+    >
+      <div className="hero-light-glow" />
+      <div className="hero-light-beams" />
+    </div>
   );
 }

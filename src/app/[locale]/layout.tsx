@@ -140,7 +140,9 @@ export default async function LocaleLayout({
             {/* Design.md §7 Motion: sections fade up once as they scroll into view. */}
             <ScrollReveal />
             <SiteHeader />
-            <div className="flex flex-1 flex-col">{children}</div>
+            {/* overflow-x-clip: full-width hero layers never cause sideways scroll (no scroll box, so
+                sticky children still work). */}
+            <div className="flex flex-1 flex-col overflow-x-clip">{children}</div>
             <SiteFooter />
             <Toaster position="bottom-center" />
           </LivePresenceProvider>

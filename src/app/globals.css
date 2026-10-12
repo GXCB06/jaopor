@@ -29,7 +29,6 @@
   --font-prose: var(--font-plex-thai), ui-sans-serif, system-ui, sans-serif;
   --color-brand: var(--brand);
   --color-brand-text: var(--brand-text);
-  --color-brand-logo: var(--brand-logo);
   --color-surface-2: var(--surface-2);
   --color-border-strong: var(--border-strong);
   --color-positive: var(--positive);
@@ -106,8 +105,13 @@
   /* JaoPor brand accent (Design.md §2 ★): indigo, from the Figma file. Swap here only. */
   --brand: #4f46e5;
   --brand-text: #4f46e5;
-  /* JaoPor blue (owner swatch 2026-10-12), hero accents only (Design.md §2): 5.8:1 on white. */
-  --brand-logo: #1251fd;
+  /* Home hero (Design.md §2 Hero tokens, owner 2026-10-12, the Aetox look): blue → cyan
+     highlight, deeper on white so every stop stays ≥ 4.5:1; soft blue spotlight + beams. */
+  --hero-grad-from: #1251fd;
+  --hero-grad-via: #2563eb;
+  --hero-grad-to: #0e7490;
+  --hero-light: rgb(18 81 253 / 0.1);
+  --hero-beam: rgb(18 81 253 / 0.05);
   --surface-2: #ffffff;
   --border-strong: #d4d4d8;
   --brand-foreground: #ffffff;
@@ -162,8 +166,12 @@
   --brand: #6e6cf3;
   /* Text/link indigo: --brand itself is 4.47:1 on cards (<4.5), so text uses this lighter step. */
   --brand-text: #8280f6;
-  /* Same blue on the dark page (owner's exact colour): 3.4:1 on #09090b, large hero text only (AA large ≥ 3:1). */
-  --brand-logo: #1251fd;
+  /* Dark page: the Aetox stops (5.0 / 9.1 / 15.7:1 on #09090b); white spotlight + beams. */
+  --hero-grad-from: #3b78ff;
+  --hero-grad-via: #7fb0ff;
+  --hero-grad-to: #a8f0ff;
+  --hero-light: rgb(255 255 255 / 0.13);
+  --hero-beam: rgb(255 255 255 / 0.06);
   --surface-2: #1e1e20;
   --border-strong: #3a3a40;
   --brand-foreground: #09090b;
@@ -412,5 +420,105 @@ li:nth-child(5n + 5) > .card-rise {
   100% {
     opacity: 0;
     scale: 2.8;
+  }
+}
+
+/* Design.md §5 Hero light + highlight (owner 2026-10-12, after the Aetox landing page; our own
+   CSS, no canvas, no JS). A spotlight from the top of the hero with slow swaying beams; only
+   transform / opacity animate (composited, no repaint), and reduced motion gets it still. */
+.text-hero-gradient {
+  background-image: linear-gradient(
+    90deg,
+    var(--hero-grad-from) 0%,
+    var(--hero-grad-via) 55%,
+    var(--hero-grad-to) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  /* Room for Thai marks above / below the line, so the clipped background covers them. */
+  padding-block: 0.12em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.hero-light {
+  mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+.hero-light-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 22% 60% at 50% -4%,
+      var(--hero-light) 0%,
+      transparent 80%
+    ),
+    radial-gradient(
+      ellipse 48% 90% at 50% -10%,
+      var(--hero-light) 0%,
+      transparent 70%
+    );
+}
+/* Two soft beam fans turning against each other, so the light shimmers like Aetox's. */
+.hero-light-beams,
+.hero-light-beams::after {
+  position: absolute;
+  transform-origin: 50% 0;
+  background: repeating-conic-gradient(
+    from 90deg at 50% 0%,
+    transparent 0deg,
+    var(--hero-beam) 4deg,
+    transparent 9deg,
+    transparent 17deg
+  );
+}
+.hero-light-beams {
+  top: 0;
+  left: 50%;
+  width: 150%;
+  aspect-ratio: 1;
+  translate: -50% 0;
+  mask-image: radial-gradient(
+    ellipse 32% 50% at 50% 0%,
+    black 10%,
+    transparent 78%
+  );
+}
+.hero-light-beams::after {
+  content: "";
+  inset: 0;
+  background: repeating-conic-gradient(
+    from 96deg at 50% 0%,
+    transparent 0deg,
+    var(--hero-beam) 6deg,
+    transparent 13deg,
+    transparent 23deg
+  );
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-light-glow {
+    animation: hero-glow 6s ease-in-out infinite alternate;
+  }
+  .hero-light-beams {
+    animation: hero-sway 18s ease-in-out infinite alternate;
+  }
+  .hero-light-beams::after {
+    animation: hero-sway 11s ease-in-out infinite alternate-reverse;
+  }
+}
+@keyframes hero-sway {
+  from {
+    transform: rotate(-5deg);
+  }
+  to {
+    transform: rotate(5deg);
+  }
+}
+@keyframes hero-glow {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
   }
 }

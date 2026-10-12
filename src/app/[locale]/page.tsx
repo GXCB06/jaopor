@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { HeroBrand } from "@/components/BrandLogo";
+import { HeroBrand, HeroLight } from "@/components/BrandLogo";
 import { LeaderboardCard, type BoardRow } from "@/components/LeaderboardCard";
 import { CategoryRail } from "@/components/CategoryRail";
 import { ProviderStrip } from "@/components/ProviderStrip";
@@ -113,7 +113,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4">
-      <section className="flex flex-col items-center pt-10 pb-10 text-center md:pt-14">
+      <section className="relative isolate flex flex-col items-center pt-10 pb-10 text-center md:pt-14">
+        <HeroLight />
         <HeroBrand />
         {/* Design.md §5 Hero (owner mockup 2026-10-12): big two-line headline, grey "+", brand "ตัวเลขจริง". */}
         <h1 className="mb-4 font-bold tracking-tight text-balance">
@@ -124,7 +125,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           </span>
           <span className="mt-2 block text-2xl leading-tight sm:text-3xl md:text-4xl">
             {t.rich("heroBottom", {
-              brand: (c) => <span className="text-brand-logo">{c}</span>,
+              brand: (c) => <span className="text-hero-gradient">{c}</span>,
             })}
           </span>
         </h1>

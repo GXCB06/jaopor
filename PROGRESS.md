@@ -12,21 +12,30 @@
 > **Next:** the immediate follow-up
 > ```
 
-## 2026-10-12 — Hero accents in JaoPor blue
+## 2026-10-12 — Hero in the Aetox look: blue → cyan highlight, moving spotlight
 
-**Done** (owner: "ตัวเลขจริง" and the "." in the blue of the owner's swatch):
+**Done** (owner: the colour of Aetox's highlighted words, plus its moving background):
 
-- New token `--brand-logo` = `#1251fd` in both themes (sampled from the owner's swatch). Utility `text-brand-logo`; Design.md §2.
-- Used only for the dot of "JaoPor." and "ตัวเลขจริง" / "Real numbers." in the home hero. Links and buttons keep the indigo `--brand`.
-- Contrast: 5.8:1 on white; 3.4:1 on the dark page. That passes WCAG AA for large text (the hero line is ≥ 24 px bold), so the token is limited to large text on dark.
+- **Highlight:** `.text-hero-gradient` replaces the solid `--brand-logo` (removed). It is a 90° gradient clipped to the text, used on the dot of "JaoPor." and on "ตัวเลขจริง" / "Real numbers.".
+  - Dark theme: Aetox's own stops `#3b78ff → #7fb0ff → #a8f0ff`.
+  - Light theme: deeper stops `#1251fd → #2563eb → #0e7490`, so every stop is ≥ 5:1 on white.
+  - Padding keeps Thai marks inside the clipped background.
+- **Hero light** (`HeroLight`, CSS only):
+  - A soft spotlight from the top: two radial gradients, breathing in opacity.
+  - Two fans of soft beams (`repeating-conic-gradient`) swaying ±5° in opposite directions, over 18 s and 11 s.
+  - Full window width; faded out at the bottom.
+  - The layout's content wrapper became `overflow-x-clip`, so a full-width layer can't cause sideways scroll.
+  - Only transform and opacity animate. Reduced motion gets a still light.
+  - Design.md records this as an owner-approved exception to the no-infinite-loop rule.
+- Built from our own CSS after reading the reference's computed styles. Nothing was copied: theirs is a JS canvas, ours is pure CSS.
 
 **Verified:**
 
-- typecheck ✓ · lint ✓.
-- Browser `/th` at 1280 in light and dark: computed colour `rgb(18,81,253)`.
+- Browser `/th` at 1280, dark and light: the beams' transform changes over 1.5 s; the text stays readable.
+- At 375 px: scrollWidth 375 = clientWidth.
 - The old dev server on port 3000 had hung. It was stopped with the owner's OK and restarted.
 
-**Files:** `src/app/globals.css`, `src/components/BrandLogo.tsx`, `src/app/[locale]/page.tsx`, `Design.md`
+**Files:** `src/app/globals.css`, `src/components/BrandLogo.tsx` (`HeroLight`), `src/app/[locale]/{page,layout}.tsx`, `Design.md`
 
 ## 2026-10-12 — Hero lockup like the owner's mockup, constellation removed, anonymous names blurred
 
