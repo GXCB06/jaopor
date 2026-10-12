@@ -446,17 +446,18 @@ li:nth-child(5n + 5) > .card-rise {
 .hero-light {
   mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
 }
-/* The light source: a round glow just above the brand lockup that breathes in and out. */
+/* The light source sits on the top edge of the hero (owner: light from above, like the first
+   version): a round glow that breathes, with rays fanning down from it. */
 .hero-sun,
 .hero-rays,
 .hero-clouds {
   position: absolute;
   left: 50%;
-  top: 5.5rem;
+  top: 0;
   translate: -50% -50%;
 }
 .hero-sun {
-  width: 34rem;
+  width: 44rem;
   aspect-ratio: 1;
   background: radial-gradient(
     circle,
@@ -500,6 +501,7 @@ li:nth-child(5n + 5) > .card-rise {
 }
 /* Soft clouds in the page colour drift across the rays, so light breaks through in gaps. */
 .hero-clouds {
+  top: 12rem;
   width: 90rem;
   height: 30rem;
   background:

@@ -12,6 +12,27 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-12 — Landing site plan + public data endpoint (step A)
+
+**Done** (owner: studied the Lovable landing midnight-show-hub.lovable.app, chose the direction in plan mode):
+
+- **Studied the Lovable landing** read-only in the browser pane: structure, tokens (OKLCH dark, blue pill CTAs, Manrope + Noto Sans Thai), motion, mobile. It is a Vite SPA with hard-coded cards and static screenshots.
+- **Decisions:** the landing is a **separate repo** (`jaopor-landing`, Next.js, th + en, dark + light) on **one domain via Vercel rewrites**; it shows **live public numbers**; sample screenshots are labelled; missing data is `—`. **The app is not restyled this round** (the measured gap is in the plan for a later pass).
+- **`GET /api/public/landing`:** read-only, cacheable (`s-maxage` 300 s), open CORS. Returns 6 recent real projects, the top 5 of each board (MRR, revenue 30 d, visitors 30 d, commits) with competition ranks, counts, category counts and THB per USD.
+  - Each number carries its basis: revenue and build proof "verified", visitors "counted" with the source name, plus the last sync time.
+  - Demo and unpublished projects never appear. An anonymous project returns no name or logo, only a mask.
+- Pure mapper `lib/public-landing.ts` reuses `getBoard`, `getRecent`, `countStartups`, `getCategoryCounts`, `rankBoard`.
+
+**Files:** `src/app/api/public/landing/route.ts`, `src/lib/public-landing.ts`, `src/lib/public-landing.test.ts`, `Project.md`
+
+**Verified:**
+
+- `npm run typecheck` ✓ · `npm run lint` ✓ · `npx vitest run src/lib/public-landing.test.ts` ✓ (8 tests; demo / draft / anonymous / unverified / ranking / private-field checks). The full unit suite and e2e were not re-run this round.
+- Called the endpoint on the running dev server (port 3000, another session's): 200, CORS and cache headers present, real numbers (JaoPor MRR 6,890 cents with source Stripe; the two projects without numbers show nulls and no proof).
+
+**Not verified:** the endpoint on production (not pushed). `province` comes back as a slug (`mukdahan`); the landing must map it to a name.
+**Next:** scaffold the `jaopor-landing` repo (tokens, light set, sections), then the Vercel rewrite plan. Needs the owner to create the GitHub repo or approve `gh repo create`.
+
 ## 2026-10-12 — Product Profile in the Lovable layout; card hover lift + glow ring
 
 **Done** (owner: liked the Lovable mockup thai-maker-hub.lovable.app, studied read-only in the browser pane):
@@ -48,6 +69,7 @@
   - Soft clouds in the page colour drift across, so light breaks through in gaps (22 s).
   - Only transform, rotate, scale and opacity animate; the light is still with reduced motion.
   - New token `--hero-cloud`; `--hero-light` and `--hero-beam` are a little stronger.
+  - Follow-up (owner: "ตำแหน่งแสงเหมือนก่อนหน้านี้ มาจากข้างบน"): the source moved to the hero's top edge, so the glow and rays fan down from above as in the first version. The clouds are centred 12rem down. Checked at 1280 (dark + light) and 375 (no sideways scroll).
 
 **Verified:**
 
