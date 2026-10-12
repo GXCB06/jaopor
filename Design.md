@@ -152,7 +152,7 @@ Where the warmth goes: welcome moments, empty states, Add-project intro, the pos
   - `app/sitemap.ts` lists static pages, published non-anonymous projects, directory builders, and non-empty categories and provinces, in both languages with alternates; revalidated hourly.
 - **Thresholded home (product audit 2026-10-12):** a module that would show too little data gives way to something honest instead of looking empty:
   - each leaderboard opens on its own at 3 rankable projects (§5 LeaderboardCard);
-  - the live board becomes one line below 5 viewers (§5 LiveVisitorsSection).
+  - (the live board is exempt: its map always shows, owner 2026-10-13).
 - **Radius:** `--radius: 0.5rem`. Compact cards and dropdown buttons `rounded-lg` (8); profile tiles, insight cards, chart card, leaderboard, large cards `rounded-xl` (12); buttons/inputs `rounded-md` (6); pills `rounded-full`; tags `rounded-sm` (4).
 - **Spacing:** compact card `p-3`, large card / tile `p-4`, chart card `p-6`; section gap `mt-9` (36), `mt-12` between home sections; grids `gap-3`.
 - **Elevation:** none. Separation from `bg-card` + `border`.
@@ -245,7 +245,10 @@ Rule for **every** list that drops from a control (selects, filters, action menu
 - **Corner tag** `absolute top-2 right-2 rounded-sm border px-1.5 py-0.5 text-3xs font-bold uppercase tracking-wider`: `✓ Verified` (positive tone; **check only** on compact cards so the name stays readable, label kept for screen readers) when **revenue** is verified (visitor counts alone no longer earn it, §3 Verified vs counted); else `ShieldCheck` **Owner verified** (neutral tone, icon only on compact cards) when the snippet was found on the site; else the first **looking-for** ask in amber (Figma's FOR SALE slot until the marketplace ships), else none.
 - Metrics by state (compact cards use the short labels "Revenue" / "Visitors"): verified revenue → Revenue (30d) · MRR · Growth; else traction → Visitors · Growth · Commits; else one muted "Not verified yet" line.
 - **Nothing verified** (`proof_level = 0`, not a demo): the card is muted, `border-dashed bg-transparent` instead of `bg-card`; text keeps its normal tokens (no opacity, contrast stays). Round 3, 2026-10-05.
-- Home rows are a **plain grid, no horizontal scrolling** (user feedback 2026-09-30): `grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3`. Show 6 cards below `lg` and 5 at `lg`. One column on narrow phones (UX review 2026-10-07: at 375 px the third metric column was ~40 px and cut values to "฿119…").
+- **Home rows on phones are a swipeable row (owner 2026-10-13, replaces the 2026-09-30 "plain grid, no horizontal scrolling" rule below `md`).**
+  - Below `md`: one `flex overflow-x-auto snap-x snap-mandatory` row that bleeds to the screen edges (`-mx-4 px-4 scroll-px-4`, no visible scrollbar). Cards are `shrink-0 snap-start`, `w-[80%]` (`min-[420px]:w-[46%]`), so the next card peeks and invites a swipe. The page itself never scrolls sideways.
+  - From `md`, the grid as before (3 columns; 4 cards → 2/4; 5+ → 5 at `lg`).
+  - Earlier rule, kept for `md` and up: Home rows are a **plain grid, no horizontal scrolling** (user feedback 2026-09-30): `grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3`. Show 6 cards below `lg` and 5 at `lg`. One column on narrow phones (UX review 2026-10-07: at 375 px the third metric column was ~40 px and cut values to "฿119…").
 - **Metric values never truncate** (labels may): a number is the point of the card.
 
 ### StartupCard — large (directory grid, "More startups")
@@ -562,7 +565,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - **Collapsible stats overlay (owner 2026-10-12):** the overlay's count line is a button (`aria-expanded`, chevron).
   - Phones start collapsed: one line "{n} คนกำลังดู JaoPor ⌄", so the map shows. From `sm` it starts open.
   - The activity feed shows the 2 latest on phones (4 from `sm`).
-- **Few viewers (audit 2026-10-12):** below **5** viewers (`LIVE_MAP_MIN`) the map, overlay and world toggle give way to one line under the header: "**{n} คน** กำลังดู JaoPor อยู่ตอนนี้". The opt-out / privacy footer stays. The map returns by itself at 5. The board stays on (owner asked for it back on 2026-10-11).
+- **The map always shows (owner 2026-10-13):** the one-line "few viewers" mode (below 5, 2026-10-12) was removed at the owner's request. On phones the collapsible stats overlay keeps the map visible.
 - Overlay top-left (`w-56 rounded-lg border bg-background/85 backdrop-blur`): big count + "คนกำลังดู JaoPor", rows ประเทศ / อุปกรณ์ / หน้า (top 3, fixed section labels only, never slugs), "+n คนจากต่างประเทศ". Fallback shows the count + "แสดงจำนวนโดยประมาณ".
 - Feed bottom-left: last 4 page views as `bg-background/85` rows: avatar, "{ชื่อ} เปิด{หน้า}", "เมื่อสักครู่ / n นาทีที่แล้ว".
 - Footer `border-t text-2xs`: "คุณแสดงเป็น “{ชื่อ}” · ไม่แสดงตัวฉัน" (opt-out; then "คุณไม่ได้แสดงตัว · แสดงตัวอีกครั้ง") + "ไม่ระบุตัวตน · ตำแหน่งระดับจังหวัด/ประเทศ".

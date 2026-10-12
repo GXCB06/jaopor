@@ -35,8 +35,6 @@ import { localeAlternates } from "@/lib/seo";
 
 export const revalidate = 60;
 
-
-
 export async function generateMetadata({
   params,
 }: PageProps<"/[locale]">): Promise<Metadata> {
@@ -288,14 +286,15 @@ function CardRow({
       {rows.length === 0 ? (
         empty
       ) : (
-        // Plain grid, no horizontal scrolling (Design.md §5): 6 cards below lg, 5 at lg; one
-        // column on narrow phones so the three numbers fit. Fewer cards than columns get fewer,
-        // wider columns, so a short row fills the width instead of leaving empty tracks (layout
-        // audit 2026-10-12).
+        // Phones: one swipeable row with the next card peeking (owner 2026-10-13, Design.md §5);
+        // from md a grid: 6 cards below lg, 5 at lg, and fewer cards than columns get fewer, wider
+        // columns so a short row fills the width (layout audit 2026-10-12).
         <div
           className={cn(
-            "grid grid-cols-1 gap-3 min-[420px]:grid-cols-2",
-            rows.length === 4 ? "md:grid-cols-2 lg:grid-cols-4" : "md:grid-cols-3",
+            "-mx-4 flex snap-x snap-mandatory scroll-px-4 [scrollbar-width:none] gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:overflow-visible md:px-0 md:pb-0",
+            rows.length === 4
+              ? "md:grid-cols-2 lg:grid-cols-4"
+              : "md:grid-cols-3",
             rows.length >= 5 && "lg:grid-cols-5",
           )}
         >
@@ -304,7 +303,10 @@ function CardRow({
               key={s.id}
               startup={s}
               thbPerUsd={thbPerUsd}
-              className={i === 5 ? "lg:hidden" : undefined}
+              className={cn(
+                "w-[80%] shrink-0 snap-start min-[420px]:w-[46%] md:w-auto",
+                i === 5 && "lg:hidden",
+              )}
             />
           ))}
         </div>

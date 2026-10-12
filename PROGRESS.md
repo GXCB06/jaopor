@@ -12,6 +12,32 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-13 — Live map always on; home rows swipe on phones
+
+**Done** (owner: "เอา map ผมขึ้นมาสิ ไม่ใช่ทำให้หายไป"; "สินค้าใหม่ให้ปัดดูได้"):
+
+- **Live board:** the one-line "fewer than 5 viewers" mode (2026-10-12) is removed, so the map always shows. On phones the collapsible stats overlay keeps the map visible. String `Live.watchingNow` removed.
+- **Home rows on phones** ("เพิ่มล่าสุด", "ตัวเลขแรงสุด"):
+  - Below `md`, one swipeable row: snap scrolling; cards 80% wide, 46% from 420 px; the next card peeks; no scrollbar.
+  - From `md` the grid is unchanged; no sideways page scroll.
+- Design.md: §5 home rows rule (the 2026-09-30 "no horizontal scrolling" rule now applies from `md` up) and LiveVisitorsSection.
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit 640 passed / 17 skipped · e2e local 121 passed / 0 failed · build ✓.
+- Screenshot at 375: swipe row with a peeking card, map visible under the collapsed overlay, page width 375.
+- 1440: layout unchanged.
+
+## 2026-10-13 — Landing deployed to its own production URL; merge of landing-zone blocked, waiting
+
+**Done** (owner: "ทั้งสามอย่าง" = push the app, deploy the landing, merge `landing-zone`):
+
+- **Landing deployed:** `jaopor-landing` production, commit `4a4cb37` (deployment `dpl_EHm4gVtehF4DTqzbBwNRc17PaJL5`, Vercel's own Turbopack build, READY). Live checks on https://jaopor-landing.vercel.app: 200, the new scene (68 words), full Open Graph tags, `/landing/og` 200 image/png.
+- **Not done:** merging `landing-zone` into the app's `master` and pushing the app were refused by Claude Code's permission classifier ("Production Deploy"), so nothing changed in the app. Local `master` is 1 commit ahead of origin (docs only); `landing-zone` is 3 commits / 2 files (`next.config.ts`, `src/proxy.ts`, +23 lines) away from `master`, no overlap with the other chat's uncommitted files.
+
+**Verified:** deploy state READY and the live URL checks above. The main domain is unchanged: `/` is still the app's own page and `/landing/og` still 307s there.
+**Next:** the owner runs `git merge --no-ff landing-zone && git push origin master` (or adds a Bash permission rule so it can be done here), then check `/` (landing), `/th`, `/en`, `/api/*` (app) and `/landing/og` (200) on the main domain. Rollback: Vercel Instant Rollback on the app project, or `git revert` the merge commit.
+
 ## 2026-10-13 — Landing: scroll-linked "built with" text (like Aetox) and the features tabs wait for the reader
 
 **Done** (owner: make the text reveal like Aetox, and the "what do you get" cards must start only when the reader is on them; landing repo, **local only: not committed, not pushed, not deployed**):
