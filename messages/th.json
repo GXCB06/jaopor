@@ -181,6 +181,16 @@
     "welcomeClose": "ปิดข้อความต้อนรับ"
   },
   "Profile": {
+    "tabs": {
+      "label": "ส่วนต่าง ๆ ของหน้านี้",
+      "numbers": "ตัวเลข",
+      "shots": "ภาพผลงาน",
+      "about": "เกี่ยวกับ",
+      "insights": "ข้อมูลเชิงลึก",
+      "updates": "อัปเดต"
+    },
+    "insightsMore": "ดูข้อมูลเชิงลึกทั้งหมด",
+    "insightsLess": "ย่อ",
     "headlineCommits": "คอมมิตทั้งหมด",
     "aboutTitle": "เกี่ยวกับ {name}",
     "visit": "เข้าเว็บไซต์",

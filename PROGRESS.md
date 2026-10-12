@@ -12,6 +12,22 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-12 — Product Profile: section tabs and shorter insights
+
+**Done** (owner: "i like it proceed the rest", proposals 4–5):
+
+- **Section tabs** (`profile/SectionTabs`): ตัวเลข · ภาพผลงาน · เกี่ยวกับ · ข้อมูลเชิงลึก · อัปเดต, pinned under the header (under the identity bar on phones).
+  - The part on screen is marked. Tabs for parts that are empty for this visitor drop out.
+  - Each part has an anchor (`#numbers`, `#shots`, `#about`, `#insights`, `#updates`) with scroll margin.
+- **Shorter page:** "ข้อมูลเชิงลึก" shows its first part with a fade and "ดูข้อมูลเชิงลึกทั้งหมด" (`profile/ShowMore`). The full text stays in the HTML.
+- Strings: `Profile.tabs.*`, `Profile.insightsMore/insightsLess` (th + en).
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit 623 passed / 17 skipped · e2e local 123 passed / 0 failed.
+- Browser at 1280: the tabs stay at 63 px. "เกี่ยวกับ" lands its heading just under them and marks the tab. Insights are clipped to 515 px with the button.
+- Browser at 375: header, identity bar and tabs stack (tabs at 117 px). "ข้อมูลเชิงลึก" lands under them. No sideways scroll.
+
 ## 2026-10-12 — Product Profile stands out: cover, headline number, screenshots earlier
 
 **Done** (owner: "yes please" to proposals 1–3):

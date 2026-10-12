@@ -42,6 +42,8 @@ import { ScreenshotGallery } from "@/components/profile/ScreenshotGallery";
 import { ClampedText } from "@/components/profile/ClampedText";
 import { StickyIdentity } from "@/components/profile/StickyIdentity";
 import { ProfileCover } from "@/components/profile/ProfileCover";
+import { SectionTabs } from "@/components/profile/SectionTabs";
+import { ShowMore } from "@/components/profile/ShowMore";
 import { screenshotUrl } from "@/lib/media";
 import { MetricHelp } from "@/components/core/MetricHelp";
 import { ShareStudio } from "@/components/share/ShareStudio";
@@ -562,6 +564,18 @@ export default async function StartupPage({ params }: Props) {
               </p>
             )}
 
+            <SectionTabs
+              label={t("tabs.label")}
+              tabs={[
+                { id: "numbers", label: t("tabs.numbers") },
+                { id: "shots", label: t("tabs.shots") },
+                { id: "about", label: t("tabs.about") },
+                { id: "insights", label: t("tabs.insights") },
+                { id: "updates", label: t("tabs.updates") },
+              ]}
+            />
+
+            <div id="numbers" className="scroll-mt-40 lg:scroll-mt-28 space-y-6">
             {/* A project without verified revenue leads with the numbers it has (visitors, build). */}
             {tractionFirst && <TractionTiles startup={startup} />}
 
@@ -652,7 +666,9 @@ export default async function StartupPage({ params }: Props) {
             ) : (
               <EmptyOwnerCard field="revenue" label={t("connectChart")} />
             )}
+            </div>
 
+            <div id="shots" className="scroll-mt-40 lg:scroll-mt-28">
             {/* Screenshots right after the chart (owner 2026-10-12: visuals early); owner prompt when empty. */}
             {shots.length > 0 || startup.demo_video_url ? (
               <ScreenshotGallery
@@ -665,10 +681,11 @@ export default async function StartupPage({ params }: Props) {
             ) : (
               <EmptyOwnerCard field="screenshots" label={t("screenshots")} />
             )}
+            </div>
 
             {!tractionFirst && <TractionTiles startup={startup} />}
 
-            <section className="space-y-3 pt-2">
+            <section id="about" className="scroll-mt-40 lg:scroll-mt-28 space-y-3 pt-2">
               <h2 className="text-lg font-bold tracking-tight">
                 {t("aboutTitle", { name: displayName })}
               </h2>
@@ -693,12 +710,17 @@ export default async function StartupPage({ params }: Props) {
 
             <FounderMessageCard startup={startup} />
 
-            <div className="pt-3">
-              <InsightsGrid startup={startup} />
+            {/* Shorter page (owner 2026-10-12): the first part of the insights, then "show all". */}
+            <div id="insights" className="scroll-mt-40 lg:scroll-mt-28">
+              <ShowMore more={t("insightsMore")} less={t("insightsLess")}>
+                <div className="pt-3">
+                  <InsightsGrid startup={startup} />
+                </div>
+              </ShowMore>
             </div>
 
             {updates.length > 0 && (
-              <section className="pt-3">
+              <section id="updates" className="scroll-mt-40 lg:scroll-mt-28 pt-3">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-sm font-bold">{t("latestUpdates")}</h2>
                   <Link

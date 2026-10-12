@@ -181,6 +181,16 @@
     "welcomeClose": "Close welcome message"
   },
   "Profile": {
+    "tabs": {
+      "label": "Sections of this page",
+      "numbers": "Numbers",
+      "shots": "Screenshots",
+      "about": "About",
+      "insights": "Insights",
+      "updates": "Updates"
+    },
+    "insightsMore": "Show all insights",
+    "insightsLess": "Show less",
     "headlineCommits": "Commits in total",
     "aboutTitle": "About {name}",
     "visit": "Visit",
