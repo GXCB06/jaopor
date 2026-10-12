@@ -31,6 +31,35 @@
 
 **Not verified:** the ring in the light theme by eye. The pane kept resetting the emulated size during hover screenshots.
 
+## 2026-10-12 — Hero headline types itself in; light becomes a breathing, twinkling sun through clouds
+
+**Done** (owner: headline "ค่อย ๆ ปรากฏเหมือนการพิมพ์"; background "วงกลม แสงระยิบระยับขยายเข้าออก เหมือนแสงลอดก้อนเมฆ"):
+
+- **Typing** (`TypedHeadline`, CSS only):
+  - `lib/motion/typing.ts` splits the message into grapheme clusters with `Intl.Segmenter`, so Thai marks stay on their letter.
+  - Each glyph appears at 250 ms + i × 55 ms, about 2 s for both lines.
+  - A caret passes along the text and blinks 3 times at the end.
+  - "ตัวเลขจริง" keeps the blue → cyan gradient, one slice per glyph (`gradientAt`, color-mix of the tokens).
+  - The text is in the HTML from the first byte, with an sr-only copy for screen readers.
+  - Plays on a link or a reload only, never on Back / Forward or with reduced motion.
+- **Hero light** (`HeroLight`, CSS only):
+  - A round glow above the brand lockup that breathes in and out (5 s).
+  - Rays all around it: two fans turning against each other make them twinkle, and the fan pulses (7 s).
+  - Soft clouds in the page colour drift across, so light breaks through in gaps (22 s).
+  - Only transform, rotate, scale and opacity animate; the light is still with reduced motion.
+  - New token `--hero-cloud`; `--hero-light` and `--hero-beam` are a little stronger.
+
+**Verified:**
+
+- Browser `/th` at 1280:
+  - Mid-typing frames show "ดูผลงานจริ|" and "ตัวเลขจริ|" with the caret; the final text is complete.
+  - Light and dark themes checked.
+  - After Back from `/startups`: `data-nav=back`, glyph animation `none`.
+- At 375: scrollWidth 375 = clientWidth, and the caret blinks at the end.
+- Unit tests for `typedGlyphs` / `plainText` / `gradientAt`.
+
+**Files:** `src/lib/motion/typing.ts` (+ test), `src/components/home/TypedHeadline.tsx`, `src/components/BrandLogo.tsx`, `src/app/globals.css`, `src/app/[locale]/page.tsx`, `Design.md`
+
 ## 2026-10-12 — Hero in the Aetox look: blue → cyan highlight, moving spotlight
 
 **Done** (owner: the colour of Aetox's highlighted words, plus its moving background):

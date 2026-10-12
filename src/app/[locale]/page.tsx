@@ -6,6 +6,7 @@ import { ProviderStrip } from "@/components/ProviderStrip";
 import { AddStartupButton, QuickSearch } from "@/components/search/QuickSearch";
 import { QuickSearchSection } from "@/components/search/QuickSearchSection";
 import { HomeTeasers } from "@/components/home/HomeTeasers";
+import { TypedHeadline } from "@/components/home/TypedHeadline";
 import { LiveVisitorsSection } from "@/components/live/LiveVisitorsSection";
 import { StartupCard } from "@/components/StartupCard";
 import { Link } from "@/i18n/navigation";
@@ -116,19 +117,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <section className="relative isolate flex flex-col items-center pt-10 pb-10 text-center md:pt-14">
         <HeroLight />
         <HeroBrand />
-        {/* Design.md §5 Hero (owner mockup 2026-10-12): big two-line headline, grey "+", brand "ตัวเลขจริง". */}
-        <h1 className="mb-4 font-bold tracking-tight text-balance">
-          <span className="block text-[1.75rem] leading-[1.15] sm:text-5xl md:text-6xl">
-            {t.rich("heroTop", {
-              muted: (c) => <span className="text-muted-foreground">{c}</span>,
-            })}
-          </span>
-          <span className="mt-2 block text-2xl leading-tight sm:text-3xl md:text-4xl">
-            {t.rich("heroBottom", {
-              brand: (c) => <span className="text-hero-gradient">{c}</span>,
-            })}
-          </span>
-        </h1>
+        {/* Design.md §5 Hero (owner mockup 2026-10-12): big two-line headline, grey "+", blue → cyan
+            "ตัวเลขจริง", typed in on arrival. */}
+        <TypedHeadline
+          top={t.raw("heroTop") as string}
+          bottom={t.raw("heroBottom") as string}
+        />
         <p className="mb-3 text-body font-medium text-foreground">
           {t("tagline")}
         </p>

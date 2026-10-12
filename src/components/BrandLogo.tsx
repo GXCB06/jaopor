@@ -60,8 +60,9 @@ export function HeroBrand() {
 }
 
 /**
- * Home hero background (Design.md §5 Hero light): a spotlight from the top with slowly swaying
- * beams, full window width, CSS only. Decorative; the wrapper in the layout clips its sides.
+ * Home hero background (Design.md §5 Hero light): a round glow that breathes, rays all around it
+ * that twinkle, and soft clouds drifting across so light breaks through. CSS only, full window
+ * width; decorative. The layout's content wrapper clips its sides.
  */
 export function HeroLight() {
   return (
@@ -69,8 +70,9 @@ export function HeroLight() {
       aria-hidden="true"
       className="hero-light pointer-events-none absolute top-0 left-1/2 -z-10 h-[44rem] w-screen max-w-none -translate-x-1/2 overflow-hidden"
     >
-      <div className="hero-light-glow" />
-      <div className="hero-light-beams" />
+      <div className="hero-rays" />
+      <div className="hero-sun" />
+      <div className="hero-clouds" />
     </div>
   );
 }

@@ -110,8 +110,9 @@
   --hero-grad-from: #1251fd;
   --hero-grad-via: #2563eb;
   --hero-grad-to: #0e7490;
-  --hero-light: rgb(18 81 253 / 0.1);
-  --hero-beam: rgb(18 81 253 / 0.05);
+  --hero-light: rgb(18 81 253 / 0.16);
+  --hero-beam: rgb(18 81 253 / 0.06);
+  --hero-cloud: rgb(255 255 255 / 0.85);
   --surface-2: #ffffff;
   --border-strong: #d4d4d8;
   --brand-foreground: #ffffff;
@@ -170,8 +171,9 @@
   --hero-grad-from: #3b78ff;
   --hero-grad-via: #7fb0ff;
   --hero-grad-to: #a8f0ff;
-  --hero-light: rgb(255 255 255 / 0.13);
-  --hero-beam: rgb(255 255 255 / 0.06);
+  --hero-light: rgb(255 255 255 / 0.2);
+  --hero-beam: rgb(255 255 255 / 0.07);
+  --hero-cloud: rgb(9 9 11 / 0.8);
   --surface-2: #1e1e20;
   --border-strong: #3a3a40;
   --brand-foreground: #09090b;
@@ -442,83 +444,180 @@ li:nth-child(5n + 5) > .card-rise {
   box-decoration-break: clone;
 }
 .hero-light {
-  mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
 }
-.hero-light-glow {
+/* The light source: a round glow just above the brand lockup that breathes in and out. */
+.hero-sun,
+.hero-rays,
+.hero-clouds {
+  position: absolute;
+  left: 50%;
+  top: 5.5rem;
+  translate: -50% -50%;
+}
+.hero-sun {
+  width: 34rem;
+  aspect-ratio: 1;
+  background: radial-gradient(
+    circle,
+    var(--hero-light) 0%,
+    color-mix(in oklab, var(--hero-light) 45%, transparent) 30%,
+    transparent 68%
+  );
+}
+/* Rays all around the glow: two fans turning against each other make them twinkle. */
+.hero-rays,
+.hero-rays::after {
+  width: 110rem;
+  max-width: none;
+  aspect-ratio: 1;
+  background: repeating-conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    var(--hero-beam) 3deg,
+    transparent 7deg,
+    transparent 13deg
+  );
+  mask-image: radial-gradient(
+    circle,
+    black 6%,
+    rgb(0 0 0 / 0.5) 18%,
+    transparent 42%
+  );
+}
+.hero-rays::after {
+  content: "";
   position: absolute;
   inset: 0;
+  background: repeating-conic-gradient(
+    from 5deg,
+    transparent 0deg,
+    var(--hero-beam) 5deg,
+    transparent 11deg,
+    transparent 21deg
+  );
+  mask-image: none;
+}
+/* Soft clouds in the page colour drift across the rays, so light breaks through in gaps. */
+.hero-clouds {
+  width: 90rem;
+  height: 30rem;
   background:
     radial-gradient(
-      ellipse 22% 60% at 50% -4%,
-      var(--hero-light) 0%,
-      transparent 80%
+      ellipse 16% 30% at 30% 52%,
+      var(--hero-cloud) 0%,
+      transparent 100%
     ),
     radial-gradient(
-      ellipse 48% 90% at 50% -10%,
-      var(--hero-light) 0%,
-      transparent 70%
+      ellipse 20% 26% at 66% 40%,
+      var(--hero-cloud) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 12% 22% at 50% 78%,
+      var(--hero-cloud) 0%,
+      transparent 100%
     );
 }
-/* Two soft beam fans turning against each other, so the light shimmers like Aetox's. */
-.hero-light-beams,
-.hero-light-beams::after {
-  position: absolute;
-  transform-origin: 50% 0;
-  background: repeating-conic-gradient(
-    from 90deg at 50% 0%,
-    transparent 0deg,
-    var(--hero-beam) 4deg,
-    transparent 9deg,
-    transparent 17deg
-  );
-}
-.hero-light-beams {
-  top: 0;
-  left: 50%;
-  width: 150%;
-  aspect-ratio: 1;
-  translate: -50% 0;
-  mask-image: radial-gradient(
-    ellipse 32% 50% at 50% 0%,
-    black 10%,
-    transparent 78%
-  );
-}
-.hero-light-beams::after {
-  content: "";
-  inset: 0;
-  background: repeating-conic-gradient(
-    from 96deg at 50% 0%,
-    transparent 0deg,
-    var(--hero-beam) 6deg,
-    transparent 13deg,
-    transparent 23deg
-  );
-}
 @media (prefers-reduced-motion: no-preference) {
-  .hero-light-glow {
-    animation: hero-glow 6s ease-in-out infinite alternate;
+  .hero-sun {
+    animation: hero-breathe 5s ease-in-out infinite alternate;
   }
-  .hero-light-beams {
-    animation: hero-sway 18s ease-in-out infinite alternate;
+  .hero-rays {
+    animation:
+      hero-spin 90s linear infinite,
+      hero-pulse 7s ease-in-out infinite alternate;
   }
-  .hero-light-beams::after {
-    animation: hero-sway 11s ease-in-out infinite alternate-reverse;
+  .hero-rays::after {
+    animation: hero-spin 60s linear infinite reverse;
+  }
+  .hero-clouds {
+    animation: hero-drift 22s ease-in-out infinite alternate;
+  }
+
+  /* Headline typing: each glyph shows at its turn, with a caret that passes along. */
+  html[data-nav="enter"] main > :not([data-entered]) .type-glyph {
+    position: relative;
+    animation: type-in 1ms linear both;
+    animation-delay: calc(var(--type-start) + var(--i) * var(--type-step));
+  }
+  html[data-nav="enter"] main > :not([data-entered]) .type-glyph::after {
+    content: "";
+    position: absolute;
+    top: 0.12em;
+    bottom: 0.08em;
+    right: -0.06em;
+    width: 0.07em;
+    border-radius: 1px;
+    background: var(--hero-grad-from);
+    opacity: 0;
+    animation: caret-pass var(--type-step) step-end 1;
+    animation-delay: calc(var(--type-start) + var(--i) * var(--type-step));
+  }
+  html[data-nav="enter"] main > :not([data-entered]) .type-last::after {
+    animation: caret-blink 1s step-end 3;
+    animation-delay: calc(var(--type-start) + var(--i) * var(--type-step));
   }
 }
-@keyframes hero-sway {
-  from {
-    transform: rotate(-5deg);
-  }
-  to {
-    transform: rotate(5deg);
-  }
+:root {
+  --type-start: 250ms;
+  --type-step: 55ms;
 }
-@keyframes hero-glow {
+@keyframes type-in {
   from {
-    opacity: 0.7;
+    opacity: 0;
   }
   to {
     opacity: 1;
+  }
+}
+@keyframes caret-pass {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes caret-blink {
+  0% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hero-breathe {
+  from {
+    transform: scale(0.82);
+    opacity: 0.65;
+  }
+  to {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+@keyframes hero-pulse {
+  from {
+    opacity: 0.55;
+    scale: 0.92;
+  }
+  to {
+    opacity: 1;
+    scale: 1.08;
+  }
+}
+@keyframes hero-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+@keyframes hero-drift {
+  from {
+    transform: translateX(-7%);
+  }
+  to {
+    transform: translateX(7%);
   }
 }
