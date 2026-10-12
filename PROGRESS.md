@@ -35,6 +35,13 @@
 - typecheck ✓ · lint ✓ · unit 640 passed / 17 skipped · e2e local 121 passed / 0 failed / 21 skipped · build ✓.
 - Screenshots at 1440 and 375 (Olympics, live board).
 
+**Production** (owner "push and commit"; pushed `eb7c983..4972265`: `8e08fc3`, `2c144dd`, `2d9626e`, the harness config, and the other session's progress commits):
+
+- e2e against jaopor.vercel.app: 136 passed / 0 failed / 6 skipped.
+- `robots.txt` live; `sitemap.xml` has 48 URLs (builders included on production).
+- Landing API: `featured` = jaopor (`team: true`, MRR series present); all four boards empty; `recent` carries `team` flags.
+- **Known gap:** jaopor-landing doesn't read `featured` yet, so once its cache refreshes the hero MRR card and the landing board show empty. Landing update pending owner approval.
+
 ## 2026-10-12 — Review follow-up: one competition gate, per-metric home boards, MRR notes per source, Olympics + tabs proposals
 
 **Done** (owner approved A, B, C locally; D decided, landing repo untouched; E as a Design.md proposal; not pushed, `8e08fc3` not amended):
