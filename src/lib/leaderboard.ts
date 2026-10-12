@@ -1,4 +1,4 @@
-import { isTeamProject } from "@/lib/team";
+import { isRankEligible } from "@/lib/team";
 
 // Leaderboard rules (UX master audit A1.3): what each board ranks, over which period, which
 // projects may appear, and how equal values are ranked. Pure and client-safe, so the board, the
@@ -96,9 +96,8 @@ export function isBoardEligible(
   row: BoardCandidate,
   metric: BoardMetric,
 ): boolean {
-  if (row.is_demo || row.status !== "published") return false;
-  // The team's own projects are listed but never ranked (lib/team, audit 2026-10-12).
-  if (isTeamProject(row.slug)) return false;
+  // Published, not a demo, not the team's own project (lib/team: the shared competition gate).
+  if (!isRankEligible(row)) return false;
   if (boardValue(row, metric) === null) return false;
   if (
     BOARD_DEFINITIONS[metric].verifiedRevenueOnly &&
@@ -148,4 +147,40 @@ export function rankBoard<T>(
     higher = i + 1;
     return { ...row, rank, tied: (counts.get(v) ?? 0) > 1 };
   });
+}
+
+/** A home board opens once this many projects can rank on it (product audit 2026-10-12). */
+export const BOARD_OPEN_MIN = 3;
+
+export type BoardState = {
+  /** closed: no board has enough rows · sparse: some do · open: every board does. */
+  state: "closed" | "sparse" | "open";
+  /** Boards with at least `min` rankable projects, in BOARD_METRICS order. */
+  open: BoardMetric[];
+  /** Distinct projects that can rank on at least one board (each counted once). */
+  eligible: number;
+};
+
+/**
+ * Which home boards to show, judged per metric. `lists` are the rankable rows per board (already
+ * through isBoardEligible), so the team's own and demo projects never count toward opening one.
+ */
+export function boardState(
+  lists: Record<BoardMetric, readonly { id: number }[]>,
+  min = BOARD_OPEN_MIN,
+): BoardState {
+  const open = BOARD_METRICS.filter((m) => lists[m].length >= min);
+  const eligible = new Set(
+    BOARD_METRICS.flatMap((m) => lists[m].map((r) => r.id)),
+  ).size;
+  return {
+    state:
+      open.length === 0
+        ? "closed"
+        : open.length < BOARD_METRICS.length
+          ? "sparse"
+          : "open",
+    open,
+    eligible,
+  };
 }

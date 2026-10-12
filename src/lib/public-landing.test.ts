@@ -216,3 +216,35 @@ describe("buildLandingPayload series", () => {
     ).toEqual(series);
   });
 });
+
+describe("team projects (lib/team, decision D)", () => {
+  const team = src({ id: 9, slug: "jaopor", name: "JaoPor" });
+
+  it("are flagged so the landing can show the disclosure", () => {
+    expect(toPublicProject(team).team).toBe(true);
+    expect(toPublicProject(src()).team).toBe(false);
+  });
+
+  it("never reach a board, even if a list passes one in", () => {
+    const out = payload([team, src({ id: 2, slug: "other" })]);
+    for (const b of out.boards)
+      expect(b.rows.map((r) => r.project.slug)).not.toContain("jaopor");
+    // Still listed among recent projects (listing isn't competing).
+    expect(out.recent.map((p) => p.slug)).toContain("jaopor");
+  });
+
+  it("carries the featured project as given (null by default)", () => {
+    expect(payload([src()]).featured).toBeNull();
+    const featured = { project: toPublicProject(team), series: null };
+    const out = buildLandingPayload({
+      recent: [],
+      lists: lists([]),
+      counts: { total: 1, verified: 1 },
+      categories: {},
+      thbPerUsd: null,
+      featured,
+    });
+    expect(out.featured?.project.team).toBe(true);
+    expect(out.boards.every((b) => b.rows.length === 0)).toBe(true);
+  });
+});

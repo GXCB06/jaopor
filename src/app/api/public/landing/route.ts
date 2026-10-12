@@ -7,13 +7,16 @@ import {
   getCategoryCounts,
   getChartSeries,
   getRecent,
+  getStartupBySlug,
   type StartupRow,
 } from "@/lib/data/startups";
 import {
   buildLandingPayload,
   toLandingSeries,
+  toPublicProject,
   type LandingSource,
 } from "@/lib/public-landing";
+import { TEAM_PROJECT_SLUGS } from "@/lib/team";
 
 // Read-only numbers for the separate landing site. Public data only (see lib/public-landing), so
 // it is cacheable at the edge and open to any origin (no cookies, no credentials).
@@ -48,10 +51,34 @@ export async function GET() {
     // enforced inside getChartSeries). A failure here must not break the rest of the payload.
     const top = payload.boards.find((b) => b.metric === "mrr")?.rows[0];
     const topRow = top && lists[0].find((r) => r.slug === top.project.slug);
-    if (topRow)
-      payload.topMrrSeries = await getChartSeries(topRow, 90)
-        .then((series) => toLandingSeries(topRow.slug, series))
+    const seriesOf = (row: StartupRow) =>
+      getChartSeries(row, 90)
+        .then((series) => toLandingSeries(row.slug, series))
         .catch(() => null);
+    if (topRow) payload.topMrrSeries = await seriesOf(topRow);
+    // Decision D: with nobody ranked yet, feature the team's own verified MRR, flagged as a team
+    // project (never ranked). The landing reads `featured` to show it with that disclosure.
+    const featuredRow =
+      topRow ??
+      (
+        await Promise.all(
+          [...TEAM_PROJECT_SLUGS].map((slug) =>
+            getStartupBySlug(slug).catch(() => null),
+          ),
+        )
+      ).find(
+        (r): r is StartupRow =>
+          !!r &&
+          r.status === "published" &&
+          !r.is_demo &&
+          r.verification_status === "verified" &&
+          r.mrr_cents !== null,
+      );
+    if (featuredRow)
+      payload.featured = {
+        project: toPublicProject(asSource([featuredRow])[0]),
+        series: topRow ? payload.topMrrSeries : await seriesOf(featuredRow),
+      };
     return NextResponse.json(payload, {
       headers: {
         ...CORS,

@@ -151,7 +151,7 @@ Where the warmth goes: welcome moments, empty states, Add-project intro, the pos
   - `app/robots.ts` allows the site and keeps out `/api`, dashboard, new, onboarding and login.
   - `app/sitemap.ts` lists static pages, published non-anonymous projects, directory builders, and non-empty categories and provinces, in both languages with alternates; revalidated hourly.
 - **Thresholded home (product audit 2026-10-12):** a module that would show too little data gives way to something honest instead of looking empty:
-  - the leaderboard opens at 3 rankable projects (§5 LeaderboardCard);
+  - each leaderboard opens on its own at 3 rankable projects (§5 LeaderboardCard);
   - the live board becomes one line below 5 viewers (§5 LiveVisitorsSection).
 - **Radius:** `--radius: 0.5rem`. Compact cards and dropdown buttons `rounded-lg` (8); profile tiles, insight cards, chart card, leaderboard, large cards `rounded-xl` (12); buttons/inputs `rounded-md` (6); pills `rounded-full`; tags `rounded-sm` (4).
 - **Spacing:** compact card `p-3`, large card / tile `p-4`, chart card `p-6`; section gap `mt-9` (36), `mt-12` between home sections; grids `gap-3`.
@@ -256,8 +256,12 @@ Rule for **every** list that drops from a control (selects, filters, action menu
 ### LeaderboardCard
 
 
-- **Before it opens (audit 2026-10-12):** the home shows the board only when at least **3** projects can rank on some board (`RANKED_MIN`).
-  - Until then, the same `#leaderboard` anchor holds a `rounded-xl border border-dashed bg-card p-5` card: a Trophy in a `size-10 rounded-full bg-secondary` circle, "กระดานผู้นำ", and "กระดานผู้นำจะเปิดเมื่อมีผลงานที่ยืนยันตัวเลขอย่างน้อย 3 ชิ้น ตอนนี้มี {n} ชิ้น …", plus a primary "ยืนยันตัวเลขของคุณ" → `/new`.
+- **Opening, per metric (audit 2026-10-12, owner review):** each home board (MRR, revenue 30 days, visitors, commits) opens once **3** projects can rank on that board (`BOARD_OPEN_MIN`, `boardState`). Only open boards appear in the metric picker.
+  - **Closed** (none open): the `#leaderboard` anchor holds a `rounded-xl border border-dashed bg-card p-5` card with a Trophy in a `size-10 rounded-full bg-secondary` circle and "กระดานผู้นำ". It says that each board opens at 3 projects with that number from a connected source.
+  - Under that, a `text-faint tabular-nums` line gives the two numbers that differ: "ผลงานที่ลงไว้ {listed} ชิ้น · มีตัวเลขพอจัดอันดับ {eligible} ชิ้น". Listed = published projects; eligible = distinct projects on any board, team and demos excluded.
+  - The primary "เชื่อมตัวเลขของผลงาน" → `/dashboard`. It doesn't say "ยืนยัน", because visitors are counted, not verified.
+  - **Sparse** (some open): the card shows the open boards plus a footnote that the others open at 3.
+  - **Open**: as before.
 - **The team's own projects never rank** (`lib/team`, owner decision 2026-10-12): they're left out of every board (and so out of the landing API's board) and out of the profile's "อันดับ #n". They stay listed and verified like any project.
 - Founder column (2026-10-07): the JaoPor display name (fallback `@handle`) with the profile photo, linking to `/u/{handle}`; never the X handle (the rest of the site names people by their JaoPor profile).
 
@@ -288,9 +292,35 @@ Rule for **every** list that drops from a control (selects, filters, action menu
   - **Cover (owner 2026-10-12):** a full-width banner above the grid (`h-32 sm:h-44 lg:h-52 rounded-2xl border`), `ProfileCover`: the first desktop screenshot (`object-cover object-top`), else a gradient in the hero blues (`--hero-grad-from/via/to`) with a faint dot grid; a `from-background/60` fade at the bottom. The logo overlaps its bottom edge (`-mt-14` / `lg:-mt-16`, `ring-4 ring-background`), above the name at every width. Anonymous projects have no public screenshots, so they always get the gradient.
   - **Headline number:** under the badges, the strongest number public at its exact value, `text-3xl font-bold tabular-nums`, with "{label} · ยืนยันผ่าน {source}" (`text-caption`): MRR → revenue 30 days → visitors 30 days ("นับโดย {source}") → total commits. None for demos.
   - **Team project label:** the team's own project (`lib/team`) carries a chip "ผลงานของทีม JaoPor · ไม่จัดอันดับ" (`rounded-full border text-2xs text-muted-foreground`, Users icon) in the badges row.
-  - **MRR above revenue so far:** when the headline is MRR and MRR > all-time revenue, a `text-caption text-faint` line under it explains that MRR is the price of today's active subscriptions (annual ÷ 12, before discounts), so it can be higher than the money received so far.
+  - **MRR above revenue so far:** when the headline is MRR and MRR > all-time revenue, a `text-caption text-faint` line under it explains why, per source:
+    - **Stripe:** our own calculation (`lib/revenue/metrics.ts`): list price of subscriptions not cancelled, including overdue ones, excluding trials, averaged per month, coupons not deducted, so it isn't money received.
+    - **RevenueCat:** RevenueCat's own figure, by RevenueCat's definition.
+    - Any other source: no line.
   - **Order in the right column (owner 2026-10-12):** stats → chart → **screenshots** → traction tiles → เกี่ยวกับ → … (visuals early).
   - **Section tabs (owner 2026-10-12):** at the top of the right column, `SectionTabs`: ตัวเลข · ภาพผลงาน · เกี่ยวกับ · ข้อมูลเชิงลึก · อัปเดต (links to `#numbers` `#shots` `#about` `#insights` `#updates`). Sticky (`top-14` from `lg`; `top-[6.5rem]` below it, under the identity bar), `bg-background/95 backdrop-blur border-b`, `h-10` tabs in `text-caption font-semibold`; the part on screen gets `border-b-2 border-brand text-foreground` and `aria-current="location"`. Tabs whose part renders nothing for this visitor drop out after the first paint; the row hides below 2 tabs. Parts carry `scroll-mt-40 lg:scroll-mt-28`. Scrolls sideways on phones.
+  - **Proposal — tabs that switch, not scroll (2026-10-12, not built; waiting for owner review).**
+    - **Owner feedback:** tapping a tab drags the page down to a section further below, which feels jarring. The owner wants the left column to stay put while the tab changes.
+    - **Proposal:** make the right column real tabs. Each tab shows one panel in place (`role="tablist"` / `tab` / `tabpanel`, arrow-key navigation).
+      - The page scrolls back only as far as the tab row if the visitor was below it; otherwise nothing moves.
+      - The left identity column never moves.
+      - Panels:
+        - **ภาพรวม** (default): headline stats, chart, screenshots strip, the first 3 lines of "เกี่ยวกับ".
+        - **ตัวเลข**: stats, chart, traction tiles.
+        - **ภาพผลงาน**: gallery.
+        - **เกี่ยวกับ**: description, founder message, looking-for.
+        - **ข้อมูลเชิงลึก**: insights grid.
+        - **อัปเดต**: posts.
+    - **Rules:**
+      - Every panel stays in the HTML (hidden panels carry `hidden`), so search engines and no-JS visitors keep the full content.
+      - The URL keeps the tab (`?tab=numbers`) so links and Back work.
+      - Switching fades the panel in (`--motion-fast`); with reduced motion it switches at once.
+      - Empty panels drop their tab (as today).
+      - "More startups" and QuickSearch stay below the panels for every tab.
+    - **Acceptance:**
+      - Switching tabs never moves the left column.
+      - The tab row is in view after a switch.
+      - Back returns to the previous tab.
+      - Desktop and 375 checked.
   - **Shorter insights:** InsightsGrid sits in `ShowMore` (first 26rem, a fade into the background, then "ดูข้อมูลเชิงลึกทั้งหมด ⌄" / "ย่อ"). It only clips after the script has measured it as taller, so the full text is in the HTML.
   - **No public numbers yet (owner 2026-10-12, early-stage projects):** the numbers slot doesn't show the faint "ยังไม่ยืนยัน: …" line. **Visitors** get **EarlyStageCard** (`rounded-xl border border-dashed bg-card p-5`, Sprout in a `size-9 rounded-full bg-secondary` circle): "ผลงานช่วงเริ่มต้น" + one sentence + a primary "ลองใช้งาน ↗" (project link) and an outline "ดูโปรไฟล์ผู้สร้าง". The **owner** gets **UpgradeCard** (`rounded-xl border border-brand/40 bg-brand/5 p-5`): "อัปเกรดเป็นตัวเลขยืนยัน" + why + three rows to the editor's chooser: Commit บน GitHub (ไม่ต้องใช้คีย์) → `#verify-build`, ผู้เข้าชม (โค้ดนับของ JaoPor, ไม่ต้องใช้คีย์) → `#verify-traffic`, รายได้ (Stripe / RevenueCat, คีย์อ่านอย่างเดียว) → `#verify-revenue`, plus a faint line saying what others see. "เกี่ยวกับ" without a description renders nothing for visitors (no lone heading). Section tabs show only with 3 or more non-empty parts.
   - **Never lose the name (owner 2026-10-12):** from `lg` the left column is `sticky top-20` (only when the screen is at least 40rem tall, so it never hides its own bottom). Below `lg`, **StickyIdentity** slides a 48 px bar under the site header (`fixed top-14`, `bg-background/95 backdrop-blur border-b`, `translate` + `opacity` in `--motion-base`) once the logo + name block is under the header: logo 28, name `text-sm font-bold truncate`, a small primary "เข้าเว็บไซต์ ↗". Hidden from screen readers and `inert` while out of view.
@@ -428,6 +458,74 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
 - LeaderboardCard empty state: "ยังไม่มีตัวเลขที่ยืนยัน… มาเป็นคนแรกบนกระดาน" + `text-brand-text` link "ยืนยันตัวเลขของคุณ →" (/dashboard).
 
 ### Olympics page (`/[locale]/olympics`, spec 6.7; v3 2026-10-01 = Claude Design frame 149:7635 + our open spots and map)
+
+- **Team projects (owner decision 2026-10-12, `lib/team`):** the team's own project is listed in its province but scores nothing on any metric. It isn't on the podium or in "ตัวท็อป", and it gives its province no rank.
+  - **Listing and competing are separate numbers:** `countByProvince` / `getProvinceProjectCounts` count published projects; `rankProvinces` scores competitors.
+  - "ยังไม่มีผลงานจาก N จังหวัด", the province page's noindex and the sitemap use the listing counts.
+  - The header's "จังหวัดที่ลงแข่ง" and "ผลงานที่นับคะแนน รวมทั้งประเทศ" (projects board) use the competition.
+  - "นับคะแนนยังไง" says the team's projects aren't scored.
+
+#### Proposal — Olympics v4 (2026-10-12, **not built; waiting for owner review**)
+
+**Owner feedback:** the board "doesn't look attractive", and on phones it "เรียงเป็นก้อน" (stacks into blocks).
+
+**Observed at 375 px:**
+- Three podium cards about 150 px each, each with a giant rank and a giant "1".
+- The "จังหวัดของคุณอยู่อันดับไหน?" question breaks over 4 lines next to its picker.
+- The map and region standings, which explain the board at a glance, sit near the end of a 4,962 px page.
+
+**Goals:**
+1. See the race in one glance.
+2. Find your province in one tap.
+3. Stay readable at 3 provinces and at 77.
+
+**Changes:**
+
+1. **Hero = coverage, not a podium.**
+   - H1 + one line + a progress bar "ปลดล็อกแล้ว {n}/77 จังหวัด" (`h-2 rounded-full bg-secondary`, fill `bg-brand`; `{n}` = provinces with a published project, listing counts).
+   - Beside it on desktop, under it on phones, the Thailand map becomes the hero visual, about 240 px tall: provinces with projects filled by region colour, the rest `fill-muted-foreground/15`. Tapping a province opens its page.
+   - The sidebar map is removed.
+2. **Your province first.** A full-width bar under the hero.
+   - Before you choose: the question on its own line, the ChoiceSelect full width under it.
+   - After you choose: badge + name + "#rank" + RankChange + the gap line, plus "เปลี่ยน".
+   - It sticks under the header while the board scrolls on phones (`sticky top-14`, one line high).
+3. **Ranking as rows, not cards** (`RankRow`, about 56 px; one table for every viewport). Columns:
+   - rank: Medal for 1–3, plain `#n` after;
+   - ProvinceBadge + name + region dot;
+   - value: `text-base font-bold tabular-nums`, unit beside;
+   - the top project's logo stack (up to 3 logos, `-space-x-2`);
+   - RankChange.
+   - Top 3 rows get a faint medal-tinted background (`bg-[gold-token]/5`, tokens only) instead of separate cards.
+   - **Podium cards only on desktop, only with ≥ 5 competing provinces:** below that, a podium of 2–3 looks like the empty state it is.
+4. **Controls collapse on phones.**
+   - Metric stays a SegmentedControl (it scrolls sideways).
+   - Region chips become one ChoiceSelect "ทุกภาค ▾" below `sm`.
+   - Search moves inside the table header as an icon button that expands.
+5. **Order on phones:** hero (coverage + map) → your province → metric / region → ranking rows → "ผู้บุกเบิกจังหวัด" / "มาใหม่ล่าสุด" → "ยังไม่มีผลงานจาก N จังหวัด" (collapsed to 1 row of chips + "+N") → share card → "นับคะแนนยังไง" (collapsed `<details>`).
+   - Target: the full page under about 3,000 px at 375 with today's data.
+6. **Desktop:**
+   - `lg:grid-cols-[minmax(0,1fr)_320px]` stays.
+   - The sidebar keeps "มาแรงเดือนนี้" and the share card.
+   - Region standings move under the map in the hero.
+7. **Motion (Design.md §7):**
+   - Rows rise in once.
+   - Switching metric slides rows to their new rank (the LeaderboardCard FLIP).
+   - The coverage bar fills once on first view; nothing loops.
+
+**What stays:**
+- The metric definitions and the scoring text.
+- Pioneers / newest.
+- The share card.
+- Listing vs competing counts (above).
+- No new data or migration.
+
+**Acceptance criteria (for the build):**
+- At 375 the first screen shows the coverage bar, the map and your-province bar, and rows start within the second screen.
+- No card stack of more than one podium-style card on phones.
+- With 3 provinces the board reads as a short list, not three hero cards; with 77 it stays scannable (rows ≤ 60 px, value right-aligned).
+- No horizontal page scroll; th / en strings; reduced motion respected.
+- Before/after screenshots at 1440 and 375.
+
 
 - **Default board "จำนวนผลงาน" / "Projects"** (owner request 2026-10-11: quantity first, it works before anyone verifies numbers): every published, non-demo project counts, verified or not; movement and growth compare with the projects listed 30+ days ago. The verified boards (รายได้ 30 วัน · MRR · ผู้เข้าชม · คอมมิต) follow in the metric switch. The province page's rank line and the Olympics OG image use this board.
 

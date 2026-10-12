@@ -34,7 +34,7 @@ test("leaderboard labels carry the period and the footer defines the board", asy
   await expectNoHorizontalScroll(page, "/th");
 });
 
-test("before it opens, the home leaderboard says when and links to adding a project", async ({
+test("before it opens, the home leaderboard says when, shows listed vs rankable, links to connecting numbers", async ({
   page,
 }) => {
   await page.goto("/th");
@@ -44,8 +44,10 @@ test("before it opens, the home leaderboard says when and links to adding a proj
     (await board.getByRole("combobox").count()) > 0,
     "home leaderboard is open",
   );
-  await expect(board).toContainText("กระดานผู้นำจะเปิดเมื่อ");
-  await expect(board.getByRole("link")).toHaveAttribute("href", "/th/new");
+  await expect(board).toContainText("จะเปิดเมื่อมีผลงานที่มีตัวเลขจากระบบที่เชื่อมต่อ");
+  // Listed and rankable are two different numbers, both shown.
+  await expect(board).toContainText(/ผลงานที่ลงไว้ \d+ ชิ้น · มีตัวเลขพอจัดอันดับ \d+ ชิ้น/);
+  await expect(board.getByRole("link")).toHaveAttribute("href", "/th/dashboard");
 });
 
 test("a contact link sends a signed-out visitor to sign-in and back, same topic", async ({

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   boardSummary,
   climbers,
+  countByProvince,
   emptyProvinces,
   gapToNext,
   newestProjects,
@@ -182,8 +183,9 @@ describe("30-day season: movement and growth", () => {
 describe("helpers", () => {
   it("lists the provinces with no numbers", () => {
     const ranked = rankProvinces(ROWS, "mrr");
-    expect(emptyProvinces(ranked, null)).toHaveLength(75);
-    expect(emptyProvinces(ranked, "north").map((p) => p.slug)).not.toContain(
+    const listed = ranked.map((r) => r.province);
+    expect(emptyProvinces(listed, null)).toHaveLength(75);
+    expect(emptyProvinces(listed, "north").map((p) => p.slug)).not.toContain(
       "chiang-mai",
     );
     expect(provinceRank(ranked, "bangkok")).toBe(2);
@@ -297,5 +299,31 @@ describe("pioneers and newest projects", () => {
       "kk-2",
       "bkk-1",
     ]);
+  });
+});
+
+describe("team projects (lib/team): listed, never scored", () => {
+  const rows = [
+    row({ slug: "jaopor", province: "mukdahan", mrr_cents: 9_999 }),
+    row({ slug: "other", province: "nan", mrr_cents: 100 }),
+    row({ slug: "draft", province: "trang", status: "draft" }),
+    row({ slug: "demo", province: "trang", is_demo: true }),
+  ];
+
+  it("don't score or rank their province on any metric", () => {
+    for (const metric of ["projects", "mrr"] as const) {
+      const ranked = rankProvinces(rows, metric);
+      expect(ranked.map((r) => r.province)).toEqual(["nan"]);
+      expect(provinceRank(ranked, "mukdahan")).toBeNull();
+    }
+  });
+
+  it("still count as a published project in their province", () => {
+    expect(countByProvince(rows)).toEqual({ mukdahan: 1, nan: 1 });
+    expect(
+      emptyProvinces(Object.keys(countByProvince(rows)), "northeast").map(
+        (p) => p.slug,
+      ),
+    ).not.toContain("mukdahan");
   });
 });

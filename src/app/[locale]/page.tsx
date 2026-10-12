@@ -22,7 +22,12 @@ import {
 } from "@/lib/data/startups";
 import { getThbPerUsd } from "@/lib/data/fx";
 import { growthPct } from "@/lib/format";
-import { boardValue, rankBoard } from "@/lib/leaderboard";
+import {
+  BOARD_OPEN_MIN,
+  boardState,
+  boardValue,
+  rankBoard,
+} from "@/lib/leaderboard";
 import { logoUrl } from "@/lib/supabase/public";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
@@ -30,8 +35,7 @@ import { localeAlternates } from "@/lib/seo";
 
 export const revalidate = 60;
 
-/** The home leaderboard opens once this many projects can rank (audit 2026-10-12). */
-const RANKED_MIN = 3;
+
 
 export async function generateMetadata({
   params,
@@ -124,8 +128,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const dot = <span aria-hidden="true">·</span>;
   const subLink = "hover:text-foreground";
 
-  // Projects that can rank on at least one board (the team's own never do, lib/team).
-  const rankedCount = Math.max(...BOARD_METRICS.map((m) => boards[m].length));
+  // Each board opens on its own once BOARD_OPEN_MIN projects can rank on it (the team's own and
+  // demos never count: lib/team). Listed projects (counts.total) are a different number.
+  const board = boardState(boards);
+  const openBoards = Object.fromEntries(
+    board.open.map((m) => [m, boards[m]]),
+  ) as Partial<Record<BoardMetric, BoardRow[]>>;
 
   const shownRecent = new Set(recent.slice(0, 6).map((s) => s.id));
   const freshTraction = traction.filter((s) => !shownRecent.has(s.id));
@@ -204,10 +212,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
       <LiveVisitorsSection />
       <div className="mt-12">
-        {/* Thresholded home (audit 2026-10-12): a board of one or two rows reads as empty, so it
-            opens once RANKED_MIN projects can rank; until then, say when and how to get on it. */}
-        {rankedCount >= RANKED_MIN ? (
-          <LeaderboardCard boards={boards} thbPerUsd={thbPerUsd} />
+        {/* Thresholded home (audit 2026-10-12): a board of one or two rows reads as empty. Boards
+            open one by one; with none open, say what's needed and how to get on it. */}
+        {board.state !== "closed" ? (
+          <LeaderboardCard
+            boards={openBoards}
+            thbPerUsd={thbPerUsd}
+            someClosed={board.state === "sparse"}
+          />
         ) : (
           <section
             id="leaderboard"
@@ -222,14 +234,21 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             <div className="min-w-0 flex-1 space-y-1">
               <h2 className="text-base font-bold">{lb("title")}</h2>
               <p className="text-caption text-muted-foreground">
-                {lb("soon", { min: RANKED_MIN, n: rankedCount })}
+                {lb("soon", { min: BOARD_OPEN_MIN })}
+              </p>
+              {/* Listed vs rankable: two different numbers, both said plainly. */}
+              <p className="text-caption text-faint tabular-nums">
+                {lb("soonCounts", {
+                  listed: counts.total,
+                  eligible: board.eligible,
+                })}
               </p>
             </div>
             <Link
-              href="/new"
+              href="/dashboard"
               className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-primary px-4 text-caption font-semibold text-primary-foreground hover:opacity-90"
             >
-              {lb("emptyCta")}
+              {lb("connectCta")}
             </Link>
           </section>
         )}

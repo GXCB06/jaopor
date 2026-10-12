@@ -115,7 +115,10 @@
     "ownerVerified": "Owner verified"
   },
   "Leaderboard": {
-    "soon": "The leaderboard opens once at least {min} projects have verified numbers. {n} so far. Connect yours to be among the first on it.",
+    "soon": "Each leaderboard (MRR, revenue, visitors, commits) opens once at least {min} projects have that number from a connected source.",
+    "soonCounts": "{listed} projects listed · {eligible} with numbers that can rank",
+    "connectCta": "Connect your project's numbers",
+    "someClosed": "The other boards open once at least {min} projects have that number.",
     "rank": "#",
     "startup": "Project",
     "founder": "Founder",
@@ -187,7 +190,8 @@
   },
   "Profile": {
     "teamProject": "By the JaoPor team · not ranked",
-    "mrrAboveRevenue": "MRR is the price of the subscriptions active today (annual plans per month, before discounts), so it can be higher than the revenue received so far.",
+    "mrrAboveRevenueStripe": "MRR is the list price of subscriptions not yet cancelled, including overdue ones and excluding trials, averaged per month, with coupons not yet deducted. It isn't money received, so it can be higher than total revenue.",
+    "mrrAboveRevenueRevenueCat": "This MRR is calculated by RevenueCat from active subscriptions, by RevenueCat's own definition. It isn't money received, so it can be higher than total revenue.",
     "early": {
       "title": "Early-stage project",
       "body": "The owner hasn't connected real numbers yet. Try it out, and check back here for progress.",
@@ -960,6 +964,7 @@
     "eyebrow": "JaoPor Olympics · season {year}",
     "statProvinces": "Provinces competing",
     "statTotal": "{metric}, nationwide",
+    "statTotalProjects": "Scored projects, nationwide",
     "linkCopied": "Link copied",
     "regionEmpty": "no projects yet",
     "podium": "Top 3",
@@ -1004,7 +1009,7 @@
     "moreProvinces": "+{n} provinces",
     "risingTitle": "Rising this month",
     "howTitle": "How scoring works",
-    "howBody": "Projects: every published project, numbers verified or not · revenue verified through Stripe and RevenueCat · commits through GitHub · visitors counted by the JaoPor script or analytics (Plausible, Umami, Cloudflare) · revenue converted from USD at today's rate · demo projects excluded · province as chosen by the founder · rank changes compare with the previous 30 days",
+    "howBody": "Projects: every published project, numbers verified or not · revenue verified through Stripe and RevenueCat · commits through GitHub · visitors counted by the JaoPor script or analytics (Plausible, Umami, Cloudflare) · revenue converted from USD at today's rate · demo projects and the JaoPor team's own projects excluded (still listed in their province, but not scored) · province as chosen by the founder · rank changes compare with the previous 30 days",
     "startupLeaderboard": "See the leaderboard"
   },
   "Province": {

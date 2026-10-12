@@ -270,12 +270,17 @@ export default async function StartupPage({ params }: Props) {
           ),
           label: t("mrr"),
           source: verifiedSource && t("chartStamp", { source: verifiedSource }),
-          // MRR is the price of today's active subscriptions (annual ÷ 12, no discounts), so it can
-          // be above the money received so far (lib/revenue/metrics.ts).
+          // MRR above the money received so far, explained per source: Stripe's is our own
+          // calculation (lib/revenue/metrics.ts: active + past_due, list price, per month, no coupons,
+          // no trials); RevenueCat's is RevenueCat's own figure. No note for any other source.
           note:
             startup.revenue_all_time_cents !== null &&
             startup.mrr_cents > startup.revenue_all_time_cents
-              ? t("mrrAboveRevenue")
+              ? startup.verified_provider === "stripe"
+                ? t("mrrAboveRevenueStripe")
+                : startup.verified_provider === "revenuecat"
+                  ? t("mrrAboveRevenueRevenueCat")
+                  : undefined
               : undefined,
         }
       : verified && startup.revenue_30d_cents !== null

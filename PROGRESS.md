@@ -12,6 +12,70 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-12 — Review follow-up: one competition gate, per-metric home boards, MRR notes per source, Olympics + tabs proposals
+
+**Done** (owner approved A, B, C locally; D decided, landing repo untouched; E as a Design.md proposal; not pushed, `8e08fc3` not amended):
+
+- **A. One competition gate** (`lib/team` `isRankEligible`: published, not demo, not the team's own):
+  - Used by `isBoardEligible` (home boards, landing API boards), `rankProvinces` (every Olympics score, rank, podium, "ตัวท็อป", region standing, climber, OG image, province rank on project / profile / province pages, home teaser) and `getRank` (the team project no longer counts as a competitor either; that was a bug).
+  - **Listing is separate from competing:** new `countByProvince` / `getProvinceProjectCounts` drive "ยังไม่มีผลงานจาก N จังหวัด", the province noindex and the sitemap. Mukdahan stays indexed and is not shown as empty.
+  - Olympics header: "ผลงานที่นับคะแนน รวมทั้งประเทศ" on the projects board. "นับคะแนนยังไง" says team projects aren't scored.
+- **B. Home leaderboard per metric** (`boardState`, `BOARD_OPEN_MIN` = 3): states closed / sparse / open.
+  - Only open boards are in the picker; sparse adds a footnote.
+  - Closed shows "ผลงานที่ลงไว้ {listed} ชิ้น · มีตัวเลขพอจัดอันดับ {eligible} ชิ้น" (eligible = distinct projects across boards).
+  - The CTA is "เชื่อมตัวเลขของผลงาน" → `/dashboard`, no longer "ยืนยัน" → `/new`.
+- **C. MRR note per source:**
+  - Stripe: exactly our calculation (not cancelled, incl. overdue, excl. trials, per month, coupons not deducted).
+  - RevenueCat: RevenueCat's own figure.
+  - Others: none.
+- **D (app side only):**
+  - Every landing API project carries `team`, and a new `featured` field holds the hero project. With nobody ranked yet that's JaoPor's verified MRR, flagged as a team project.
+  - Boards also drop team projects inside `buildLandingPayload`.
+  - **The landing site must read `featured` before the app ships, or its hero card shows "no verified revenue".**
+- **E.** Design.md: "Proposal — Olympics v4" (coverage hero + map, your-province bar, ranking rows, podium only on desktop with ≥ 5 provinces, phone order) and "Proposal — tabs that switch, not scroll" (owner: tab jumps feel jarring). Both are not built.
+- **Tests (controlled fixtures, no data needed):**
+  - `boardState` closed / sparse / open / demo-and-draft.
+  - Team project excluded per board and in `rankProvinces`, counted in `countByProvince`.
+  - Landing team flag, board exclusion and `featured`.
+  - Closed-state e2e: copy, both counts, `/th/dashboard` link.
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit 638 passed / 17 skipped · e2e local 121 passed / 0 failed / 21 skipped · build ✓.
+- e2e skips:
+  - most need `SUPABASE_SECRET_KEY` (builder pages);
+  - the open-board UI checks (metric labels, row FLIP) skip while the live home board is closed. Their logic is covered by the fixture unit tests.
+- Rendered HTML:
+  - home closed card "ผลงานที่ลงไว้ 3 ชิ้น · มีตัวเลขพอจัดอันดับ 0 ชิ้น";
+  - Olympics "จังหวัดที่ลงแข่ง 2 / 77", "ผลงานที่นับคะแนน 2", and Mukdahan not listed as empty.
+
+**Risks:**
+- Landing hero (see D).
+- Olympics now ranks 2 provinces.
+- The e2e first run had one failure while the dev server recompiled after edits; the rerun passed (17 / 17 in the related specs).
+
+## 2026-10-12 — Landing pre-merge fixes (landing repo, committed + pushed, not deployed, not merged)
+
+**Done** (owner: three pre-merge fixes locally, then "push and commit" for the landing repo only; commit `4e2d0c2` on `GXCB06/jaopor-landing` master):
+
+- **Language switch keeps the block on screen:** the switch records an element path + ratio (not a pixel offset) and restores it once after the reload (re-applied on load / fonts / 300 ms, stops at 1.5 s or on user input). Locale cookie and currency behaviour unchanged.
+- **Cheaper hero motion:** hero canvas runs from a timer (66 / 100 ms) instead of requestAnimationFrame; floating MRR card and glow animate only on wide hover devices; the live dot is stepped; reduced motion still shows one still frame.
+- **Open Graph / Twitter:** og:url, og:image (+ type, width, height, alt), twitter image alt, canonical, og:locale + alternate, in th and en; share card at `/landing/og` (200, image/png, 1200×630).
+- **New scene under the hero** ("everything you build with": tool / language / AI-agent / channel logos and code chips in a star field, headline fades in line by line) and a "how a number is verified" proof network. Logos are Simple Icons glyphs (CC0); the scene says they are not partnerships.
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · 18 unit tests ✓ · webpack build ✓ (scratch copy; **not** Vercel's Turbopack build).
+- Language switch, real clicks without page scroll, TH→EN and EN→TH, desktop 1280 (11 positions each) and 375 (5 each): the same section stayed on screen in all 32 runs on the new build. The deployed version, same method, kept the section in 41 of 42 runs. Same block (matched by tag): new build 31 of 32, deployed 36 of 42; the misses are text wrapping differently between languages, not jumps.
+- **Correction:** the earlier claim that "4 of 7 positions landed in a different section, 300–400 px drift" was a test artifact: Playwright's `.click()` scrolled the page before the switch. Re-measured with a DOM click; the claim is withdrawn.
+- Hero cost, same machine, interleaved before (deployed) / after (local build), 5 rounds, hero in view, main-thread busy % (CDP TaskDuration, 4 s window): desktop median 10.5 → 7.3 %; 375 px with 4× CPU throttle median 54.4 (range 34–63) → 15.9 (13–18) %. Trace counts per second, desktop: rAF callbacks 60 → 0, style recalcs 60 → 36, paints 9.5 → 22.5 (the timer canvas repaints about 15×/s, so paints rose). New scene in view: 4.6 % desktop, 11.9 % mobile-throttled, against 5.8 / 15.4 % on a quiet section. Limits: one machine, Chrome only, synthetic throttling, CPU % moves with machine load (the trace counts do not); no universal pass/fail percentage claimed.
+- Reduced motion: no pop-in, no pulses, no canvas redraws, nodes and text visible. Desktop + 375 screenshots, dark + light, before and after compared by eye.
+
+**Not verified:** Safari / Firefox; real phone hardware; social validators (Facebook / LINE / X crawlers cache and may ignore tags). The `og:image` URL points at the production domain, which keeps returning 307 for `/landing/og` until `landing-zone` is merged.
+
+**Not done on purpose:** no Vercel deployment of this commit, `landing-zone` not merged, no production setting changed; the app repo was not pushed (it holds another chat's uncommitted work).
+**Next:** owner review, then explicit go for (1) deploy the landing, (2) merge `landing-zone`.
+
 ## 2026-10-12 — Audit fixes 1–2: trust wording in the product, SEO basics, thresholded home
 
 **Done** (owner: "ทำเลย" to the audit's first two tasks, product-repo parts; the landing repo is waiting for approval):

@@ -14,6 +14,7 @@ import {
   type BoardMetric,
 } from "@/lib/leaderboard";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
+import { isTeamProject } from "@/lib/team";
 import { logoUrl } from "@/lib/supabase/logo-url";
 
 /** The StartupRow fields this payload reads (a structural subset, so tests can build one cheaply). */
@@ -57,6 +58,11 @@ export type PublicProject = {
   name: string | null;
   anonymous: boolean;
   mask: string | null;
+  /**
+   * Made by the JaoPor team (lib/team): show it with a "JaoPor team project · Excluded from
+   * rankings" disclosure; it never appears on a board.
+   */
+  team: boolean;
   tagline: string | null;
   logo: string | null;
   category: string;
@@ -115,6 +121,13 @@ export type LandingPayload = {
   boards: PublicBoard[];
   /** History of the top MRR project (same data as its project page chart), or null. */
   topMrrSeries: LandingSeries | null;
+  /**
+   * The hero card's project (owner decision D, 2026-10-12): the top ranked MRR project; while no
+   * project can rank, the team's own project with verified MRR, flagged `project.team` so the
+   * landing shows it with its disclosure. Null when neither exists. Added alongside the older
+   * fields; the landing site has to read it to show the disclosure.
+   */
+  featured: { project: PublicProject; series: LandingSeries | null } | null;
 };
 
 const sourceName = (id: string | null): string | null =>
@@ -140,6 +153,7 @@ export function toPublicProject(s: LandingSource): PublicProject {
     name: anonymous ? null : s.name,
     anonymous,
     mask: anonymous ? anonymousMask(s.slug) : null,
+    team: isTeamProject(s.slug),
     tagline: s.tagline,
     // An anonymous row holds no logo, but never rely on that alone.
     logo: anonymous ? null : logoUrl(s.logo_path, { absolute: true }),
@@ -217,6 +231,7 @@ export function buildLandingPayload(input: {
   categories: Record<string, number>;
   thbPerUsd: number | null;
   topMrrSeries?: LandingSeries | null;
+  featured?: { project: PublicProject; series: LandingSeries | null } | null;
   now?: Date;
   recentLimit?: number;
   boardLimit?: number;
@@ -232,6 +247,7 @@ export function buildLandingPayload(input: {
     categories: input.categories,
     thbPerUsd: input.thbPerUsd,
     topMrrSeries: input.topMrrSeries ?? null,
+    featured: input.featured ?? null,
     recent: input.recent
       .filter(isLandingProject)
       .slice(0, recentLimit)
@@ -239,7 +255,10 @@ export function buildLandingPayload(input: {
     boards: BOARD_METRICS.map((metric) => {
       const def = BOARD_DEFINITIONS[metric];
       const ranked = rankBoard(
-        input.lists[metric].filter(isLandingProject),
+        // getBoard already leaves out the team's own projects; checked again here (lib/team).
+        input.lists[metric].filter(
+          (s) => isLandingProject(s) && !isTeamProject(s.slug),
+        ),
         (s) => boardValue(s, metric),
         (s) => s.name,
       );

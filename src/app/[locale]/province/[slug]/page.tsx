@@ -10,7 +10,11 @@ import { Link } from "@/i18n/navigation";
 import { localizedName } from "@/lib/config/localized";
 import { PROVINCE_LIST, getProvince, getRegion } from "@/lib/config/provinces";
 import { getThbPerUsd } from "@/lib/data/fx";
-import { getProvinceLeaderboard, listStartups } from "@/lib/data/startups";
+import {
+  getProvinceLeaderboard,
+  getProvinceProjectCounts,
+  listStartups,
+} from "@/lib/data/startups";
 import { DEFAULT_METRIC, provinceRank } from "@/lib/olympics";
 import { EMPTY_PAGE_ROBOTS, localeAlternates } from "@/lib/seo";
 
@@ -27,15 +31,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   const p = getProvince(slug);
   if (!p) return {};
-  const [t, ranked] = await Promise.all([
+  const [t, counts] = await Promise.all([
     getTranslations({ locale, namespace: "Province" }),
-    getProvinceLeaderboard("projects").catch(() => null),
+    // Listing, not ranking: a province whose only project is the team's still has a page worth
+    // indexing (lib/team).
+    getProvinceProjectCounts().catch(() => null),
   ]);
   const name = localizedName(p, locale);
-  const listed = ranked?.find((r) => r.province === p.slug)?.total ?? 0;
+  const listed = counts?.[p.slug] ?? 0;
   return {
     // Nothing listed yet: keep it out of search results until it has a project (SEO, audit 2026-10-12).
-    ...(ranked && listed === 0 ? { robots: EMPTY_PAGE_ROBOTS } : {}),
+    ...(counts && listed === 0 ? { robots: EMPTY_PAGE_ROBOTS } : {}),
     title: t("title", { name }),
     description: t("subtitle", {
       name,

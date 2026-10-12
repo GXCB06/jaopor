@@ -14,6 +14,7 @@ import {
   type ProvinceDef,
   type Region,
 } from "@/lib/config/provinces";
+import { isRankEligible } from "@/lib/team";
 
 export const OLYMPIC_METRICS = [
   // Owner request 2026-10-11: every published project counts, verified or not, so provinces can
@@ -154,7 +155,8 @@ export function rankProvinces(
   const groups = new Map<string, Group>();
   for (const s of rows) {
     const def = getProvince(s.province);
-    if (!def || s.status !== "published" || s.is_demo) continue;
+    // The shared competition gate (lib/team): published, not a demo, not the team's own project.
+    if (!def || !isRankEligible(s)) continue;
     if (region && def.region !== region) continue;
     const value = metricValue(s, metric);
     if (value === null) continue;
@@ -209,15 +211,33 @@ export function rankProvinces(
   });
 }
 
-/** Provinces (in the region, if any) with no verified number yet, in config order. */
+/** Provinces (in the region, if any) with no published project yet, in config order. */
 export function emptyProvinces(
-  ranked: ProvinceRank[],
+  /** Slugs of provinces that have at least one published project (countByProvince keys). */
+  listed: Iterable<string>,
   region: Region | null,
 ): ProvinceDef[] {
-  const seen = new Set(ranked.map((r) => r.province));
+  const seen = new Set(listed);
   return PROVINCE_LIST.filter(
     (p) => !seen.has(p.slug) && (!region || p.region === region),
   );
+}
+
+/**
+ * Published projects per province: listing, not competing (lib/team). The team's own projects
+ * count here, demos and unpublished rows don't. Used for "ยังไม่มีผลงานจาก N จังหวัด", SEO and the
+ * sitemap; never for ranks or scores (that's rankProvinces).
+ */
+export function countByProvince(
+  rows: readonly { province: string | null; status: string; is_demo: boolean }[],
+): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const s of rows) {
+    const def = getProvince(s.province);
+    if (!def || s.status !== "published" || s.is_demo) continue;
+    counts[def.slug] = (counts[def.slug] ?? 0) + 1;
+  }
+  return counts;
 }
 
 /** 1-based rank of a province (null when it isn't on the board). */

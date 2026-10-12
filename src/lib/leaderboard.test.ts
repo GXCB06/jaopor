@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   BOARD_DEFINITIONS,
   BOARD_METRICS,
+  boardState,
   boardValue,
   isBoardEligible,
   rankBoard,
@@ -165,5 +166,66 @@ describe("team projects (lib/team)", () => {
       expect(isBoardEligible(row({ slug: "jaopor" }), m)).toBe(false);
       expect(isBoardEligible(row({ slug: "someone-else" }), m)).toBe(true);
     }
+  });
+});
+
+describe("boardState (home leaderboard, per metric)", () => {
+  // Controlled fixtures: candidate rows go through the same eligibility as getBoard.
+  const candidate = (
+    id: number,
+    over: Partial<BoardCandidate> = {},
+  ): BoardCandidate & { id: number } => ({ ...row(over), id, slug: `p${id}` });
+  const listsFrom = (rows: (BoardCandidate & { id: number })[]) =>
+    Object.fromEntries(
+      BOARD_METRICS.map((m) => [m, rows.filter((r) => isBoardEligible(r, m))]),
+    ) as unknown as Record<(typeof BOARD_METRICS)[number], { id: number }[]>;
+
+  it("closed: below the minimum on every board; the team project never counts", () => {
+    const rows = [
+      candidate(1),
+      candidate(2),
+      // Would make 3, but it's the team's own project.
+      { ...candidate(3), slug: "jaopor" },
+    ];
+    const s = boardState(listsFrom(rows));
+    expect(s.state).toBe("closed");
+    expect(s.open).toEqual([]);
+    expect(s.eligible).toBe(2);
+  });
+
+  it("sparse: only the boards with enough rows open, judged per metric", () => {
+    // Three projects with visitors, only one with verified revenue and none with commits.
+    const rows = [
+      candidate(1, { build_commits: null }),
+      candidate(2, {
+        verification_status: "unverified",
+        build_commits: null,
+      }),
+      candidate(3, {
+        verification_status: "unverified",
+        build_commits: null,
+      }),
+    ];
+    const s = boardState(listsFrom(rows));
+    expect(s.state).toBe("sparse");
+    expect(s.open).toEqual(["visitors"]);
+    expect(s.eligible).toBe(3);
+  });
+
+  it("open: every board has enough rows; a project on several boards counts once", () => {
+    const s = boardState(listsFrom([candidate(1), candidate(2), candidate(3)]));
+    expect(s.state).toBe("open");
+    expect(s.open).toEqual([...BOARD_METRICS]);
+    expect(s.eligible).toBe(3);
+  });
+
+  it("demo and unpublished rows never open a board", () => {
+    const rows = [
+      candidate(1),
+      candidate(2),
+      candidate(3, { is_demo: true }),
+      candidate(4, { status: "draft" }),
+    ];
+    expect(boardState(listsFrom(rows)).state).toBe("closed");
   });
 });

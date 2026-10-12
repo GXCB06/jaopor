@@ -2,13 +2,14 @@ import type { Screenshot } from "@/lib/media";
 import "server-only";
 import type { BoardMetric } from "@/lib/leaderboard";
 import { BOARD_DEFINITIONS, isBoardEligible } from "@/lib/leaderboard";
-import { isTeamProject } from "@/lib/team";
+import { TEAM_PROJECT_SLUGS, isTeamProject } from "@/lib/team";
 import type { AiTool, Category } from "@/lib/catalog";
 import type { Region } from "@/lib/config/provinces";
 import type { LookingFor } from "@/lib/links";
 import { asList } from "@/lib/url-list";
 import {
   type ActivityProject,
+  countByProvince,
   rankProvinces,
   type OlympicMetric,
   type OlympicSource,
@@ -350,6 +351,8 @@ export async function getRank(startup: StartupRow): Promise<number | null> {
   )
     // Demo projects carry made-up numbers: they never count towards a real project's rank.
     .eq("is_demo", false)
+    // Nor do the team's own projects (lib/team): they don't compete, so they can't push anyone down.
+    .not("slug", "in", `(${[...TEAM_PROJECT_SLUGS].join(",")})`)
     .gt(metricColumn(mode, "mrr_cents"), startup.mrr_cents);
   if (error) throw error;
   return (count ?? 0) + 1;
@@ -568,6 +571,19 @@ export async function getProjectActivity(): Promise<ActivityProject[]> {
     .limit(5000);
   if (error) throw error;
   return (data ?? []) as unknown as ActivityProject[];
+}
+
+/** Published projects per province (listing, not competing: lib/team, olympics.countByProvince). */
+export async function getProvinceProjectCounts(): Promise<Record<string, number>> {
+  const { data, error } = await db()
+    .from("startups")
+    .select("province, status, is_demo")
+    .not("province", "is", null)
+    .eq("status", "published")
+    .eq("is_demo", false)
+    .limit(5000);
+  if (error) throw error;
+  return countByProvince(data ?? []);
 }
 
 export async function getProvinceLeaderboard(

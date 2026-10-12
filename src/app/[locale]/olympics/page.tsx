@@ -24,6 +24,7 @@ import { getThbPerUsd } from "@/lib/data/fx";
 import {
   getProjectActivity,
   getProvinceLeaderboard,
+  getProvinceProjectCounts,
 } from "@/lib/data/startups";
 import {
   DEFAULT_METRIC,
@@ -67,13 +68,15 @@ export default async function OlympicsPage({
   const metric = parseMetric(one(sp.metric));
   const region = parseRegion(one(sp.region));
 
-  const [t, common, national, thbPerUsd, activity] = await Promise.all([
-    getTranslations("Olympics"),
-    getTranslations("Common"),
-    getProvinceLeaderboard(metric),
-    getThbPerUsd(),
-    getProjectActivity().catch(() => []),
-  ]);
+  const [t, common, national, thbPerUsd, activity, listed] =
+    await Promise.all([
+      getTranslations("Olympics"),
+      getTranslations("Common"),
+      getProvinceLeaderboard(metric),
+      getThbPerUsd(),
+      getProjectActivity().catch(() => []),
+      getProvinceProjectCounts().catch(() => ({}) as Record<string, number>),
+    ]);
   // Logo URLs resolved here: the board below is a client component.
   const board = (
     region ? await getProvinceLeaderboard(metric, region) : national
@@ -84,7 +87,9 @@ export default async function OlympicsPage({
   const summary = boardSummary(national);
   const regions = regionStandings(national);
   const rising = climbers(national);
-  const open = emptyProvinces(board, region);
+  // "No project yet" means no published project at all (listing), not "not ranked": the team's
+  // own project doesn't compete but its province isn't empty (lib/team).
+  const open = emptyProvinces(Object.keys(listed), region);
   const metricName = t(`metrics.${metric}`);
   const season = new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en", {
     month: "long",
@@ -167,7 +172,10 @@ export default async function OlympicsPage({
           </Card>
           <Card className="min-w-36 p-3.5">
             <p className="truncate text-2xs tracking-wider text-faint uppercase">
-              {t("statTotal", { metric: metricName })}
+              {/* Scored, not listed: the team's own project doesn't count (lib/team). */}
+              {metric === "projects"
+                ? t("statTotalProjects")
+                : t("statTotal", { metric: metricName })}
             </p>
             <p className="mt-1 text-xl font-bold tabular-nums">
               {value(summary.total)}

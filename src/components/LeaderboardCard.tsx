@@ -7,7 +7,11 @@ import { useTranslations } from "next-intl";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { PersonPhoto } from "@/components/PersonPhoto";
-import type { BoardMetric } from "@/lib/leaderboard";
+import {
+  BOARD_METRICS,
+  BOARD_OPEN_MIN,
+  type BoardMetric,
+} from "@/lib/leaderboard";
 import { InView } from "./core/InView";
 import { CornerTag, GrowthValue, Money, StartupLogo } from "./StartupBits";
 
@@ -99,16 +103,21 @@ function useRankFlip(metric: BoardMetric) {
 export function LeaderboardCard({
   boards,
   thbPerUsd,
+  someClosed = false,
 }: {
-  boards: Record<BoardMetric, BoardRow[]>;
+  /** Only the boards that are open (home: lib/leaderboard boardState); at least one. */
+  boards: Partial<Record<BoardMetric, BoardRow[]>>;
   thbPerUsd: number | null;
+  /** Some boards aren't open yet: say so under the table. */
+  someClosed?: boolean;
 }) {
   const t = useTranslations("Leaderboard");
+  const metrics = BOARD_METRICS.filter((m) => boards[m]);
   const [metric, setMetric] = useState<BoardMetric>(
-    boards.mrr.length ? "mrr" : boards.visitors.length ? "visitors" : "mrr",
+    metrics.includes("mrr") ? "mrr" : (metrics[0] ?? "mrr"),
   );
   const [expanded, setExpanded] = useState(false);
-  const rows = boards[metric];
+  const rows = boards[metric] ?? [];
   const shown = expanded ? rows : rows.slice(0, COLLAPSED);
   const tbody = useRankFlip(metric);
 
@@ -134,7 +143,7 @@ export function LeaderboardCard({
             setMetric(v as BoardMetric);
             setExpanded(false);
           }}
-          options={(Object.keys(boards) as BoardMetric[]).map((m) => ({
+          options={metrics.map((m) => ({
             value: m,
             label: t(`metrics.${m}`),
           }))}
@@ -266,6 +275,11 @@ export function LeaderboardCard({
         </p>
         {rows.some((r) => r.tied) && (
           <p className="text-center text-2xs text-faint">{t("ties")}</p>
+        )}
+        {someClosed && (
+          <p className="text-center text-2xs text-faint">
+            {t("someClosed", { min: BOARD_OPEN_MIN })}
+          </p>
         )}
       </div>
     </section>

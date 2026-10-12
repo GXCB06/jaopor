@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { routing } from "@/i18n/routing";
 import { isAnonymousSlug } from "@/lib/anonymous";
 import { listBuilders } from "@/lib/data/builder";
-import { getCategoryCounts, getProvinceLeaderboard } from "@/lib/data/startups";
+import { getCategoryCounts, getProvinceProjectCounts } from "@/lib/data/startups";
 import { publicEnv } from "@/lib/public-env";
 import { createPublicClient } from "@/lib/supabase/public";
 
@@ -49,7 +49,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
     safe(listBuilders(), []),
     safe(getCategoryCounts(), {} as Record<string, number>),
-    safe(getProvinceLeaderboard("projects"), []),
+    // Listing counts, not ranks: the team project's province stays in (lib/team).
+    safe(getProvinceProjectCounts(), {} as Record<string, number>),
   ]);
 
   const entry = (path: string, lastModified?: string): MetadataRoute.Sitemap =>
@@ -72,8 +73,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...Object.entries(categories)
       .filter(([, n]) => n > 0)
       .flatMap(([slug]) => entry(`/category/${slug}`)),
-    ...provinces
-      .filter((r) => r.total > 0)
-      .flatMap((r) => entry(`/province/${r.province}`)),
+    ...Object.entries(provinces)
+      .filter(([, n]) => n > 0)
+      .flatMap(([slug]) => entry(`/province/${slug}`)),
   ];
 }
