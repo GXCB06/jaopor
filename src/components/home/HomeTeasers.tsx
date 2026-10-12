@@ -35,7 +35,7 @@ export async function HomeTeasers({ thbPerUsd }: { thbPerUsd: number | null }) {
 
   const header = (title: string, href: string) => (
     <div className="mb-4 flex items-center justify-between gap-3">
-      <h2 className="text-sm font-bold">{title}</h2>
+      <h2 className="text-base font-bold">{title}</h2>
       <Link
         href={href}
         className="shrink-0 text-caption text-faint hover:text-foreground"
@@ -47,7 +47,7 @@ export async function HomeTeasers({ thbPerUsd }: { thbPerUsd: number | null }) {
 
   return (
     <section
-      className={cn("mt-9 grid gap-3", podium.length > 0 && "md:grid-cols-2")}
+      className={cn("mt-12 grid gap-3", podium.length > 0 && "md:grid-cols-2")}
     >
       <Card className="p-5">
         {header(t("categoriesTeaser"), "/categories")}

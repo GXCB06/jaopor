@@ -44,7 +44,7 @@ export function StickyIdentity({
           : "pointer-events-none -translate-y-full opacity-0",
       )}
     >
-      <div className="mx-auto flex h-12 w-full max-w-5xl items-center gap-2.5 px-4">
+      <div className="mx-auto flex h-12 w-full max-w-6xl items-center gap-2.5 px-4">
         {children}
       </div>
     </div>

@@ -23,6 +23,7 @@ import { getThbPerUsd } from "@/lib/data/fx";
 import { growthPct } from "@/lib/format";
 import { boardValue, rankBoard } from "@/lib/leaderboard";
 import { logoUrl } from "@/lib/supabase/public";
+import { cn } from "@/lib/utils";
 
 export const revalidate = 60;
 
@@ -113,7 +114,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const freshTraction = traction.filter((s) => !shownRecent.has(s.id));
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4">
+    <main className="mx-auto w-full max-w-6xl px-4">
       <section className="relative isolate flex flex-col items-center pt-10 pb-10 text-center md:pt-14">
         <HeroLight />
         <HeroBrand />
@@ -185,7 +186,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       )}
 
       <LiveVisitorsSection />
-      <div className="mt-9">
+      <div className="mt-12">
         <LeaderboardCard boards={boards} thbPerUsd={thbPerUsd} />
       </div>
       <HomeTeasers thbPerUsd={thbPerUsd} />
@@ -210,9 +211,9 @@ function CardRow({
   empty?: React.ReactNode;
 }) {
   return (
-    <section className="mt-9 first-of-type:mt-0">
+    <section className="mt-12 first-of-type:mt-0">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-bold">{title}</h2>
+        <h2 className="text-lg font-bold tracking-tight">{title}</h2>
         <Link
           href={{ pathname: "/startups", query: { sort } }}
           className="text-caption text-faint hover:text-foreground"
@@ -224,8 +225,16 @@ function CardRow({
         empty
       ) : (
         // Plain grid, no horizontal scrolling (Design.md §5): 6 cards below lg, 5 at lg; one
-        // column on narrow phones so the three numbers fit.
-        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        // column on narrow phones so the three numbers fit. Fewer cards than columns get fewer,
+        // wider columns, so a short row fills the width instead of leaving empty tracks (layout
+        // audit 2026-10-12).
+        <div
+          className={cn(
+            "grid grid-cols-1 gap-3 min-[420px]:grid-cols-2",
+            rows.length === 4 ? "md:grid-cols-2 lg:grid-cols-4" : "md:grid-cols-3",
+            rows.length >= 5 && "lg:grid-cols-5",
+          )}
+        >
           {rows.slice(0, 6).map((s, i) => (
             <StartupCard
               key={s.id}

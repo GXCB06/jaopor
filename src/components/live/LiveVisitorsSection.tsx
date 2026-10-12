@@ -80,7 +80,7 @@ export function LiveVisitorsSection() {
   if (!LIVE_ENABLED) return null;
   if (hidden)
     return (
-      <div className="mt-9 text-center">
+      <div className="mt-12 text-center">
         <button
           type="button"
           onClick={() => setHidden(false)}
@@ -121,12 +121,12 @@ export function LiveVisitorsSection() {
     <section
       ref={ref}
       aria-labelledby="live-title"
-      className="mt-9 overflow-hidden rounded-xl border bg-card"
+      className="mt-12 overflow-hidden rounded-xl border bg-card"
     >
       <div className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-5">
         <h2
           id="live-title"
-          className="flex items-center gap-2 text-sm font-bold"
+          className="flex items-center gap-2 text-base font-bold"
         >
           <span
             aria-hidden="true"
@@ -171,7 +171,7 @@ export function LiveVisitorsSection() {
         {world ? (
           <WorldMap visitors={all} />
         ) : (
-          <div className="flex size-full items-center justify-center p-4 sm:justify-end sm:pr-[12%]">
+          <div className="flex size-full items-center justify-center p-4 sm:pl-64">
             <svg
               viewBox="-4 -4 92 158"
               className="h-full w-auto overflow-visible"

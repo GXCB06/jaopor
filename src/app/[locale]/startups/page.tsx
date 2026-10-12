@@ -211,7 +211,7 @@ export default async function StartupsPage({
 
       {one(sp.welcome) === "1" && <WelcomeBanner />}
 
-      <div className="grid gap-4 lg:grid-cols-[15rem_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[15rem_minmax(0,1fr)]">
         <aside>
           <p className="mb-2 hidden text-3xs font-semibold tracking-wider text-faint uppercase lg:block">
             {t("filters")}
@@ -266,7 +266,7 @@ export default async function StartupsPage({
               {t("empty")}
             </p>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {rows.map((s) => (
                 <StartupCard
                   key={s.id}

@@ -12,6 +12,36 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-12 — Layout balance audit: one container, sparse grids, home rhythm, feed and Olympics columns
+
+**Done** (owner brief "Layout Balance & Composition Audit"; local only, not pushed):
+
+- **Audit:** full-page screenshots at 1440 and 375 of home, `/startups`, `/builders` (production, because local needs the secret key), `/feed` and `/olympics`, plus measured container edges and column widths.
+- **Five issues found:**
+  1. Home and the project page used `max-w-5xl`, so their content started 72 px inside the header's logo while every other page was flush.
+  2. Sparse grids: home "เพิ่มล่าสุด" had 3 cards in a 5-column grid (40% empty), and `/startups` used 2 columns while `/builders` used 3.
+  3. Home section headings were `text-sm` (15.75 px) under a 60 px hero, and some sat inside cards, some outside.
+  4. The live board pushed the map to the right edge, leaving a wide empty band.
+  5. The feed's right rail was 243 px (names truncated); the Olympics sidebar ran about 460 px past the main column.
+- **Fixes:**
+  - One container, `max-w-6xl`, on home, project page and identity bar.
+  - Home rows choose 3 / 4 / 5 columns by count. `/startups` is `sm:2 xl:3` with `minmax(0,1fr)`.
+  - Home sections are `mt-12` apart, the heading outside a card is `text-lg` and headings inside cards are `text-base` (Leaderboard stays `text-sm` on phones).
+  - The live map is centred right of the overlay; the height is kept, since a smaller one was reverted once.
+  - Feed `xl` columns are `12.5rem | 1fr | 18rem`.
+  - The Olympics "นับคะแนนยังไง" card moved under the board.
+- Design.md §4 Layout: container, sparse grids, section rhythm. Feed, Olympics and live board notes updated.
+
+**Verified:**
+
+- Before / after screenshots: the home left edge moved from x = 162 to x = 90, matching the logo. The Olympics page is 242 px shorter (2612 → 2370) and its columns end together. The feed rail is 324 px. `/startups` shows 3 cards in one row. No sideways scroll at 375 on any page.
+- typecheck ✓ · lint ✓ · unit 628 passed / 17 skipped · build ✓.
+- e2e local: 123 passed / 0 failed. One earlier run had 1 flaky motion test; motion spec ×3 = 27 / 27.
+
+**Not verified:** feed and builders with real data locally (they need the secret key); production screenshots are from before the change.
+
+**Remaining:** in 3-column `/startups` cards the label "รายได้ (30 วัน)" truncates to "รายได้ (30 …" (the number stays whole).
+
 ## 2026-10-12 — Early-stage projects: no-numbers cards, wizard stage choice, OG card in the profile layout
 
 **Done** (owner: "ทำเลยครับ" to the order 2 → 6 → 3):

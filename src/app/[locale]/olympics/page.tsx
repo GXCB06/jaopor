@@ -274,6 +274,15 @@ export default async function OlympicsPage({
           )}
 
           <ProvinceActivity rows={activity} region={region} />
+
+          {/* Under the board, not at the end of the sidebar: the two columns end closer together
+              (layout audit 2026-10-12). */}
+          <Card className="p-4">
+            <h2 className="text-xs font-semibold">{t("howTitle")}</h2>
+            <p className="mt-1.5 text-caption leading-relaxed text-muted-foreground">
+              {t("howBody")}
+            </p>
+          </Card>
         </div>
 
         <aside className="space-y-4">
@@ -330,12 +339,6 @@ export default async function OlympicsPage({
 
           <ShareRankCard ranks={ranks} />
 
-          <Card className="p-4">
-            <h2 className="text-xs font-semibold">{t("howTitle")}</h2>
-            <p className="mt-1.5 text-caption leading-relaxed text-muted-foreground">
-              {t("howBody")}
-            </p>
-          </Card>
         </aside>
       </div>
 

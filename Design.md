@@ -142,9 +142,11 @@ Where the warmth goes: welcome moments, empty states, Add-project intro, the pos
 
 ## 4. Layout
 
-- **Container:** `max-w-5xl` (Figma 1040/1000) for home, profile, dashboard; `max-w-6xl` for the directory (sidebar + grid). Gutter `px-4`; no horizontal scroll at 375px.
+- **Container (layout audit 2026-10-12):** one public container, **`max-w-6xl px-4`**, the same as the site header and footer, so every page's left edge lines up with the logo. It applies to home, project profile, directories, feed and Olympics. Only forms keep `max-w-5xl` (the project edit page) for line length. No horizontal scroll at 375px.
+- **Sparse grids:** a grid never leaves whole empty columns because of a low count. Home card rows use fewer, wider columns: 3 cards → 3 columns, 4 → 4 (2×2 at `md`), 5 or more → 5. Directory grids with a sidebar (`/startups`, `/builders`) are `sm:2 · xl:3` columns. Grids beside a sidebar use `minmax(0,1fr)` so long content can't widen them.
+- **Section rhythm on home:** sections are `mt-12` apart. A section heading outside a card is `text-lg font-bold tracking-tight`; a heading inside a card is `text-base font-bold` (`text-sm` below `sm` where the row also holds controls, e.g. the LeaderboardCard).
 - **Radius:** `--radius: 0.5rem`. Compact cards and dropdown buttons `rounded-lg` (8); profile tiles, insight cards, chart card, leaderboard, large cards `rounded-xl` (12); buttons/inputs `rounded-md` (6); pills `rounded-full`; tags `rounded-sm` (4).
-- **Spacing:** compact card `p-3`, large card / tile `p-4`, chart card `p-6`; section gap `mt-9` (36); grids `gap-3`.
+- **Spacing:** compact card `p-3`, large card / tile `p-4`, chart card `p-6`; section gap `mt-9` (36), `mt-12` between home sections; grids `gap-3`.
 - **Elevation:** none. Separation from `bg-card` + `border`.
 - **Native controls:** `color-scheme` follows the theme (date pickers, scrollbars). No native `<select>` anywhere: see §5 Dropdowns.
 
@@ -421,7 +423,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - **Controls:** metric SegmentedControl + region chips (dot + name; horizontal scroll on phones). Both in the URL.
 - **OlympicsBoard** (client): **your-province bar** (`border-brand/40 bg-brand/5`; MapPin "จังหวัดของคุณ" · badge + name · #rank · RankChange · "อีก ฿X จะแซง{ahead}ขึ้นอันดับ #n" or "กำลังนำกระดาน" · "เปลี่ยนจังหวัด"; no pick yet → inline select grouped by region; stored in localStorage `jaopor.myProvince`) · province search (whole board) · **table** from #4: # · change · badge + name (+ "· คุณ") + region · ผลงาน (md+) · value · growth (sm+) · top logos (lg+) · expand chevron → sub-row with top projects (logo, name, share %, value, `h-1` brand bar) + "ดูผลงานทั้งหมดใน{จังหวัด} n ชิ้น →". 10 rows then "ดูอันดับ 14–N ↓". Own row `bg-brand/5` + 3px brand inset edge.
 - **Open provinces** Card: "ยังไม่มีผลงานจาก {n} จังหวัด" + subline + "+ เพิ่มผลงาน", 10 chips then "+N จังหวัด" (expands).
-- **Sidebar (320px):** "ภาคไหนแรงสุด" (OlympicsMap h-36 + RegionStandings) · "มาแรงเดือนนี้" (Flame; top 3 climbers with ▲n; hidden when none) · **ShareRankCard** (`border-brand/40 bg-brand/5`: download the province's OG image, or the Olympics one; copy link) · "นับคะแนนยังไง" methodology text.
+- **Sidebar (320px):** "ภาคไหนแรงสุด" (OlympicsMap h-36 + RegionStandings) · "มาแรงเดือนนี้" (Flame; top 3 climbers with ▲n; hidden when none) · **ShareRankCard** (`border-brand/40 bg-brand/5`: download the province's OG image, or the Olympics one; copy link). "นับคะแนนยังไง" (methodology text) sits at the end of the **main column**, under the pioneers / newest cards (layout audit 2026-10-12: in the sidebar it made the right column ~460px taller than the left).
 
 ### LiveVisitorsSection (home, Phase 8, "ตอนนี้มีคนดูอยู่")
 
@@ -429,6 +431,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 - `rounded-xl border bg-card` section after the card rows. Header: status dot (positive pulse = live, warning = fallback, faint = connecting) + title; right: "ทั่วโลก / ประเทศไทย" toggle (`h-7 border` button) and × (hides the section, remembered; a small "แสดงคนที่กำลังดู JaoPor" link brings it back).
 - Body `h-[420px] sm:h-[460px]` at every count (the round C compact height for ≤ 3 viewers was reverted on 2026-10-07: the map became too small to see the pins, and the 4-row feed overlapped the stats overlay): Thailand silhouette (`fill-muted-foreground/15`) with one pin per province at its centre (brand circle + DiceBear avatar, positive count badge when > 1); world view = MapLibre (OpenFreeMap dark, loaded on demand) with avatar markers at the coarse coordinates.
+- **Map placement (layout audit 2026-10-12):** from `sm` the Thailand map is centred in the space right of the overlay (`sm:pl-64`), no longer pushed to the right edge. That left a wide empty band between the overlay and the map. The height stays as above.
 - Overlay top-left (`w-56 rounded-lg border bg-background/85 backdrop-blur`): big count + "คนกำลังดู JaoPor", rows ประเทศ / อุปกรณ์ / หน้า (top 3, fixed section labels only, never slugs), "+n คนจากต่างประเทศ". Fallback shows the count + "แสดงจำนวนโดยประมาณ".
 - Feed bottom-left: last 4 page views as `bg-background/85` rows: avatar, "{ชื่อ} เปิด{หน้า}", "เมื่อสักครู่ / n นาทีที่แล้ว".
 - Footer `border-t text-2xs`: "คุณแสดงเป็น “{ชื่อ}” · ไม่แสดงตัวฉัน" (opt-out; then "คุณไม่ได้แสดงตัว · แสดงตัวอีกครั้ง") + "ไม่ระบุตัวตน · ตำแหน่งระดับจังหวัด/ประเทศ".
@@ -594,7 +597,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 ### Feed (`/feed`, Phase 10c, Figma "Feed Ux/ui" 160-555)
 
-- Three columns from `xl` (`xl:grid-cols-[12.5rem_minmax(0,40rem)_minmax(0,1fr)] gap-8`, max-w-6xl); at `lg` two columns with the right rail under the posts (1024px is too narrow for three); below `lg` one column, the view tabs become a horizontal scroll row and type / province / category fold into the CSS-only "ตัวกรอง" toggle as on /startups.
+- Three columns from `xl` (`xl:grid-cols-[12.5rem_minmax(0,1fr)_18rem] gap-8`, max-w-6xl; the right rail is a fixed 18rem so names and follow buttons fit, layout audit 2026-10-12); at `lg` two columns with the right rail under the posts (1024px is too narrow for three); below `lg` one column, the view tabs become a horizontal scroll row and type / province / category fold into the CSS-only "ตัวกรอง" toggle as on /startups.
 - **Left:** "ฟีด" `text-2xl font-extrabold` + "คนสร้างอัปเดตอะไรกันบ้าง"; view links ล่าสุด / กำลังติดตาม / ยอดนิยมสัปดาห์นี้ (`h-10 rounded-lg px-3`, active `bg-secondary font-bold`); "ประเภท" chips (ทั้งหมด + 5 types, each in its type colour, active = filled `bg-foreground text-background`); จังหวัด and หมวดหมู่ MultiChoice filters (GET form, several values each). Everything lives in the URL (`view`, `type`, `province`, `category`, `waiting`).
 - **Center:** Composer, then PostCards (`space-y-4`), then "โหลดเพิ่ม" (`h-12 w-full rounded-xl border`) which appends the next page in place (cursor = the last post's time; popular uses an offset). Empty: dashed one-liner per view (following with no follows → "ติดตามคนสร้างเพื่อเห็นอัปเดตที่นี่" + link to /builders).
 - **Right rail** (`space-y-5`): "คนสร้างที่น่าติดตาม" (3 rows: avatar 36, name + "● หา Co-founder" in positive when looking, startup · province, ติดตาม outline button) · "อัปเดตบ่อยสุดสัปดาห์นี้" (top 3 startups by posts in 7 days: logo 28, name, "n โพสต์") · "รอ Feedback จากคุณ" teal card (`border-info/40 bg-info/10`; count of feedback posts from the last 14 days that aren't mine and I haven't commented on; "ดูโพสต์ที่รอคำตอบ" → `?type=feedback&waiting=1`). Signed-out visitors see the count of feedback posts with no comments yet.

@@ -118,7 +118,7 @@ export function LeaderboardCard({
       className="scroll-mt-20 overflow-hidden rounded-xl border bg-card"
     >
       <div className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-5">
-        <h2 className="flex items-center gap-2 text-sm font-bold">
+        <h2 className="flex items-center gap-2 text-sm font-bold sm:text-base">
           {t("title")}
           {/* The numbers sync once a day: never "LIVE" (Design.md §5 LeaderboardCard). */}
           <span className="inline-flex items-center gap-1 text-2xs font-normal text-muted-foreground">
