@@ -106,8 +106,8 @@
   /* JaoPor brand accent (Design.md §2 ★): indigo, from the Figma file. Swap here only. */
   --brand: #4f46e5;
   --brand-text: #4f46e5;
-  /* The logo's blue (mascot / app tile), hero accents only (Design.md §2): 5.3:1 on white. */
-  --brand-logo: #3757fe;
+  /* JaoPor blue (owner swatch 2026-10-12), hero accents only (Design.md §2): 5.8:1 on white. */
+  --brand-logo: #1251fd;
   --surface-2: #ffffff;
   --border-strong: #d4d4d8;
   --brand-foreground: #ffffff;
@@ -162,8 +162,8 @@
   --brand: #6e6cf3;
   /* Text/link indigo: --brand itself is 4.47:1 on cards (<4.5), so text uses this lighter step. */
   --brand-text: #8280f6;
-  /* Lighter step of the logo blue for the dark page: 5.3:1 on #09090b. */
-  --brand-logo: #5b78ff;
+  /* Same blue on the dark page (owner's exact colour): 3.4:1 on #09090b, large hero text only (AA large ≥ 3:1). */
+  --brand-logo: #1251fd;
   --surface-2: #1e1e20;
   --border-strong: #3a3a40;
   --brand-foreground: #09090b;

@@ -12,19 +12,18 @@
 > **Next:** the immediate follow-up
 > ```
 
-## 2026-10-12 — Hero accents in the logo's blue
+## 2026-10-12 — Hero accents in JaoPor blue
 
-**Done** (owner: "ตัวเลขจริง" and the "." in the logo's blue, like the mockup):
+**Done** (owner: "ตัวเลขจริง" and the "." in the blue of the owner's swatch):
 
-- New token `--brand-logo` (Design.md §2), utility `text-brand-logo`.
-  - Light theme: `#3757fe`, the exact blue of the mascot / app tile, 5.3:1 on white.
-  - Dark theme: `#5b78ff`, a lighter step of the same blue, 5.3:1 on `#09090b`.
+- New token `--brand-logo` = `#1251fd` in both themes (sampled from the owner's swatch). Utility `text-brand-logo`; Design.md §2.
 - Used only for the dot of "JaoPor." and "ตัวเลขจริง" / "Real numbers." in the home hero. Links and buttons keep the indigo `--brand`.
+- Contrast: 5.8:1 on white; 3.4:1 on the dark page. That passes WCAG AA for large text (the hero line is ≥ 24 px bold), so the token is limited to large text on dark.
 
 **Verified:**
 
 - typecheck ✓ · lint ✓.
-- Browser `/th` at 1280: computed colours are `rgb(55,87,254)` in light and `rgb(91,120,255)` in dark.
+- Browser `/th` at 1280 in light and dark: computed colour `rgb(18,81,253)`.
 - The old dev server on port 3000 had hung. It was stopped with the owner's OK and restarted.
 
 **Files:** `src/app/globals.css`, `src/components/BrandLogo.tsx`, `src/app/[locale]/page.tsx`, `Design.md`
