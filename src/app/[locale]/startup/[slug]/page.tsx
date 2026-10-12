@@ -41,6 +41,8 @@ import { MetricChart } from "@/components/MetricChart";
 import { ScreenshotGallery } from "@/components/profile/ScreenshotGallery";
 import { ClampedText } from "@/components/profile/ClampedText";
 import { StickyIdentity } from "@/components/profile/StickyIdentity";
+import { ProfileCover } from "@/components/profile/ProfileCover";
+import { screenshotUrl } from "@/lib/media";
 import { MetricHelp } from "@/components/core/MetricHelp";
 import { ShareStudio } from "@/components/share/ShareStudio";
 import { FoundingBadge, Money, StartupLogo } from "@/components/StartupBits";
@@ -235,6 +237,52 @@ export default async function StartupPage({ params }: Props) {
       ? SOURCE_NAME[startup.verified_provider]
       : null;
 
+  // Design.md §5 Profile layout, headline number: the strongest number that is public at its
+  // exact value (masked groups arrive as null). Never for demos.
+  const trafficSource = isSource(startup.traffic_provider)
+    ? SOURCE_NAME[startup.traffic_provider]
+    : null;
+  const headline: {
+    value: React.ReactNode;
+    label: string;
+    source: string | null;
+  } | null = startup.is_demo
+    ? null
+    : verified && startup.mrr_cents !== null && startup.mrr_cents > 0
+      ? {
+          value: (
+            <Money cents={startup.mrr_cents} thbPerUsd={thbPerUsd} full />
+          ),
+          label: t("mrr"),
+          source: verifiedSource && t("chartStamp", { source: verifiedSource }),
+        }
+      : verified && startup.revenue_30d_cents !== null
+        ? {
+            value: (
+              <Money
+                cents={startup.revenue_30d_cents}
+                thbPerUsd={thbPerUsd}
+                full
+              />
+            ),
+            label: t("revenue30d"),
+            source:
+              verifiedSource && t("chartStamp", { source: verifiedSource }),
+          }
+        : startup.visitors_30d !== null
+          ? {
+              value: startup.visitors_30d.toLocaleString("en"),
+              label: t("visitors30d"),
+              source: trafficSource && t("countedBy", { source: trafficSource }),
+            }
+          : startup.build_commits !== null
+            ? {
+                value: startup.build_commits.toLocaleString("en"),
+                label: t("headlineCommits"),
+                source: t("chartStamp", { source: "GitHub" }),
+              }
+            : null;
+
   return (
     <OwnerProvider ownerId={startup.owner_id} startupId={startup.id}>
       <main className="mx-auto w-full max-w-5xl space-y-6 px-4 pt-8">
@@ -277,6 +325,13 @@ export default async function StartupPage({ params }: Props) {
         {/* Design.md §5 Profile layout (owner 2026-10-12, from the Lovable mockup): who and what
             on the left, numbers and story on the right; one column on phones (identity first,
             numbers right under it). */}
+        <ProfileCover
+          src={(() => {
+            const first = shots.find((x) => x.kind === "desktop") ?? shots[0];
+            return first ? screenshotUrl(first.path) : null;
+          })()}
+        />
+
         <StickyIdentity watch="profile-identity">
           <StartupLogo
             name={startup.name}
@@ -305,13 +360,14 @@ export default async function StartupPage({ params }: Props) {
           <aside className="min-w-0 space-y-5 lg:self-start lg:[@media(min-height:40rem)]:sticky lg:[@media(min-height:40rem)]:top-20">
             <div
               id="profile-identity"
-              className="flex items-center gap-4 lg:flex-col lg:items-start"
+              className="flex flex-col items-start gap-3"
             >
+              {/* The logo overlaps the cover's bottom edge (Design.md §5 Profile layout). */}
               <StartupLogo
                 name={startup.name}
                 src={logoUrl(startup.logo_path)}
                 size={80}
-                className="rounded-2xl"
+                className="relative z-10 -mt-14 ml-3 rounded-2xl ring-4 ring-background lg:-mt-16 lg:ml-5"
               />
               <div className="min-w-0 space-y-1">
                 <h1 className="text-2xl font-bold tracking-tight break-words">
@@ -372,6 +428,26 @@ export default async function StartupPage({ params }: Props) {
                 </MetricHelp>
               )}
             </div>
+
+            {headline && (
+              // Design.md §5 Profile layout, headline number: the strongest public number, big.
+              <div>
+                <p className="text-3xl font-bold tracking-tight tabular-nums">
+                  {headline.value}
+                </p>
+                <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-caption text-muted-foreground">
+                  <span className="font-semibold text-foreground/80">
+                    {headline.label}
+                  </span>
+                  {headline.source && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      {headline.source}
+                    </>
+                  )}
+                </p>
+              </div>
+            )}
 
             {startup.tagline ? (
               <p className="font-prose text-body leading-relaxed text-muted-foreground">
@@ -577,6 +653,19 @@ export default async function StartupPage({ params }: Props) {
               <EmptyOwnerCard field="revenue" label={t("connectChart")} />
             )}
 
+            {/* Screenshots right after the chart (owner 2026-10-12: visuals early); owner prompt when empty. */}
+            {shots.length > 0 || startup.demo_video_url ? (
+              <ScreenshotGallery
+                name={startup.name}
+                domain={websiteHost(startup.website_url)}
+                websiteUrl={startup.website_url}
+                shots={shots}
+                videoUrl={startup.demo_video_url}
+              />
+            ) : (
+              <EmptyOwnerCard field="screenshots" label={t("screenshots")} />
+            )}
+
             {!tractionFirst && <TractionTiles startup={startup} />}
 
             <section className="space-y-3 pt-2">
@@ -601,19 +690,6 @@ export default async function StartupPage({ params }: Props) {
             </section>
 
             <LookingForBanner startup={startup} />
-
-            {/* Spec 6.4 step 4: screenshots + demo video; owner prompt when empty. */}
-            {shots.length > 0 || startup.demo_video_url ? (
-              <ScreenshotGallery
-                name={startup.name}
-                domain={websiteHost(startup.website_url)}
-                websiteUrl={startup.website_url}
-                shots={shots}
-                videoUrl={startup.demo_video_url}
-              />
-            ) : (
-              <EmptyOwnerCard field="screenshots" label={t("screenshots")} />
-            )}
 
             <FounderMessageCard startup={startup} />
 

@@ -33,6 +33,8 @@ export function StickyIdentity({
 
   return (
     <div
+      // Not part of the page-enter animation (its last frame would pin opacity at 1).
+      data-entered=""
       aria-hidden={!shown}
       inert={!shown}
       className={cn(

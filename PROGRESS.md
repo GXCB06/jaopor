@@ -12,6 +12,23 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-12 — Product Profile stands out: cover, headline number, screenshots earlier
+
+**Done** (owner: "yes please" to proposals 1–3):
+
+- **Cover:** a full-width banner (`profile/ProfileCover`) from the first screenshot, else a hero-blue gradient. The logo overlaps its bottom edge at every width.
+- **Headline number:** the strongest public number, big, under the badges: MRR → revenue 30 days → visitors → commits. It shows its source and is never shown for demos. New string `Profile.headlineCommits` (th + en).
+- **Screenshots** moved up to right after the chart.
+- **Fix:** the phone identity bar was always visible. The page-enter animation's last frame pinned its opacity at 1; the bar now opts out with `data-entered`.
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit 623 passed / 17 skipped · e2e local 123 passed / 0 failed.
+- Browser at 1280: the cover is 1116 × 234 and the logo overlaps it by 45 px.
+- Browser at 375: logo over the cover; the bar is hidden at the top and shows after scrolling; no sideways scroll.
+
+**Not verified:** how the cover looks for a project without screenshots (gradient) by eye.
+
 ## 2026-10-12 — Product Profile: the name stays in view while scrolling
 
 **Done** (owner: "เลื่อนลงแล้วพลาดชื่อ product ฝั่งซ้าย"):

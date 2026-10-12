@@ -181,6 +181,7 @@
     "welcomeClose": "ปิดข้อความต้อนรับ"
   },
   "Profile": {
+    "headlineCommits": "คอมมิตทั้งหมด",
     "aboutTitle": "เกี่ยวกับ {name}",
     "visit": "เข้าเว็บไซต์",
     "share": "แชร์",
