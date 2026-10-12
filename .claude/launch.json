@@ -20,6 +20,18 @@
         "3100"
       ],
       "port": 3100
+    },
+    {
+      "name": "landing-verify",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "C:/Users/ACER/jaopor-landing-verify",
+        "run",
+        "start"
+      ],
+      "port": 3200,
+      "autoPort": true
     }
   ]
 }
