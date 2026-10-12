@@ -35,9 +35,19 @@ test("sections below the fold fade up once; numbers never animate", async ({
 }) => {
   const href = await projectWith(page, "main section");
   test.skip(!href, "no project page");
-  // On screen at load: never touched (nothing hidden for what the visitor already sees).
-  const first = page.locator("main section").first();
-  await expect(first).not.toHaveAttribute("data-reveal", /.+/);
+  // On screen at load: never touched (nothing hidden for what the visitor already sees). The
+  // first section on screen, not the first in the DOM: on a phone the cover and identity column
+  // push the profile's first section below the fold (2026-10-12).
+  const onScreen = await page.locator("main section").evaluateAll((all) =>
+    all.findIndex((el) => {
+      const r = el.getBoundingClientRect();
+      return r.height > 0 && r.top < window.innerHeight && r.bottom > 0;
+    }),
+  );
+  if (onScreen >= 0)
+    await expect(
+      page.locator("main section").nth(onScreen),
+    ).not.toHaveAttribute("data-reveal", /.+/);
   const waiting = page.locator('main section[data-reveal="wait"]');
   // ScrollReveal marks sections after hydration.
   await waiting

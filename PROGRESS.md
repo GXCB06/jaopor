@@ -40,6 +40,11 @@
 
 **Not verified:** feed and builders with real data locally (they need the secret key); production screenshots are from before the change.
 
+**Production** (pushed `0714a26`, owner "push"): the first e2e run failed `motion.spec` "sections below the fold fade up once" at 375.
+- Cause: the test took the first `<section>` in the DOM as on screen, but the new cover and identity column push the profile's first section below the fold, so it rightly waits.
+- The test now checks the first section that is actually on screen.
+- Motion spec ×3 on production 27 / 27; full production e2e 139 passed / 0 failed.
+
 **Remaining:** in 3-column `/startups` cards the label "รายได้ (30 วัน)" truncates to "รายได้ (30 …" (the number stays whole).
 
 ## 2026-10-12 — Early-stage projects: no-numbers cards, wizard stage choice, OG card in the profile layout
