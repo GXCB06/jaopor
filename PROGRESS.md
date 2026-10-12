@@ -12,6 +12,23 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-12 — Hero accents in the logo's blue
+
+**Done** (owner: "ตัวเลขจริง" and the "." in the logo's blue, like the mockup):
+
+- New token `--brand-logo` (Design.md §2), utility `text-brand-logo`.
+  - Light theme: `#3757fe`, the exact blue of the mascot / app tile, 5.3:1 on white.
+  - Dark theme: `#5b78ff`, a lighter step of the same blue, 5.3:1 on `#09090b`.
+- Used only for the dot of "JaoPor." and "ตัวเลขจริง" / "Real numbers." in the home hero. Links and buttons keep the indigo `--brand`.
+
+**Verified:**
+
+- typecheck ✓ · lint ✓.
+- Browser `/th` at 1280: computed colours are `rgb(55,87,254)` in light and `rgb(91,120,255)` in dark.
+- The old dev server on port 3000 had hung. It was stopped with the owner's OK and restarted.
+
+**Files:** `src/app/globals.css`, `src/components/BrandLogo.tsx`, `src/app/[locale]/page.tsx`, `Design.md`
+
 ## 2026-10-12 — Hero lockup like the owner's mockup, constellation removed, anonymous names blurred
 
 **Done** (owner review of the hero prototype):

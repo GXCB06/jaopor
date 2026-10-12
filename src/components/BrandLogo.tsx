@@ -53,7 +53,7 @@ export function HeroBrand() {
       />
       <span className="text-4xl font-extrabold tracking-[-0.02em] md:text-5xl">
         {t("brand")}
-        <span className="text-brand-text">.</span>
+        <span className="text-brand-logo">.</span>
       </span>
     </p>
   );

@@ -124,7 +124,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           </span>
           <span className="mt-2 block text-2xl leading-tight sm:text-3xl md:text-4xl">
             {t.rich("heroBottom", {
-              brand: (c) => <span className="text-brand-text">{c}</span>,
+              brand: (c) => <span className="text-brand-logo">{c}</span>,
             })}
           </span>
         </h1>
