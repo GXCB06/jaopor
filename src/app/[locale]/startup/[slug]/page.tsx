@@ -40,6 +40,7 @@ import { Card } from "@/components/core/Card";
 import { MetricChart } from "@/components/MetricChart";
 import { ScreenshotGallery } from "@/components/profile/ScreenshotGallery";
 import { ClampedText } from "@/components/profile/ClampedText";
+import { StickyIdentity } from "@/components/profile/StickyIdentity";
 import { MetricHelp } from "@/components/core/MetricHelp";
 import { ShareStudio } from "@/components/share/ShareStudio";
 import { FoundingBadge, Money, StartupLogo } from "@/components/StartupBits";
@@ -276,9 +277,36 @@ export default async function StartupPage({ params }: Props) {
         {/* Design.md §5 Profile layout (owner 2026-10-12, from the Lovable mockup): who and what
             on the left, numbers and story on the right; one column on phones (identity first,
             numbers right under it). */}
+        <StickyIdentity watch="profile-identity">
+          <StartupLogo
+            name={startup.name}
+            src={logoUrl(startup.logo_path)}
+            size={28}
+            className="rounded-md"
+          />
+          <p className="min-w-0 flex-1 truncate text-sm font-bold">
+            <ProjectName name={startup.name} slug={startup.slug} />
+          </p>
+          {primary && (
+            <a
+              href={primary.url}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="inline-flex h-8 shrink-0 items-center gap-1 rounded-md bg-primary px-3 text-caption font-medium text-primary-foreground hover:opacity-90"
+            >
+              {t("visit")}
+              <ArrowUpRightIcon className="size-3.5" aria-hidden="true" />
+            </a>
+          )}
+        </StickyIdentity>
         <div className="grid gap-8 lg:grid-cols-[16.25rem_minmax(0,1fr)] lg:gap-10">
-          <aside className="min-w-0 space-y-5">
-            <div className="flex items-center gap-4 lg:flex-col lg:items-start">
+          {/* lg: the column stays pinned under the site header while the right column scrolls
+              (only on screens tall enough to show all of it). */}
+          <aside className="min-w-0 space-y-5 lg:self-start lg:[@media(min-height:40rem)]:sticky lg:[@media(min-height:40rem)]:top-20">
+            <div
+              id="profile-identity"
+              className="flex items-center gap-4 lg:flex-col lg:items-start"
+            >
               <StartupLogo
                 name={startup.name}
                 src={logoUrl(startup.logo_path)}

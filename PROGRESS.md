@@ -12,6 +12,19 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-12 — Product Profile: the name stays in view while scrolling
+
+**Done** (owner: "เลื่อนลงแล้วพลาดชื่อ product ฝั่งซ้าย"):
+
+- **Desktop (`lg`):** the left column (logo, name, badges, visit button, founder) is sticky under the site header. It only sticks on screens at least 40rem tall, so it never hides its own bottom.
+- **Phones and tablets:** the new `profile/StickyIdentity` slides a slim bar under the header once the name has scrolled away. The bar holds a small logo, the name and "เข้าเว็บไซต์ ↗".
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · e2e project / pages / readability / a1: 80 passed.
+- Browser at 1280: after scrolling 1,500 px the column is still at the top.
+- Browser at 375: the bar shows after scrolling past the name; no sideways scroll.
+
 ## 2026-10-12 — Landing site plan + public data endpoint (step A)
 
 **Done** (owner: studied the Lovable landing midnight-show-hub.lovable.app, chose the direction in plan mode):
