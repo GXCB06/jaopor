@@ -50,6 +50,8 @@
 - Browser at 1280 and 375 (no sideways scroll; at 375 the first number is on the first screen).
 - Hover state read from the page: `translate: 0 -4.5px`, both glow layers on and following the pointer.
 
+**Production** (pushed with `604c738`, owner "push and commit"): the e2e run right after deploy had 133 passed + 6 flaky (passed on retry, cold pages). A second run passed 138 / 0 failed / 0 flaky.
+
 **Not verified:** the ring in the light theme by eye. The pane kept resetting the emulated size during hover screenshots.
 
 ## 2026-10-12 — Hero headline types itself in; light becomes a breathing, twinkling sun through clouds
