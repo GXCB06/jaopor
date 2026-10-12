@@ -12,6 +12,27 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-13 — Landing: scroll-linked "built with" text (like Aetox) and the features tabs wait for the reader
+
+**Done** (owner: make the text reveal like Aetox, and the "what do you get" cards must start only when the reader is on them; landing repo, **local only: not committed, not pushed, not deployed**):
+
+- **Studied Aetox's text reveal** (their published page source, read for the mechanism, nothing copied): the section is 250 vh tall, the stage inside is pinned (CSS sticky), and the scroll position (0..1) drives every word from dim + blurred to sharp one after another, plus the star field brightening. Ours was a timer that ran once, so it did not feel the same.
+- **Rewritten the same way for JaoPor:** pinned stage; each word (Thai split with `Intl.Segmenter`, `lib/words.ts`) resolves in reading order; each logo / chip scales in; the canvas brightens; the logos pulse once everything is revealed. Reduced motion, no JavaScript: not pinned, everything visible. Screen readers get the plain text.
+- **Features tabs:** the auto-advance now runs only while the panel is in the middle half of the screen. Before, it ran from page load, so a reader arriving after 14 s found the 3rd of 4 tabs (the owner saw the 4th).
+- **Language switch inside a pinned section:** anchoring a word inside a sticky stage is meaningless (it never moves in the viewport), so the capture now anchors the tall section that holds a sticky stage. Unit test added.
+
+**Verified** (local production build, webpack; Chrome):
+
+- typecheck ✓ · lint ✓ · 22 unit tests ✓.
+- Scroll through the section at 1280 and 375: stage pinned (top 0), words and logos reveal progressively (0 → 68 of 68 words, 0 → 37 / 18 logos), no sideways scroll, no console errors.
+- Tabs, same method before (deployed) / after: waiting 14 s at the top, the deployed page arrives on tab 3 and advances while away; the new build arrives on tab 1, moves to tab 2 after about 7 s in view, and does not move when away. Reduced motion: stays on tab 1. Desktop and 375.
+- Scroll smoothness (4 s steady scroll through the section, 3 runs, idle machine): the first version blurred all 68 words at once and dropped frames (p95 frame 33–200 ms, up to 30 frames over 33 ms); words now blur only shortly before their turn: desktop p95 about 18 ms, 0–5 frames over 33 ms; 375 px with 4× CPU throttle p95 17–35 ms, 1–16 slow frames. Not a pass/fail claim: one machine, Chrome, synthetic throttling.
+- Language switch, real clicks, TH↔EN, 32 runs (desktop 11 positions each way, 375 px 5 each): same section 32 / 32 (the previous build had the same score but anchored the pinned section wrongly); same block 29 / 32, the 3 misses are the hero text and one heading wrapping differently.
+- Screenshots: dark + light, desktop + 375, mid-scroll and fully revealed, reduced motion.
+
+**Not verified:** Safari / Firefox (sticky and filter behave differently on iOS); a real phone; the pinned section on a short landscape phone (stage is at least 34 rem tall).
+**Next:** owner review; then explicit go for commit / push, deploy of the landing, and merging `landing-zone`.
+
 ## 2026-10-12 — Olympics ranking as rows (v4 part 1), collapsible live stats on phones, duplicate-key guard
 
 **Done** (owner: ranking "เรียงเป็นการ์ด … unsatisfying" on phones; live stats overlay covers the map):

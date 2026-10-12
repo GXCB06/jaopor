@@ -160,6 +160,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [ ] C. Multi-zone: landing answers `/`, the app keeps `/th`, `/en`, `/api`. **Built and verified on the `landing-zone` preview (2026-10-12); merge to master waits for the owner's go**
 - [x] Landing hero: space backdrop (spotlight, stars, horizon, mouse light), language switch keeps the scroll (2026-10-12)
 - [x] Landing: Proof network (sources → project → verified / counted), "built with" scene under the hero, cheaper hero motion, anchored language-switch scroll, complete Open Graph — committed + pushed to the landing repo `4e2d0c2`, **not deployed, not merged** (2026-10-12)
+- [x] Landing: "built with" text is scroll-linked and pinned like Aetox; features tabs advance only while in view (local, not committed or pushed) (2026-10-13)
 - [ ] Landing: the "add a project" steps from the owner's screens
 - [ ] Later: restyle the app toward the landing (tokens → chrome → home; never data screens)
 
