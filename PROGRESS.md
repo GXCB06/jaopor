@@ -82,6 +82,53 @@
 - Browser at 1280: after scrolling 1,500 px the column is still at the top.
 - Browser at 375: the bar shows after scrolling past the name; no sideways scroll.
 
+## 2026-10-12 — Landing: real product screenshots, chart from real history, new logo, language-switch fix
+
+**Done** (owner: show real product images, the MRR card must come from the product, fix the language jump, new logo except the home hero):
+
+- **Real screenshots.** The owner's five app screenshots (home, all projects, feed, builders, Olympics) replace my mock panels in the hero and the four feature tabs. Each says "ภาพจากผลิตภัณฑ์จริง · ถ่ายเมื่อ 12 ต.ค. 2569 · ไม่ใช่ข้อมูลสด" and opens full size. The "how to add a project" steps still wait for the owner's screens.
+- **MRR card chart from the product's own data.** `GET /api/public/landing` now returns `topMrrSeries` (`getChartSeries`, exact disclosure only): MRR when it has history, else daily revenue, with a `metric` field so the card never calls revenue "MRR".
+  - Today JaoPor has one MRR snapshot (10-11) but 65 days of revenue, so the card shows "รายได้รายวัน 30 วันล่าสุด" (two days with revenue). It switches to MRR by itself once two or more snapshots exist.
+  - Drawn like the project-page chart: smooth 2 px line, faint fill, quiet grid.
+- **Language switch** sets the `NEXT_LOCALE` cookie and refreshes in place. The old navigation to `/` jumped to the footer; now the scroll stays (3091 → 3007 px, Board still in view).
+- **Logo:** the owner's circle mark replaces the square tile in the **app and the landing** (header, footer, login, OG and share cards, badge via the same files, tab icon, `favicon.ico` 16–64, apple icon, `icon-192/512`). The home hero mascot is untouched. Source images had a black background, so the circle was cut with a transparent outside.
+
+**Files:** `src/lib/public-landing.ts` (+ test), `src/app/api/public/landing/route.ts`, `public/brand/jaopor-tile.png`, `public/icon-{192,512}.png`, `src/app/{icon.png,apple-icon.png,favicon.ico}`, `src/assets/jaopor-tile-64.png`, `Design.md`; landing repo `GXCB06/jaopor-landing` (`ProductShot`, `MrrChart`, `Hero`, `Features`, `Nav`)
+
+**Verified:**
+
+- App: typecheck ✓ · lint ✓ · unit 628 passed / 17 skipped (new: series helper ×4). Browser `/th/startups`: the header shows the circle, the `<link>` icons point at the new files.
+- Landing: typecheck ✓ · lint ✓ · tests 3 ✓ · `npm run build` ✓. Browser at 1024: real screenshot in the hero and in each tab (builders, Olympics seen), chart in the card (peak ฿990 read from the API), language switch th → en keeps the scroll.
+- Landing redeployed to `jaopor-landing.vercel.app` (production of that project only).
+
+**Not verified:** the chart and logo on the live `jaopor.vercel.app` (the app is not pushed yet, so the live API has no `topMrrSeries` and the landing shows the number without a chart); a Windows / iOS home-screen icon by eye; share-card and badge images with the circle; the e2e suite (not re-run).
+**Next:** the owner decides whether to push the app (it carries four unpushed profile commits from another session), then step C (rewrites). Waiting for the "add a project" screens.
+
+## 2026-10-12 — `jaopor-landing` built locally (step B), live data, dark + light, th + en
+
+**Done** (owner: "go next"). New project at `C:\Users\ACER\jaopor-landing` (local git repo, no commits, **no GitHub repo created yet**):
+
+- **Stack:** Next.js 16.3.6, Tailwind v4, next-intl 4 (th + en; one URL `/`, language from the `NEXT_LOCALE` cookie because the app owns `/th` and `/en`), dark + light with the app's `localStorage.theme` key.
+- **Sections** (Lovable structure, our code): floating pill nav, hero with live recent-projects frame and a live MRR card, four auto-advancing feature tabs (pause, arrow keys), recent projects, leaderboard with metric tabs, builders and provinces, security, founder note, final CTA, footer.
+  - **Every number is live** from the app's `/api/public/landing` (ISR 5 min). Revenue and build proof read "verified", visitors "counted by {source}". No data shows `—` or "ยังไม่มีข้อมูล".
+  - Anonymous projects stay blurred. No mock rows or screenshots, so no "sample data" label is needed.
+- **Fixed from the Lovable prototype:** final-CTA step titles broke glyph by glyph; nav anchors with no target (olympics now links to the app); no language switch.
+- **Light palette designed and contrast-checked.** The first dark `--faint` was 4.1 : 1 on cards, raised to 4.9 : 1; every text pair is now at least 4.9 : 1 (table in the landing's `DESIGN.md`).
+- Also: `DESIGN.md`, `README.md`, `sitemap`, `robots`, a Latin-only OG card, `messages.test.ts` (th/en same keys and placeholders, ICU parses).
+- `.claude/launch.json` here gained a `landing` entry (port 3100) to preview it.
+
+**Files:** `C:\Users\ACER\jaopor-landing\*` (key: `src/components/*`, `src/app/globals.css`, `messages/*.json`, `DESIGN.md`), `.claude/launch.json`, `Project.md`
+
+**Verified:**
+
+- Landing: `npm run typecheck` ✓ · `npm run lint` ✓ · `npm test` ✓ (3) · `npm run build` ✓ (`/th`, `/en`, OG, robots, sitemap).
+- Browser at 1024 wide (dark and light) and 375: no sideways scroll (scrollWidth 375), every section read with live data (JaoPor ฿2,310 via Stripe, 2 projects without numbers show "ยังไม่ยืนยัน"), EN switch gives "$69 / month" and the English headline, tab auto-advance seen.
+- The dev server reads the app on `localhost:3000`, which runs the new endpoint.
+
+**Not verified:** against production (the endpoint isn't pushed, so a build today would bake dashes until the next 5-minute refresh); the mobile menu opened; Playwright (none set up); the OG card visually; screenshots in the first tab of the browser pane came out cropped (devicePixelRatio 2.5), a fresh tab was fine.
+**Known gaps:** the provinces tab counts provinces among the 12 most recent projects (the API has no province count); OG card is Latin only; the production domain is undecided.
+**Next:** the owner creates the GitHub repo (or approves `gh repo create GXCB06/jaopor-landing`), then push the app first (endpoint), then the landing, then the Vercel rewrites (step C).
+
 ## 2026-10-12 — Landing site plan + public data endpoint (step A)
 
 **Done** (owner: studied the Lovable landing midnight-show-hub.lovable.app, chose the direction in plan mode):

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildLandingPayload,
+  toLandingSeries,
   toPublicProject,
   type LandingSource,
 } from "./public-landing";
@@ -149,5 +150,69 @@ describe("buildLandingPayload", () => {
     expect(out.boards[0].rows).toHaveLength(5);
     expect(out.counts).toEqual({ projects: 3, withVerifiedRevenue: 1 });
     expect(out.thbPerUsd).toBe(35);
+  });
+});
+
+describe("toLandingSeries", () => {
+  const mrr = (vals: (number | null)[]) => ({ start: "2026-09-01", mrr: vals });
+
+  it("keeps the last N days from the first real value, with its start date", () => {
+    const s = toLandingSeries("acme", mrr([null, null, 100, 100, 250]), 30);
+    expect(s).toEqual({
+      slug: "acme",
+      metric: "mrr",
+      start: "2026-09-03",
+      values: [100, 100, 250],
+    });
+  });
+
+  it("windows to the last `days` entries", () => {
+    const vals = Array.from({ length: 10 }, (_, i) => 100 + i);
+    const s = toLandingSeries("acme", mrr(vals), 3);
+    expect(s?.values).toEqual([107, 108, 109]);
+    expect(s?.start).toBe("2026-09-08");
+  });
+
+  it("falls back to daily revenue when MRR has no history yet", () => {
+    const s = toLandingSeries(
+      "acme",
+      { start: "2026-09-01", mrr: null, revenue: [null, 0, 40, 0, 90] },
+      30,
+    );
+    expect(s).toEqual({
+      slug: "acme",
+      metric: "revenue",
+      start: "2026-09-02",
+      values: [0, 40, 0, 90],
+    });
+  });
+
+  it("returns null without history or with fewer than two points", () => {
+    expect(toLandingSeries("a", null)).toBeNull();
+    expect(toLandingSeries("a", { start: "2026-09-01", mrr: null })).toBeNull();
+    expect(toLandingSeries("a", mrr([null, null, null]))).toBeNull();
+    expect(toLandingSeries("a", mrr([null, 5]))).toBeNull();
+  });
+});
+
+describe("buildLandingPayload series", () => {
+  it("carries the series, or null when none", () => {
+    const base = {
+      recent: [],
+      lists: { mrr: [], revenue30d: [], visitors: [], commits: [] },
+      counts: { total: 0, verified: 0 },
+      categories: {},
+      thbPerUsd: null,
+    };
+    expect(buildLandingPayload(base).topMrrSeries).toBeNull();
+    const series = {
+      slug: "a",
+      metric: "mrr" as const,
+      start: "2026-09-01",
+      values: [1, 2],
+    };
+    expect(
+      buildLandingPayload({ ...base, topMrrSeries: series }).topMrrSeries,
+    ).toEqual(series);
   });
 });

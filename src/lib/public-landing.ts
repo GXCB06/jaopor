@@ -95,6 +95,15 @@ export type PublicBoard = {
   rows: PublicBoardRow[];
 };
 
+/** A small history for the hero card: daily values (USD cents), oldest first. */
+export type LandingSeries = {
+  slug: string;
+  /** What the values are: monthly recurring revenue, or daily revenue (USD cents). */
+  metric: "mrr" | "revenue";
+  start: string;
+  values: number[];
+};
+
 export type LandingPayload = {
   generatedAt: string;
   counts: { projects: number; withVerifiedRevenue: number };
@@ -104,6 +113,8 @@ export type LandingPayload = {
   thbPerUsd: number | null;
   recent: PublicProject[];
   boards: PublicBoard[];
+  /** History of the top MRR project (same data as its project page chart), or null. */
+  topMrrSeries: LandingSeries | null;
 };
 
 const sourceName = (id: string | null): string | null =>
@@ -159,6 +170,41 @@ export function toPublicProject(s: LandingSource): PublicProject {
   };
 }
 
+/**
+ * The last `days` of a project's public history for a small chart, from getChartSeries: MRR when
+ * it has two or more points (it is forward-filled between syncs), else daily revenue (what the
+ * project page charts by default). `metric` says which, so the card never calls revenue "MRR".
+ * Null with fewer than two points, so a chart never pretends to a trend.
+ */
+export function toLandingSeries(
+  slug: string,
+  series: {
+    start: string;
+    mrr: (number | null)[] | null;
+    revenue?: (number | null)[] | null;
+  } | null,
+  days = 30,
+): LandingSeries | null {
+  if (!series) return null;
+  for (const metric of ["mrr", "revenue"] as const) {
+    const all = series[metric];
+    if (!all) continue;
+    const from = Math.max(0, all.length - days);
+    const slice = all.slice(from);
+    const first = slice.findIndex((v) => v !== null);
+    if (first < 0) continue;
+    const values = slice.slice(first).filter((v): v is number => v !== null);
+    if (values.length < 2) continue;
+    const start = new Date(
+      Date.parse(series.start) + (from + first) * 86_400_000,
+    )
+      .toISOString()
+      .slice(0, 10);
+    return { slug, metric, start, values };
+  }
+  return null;
+}
+
 /** Real projects only: published and not a sample. */
 export const isLandingProject = (s: LandingSource): boolean =>
   !s.is_demo && s.status === "published";
@@ -170,6 +216,7 @@ export function buildLandingPayload(input: {
   counts: { total: number; verified: number };
   categories: Record<string, number>;
   thbPerUsd: number | null;
+  topMrrSeries?: LandingSeries | null;
   now?: Date;
   recentLimit?: number;
   boardLimit?: number;
@@ -184,6 +231,7 @@ export function buildLandingPayload(input: {
     },
     categories: input.categories,
     thbPerUsd: input.thbPerUsd,
+    topMrrSeries: input.topMrrSeries ?? null,
     recent: input.recent
       .filter(isLandingProject)
       .slice(0, recentLimit)

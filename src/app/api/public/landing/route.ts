@@ -5,10 +5,15 @@ import {
   countStartups,
   getBoard,
   getCategoryCounts,
+  getChartSeries,
   getRecent,
   type StartupRow,
 } from "@/lib/data/startups";
-import { buildLandingPayload, type LandingSource } from "@/lib/public-landing";
+import {
+  buildLandingPayload,
+  toLandingSeries,
+  type LandingSource,
+} from "@/lib/public-landing";
 
 // Read-only numbers for the separate landing site. Public data only (see lib/public-landing), so
 // it is cacheable at the edge and open to any origin (no cookies, no credentials).
@@ -39,6 +44,14 @@ export async function GET() {
       categories,
       thbPerUsd,
     });
+    // The hero card draws the same MRR history the project page charts (exact disclosure only,
+    // enforced inside getChartSeries). A failure here must not break the rest of the payload.
+    const top = payload.boards.find((b) => b.metric === "mrr")?.rows[0];
+    const topRow = top && lists[0].find((r) => r.slug === top.project.slug);
+    if (topRow)
+      payload.topMrrSeries = await getChartSeries(topRow, 90)
+        .then((series) => toLandingSeries(topRow.slug, series))
+        .catch(() => null);
     return NextResponse.json(payload, {
       headers: {
         ...CORS,

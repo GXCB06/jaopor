@@ -155,7 +155,8 @@ Status: ☐ not started · ◐ in progress · ☑ done
 
 - [x] Study the Lovable landing and agree the plan (2026-10-12)
 - [x] A. App: `GET /api/public/landing` + `lib/public-landing.ts` + tests (2026-10-12)
-- [ ] B. New repo `jaopor-landing` (Next.js, th + en, dark + light, live data, sample-data labels)
+- [x] B. `jaopor-landing` built locally (Next.js, th + en, dark + light, live data; no mock rows, so no sample labels) (2026-10-12)
+- [ ] B2. Create the GitHub repo, push the app (endpoint) then the landing
 - [ ] C. Vercel rewrites: landing answers `/`, the app keeps `/th`, `/en`, `/api`
 - [ ] Later: restyle the app toward the landing (tokens → chrome → home; never data screens)
 
@@ -344,7 +345,7 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
 
 ## 7. Open items
 
-- [ ] **Landing repo** (2026-10-12): the owner creates the GitHub repo (or approves `gh repo create`); pick the production domain (only `jaopor.vercel.app` exists); decide the light-theme palette for the landing; the endpoint returns `province` as a slug, so the landing needs the name map (th / en).
+- [ ] **Landing repo** (2026-10-12): the owner creates the GitHub repo (or approves `gh repo create`); pick the production domain (only `jaopor.vercel.app` exists); review the landing's light palette (made and contrast-checked 2026-10-12); add a province count to the API (the landing's provinces tab only counts the 12 most recent projects); Thai-aware OG image.
 
 - [ ] **Future page: JaoPor graph ("second brain")** (owner idea 2026-10-12): every project is a node, linked by province, category and builder, and the graph grows as projects are added. It gets its own page, not a hero background, and needs more projects before it looks alive.
 - [ ] **Auto screenshot of a project's website** (owner idea 2026-10-12): **later** (owner 2026-10-12). Screenshots stay optional, never required. Proposal on file: a "ถ่ายภาพหน้าเว็บให้" button with a preview the owner approves; not for anonymous projects; App Store screenshots via Apple's lookup API; capture service to be chosen (Microlink free tier recommended).
