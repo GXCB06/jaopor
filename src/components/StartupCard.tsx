@@ -1,5 +1,6 @@
 import { ShieldCheckIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { CardGlow } from "@/components/core/CardGlow";
 import { ProjectName } from "@/components/core/ProjectName";
 import { Link } from "@/i18n/navigation";
 import type { StartupRow } from "@/lib/data/startups";
@@ -252,13 +253,15 @@ export function StartupCard({
   );
 
   const cardClass = cn(
-    "group relative flex flex-col border transition-colors hover:border-foreground/20",
+    // Design.md §7 Motion, card hover: lifts and shows a brand ring that follows the mouse (CardGlow).
+    "group relative isolate flex flex-col border transition-[border-color,translate,box-shadow] duration-(--motion-base) ease-(--ease-settle) hover:border-foreground/20 hover:shadow-lg hover:shadow-black/5 motion-safe:[@media(hover:hover)]:hover:-translate-y-1",
     muted ? "border-dashed bg-transparent" : "bg-card",
     large ? "justify-between rounded-xl p-4" : "rounded-lg p-3",
     className,
   );
   const body = (
     <>
+      {!preview && <CardGlow />}
       {!preview && (
         <Link
           href={href}

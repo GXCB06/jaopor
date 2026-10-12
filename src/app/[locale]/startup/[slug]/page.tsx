@@ -1,5 +1,6 @@
 import {
   ArrowUpRightIcon,
+  CalendarIcon,
   ChevronRightIcon,
   FlaskConicalIcon,
   MapPinIcon,
@@ -30,7 +31,7 @@ import {
 } from "@/components/profile/ProjectBlocks";
 import {
   InsightsGrid,
-  FounderCard,
+  FounderLine,
   StatCard,
   ChartStamp,
   FounderMessageCard,
@@ -45,7 +46,6 @@ import { FoundingBadge, Money, StartupLogo } from "@/components/StartupBits";
 import { QuickSearchSection } from "@/components/search/QuickSearchSection";
 import { StartupCard } from "@/components/StartupCard";
 import { Link } from "@/i18n/navigation";
-import { PersonPhoto } from "@/components/PersonPhoto";
 import { PostPreview } from "@/components/posts/PostPreview";
 import { listStartupPostsPublic } from "@/lib/data/posts";
 import { renderNow } from "@/lib/posts";
@@ -72,7 +72,7 @@ import {
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { logoUrl } from "@/lib/supabase/public";
 import { LiveViewersPill } from "@/components/live/LiveViewersPill";
-import { provinceName } from "@/lib/config/display";
+import { categoryName, provinceName } from "@/lib/config/display";
 import { DEFAULT_METRIC, provinceRank } from "@/lib/olympics";
 
 export const revalidate = 60;
@@ -273,328 +273,348 @@ export default async function StartupPage({ params }: Props) {
           }}
         />
 
-        <header className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-          {/* Phones: logo above the text, so the name and description use the full width. */}
-          <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-            <StartupLogo
-              name={startup.name}
-              src={logoUrl(startup.logo_path)}
-              size={72}
-              className="rounded-2xl"
-            />
-            <div className="min-w-0 space-y-2">
-              {/* relative: the evidence-ladder note opens across this row (MetricHelp). */}
-              <div className="relative flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-bold tracking-tight">
+        {/* Design.md §5 Profile layout (owner 2026-10-12, from the Lovable mockup): who and what
+            on the left, numbers and story on the right; one column on phones (identity first,
+            numbers right under it). */}
+        <div className="grid gap-8 lg:grid-cols-[16.25rem_minmax(0,1fr)] lg:gap-10">
+          <aside className="min-w-0 space-y-5">
+            <div className="flex items-center gap-4 lg:flex-col lg:items-start">
+              <StartupLogo
+                name={startup.name}
+                src={logoUrl(startup.logo_path)}
+                size={80}
+                className="rounded-2xl"
+              />
+              <div className="min-w-0 space-y-1">
+                <h1 className="text-2xl font-bold tracking-tight break-words">
                   <ProjectName name={startup.name} slug={startup.slug} />
                 </h1>
-                {anonymous && (
-                  <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs text-muted-foreground">
-                    <EyeOffIcon className="size-3" aria-hidden="true" />
-                    {an("badge")}
+                <Link
+                  href={`/category/${startup.category}`}
+                  className="text-caption text-muted-foreground hover:text-foreground hover:underline"
+                >
+                  {categoryName(startup.category, locale)}
+                </Link>
+              </div>
+            </div>
+
+            {/* relative: the evidence-ladder note opens across this row (MetricHelp). */}
+            <div className="relative flex flex-wrap items-center gap-2">
+              {anonymous && (
+                <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs text-muted-foreground">
+                  <EyeOffIcon className="size-3" aria-hidden="true" />
+                  {an("badge")}
+                </span>
+              )}
+              <FoundingBadge n={startup.founding_number} />
+              {!startup.is_demo && (
+                <VerifiedBadge
+                  source={verifiedSource}
+                  ownerVerified={startup.owner_verified_at !== null}
+                  live={syncedRecently(startup.last_synced_at)}
+                />
+              )}
+              {!startup.is_demo && (
+                // C-4: what each kind of proof means, with this project's marked ✓.
+                <MetricHelp label={t("ladder.button")}>
+                  <span className="block font-semibold text-foreground">
+                    {t("ladder.title")}
                   </span>
+                  {(
+                    [
+                      ["revenue", verified],
+                      ["build", startup.build_commits !== null],
+                      ["owner", startup.owner_verified_at !== null],
+                      ["counted", startup.visitors_30d !== null],
+                    ] as const
+                  ).map(([id, has]) => (
+                    <span key={id} className="flex gap-2">
+                      <span
+                        aria-label={has ? t("ladder.has") : undefined}
+                        className={cn(
+                          "w-3 shrink-0",
+                          has ? "text-positive" : "text-faint",
+                        )}
+                      >
+                        {has ? "✓" : "·"}
+                      </span>
+                      <span>{t(`ladder.${id}`)}</span>
+                    </span>
+                  ))}
+                </MetricHelp>
+              )}
+            </div>
+
+            {startup.tagline ? (
+              <p className="font-prose text-body leading-relaxed text-muted-foreground">
+                {startup.tagline}
+              </p>
+            ) : (
+              <EmptyOwnerCard
+                field="tagline"
+                label={t("tagline")}
+                className="w-fit"
+              />
+            )}
+
+            <div className="flex items-center gap-2">
+              {primary && (
+                <a
+                  href={primary.url}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-90"
+                >
+                  {t("visit")}
+                  <ArrowUpRightIcon className="size-3.5" aria-hidden="true" />
+                </a>
+              )}
+              <ShareStudio
+                slug={startup.slug}
+                url={url}
+                post={post}
+                text={`${displayName}${tagline}`}
+                badgeHtml={badgeHtml(url, badgeSrc, displayName)}
+                badgeMarkdown={badgeMarkdown(url, badgeSrc, displayName)}
+                badgeSrc={badgeSrc}
+                currencySymbol={projectCurrencySymbol(startup)}
+                proven={
+                  (verified && !startup.is_demo) ||
+                  startup.disclosure.build.level !== null
+                }
+              />
+            </div>
+            <ProjectLinks startup={startup} skipFirst />
+
+            {ownerName && (
+              // Spec 9b: the founder opens their public profile. Subtext = the role on this
+              // project, else the founder's headline, else their X handle.
+              <FounderLine
+                handle={owner?.handle ?? null}
+                label={t("founder")}
+                name={ownerName}
+                avatar={owner?.avatar_url ?? null}
+                caption={
+                  startup.founder_role ??
+                  owner?.headline ??
+                  (owner?.x_handle ? `@${owner.x_handle} · 𝕏` : null)
+                }
+              />
+            )}
+
+            {provinceLink || startup.country || startup.founded_on ? (
+              <ul className="space-y-1.5 text-caption text-muted-foreground">
+                {(provinceLink || startup.country) && (
+                  <li>
+                    {provinceLink ?? (
+                      <span className="inline-flex items-start gap-1">
+                        <MapPinIcon
+                          className="mt-0.5 size-3 shrink-0"
+                          aria-hidden="true"
+                        />
+                        {countryName(startup.country, locale)}
+                      </span>
+                    )}
+                  </li>
                 )}
-                <FoundingBadge n={startup.founding_number} />
-                {!startup.is_demo && (
-                  <VerifiedBadge
-                    source={verifiedSource}
-                    ownerVerified={startup.owner_verified_at !== null}
-                    live={syncedRecently(startup.last_synced_at)}
+                {startup.founded_on && (
+                  <li className="flex items-start gap-1">
+                    <CalendarIcon
+                      className="mt-0.5 size-3 shrink-0"
+                      aria-hidden="true"
+                    />
+                    {t("founded")}{" "}
+                    {format.dateTime(new Date(startup.founded_on), {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </li>
+                )}
+              </ul>
+            ) : (
+              <EmptyOwnerCard field="founded" label={t("founded")} />
+            )}
+
+            <LiveViewersPill />
+          </aside>
+
+          <div className="min-w-0 space-y-6">
+            {anonymous && (
+              <p className="flex items-start gap-2 rounded-lg border border-dashed p-3 text-caption text-muted-foreground">
+                <EyeOffIcon
+                  className="mt-0.5 size-3.5 shrink-0"
+                  aria-hidden="true"
+                />
+                {an("pageNote")}
+              </p>
+            )}
+            {startup.is_demo && (
+              <p className="flex items-start gap-2 rounded-xl border border-dashed bg-card p-3 text-xs text-muted-foreground">
+                <FlaskConicalIcon
+                  className="mt-0.5 size-3.5 shrink-0"
+                  aria-hidden="true"
+                />
+                {t("demoNotice")}
+              </p>
+            )}
+
+            {/* A project without verified revenue leads with the numbers it has (visitors, build). */}
+            {tractionFirst && <TractionTiles startup={startup} />}
+
+            {/* Spec 2.4: only tiles that have data; unverified numbers collapse into one muted line. */}
+            <section className="space-y-3 empty:hidden">
+              {/* relative: MetricHelp opens across the whole row, not inside one narrow tile. */}
+              <div className="relative grid grid-cols-2 gap-3 empty:hidden sm:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
+                {verified && startup.revenue_all_time_cents !== null && (
+                  <StatCard
+                    label={t("allTime")}
+                    value={
+                      <Money
+                        cents={startup.revenue_all_time_cents}
+                        thbPerUsd={thbPerUsd}
+                        full
+                      />
+                    }
+                    caption={rank ? t("rank", { rank }) : undefined}
+                    help={
+                      verifiedSource && (
+                        <MetricHelp label={t("help", { label: t("allTime") })}>
+                          {t("allTimeHelp", { source: verifiedSource })}
+                        </MetricHelp>
+                      )
+                    }
                   />
                 )}
-                {!startup.is_demo && (
-                  // C-4: what each kind of proof means, with this project's marked ✓.
-                  <MetricHelp label={t("ladder.button")}>
-                    <span className="block font-semibold text-foreground">
-                      {t("ladder.title")}
-                    </span>
-                    {(
-                      [
-                        ["revenue", verified],
-                        ["build", startup.build_commits !== null],
-                        ["owner", startup.owner_verified_at !== null],
-                        ["counted", startup.visitors_30d !== null],
-                      ] as const
-                    ).map(([id, has]) => (
-                      <span key={id} className="flex gap-2">
-                        <span
-                          aria-label={has ? t("ladder.has") : undefined}
-                          className={cn(
-                            "w-3 shrink-0",
-                            has ? "text-positive" : "text-faint",
+                {verified && startup.mrr_cents !== null && (
+                  <StatCard
+                    label={t("mrr")}
+                    value={
+                      <Money
+                        cents={startup.mrr_cents}
+                        thbPerUsd={thbPerUsd}
+                        full
+                      />
+                    }
+                    caption={t("subscriptions", {
+                      count: startup.active_subscriptions ?? 0,
+                    })}
+                    help={
+                      verifiedSource && (
+                        <MetricHelp label={t("help", { label: t("mrr") })}>
+                          <span className="block">
+                            {t("mrrHelp", { source: verifiedSource })}
+                          </span>
+                          {startup.verified_provider === "stripe" && (
+                            <span className="block">{t("mrrHelpStripe")}</span>
                           )}
-                        >
-                          {has ? "✓" : "·"}
-                        </span>
-                        <span>{t(`ladder.${id}`)}</span>
-                      </span>
-                    ))}
-                  </MetricHelp>
+                        </MetricHelp>
+                      )
+                    }
+                  />
+                )}
+                {/* R2 (Design.md §7 Disclosure levels): revenue shown as a range, growth or badge. */}
+                {!startup.is_demo && (
+                  <DisclosedStat
+                    label={t("mrr")}
+                    growthLabel={t("revenue30d")}
+                    d={startup.disclosure.revenue}
+                    unit="thb"
+                    band={
+                      startup.disclosure.revenue.band ??
+                      startup.disclosure.revenue30dBand
+                    }
+                  />
                 )}
               </div>
-              <div className="max-w-2xl space-y-2 font-prose text-body text-muted-foreground">
-                {startup.tagline ? (
-                  <p>{startup.tagline}</p>
-                ) : (
-                  <EmptyOwnerCard
-                    field="tagline"
-                    label={t("tagline")}
-                    className="w-fit"
-                  />
-                )}
-                {startup.description ? (
+              {!verified && !startup.is_demo && (
+                <UnverifiedLine items={[t("allTime"), t("mrr")]} />
+              )}
+            </section>
+
+            {/* Spec 6.4 step 3: chart card; nothing verified → owner-only prompt. */}
+            {chartMetrics.length > 0 ? (
+              <Card className="p-4 sm:p-6">
+                <MetricChart
+                  series={series}
+                  thbPerUsd={thbPerUsd}
+                  stamps={Object.fromEntries(
+                    chartMetrics.map((m) => [
+                      m,
+                      <ChartStamp key={m} startup={startup} metric={m} />,
+                    ]),
+                  )}
+                />
+              </Card>
+            ) : (
+              <EmptyOwnerCard field="revenue" label={t("connectChart")} />
+            )}
+
+            {!tractionFirst && <TractionTiles startup={startup} />}
+
+            <section className="space-y-3 pt-2">
+              <h2 className="text-lg font-bold tracking-tight">
+                {t("aboutTitle", { name: displayName })}
+              </h2>
+              {startup.description ? (
+                <div className="font-prose text-body leading-relaxed text-muted-foreground">
                   <ClampedText
                     text={startup.description}
                     more={t("readMore")}
                     less={t("readLess")}
                   />
-                ) : (
-                  <EmptyOwnerCard
-                    field="description"
-                    label={t("description")}
-                    className="w-fit"
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <ShareStudio
-              slug={startup.slug}
-              url={url}
-              post={post}
-              text={`${displayName}${tagline}`}
-              badgeHtml={badgeHtml(url, badgeSrc, displayName)}
-              badgeMarkdown={badgeMarkdown(url, badgeSrc, displayName)}
-              badgeSrc={badgeSrc}
-              currencySymbol={projectCurrencySymbol(startup)}
-              proven={
-                (verified && !startup.is_demo) ||
-                startup.disclosure.build.level !== null
-              }
-            />
-            {primary && (
-              <a
-                href={primary.url}
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-90"
-              >
-                {t("visit")}
-                <ArrowUpRightIcon className="size-3.5" aria-hidden="true" />
-              </a>
-            )}
-          </div>
-        </header>
+                </div>
+              ) : (
+                <EmptyOwnerCard
+                  field="description"
+                  label={t("description")}
+                  className="w-fit"
+                />
+              )}
+            </section>
 
-        {anonymous && (
-          <p className="flex items-start gap-2 rounded-lg border border-dashed p-3 text-caption text-muted-foreground">
-            <EyeOffIcon
-              className="mt-0.5 size-3.5 shrink-0"
-              aria-hidden="true"
-            />
-            {an("pageNote")}
-          </p>
-        )}
+            <LookingForBanner startup={startup} />
 
-        <LiveViewersPill />
-
-        {/* Numbers first, at every width (Design.md §5 Profile header; on a phone the first screen
-            used to hold no number). */}
-        {tractionFirst && <TractionTiles startup={startup} />}
-
-        {/* Spec 2.4: only tiles that have data; unverified numbers collapse into one muted line. */}
-        <section className="space-y-3">
-          {/* relative: MetricHelp opens across the whole row, not inside one narrow tile. */}
-          <div className="relative grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
-            {verified && startup.revenue_all_time_cents !== null && (
-              <StatCard
-                label={t("allTime")}
-                value={
-                  <Money
-                    cents={startup.revenue_all_time_cents}
-                    thbPerUsd={thbPerUsd}
-                    full
-                  />
-                }
-                caption={rank ? t("rank", { rank }) : undefined}
-                help={
-                  verifiedSource && (
-                    <MetricHelp label={t("help", { label: t("allTime") })}>
-                      {t("allTimeHelp", { source: verifiedSource })}
-                    </MetricHelp>
-                  )
-                }
-              />
-            )}
-            {verified && startup.mrr_cents !== null && (
-              <StatCard
-                label={t("mrr")}
-                value={
-                  <Money cents={startup.mrr_cents} thbPerUsd={thbPerUsd} full />
-                }
-                caption={t("subscriptions", {
-                  count: startup.active_subscriptions ?? 0,
-                })}
-                help={
-                  verifiedSource && (
-                    <MetricHelp label={t("help", { label: t("mrr") })}>
-                      <span className="block">
-                        {t("mrrHelp", { source: verifiedSource })}
-                      </span>
-                      {startup.verified_provider === "stripe" && (
-                        <span className="block">{t("mrrHelpStripe")}</span>
-                      )}
-                    </MetricHelp>
-                  )
-                }
-              />
-            )}
-            {/* R2 (Design.md §7 Disclosure levels): revenue shown as a range, growth or badge. */}
-            {!startup.is_demo && (
-              <DisclosedStat
-                label={t("mrr")}
-                growthLabel={t("revenue30d")}
-                d={startup.disclosure.revenue}
-                unit="thb"
-                band={
-                  startup.disclosure.revenue.band ??
-                  startup.disclosure.revenue30dBand
-                }
-              />
-            )}
-            {ownerName && (
-              // Spec 9b: the founder card opens the founder's public profile. Subtext = the role on
-              // this project, else the founder's own headline, else their X handle.
-              <FounderCard
-                handle={owner?.handle ?? null}
-                label={t("founder")}
-                value={
-                  <span className="flex items-center gap-2 text-base">
-                    <PersonPhoto
-                      src={owner?.avatar_url}
-                      className="size-5 shrink-0 rounded-full object-cover"
-                      fallback={null}
-                    />
-                    <span className="truncate">{ownerName}</span>
-                  </span>
-                }
-                caption={
-                  startup.founder_role ??
-                  owner?.headline ??
-                  (owner?.x_handle ? `@${owner.x_handle} · 𝕏` : undefined)
-                }
-              />
-            )}
-            {startup.founded_on || startup.country || startup.province ? (
-              <StatCard
-                label={startup.founded_on ? t("founded") : t("location")}
-                value={
-                  startup.founded_on ? (
-                    <span className="block text-lg leading-snug whitespace-normal">
-                      {format.dateTime(new Date(startup.founded_on), {
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </span>
-                  ) : (
-                    <span className="block text-lg leading-snug whitespace-normal">
-                      {[
-                        provinceName(startup.province, locale),
-                        countryName(startup.country, locale),
-                      ]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </span>
-                  )
-                }
-                caption={
-                  provinceLink ??
-                  (startup.founded_on && startup.country
-                    ? countryName(startup.country, locale)
-                    : undefined)
-                }
+            {/* Spec 6.4 step 4: screenshots + demo video; owner prompt when empty. */}
+            {shots.length > 0 || startup.demo_video_url ? (
+              <ScreenshotGallery
+                name={startup.name}
+                domain={websiteHost(startup.website_url)}
+                websiteUrl={startup.website_url}
+                shots={shots}
+                videoUrl={startup.demo_video_url}
               />
             ) : (
-              <EmptyOwnerCard field="founded" label={t("founded")} />
+              <EmptyOwnerCard field="screenshots" label={t("screenshots")} />
+            )}
+
+            <FounderMessageCard startup={startup} />
+
+            <div className="pt-3">
+              <InsightsGrid startup={startup} />
+            </div>
+
+            {updates.length > 0 && (
+              <section className="pt-3">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-sm font-bold">{t("latestUpdates")}</h2>
+                  <Link
+                    href="/feed"
+                    className="text-caption text-faint hover:text-foreground"
+                  >
+                    {t("seeFeed")} →
+                  </Link>
+                </div>
+                <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {updates.map((p) => (
+                    <li key={p.id}>
+                      <PostPreview post={p} now={now} />
+                    </li>
+                  ))}
+                </ul>
+              </section>
             )}
           </div>
-          {!verified && !startup.is_demo && (
-            <UnverifiedLine items={[t("allTime"), t("mrr")]} />
-          )}
-        </section>
-
-        <ProjectLinks startup={startup} skipFirst />
-        <LookingForBanner startup={startup} />
-        {startup.is_demo && (
-          <p className="flex items-start gap-2 rounded-xl border border-dashed bg-card p-3 text-xs text-muted-foreground">
-            <FlaskConicalIcon
-              className="mt-0.5 size-3.5 shrink-0"
-              aria-hidden="true"
-            />
-            {t("demoNotice")}
-          </p>
-        )}
-
-        {/* Spec 6.4 step 3: chart card; nothing verified → owner-only prompt. */}
-        {chartMetrics.length > 0 ? (
-          <Card className="p-4 sm:p-6">
-            <MetricChart
-              series={series}
-              thbPerUsd={thbPerUsd}
-              stamps={Object.fromEntries(
-                chartMetrics.map((m) => [
-                  m,
-                  <ChartStamp key={m} startup={startup} metric={m} />,
-                ]),
-              )}
-            />
-          </Card>
-        ) : (
-          <EmptyOwnerCard field="revenue" label={t("connectChart")} />
-        )}
-
-        {!tractionFirst && <TractionTiles startup={startup} />}
-
-        {/* Spec 6.4 step 4: screenshots + demo video; owner prompt when empty. */}
-        {shots.length > 0 || startup.demo_video_url ? (
-          <ScreenshotGallery
-            name={startup.name}
-            domain={websiteHost(startup.website_url)}
-            websiteUrl={startup.website_url}
-            shots={shots}
-            videoUrl={startup.demo_video_url}
-          />
-        ) : (
-          <EmptyOwnerCard field="screenshots" label={t("screenshots")} />
-        )}
-
-        <FounderMessageCard startup={startup} />
-
-        <div className="pt-3">
-          <InsightsGrid startup={startup} />
         </div>
-
-        {updates.length > 0 && (
-          <section className="pt-3">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-bold">{t("latestUpdates")}</h2>
-              <Link
-                href="/feed"
-                className="text-caption text-faint hover:text-foreground"
-              >
-                {t("seeFeed")} →
-              </Link>
-            </div>
-            <ul className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              {updates.map((p) => (
-                <li key={p.id}>
-                  <PostPreview post={p} now={now} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
 
         {more.length > 0 && (
           <section className="pt-3">

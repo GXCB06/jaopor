@@ -181,6 +181,7 @@
     "welcomeClose": "Close welcome message"
   },
   "Profile": {
+    "aboutTitle": "About {name}",
     "visit": "Visit",
     "share": "Share",
     "revenue30d": "Revenue (30d)",

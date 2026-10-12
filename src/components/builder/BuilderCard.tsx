@@ -1,5 +1,6 @@
 import { BadgeCheckIcon, MapPinIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { CardGlow } from "@/components/core/CardGlow";
 import { InView } from "@/components/core/InView";
 import { Money } from "@/components/StartupBits";
 import { Link } from "@/i18n/navigation";
@@ -32,8 +33,9 @@ export function BuilderCard({
     <InView mode="enter" className="card-rise h-full">
       <Link
         href={`/u/${b.handle}`}
-        className="group flex h-full flex-col gap-3 rounded-xl border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-foreground/20"
+        className="group relative isolate flex h-full flex-col gap-3 rounded-xl border bg-card p-4 transition-[border-color,translate,box-shadow] duration-(--motion-base) ease-(--ease-settle) hover:border-foreground/20 hover:shadow-lg hover:shadow-black/5 motion-safe:[@media(hover:hover)]:hover:-translate-y-1"
       >
+        <CardGlow />
         <div className="flex items-center gap-3">
           <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-secondary text-sm font-bold text-muted-foreground uppercase">
             <PersonPhoto

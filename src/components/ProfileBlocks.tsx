@@ -71,26 +71,53 @@ export function StatCard({
 }
 
 /**
- * Design.md §5 FounderCard: the profile's "ผู้ก่อตั้ง" StatCard, linked to the founder's public
- * profile (/u/{handle}) when they have a username. Hover = the interactive card treatment.
+ * Design.md §5 Profile layout: the founder row in the left column (photo, name, role), linked to
+ * the founder's public profile (/u/{handle}) when they have a username.
  */
-export function FounderCard({
+export function FounderLine({
   handle,
-  ...card
-}: React.ComponentProps<typeof StatCard> & { handle: string | null }) {
-  if (!handle) return <StatCard {...card} />;
+  label,
+  name,
+  avatar,
+  caption,
+}: {
+  handle: string | null;
+  label: string;
+  name: string;
+  avatar: string | null;
+  caption: string | null;
+}) {
+  const body = (
+    <>
+      <PersonPhoto
+        src={avatar}
+        className="size-10 shrink-0 rounded-full border object-cover"
+        fallback={
+          <span
+            aria-hidden="true"
+            className="flex size-10 shrink-0 items-center justify-center rounded-full border bg-secondary text-sm font-bold text-muted-foreground uppercase"
+          >
+            {name.slice(0, 1)}
+          </span>
+        }
+      />
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-semibold group-hover:underline">
+          {name}
+        </span>
+        <span className="block truncate text-caption text-muted-foreground">
+          {caption ? `${label} · ${caption}` : label}
+        </span>
+      </span>
+    </>
+  );
+  if (!handle) return <div className="flex items-center gap-3">{body}</div>;
   return (
     <Link
       href={`/u/${handle}`}
-      className="group min-w-0 rounded-xl focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+      className="group -mx-2 flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
     >
-      <StatCard
-        {...card}
-        className={cn(
-          "h-full transition-[border-color,transform] group-hover:-translate-y-px group-hover:border-border-strong [&_.truncate]:group-hover:underline",
-          card.className,
-        )}
-      />
+      {body}
     </Link>
   );
 }

@@ -12,6 +12,25 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-12 — Product Profile in the Lovable layout; card hover lift + glow ring
+
+**Done** (owner: liked the Lovable mockup thai-maker-hub.lovable.app, studied read-only in the browser pane):
+
+- **Project page (`/startup/[slug]`):** two columns from `lg` (`16.25rem | 1fr`), like the mockup.
+  - **Left:** logo, name, category, badges, tagline, a full-width "เข้าเว็บไซต์" + share, other links, a new founder row (`FounderLine`, replaces `FounderCard`), province and founded date, live viewers.
+  - **Right:** stat tiles, chart, traction tiles, a new "เกี่ยวกับ {name}" section with the long description, then the existing blocks (looking-for, screenshots, founder message, insights, updates). Nothing was removed.
+  - New string `Profile.aboutTitle` (th + en).
+- **Card hover:** StartupCard and BuilderCard lift 4 px with a soft shadow. The new `CardGlow` draws a brand ring that follows the mouse along the border, plus a faint wash. Mouse / trackpad only; none with reduced motion.
+  - The mockup itself only lifts 2 px and brightens the border. The ring is our own, from the owner's description.
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit 612 passed / 17 skipped · e2e local 123 passed / 0 failed.
+- Browser at 1280 and 375 (no sideways scroll; at 375 the first number is on the first screen).
+- Hover state read from the page: `translate: 0 -4.5px`, both glow layers on and following the pointer.
+
+**Not verified:** the ring in the light theme by eye. The pane kept resetting the emulated size during hover screenshots.
+
 ## 2026-10-12 — Hero in the Aetox look: blue → cyan highlight, moving spotlight
 
 **Done** (owner: the colour of Aetox's highlighted words, plus its moving background):

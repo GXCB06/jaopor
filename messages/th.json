@@ -181,6 +181,7 @@
     "welcomeClose": "ปิดข้อความต้อนรับ"
   },
   "Profile": {
+    "aboutTitle": "เกี่ยวกับ {name}",
     "visit": "เข้าเว็บไซต์",
     "share": "แชร์",
     "revenue30d": "รายได้ (30 วัน)",
