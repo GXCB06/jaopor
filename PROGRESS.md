@@ -118,6 +118,25 @@
 - Browser at 1280: after scrolling 1,500 px the column is still at the top.
 - Browser at 375: the bar shows after scrolling past the name; no sideways scroll.
 
+## 2026-10-12 — Pre-merge smoke test of the `landing-zone` preview (nothing changed, nothing deployed)
+
+**Done** (owner asked for a final smoke test before any merge approval): five checks on the landing deployment and on the latest `landing-zone` preview (`80244ab`, opened in the owner's Chrome). Playwright with the installed Chrome drove the public landing; the preview (behind Vercel Auth) was read in the owner's signed-in Chrome.
+
+**Results:**
+
+- **Render:** desktop 1280 and 375 px, dark and light: no sideways scroll, 0 of 11 images broken, no console or network errors, fonts loaded, all 8 sections present. CLS 0 (desktop) and 0.049 (375 px).
+- **Reduced motion** (emulated): CSS animations off, smooth scroll off, reveals visible, feature tabs stop auto-advancing, the canvas draws one still frame (0 redraws in 8 s), mouse light off. A touch tap does not turn on the mouse light.
+- **Speed:** LCP 520–860 ms over 3 cold runs per size (the LCP element is the headline text); one earlier first-ever request measured 4.8 s and did not repeat.
+- **Cost of the hero:** main thread busy 10.5 % on desktop and about 35–42 % under a 4× CPU slowdown while the hero is on screen; 0.3–1 % once it is scrolled away (the canvas stops). Taking the layers apart in the page: hiding the canvas changed nothing, so the cost is the endless CSS animations of the full-size gradient layers and the floating MRR card (all animations off: 3.9 % / 13 %; whole backdrop removed: 0.4 % / 1.1 %).
+- **Routes** (direct and, where marked, full-page reload) on the preview: `/` (+ reload), `/th` (+ reload), `/en` (+ reload), `/th/startups`, `/th/startup/jaopor` (+ reload), `/th/olympics`, `/th/builders`, `/th/feed`, `/th/security`, `/@gxcb06`: all 200 and none is the landing except `/`. `/th/new` → `/th/login` (existing). `/api/public/landing` (has `topMrrSeries`), `/api/health`, `/api/badge/jaopor`, icons, `/landing/*`, `/landing/og`: all 200 with the right types. The app has 0 links to `/` (its logo goes to `/th`).
+- **Open Graph:** read from the real HTML (also fetched with Facebook, LINE and Twitter bot user agents, no cookie): `og:image` and `twitter:image` = `https://jaopor.vercel.app/landing/og`, 1200 × 630 PNG, 50,886 B, byte-identical to the landing's own; `og:title` / `description` Thai, `og:locale th_TH`, `summary_large_image`; all in the server HTML. Gaps: no `og:url`, `og:image:alt`, `og:image:type`, no hreflang; the card text is English only.
+- **Language switch:** fixed for the footer jump (no scroll after the reload), but the browser restores the position by element, so the reader lands about 300–400 px higher: the same section in 3 of 7 start positions, an adjacent one in 4 of 7. Same on dev and production.
+
+**Not verified:** Safari, Firefox, real phones (no Firefox / WebKit in this machine and downloading them was not done); Facebook / LINE / X validators (they need a public URL; the image URL is on the production domain, which answers 307 until the merge); the share card in a real feed; the phone battery effect; latency added by the extra hop; what the CDN serves if the landing origin is down (not tested, production settings untouched).
+
+**Files:** none changed.
+**Next:** the owner decides on the merge and on the three small fixes listed in the report (hero animation cost, language-switch position, OG tags).
+
 ## 2026-10-12 — App pushed; landing as a zone at `/` (preview verified, not merged); space hero; language-jump fix
 
 **Done** (owner: "follow your advice" = push the app, then step C; then: a hero background like aona.co.th, and the language switch still jumped to the footer):
