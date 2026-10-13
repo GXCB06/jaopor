@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 // Design.md §5 Profile layout, sticky identity (owner 2026-10-12: "when I scroll down I lose the
-// product's name"). Below `lg` the left column scrolls away, so once the element with id `watch`
-// (the logo + name block) has left the screen, a slim bar slides down under the site header with
-// the children (small logo, name, visit button). From `lg` the left column itself stays pinned,
-// so the bar never shows there.
+// product's name"). Once the element with id `watch` (the logo + name block) has left the
+// screen, a slim bar slides down under the site header with the children (small logo, name,
+// visit button). At every width since Profile layout v3 (2026-10-13: no pinned left column).
 
 export function StickyIdentity({
   watch,
@@ -38,7 +37,7 @@ export function StickyIdentity({
       aria-hidden={!shown}
       inert={!shown}
       className={cn(
-        "fixed inset-x-0 top-14 z-30 border-b bg-background/95 backdrop-blur transition-[translate,opacity] duration-(--motion-base) ease-(--ease-settle) lg:hidden",
+        "fixed inset-x-0 top-14 z-30 border-b bg-background/95 backdrop-blur transition-[translate,opacity] duration-(--motion-base) ease-(--ease-settle)",
         shown
           ? "translate-y-0 opacity-100"
           : "pointer-events-none -translate-y-full opacity-0",

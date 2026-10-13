@@ -77,20 +77,18 @@ function Growth({ value }: { value: number | null }) {
 /**
  * Design.md §5 OlympicsBoard (Olympics v4): the visitor's province bar ("you are #9, ฿X to pass
  * #8"), a province search, and the standings table from #1 (medals on #1–3, a bar against the
- * leader on every row) with expandable rows (top projects + share bars). With the desktop podium
- * on, #1–3 hide from md up. The visitor's own row is highlighted.
+ * leader on every row) with expandable rows (top projects + share bars). The table always starts
+ * at #1, so every province's bar shows even when the desktop podium is on (owner 2026-10-13).
+ * The visitor's own row is highlighted.
  */
 export function OlympicsBoard({
   board,
   metric,
   thbPerUsd,
-  podiumShown = false,
 }: {
   board: ProvinceRank[];
   metric: OlympicMetric;
   thbPerUsd: number | null;
-  /** The page shows podium cards for #1–3 (desktop only): those rows hide from md up. */
-  podiumShown?: boolean;
 }) {
   const t = useTranslations("Olympics");
   const locale = useLocale();
@@ -118,7 +116,6 @@ export function OlympicsBoard({
       })
     : board;
   const shown = showAll || q ? rows : rows.slice(0, PAGE);
-  const onPodium = (rank: number) => podiumShown && !q && rank <= 3;
   // Each row's bar: its total against the leader's (the race at a glance).
   const leader = board[0]?.total ?? 0;
   const value = (v: number) => (
@@ -264,7 +261,6 @@ export function OlympicsBoard({
                         "border-b transition-colors last:border-b-0 hover:bg-accent/40",
                         isMine &&
                           "bg-brand/5 shadow-[inset_3px_0_0_var(--brand)]",
-                        onPodium(row.rank) && "md:hidden",
                       )}
                     >
                       <td className="py-3 pl-4 text-xs font-bold tabular-nums">
@@ -360,12 +356,7 @@ export function OlympicsBoard({
                       </td>
                     </tr>
                     {isOpen && (
-                      <tr
-                        className={cn(
-                          "border-b bg-background/40 last:border-b-0",
-                          onPodium(row.rank) && "md:hidden",
-                        )}
-                      >
+                      <tr className="border-b bg-background/40 last:border-b-0">
                         <td colSpan={8} className="px-4 py-3 sm:pl-24">
                           <ul className="space-y-2.5">
                             {row.top.map((s) => {

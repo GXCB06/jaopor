@@ -174,7 +174,7 @@ export function ShareStudio({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <button type="button" className={outlineBtn}>
+        <button type="button" className={cn(outlineBtn, "h-9 px-3.5")}>
           <Share2Icon className="size-3.5" aria-hidden="true" />
           {t("share")}
         </button>

@@ -1,6 +1,14 @@
 "use client";
 
-import { ArrowLeftIcon, CreditCardIcon, SproutIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  CircleCheckIcon,
+  CreditCardIcon,
+  MedalIcon,
+  Share2Icon,
+  ShieldCheckIcon,
+  SproutIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
@@ -32,6 +40,8 @@ import { linkProblemText } from "./link-text";
 import { Field, inputClass } from "./fields";
 import { CategoryField } from "./CategoryField";
 import { LogoField } from "./LogoField";
+import { WizardProgress, WizardSection, WizardStepper } from "./WizardParts";
+import { Card } from "@/components/core/Card";
 
 // Step 2 only: kept out of the first screen's JavaScript, then fetched in the background as soon as
 // step 1 shows (see the effect below), so it is ready by the time the project is created.
@@ -411,339 +421,397 @@ export function StartupWizard({
     });
   };
 
+  // Design.md §5 wizard v3: each part of step 1 shows a check once it's complete.
+  const linkDone = Boolean(parsed) && !existing;
+  const aboutDone = Boolean(name.trim()) && Boolean(category);
+  const placeDone = Boolean(province);
+  const sectionsDone = [linkDone, aboutDone, placeDone].filter(Boolean).length;
+  // S-2: the card as it will look in the list, updating as they type (not a link).
+  const preview = (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold">{t("previewTitle")}</p>
+      <StartupCard
+        preview
+        large
+        logoSrc={anonymous ? null : shownLogo}
+        startup={{
+          ...PREVIEW_BASE,
+          name: anonymous ? an("name") : name.trim() || t("previewPlaceholder"),
+          tagline: tagline.trim() || null,
+          category: category || "other",
+        }}
+      />
+      <p className="text-caption text-muted-foreground">{t("previewHint")}</p>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
-      <ol className="flex gap-2">
-        {[t("stepBasics"), t("stepRevenue")].map((label, i) => (
-          <li
-            key={label}
-            className={cn(
-              // Readable in Thai: no uppercase, no 10 px (Design.md §3 Typography).
-              "flex-1 border-t-2 pt-2 text-caption font-semibold",
-              i + 1 <= step
-                ? "border-brand text-foreground"
-                : "border-border text-muted-foreground",
-            )}
-          >
-            {i + 1}. {label}
-          </li>
-        ))}
-      </ol>
-
-      {step === 1 && (
-        <form onSubmit={create} className="space-y-4">
-          <p className="text-sm text-muted-foreground">{t("basicsIntro")}</p>
-          {/* Item 8: what the founder types is owner-stated; verified numbers come from step 2. */}
-          <p className="text-caption text-faint">{t("selfReportedNote")}</p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              label={t("projectLink")}
-              htmlFor="link"
-              className="sm:col-span-2"
-              hint={link.trim() ? undefined : t("projectLinkHint")}
-            >
-              <input
-                id="link"
-                required
-                autoFocus
-                inputMode="url"
-                placeholder="yourapp.com · @yourbot"
-                maxLength={300}
-                value={link}
-                onChange={(e) => {
-                  setLink(e.target.value);
-                  setLinkChoice(null);
-                }}
-                className={inputClass}
-              />
-              {check && (
-                <LinkTypeStatus
-                  check={check}
-                  choice={linkChoice}
-                  onChoice={setLinkChoice}
-                />
+      <WizardStepper step={step} />
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+        <div className="min-w-0">
+          {step === 1 && (
+            <form onSubmit={create} className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                {t("basicsIntro")}
+              </p>
+              {/* Item 8: what the founder types is owner-stated; verified numbers come from step 2. */}
+              <p className="text-caption text-faint">{t("selfReportedNote")}</p>
+              <WizardSection
+                n={1}
+                title={t("sections.link")}
+                hint={t("sections.linkHint")}
+                done={linkDone}
+              >
+                <Field
+                  label={t("projectLink")}
+                  htmlFor="link"
+                  hint={link.trim() ? undefined : t("projectLinkHint")}
+                >
+                  <input
+                    id="link"
+                    required
+                    autoFocus
+                    inputMode="url"
+                    placeholder="yourapp.com · @yourbot"
+                    maxLength={300}
+                    value={link}
+                    onChange={(e) => {
+                      setLink(e.target.value);
+                      setLinkChoice(null);
+                    }}
+                    className={inputClass}
+                  />
+                  {check && (
+                    <LinkTypeStatus
+                      check={check}
+                      choice={linkChoice}
+                      onChoice={setLinkChoice}
+                    />
+                  )}
+                  {existing && (
+                    <p
+                      role="alert"
+                      className="rounded-md border border-warning/40 bg-warning/10 p-3 text-caption"
+                    >
+                      {t("alreadyListed", { name: existing.name })}{" "}
+                      <Link
+                        href={`/dashboard/${existing.id}/edit`}
+                        className="font-semibold whitespace-nowrap text-brand-text hover:underline"
+                      >
+                        {t("goToExisting")} →
+                      </Link>
+                    </p>
+                  )}
+                  {fillState && !existing && (
+                    <p
+                      role="status"
+                      className={cn(
+                        "text-caption",
+                        fillState === "done"
+                          ? "text-brand-text"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      {fillState === "done"
+                        ? t("autofillDone")
+                        : t("autofillReading")}
+                      {/* C-14: what we read, at the moment we read it. */}
+                      <span className="block text-2xs text-faint">
+                        {t("autofillPrivacy")}
+                      </span>
+                    </p>
+                  )}
+                </Field>
+              </WizardSection>
+              <WizardSection
+                n={2}
+                title={t("sections.about")}
+                hint={t("sections.aboutHint")}
+                done={aboutDone}
+              >
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label={t("name")} htmlFor="name">
+                    <input
+                      id="name"
+                      required
+                      maxLength={80}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className={inputClass}
+                    />
+                  </Field>
+                  <Field label={t("category")} htmlFor="category">
+                    <CategoryField
+                      id="category"
+                      required
+                      value={category}
+                      onChange={setCategory}
+                      suggestion={suggestedCategory}
+                    />
+                  </Field>
+                  <Field
+                    label={t("tagline")}
+                    htmlFor="tagline"
+                    optional={common("optional")}
+                    className="sm:col-span-2"
+                    action={
+                      <span className="text-2xs text-faint tabular-nums">
+                        {t("taglineCount", { count: tagline.length })}
+                      </span>
+                    }
+                  >
+                    <input
+                      id="tagline"
+                      maxLength={TAGLINE_MAX}
+                      placeholder={t("taglinePlaceholder")}
+                      value={tagline}
+                      onChange={(e) => setTagline(e.target.value)}
+                      className={inputClass}
+                    />
+                  </Field>
+                </div>
+              </WizardSection>
+              <WizardSection
+                n={3}
+                title={t("sections.place")}
+                hint={t("sections.placeHint")}
+                done={placeDone}
+              >
+                <Field
+                  label={t("province")}
+                  htmlFor="wizard-province"
+                  hint={t("provinceHint")}
+                >
+                  <ProvinceField
+                    id="wizard-province"
+                    value={province}
+                    onChange={setProvince}
+                    required
+                  />
+                </Field>
+                <Field
+                  label={t("logo")}
+                  htmlFor="logo"
+                  optional={common("optional")}
+                  hint={
+                    logo
+                      ? t("logoHint")
+                      : autoLogo
+                        ? t("logoFromSite")
+                        : t("logoHint")
+                  }
+                >
+                  <LogoField
+                    id="logo"
+                    name={name}
+                    src={shownLogo}
+                    onPick={pickLogo}
+                    onRemove={() => {
+                      pickLogo(null);
+                      setAutoLogo(null);
+                    }}
+                  />
+                </Field>
+                {anonymousReady && (
+                  <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border p-3">
+                    <input
+                      type="checkbox"
+                      checked={anonymous}
+                      disabled={!!saved}
+                      onChange={(ev) => setAnonymous(ev.target.checked)}
+                      className="mt-0.5 size-4 shrink-0 accent-(--brand)"
+                    />
+                    <span className="space-y-0.5">
+                      <span className="block text-xs font-semibold">
+                        {an("wizardLabel")}
+                      </span>
+                      <span className="block text-caption text-muted-foreground">
+                        {an("wizardHint")}
+                      </span>
+                    </span>
+                  </label>
+                )}
+              </WizardSection>
+              <div className="lg:hidden">{preview}</div>
+              <WizardProgress done={sectionsDone} total={3} />
+              {error && (
+                <p role="alert" className="text-sm text-destructive">
+                  {error}
+                </p>
               )}
-              {existing && (
+              {/* C-13: the 5-project limit up front, not after filling everything in. */}
+              {atLimit && (
                 <p
-                  role="alert"
+                  role="note"
                   className="rounded-md border border-warning/40 bg-warning/10 p-3 text-caption"
                 >
-                  {t("alreadyListed", { name: existing.name })}{" "}
+                  {t("limitAhead")}{" "}
                   <Link
-                    href={`/dashboard/${existing.id}/edit`}
+                    href="/dashboard/startups"
                     className="font-semibold whitespace-nowrap text-brand-text hover:underline"
                   >
-                    {t("goToExisting")} →
+                    →
                   </Link>
                 </p>
               )}
-              {fillState && !existing && (
-                <p
-                  role="status"
-                  className={cn(
-                    "text-caption",
-                    fillState === "done"
-                      ? "text-brand-text"
-                      : "text-muted-foreground",
-                  )}
+              {/* C-12: on phones the button stays reachable while the keyboard is open. */}
+              <div className="max-sm:sticky max-sm:bottom-0 max-sm:-mx-4 max-sm:border-t max-sm:bg-background/95 max-sm:px-4 max-sm:py-3 max-sm:backdrop-blur">
+                <Button
+                  type="submit"
+                  disabled={busy || !!existing || atLimit}
+                  className="px-4 max-sm:w-full"
                 >
-                  {fillState === "done"
-                    ? t("autofillDone")
-                    : t("autofillReading")}
-                  {/* C-14: what we read, at the moment we read it. */}
-                  <span className="block text-2xs text-faint">
-                    {t("autofillPrivacy")}
-                  </span>
+                  {busy
+                    ? common("loading")
+                    : saved
+                      ? t("saveAndContinue")
+                      : t("createAndContinue")}
+                </Button>
+                {/* Issue 3: say what step 2 is for before the button is pressed. */}
+                <p className="mt-2 text-caption text-muted-foreground">
+                  {t("nextVerifyHint")}
                 </p>
-              )}
-            </Field>
-            <Field label={t("name")} htmlFor="name">
-              <input
-                id="name"
-                required
-                maxLength={80}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className={inputClass}
-              />
-            </Field>
-            <Field label={t("category")} htmlFor="category">
-              <CategoryField
-                id="category"
-                required
-                value={category}
-                onChange={setCategory}
-                suggestion={suggestedCategory}
-              />
-            </Field>
-            <Field
-              label={t("tagline")}
-              htmlFor="tagline"
-              optional={common("optional")}
-              className="sm:col-span-2"
-              action={
-                <span className="text-2xs text-faint tabular-nums">
-                  {t("taglineCount", { count: tagline.length })}
-                </span>
-              }
-            >
-              <input
-                id="tagline"
-                maxLength={TAGLINE_MAX}
-                placeholder={t("taglinePlaceholder")}
-                value={tagline}
-                onChange={(e) => setTagline(e.target.value)}
-                className={inputClass}
-              />
-            </Field>
-            <Field
-              label={t("province")}
-              htmlFor="wizard-province"
-              hint={t("provinceHint")}
-              className="sm:col-span-2"
-            >
-              <ProvinceField
-                id="wizard-province"
-                value={province}
-                onChange={setProvince}
-                required
-              />
-            </Field>
-            <Field
-              label={t("logo")}
-              htmlFor="logo"
-              optional={common("optional")}
-              hint={
-                logo
-                  ? t("logoHint")
-                  : autoLogo
-                    ? t("logoFromSite")
-                    : t("logoHint")
-              }
-              className="sm:col-span-2"
-            >
-              <LogoField
-                id="logo"
-                name={name}
-                src={shownLogo}
-                onPick={pickLogo}
-                onRemove={() => {
-                  pickLogo(null);
-                  setAutoLogo(null);
-                }}
-              />
-            </Field>
-            {anonymousReady && (
-              <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border p-3 sm:col-span-2">
-                <input
-                  type="checkbox"
-                  checked={anonymous}
-                  disabled={!!saved}
-                  onChange={(ev) => setAnonymous(ev.target.checked)}
-                  className="mt-0.5 size-4 shrink-0 accent-(--brand)"
+              </div>
+            </form>
+          )}
+
+          {/* Hidden, not unmounted, on the way back to step 1: sources connected here stay marked. */}
+          {saved && (
+            <div className="space-y-5" hidden={step !== 2}>
+              <div className="flex items-start gap-3 rounded-xl border border-positive/30 bg-positive/5 p-4">
+                <CircleCheckIcon
+                  className="mt-0.5 size-5 shrink-0 text-positive"
+                  aria-hidden="true"
                 />
-                <span className="space-y-0.5">
-                  <span className="block text-xs font-semibold">
-                    {an("wizardLabel")}
-                  </span>
-                  <span className="block text-caption text-muted-foreground">
-                    {an("wizardHint")}
-                  </span>
-                </span>
-              </label>
-            )}
-          </div>
-          {/* S-2: the card as it will look in the list, updating as they type (not a link). */}
-          {name.trim() && (
-            <div className="space-y-1.5">
-              <p className="text-xs font-medium">{t("previewLabel")}</p>
-              <StartupCard
-                preview
-                large
-                logoSrc={anonymous ? null : shownLogo}
-                className="max-w-sm"
-                startup={{
-                  ...PREVIEW_BASE,
-                  name: anonymous ? an("name") : name.trim(),
-                  tagline: tagline.trim() || null,
-                  category: category || "other",
+                <div className="min-w-0 space-y-0.5">
+                  <p className="text-sm font-semibold">{t("createdTitle")}</p>
+                  <p className="text-caption text-muted-foreground">
+                    {t("createdBody", {
+                      name: anonymous ? an("name") : name.trim(),
+                    })}
+                  </p>
+                </div>
+              </div>
+              {/* Design.md §5 VerifyPanel chooser, stage first: no revenue yet → no-key proof first. */}
+              <fieldset className="space-y-2">
+                <legend className="mb-2 text-sm font-semibold">
+                  {t("stage.title")}
+                </legend>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {(
+                    [
+                      ["early", SproutIcon],
+                      ["revenue", CreditCardIcon],
+                    ] as const
+                  ).map(([id, Icon]) => (
+                    <label
+                      key={id}
+                      className={cn(
+                        "flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
+                        stage === id
+                          ? "border-brand bg-brand/5"
+                          : "bg-card hover:bg-accent",
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="stage"
+                        value={id}
+                        checked={stage === id}
+                        onChange={() => setStage(id)}
+                        className="sr-only"
+                      />
+                      <Icon
+                        className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                        aria-hidden="true"
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold">
+                          {t(`stage.${id}`)}
+                        </span>
+                        <span className="block text-caption text-muted-foreground">
+                          {t(`stage.${id}Hint`)}
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <VerifyPanel
+                order={stage === "early" ? EARLY_ORDER : undefined}
+                startupId={saved.id}
+                connections={[]}
+                websiteHost={ownWebsiteHost(saved.website)}
+                githubLogin={githubLogin}
+                attemptId={attemptId}
+                onConnected={(source) => {
+                  setVerified(true);
+                  if (SOURCE_KIND[source] !== "traffic") setProven(true);
                 }}
               />
-              <p className="text-caption text-muted-foreground">
-                {t("previewHint")}
-              </p>
+              <div className="flex flex-wrap items-center gap-3 border-t pt-4">
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setError(null);
+                    setStep(1);
+                  }}
+                  className="px-3 text-muted-foreground"
+                >
+                  <ArrowLeftIcon aria-hidden="true" />
+                  {common("back")}
+                </Button>
+                <p className="flex-1 text-xs text-muted-foreground">
+                  {verified ? "" : t("verifyLater")}
+                </p>
+                <Button
+                  variant={
+                    verified || stage === "early" ? "default" : "outline"
+                  }
+                  onClick={goToProfile}
+                  className="px-4"
+                >
+                  {verified
+                    ? t("goToProfile")
+                    : stage === "early"
+                      ? t("publishNow")
+                      : t("skipToProfile")}
+                </Button>
+              </div>
             </div>
           )}
-          {error && (
-            <p role="alert" className="text-sm text-destructive">
-              {error}
-            </p>
-          )}
-          {/* C-13: the 5-project limit up front, not after filling everything in. */}
-          {atLimit && (
-            <p
-              role="note"
-              className="rounded-md border border-warning/40 bg-warning/10 p-3 text-caption"
-            >
-              {t("limitAhead")}{" "}
-              <Link
-                href="/dashboard/startups"
-                className="font-semibold whitespace-nowrap text-brand-text hover:underline"
-              >
-                →
-              </Link>
-            </p>
-          )}
-          {/* C-12: on phones the button stays reachable while the keyboard is open. */}
-          <div className="max-sm:sticky max-sm:bottom-0 max-sm:-mx-4 max-sm:border-t max-sm:bg-background/95 max-sm:px-4 max-sm:py-3 max-sm:backdrop-blur">
-            <Button
-              type="submit"
-              disabled={busy || !!existing || atLimit}
-              className="px-4 max-sm:w-full"
-            >
-              {busy
-                ? common("loading")
-                : saved
-                  ? t("saveAndContinue")
-                  : t("createAndContinue")}
-            </Button>
-            {/* Issue 3: say what step 2 is for before the button is pressed. */}
-            <p className="mt-2 text-caption text-muted-foreground">
-              {t("nextVerifyHint")}
-            </p>
-          </div>
-        </form>
-      )}
-
-      {/* Hidden, not unmounted, on the way back to step 1: sources connected here stay marked. */}
-      {saved && (
-        <div className="space-y-5" hidden={step !== 2}>
-          {/* Design.md §5 VerifyPanel chooser, stage first: no revenue yet → no-key proof first. */}
-          <fieldset className="space-y-2">
-            <legend className="mb-2 text-sm font-semibold">
-              {t("stage.title")}
-            </legend>
-            <div className="grid gap-2 sm:grid-cols-2">
+        </div>
+        {/* Design.md §5 wizard v3: the live card and what comes next, beside the form from lg. */}
+        <aside className="hidden space-y-4 lg:sticky lg:top-20 lg:block">
+          {preview}
+          <Card className="space-y-3 p-4">
+            <p className="text-xs font-semibold">{t("afterTitle")}</p>
+            <ul className="space-y-2.5">
               {(
                 [
-                  ["early", SproutIcon],
-                  ["revenue", CreditCardIcon],
+                  [ShieldCheckIcon, t("afterVerify")],
+                  [Share2Icon, t("afterShare")],
+                  [MedalIcon, t("afterOlympics")],
                 ] as const
-              ).map(([id, Icon]) => (
-                <label
-                  key={id}
-                  className={cn(
-                    "flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
-                    stage === id
-                      ? "border-brand bg-brand/5"
-                      : "bg-card hover:bg-accent",
-                  )}
+              ).map(([Icon, text]) => (
+                <li
+                  key={text}
+                  className="flex items-start gap-2.5 text-caption text-muted-foreground"
                 >
-                  <input
-                    type="radio"
-                    name="stage"
-                    value={id}
-                    checked={stage === id}
-                    onChange={() => setStage(id)}
-                    className="sr-only"
-                  />
-                  <Icon
-                    className="mt-0.5 size-4 shrink-0 text-muted-foreground"
-                    aria-hidden="true"
-                  />
-                  <span className="min-w-0">
-                    <span className="block text-sm font-semibold">
-                      {t(`stage.${id}`)}
-                    </span>
-                    <span className="block text-caption text-muted-foreground">
-                      {t(`stage.${id}Hint`)}
-                    </span>
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary">
+                    <Icon
+                      className="size-3.5 text-brand-text"
+                      aria-hidden="true"
+                    />
                   </span>
-                </label>
+                  {text}
+                </li>
               ))}
-            </div>
-          </fieldset>
-          <VerifyPanel
-            order={stage === "early" ? EARLY_ORDER : undefined}
-            startupId={saved.id}
-            connections={[]}
-            websiteHost={ownWebsiteHost(saved.website)}
-            githubLogin={githubLogin}
-            attemptId={attemptId}
-            onConnected={(source) => {
-              setVerified(true);
-              if (SOURCE_KIND[source] !== "traffic") setProven(true);
-            }}
-          />
-          <div className="flex flex-wrap items-center gap-3 border-t pt-4">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setError(null);
-                setStep(1);
-              }}
-              className="px-3 text-muted-foreground"
-            >
-              <ArrowLeftIcon aria-hidden="true" />
-              {common("back")}
-            </Button>
-            <p className="flex-1 text-xs text-muted-foreground">
-              {verified ? "" : t("verifyLater")}
-            </p>
-            <Button
-              variant={verified || stage === "early" ? "default" : "outline"}
-              onClick={goToProfile}
-              className="px-4"
-            >
-              {verified
-                ? t("goToProfile")
-                : stage === "early"
-                  ? t("publishNow")
-                  : t("skipToProfile")}
-            </Button>
-          </div>
-        </div>
-      )}
+            </ul>
+          </Card>
+        </aside>
+      </div>
     </div>
   );
 }

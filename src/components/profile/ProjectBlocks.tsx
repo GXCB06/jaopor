@@ -142,7 +142,14 @@ export async function LookingForBanner({ startup }: { startup: StartupRow }) {
   );
 }
 
-export async function TractionTiles({ startup }: { startup: StartupRow }) {
+export type TractionKey = "visitors" | "users" | "build";
+
+/**
+ * The connected-source tiles (visitors, active users, build proof), each null when there is no
+ * public number. Shared by TractionTiles and the profile's key cards, which borrow up to two of
+ * them when there is no verified revenue (Design.md §5 Profile layout v3).
+ */
+export async function tractionTiles(startup: StartupRow) {
   const [t, format] = await Promise.all([
     getTranslations("Profile"),
     getFormatter(),
@@ -171,7 +178,7 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
 
   // Spec 2.4: a metric with no data is hidden for visitors and becomes a dashed prompt for the owner.
   const tiles: {
-    key: string;
+    key: TractionKey;
     anchor: string;
     label: string;
     card: React.ReactNode | null;
@@ -268,11 +275,27 @@ export async function TractionTiles({ startup }: { startup: StartupRow }) {
         ) : null,
     },
   ];
+  return tiles;
+}
+
+export async function TractionTiles({
+  startup,
+  skip = [],
+}: {
+  startup: StartupRow;
+  /** Tiles already shown in the key cards at the top of the page. */
+  skip?: readonly TractionKey[];
+}) {
+  const [t, all] = await Promise.all([
+    getTranslations("Profile"),
+    tractionTiles(startup),
+  ]);
+  const tiles = all.filter((x) => !skip.includes(x.key));
 
   const section = (
     <section className="space-y-3">
       <h2 className="text-sm font-bold">{t("traction")}</h2>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
+      <div className="grid grid-cols-2 gap-3 empty:hidden md:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
         {tiles.map((x) =>
           x.card ? (
             <div key={x.key} className={x.span}>

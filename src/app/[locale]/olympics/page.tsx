@@ -282,12 +282,7 @@ export default async function OlympicsPage({
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-4">
-          <OlympicsBoard
-            board={board}
-            metric={metric}
-            thbPerUsd={thbPerUsd}
-            podiumShown={showPodium}
-          />
+          <OlympicsBoard board={board} metric={metric} thbPerUsd={thbPerUsd} />
           <div className="lg:hidden">{regionCard}</div>
 
           {open.length > 0 && (

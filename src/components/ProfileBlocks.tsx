@@ -42,6 +42,7 @@ export function StatCard({
   caption,
   help,
   className,
+  valueClassName,
 }: {
   label: string;
   value: React.ReactNode;
@@ -49,16 +50,24 @@ export function StatCard({
   /** Design.md §5 MetricHelp: an info button explaining what the number counts. */
   help?: React.ReactNode;
   className?: string;
+  /** Overrides the value's size (e.g. a long Thai month name on a 2-up phone row). */
+  valueClassName?: string;
 }) {
   return (
     <Card className={cn("min-w-0 space-y-2 p-4", className)}>
       <div className="flex items-center justify-between gap-2">
-        <p className="truncate text-caption font-semibold tracking-wider text-faint uppercase">
+        {/* Wraps instead of cutting off ("ALL-TIME RE…" on a 2-up phone row). */}
+        <p className="line-clamp-2 text-caption font-semibold tracking-wider text-faint uppercase">
           {label}
         </p>
         {help}
       </div>
-      <div className="truncate text-2xl font-bold tracking-tight tabular-nums">
+      <div
+        className={cn(
+          "truncate text-2xl font-bold tracking-tight tabular-nums",
+          valueClassName,
+        )}
+      >
         {value}
       </div>
       {caption && (
@@ -71,54 +80,48 @@ export function StatCard({
 }
 
 /**
- * Design.md §5 Profile layout: the founder row in the left column (photo, name, role), linked to
- * the founder's public profile (/u/{handle}) when they have a username.
+ * Design.md §5 Profile layout v3, key card 3: the founder (photo, name, role). The page wraps it in
+ * a link to the founder's public profile (/u/{handle}) when they have a username.
  */
-export function FounderLine({
-  handle,
+export function FounderCard({
   label,
   name,
   avatar,
   caption,
 }: {
-  handle: string | null;
   label: string;
   name: string;
   avatar: string | null;
   caption: string | null;
 }) {
-  const body = (
-    <>
-      <PersonPhoto
-        src={avatar}
-        className="size-10 shrink-0 rounded-full border object-cover"
-        fallback={
-          <span
-            aria-hidden="true"
-            className="flex size-10 shrink-0 items-center justify-center rounded-full border bg-secondary text-sm font-bold text-muted-foreground uppercase"
-          >
-            {name.slice(0, 1)}
-          </span>
-        }
-      />
-      <span className="min-w-0">
-        <span className="block truncate text-sm font-semibold group-hover:underline">
+  return (
+    <Card className="h-full min-w-0 space-y-2 p-4 transition-colors group-hover:border-border-strong">
+      <p className="truncate text-caption font-semibold tracking-wider text-faint uppercase">
+        {label}
+      </p>
+      <div className="flex min-w-0 items-center gap-2">
+        <PersonPhoto
+          src={avatar}
+          className="size-7 shrink-0 rounded-full border object-cover"
+          fallback={
+            <span
+              aria-hidden="true"
+              className="flex size-7 shrink-0 items-center justify-center rounded-full border bg-secondary text-caption font-bold text-muted-foreground uppercase"
+            >
+              {name.slice(0, 1)}
+            </span>
+          }
+        />
+        <span className="min-w-0 truncate text-lg font-bold tracking-tight group-hover:underline sm:text-xl">
           {name}
         </span>
-        <span className="block truncate text-caption text-muted-foreground">
-          {caption ? `${label} · ${caption}` : label}
-        </span>
-      </span>
-    </>
-  );
-  if (!handle) return <div className="flex items-center gap-3">{body}</div>;
-  return (
-    <Link
-      href={`/u/${handle}`}
-      className="group -mx-2 flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-    >
-      {body}
-    </Link>
+      </div>
+      {caption && (
+        <p className="line-clamp-2 text-caption text-muted-foreground sm:truncate">
+          {caption}
+        </p>
+      )}
+    </Card>
   );
 }
 

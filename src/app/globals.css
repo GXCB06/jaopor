@@ -75,21 +75,21 @@
 }
 
 :root {
-  /* Light theme: zinc scale (Design.md §2). */
-  --background: #ffffff;
+  /* Light theme: zinc scale (Design.md §2). Grey page, white cards (owner 2026-10-13). */
+  --background: #f4f4f5;
   --foreground: #09090b;
-  --card: #fafafa;
+  --card: #ffffff;
   --card-foreground: #09090b;
   --popover: #ffffff;
   --popover-foreground: #09090b;
   --primary: #18181b;
   --primary-foreground: #fafafa;
-  --secondary: #f4f4f5;
+  --secondary: #ebebee;
   --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
+  --muted: #ebebee;
   --muted-foreground: #52525b;
-  --faint: #71717a;
-  --accent: #f4f4f5;
+  --faint: #67676f;
+  --accent: #ebebee;
   --accent-foreground: #18181b;
   --destructive: #b91c1c;
   --border: #e4e4e7;
@@ -127,11 +127,11 @@
   --negative: #b91c1c;
   --warning: #b45309;
   --info: #0f766e;
-  --sidebar: #fafafa;
+  --sidebar: #ffffff;
   --sidebar-foreground: #09090b;
   --sidebar-primary: #18181b;
   --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #f4f4f5;
+  --sidebar-accent: #ebebee;
   --sidebar-accent-foreground: #18181b;
   --sidebar-border: #e4e4e7;
   --sidebar-ring: #a1a1aa;
@@ -141,7 +141,7 @@
   /* Dark theme (default): zinc values measured from the Figma file. */
   --background: #0a0a0b;
   --foreground: #ededed;
-  --card: #141416;
+  --card: #161618;
   --card-foreground: #ededed;
   --popover: #1e1e20;
   --popover-foreground: #ededed;
@@ -155,7 +155,7 @@
   --accent: #1f1f23;
   --accent-foreground: #fafafa;
   --destructive: #f87171;
-  --border: #26262a;
+  --border: #2a2a2e;
   --input: #3a3a40;
   --ring: #52525b;
   /* Validated with the dataviz validator on #141416: chart-1 = revenue, chart-2 = previous period. */
@@ -187,13 +187,13 @@
   --negative: #ef4444;
   --warning: #f59e0b;
   --info: #2dd4bf;
-  --sidebar: #141416;
+  --sidebar: #161618;
   --sidebar-foreground: #fafafa;
   --sidebar-primary: #6366f1;
   --sidebar-primary-foreground: #fafafa;
   --sidebar-accent: #18181b;
   --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: #26262a;
+  --sidebar-border: #2a2a2e;
   --sidebar-ring: #52525b;
 }
 

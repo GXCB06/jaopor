@@ -12,6 +12,43 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-13 — Project page like TrustMRR (4 key cards, Share + Visit on top), clearer cards in both themes, Add Startup with steps, Olympics bar always on
+
+**Done** (owner: profile "overwhelming" next to TrustMRR, wants 4 cards + Visit / Share placed properly; cards blend into the light page; Add Startup "plain text, no interactive experience"; "ranking bar … always display it"):
+
+- **Project page (Profile layout v3):**
+  - One column. Header: logo, name, one-liner, a meta row (category, badges, proof ⓘ, links). **Share + Visit sit top right** (phones: one row under the name).
+  - **Four key cards:** all-time revenue · MRR · founder (links to their profile) · founded (+ province / Olympics rank). Without verified revenue the first two take the next public numbers (visitors, commits, users), which then aren't repeated below. The "MRR above revenue" explanation moved into the MRR ⓘ.
+  - Then the chart; then tabs (screenshots · about · insights · updates) and the story. The cover banner and the pinned left column are removed; the name bar now appears at every width.
+- **Theme contrast:**
+  - Light: grey page `#f4f4f5`, white cards, chips `#ebebee`, faint text `#67676f` (contrast rechecked).
+  - Dark: cards `#161618`, borders `#2a2a2e`.
+  - Cards get a hairline shadow.
+- **Add Startup v3:**
+  - A 3-step stepper (ลงผลงาน → ยืนยันตัวเลข → เปิดหน้าผลงาน).
+  - Step 1 split into 3 numbered cards that turn green when complete, with a "พร้อมแล้ว n จาก 3" bar.
+  - Live card preview + "หลังจากนี้" beside the form (under it on phones).
+  - Step 2 opens with "สร้างหน้าผลงานแล้ว". Same fields and rules as before.
+- **Olympics:** the table always starts at #1 with every row's leader bar, also when the desktop podium shows.
+- Design.md first for each (§2 page vs card, Profile layout v3, wizard v3, Olympics); th + en strings.
+
+**Files:**
+
+- `src/app/[locale]/startup/[slug]/page.tsx`, `src/components/ProfileBlocks.tsx` (FounderCard), `src/components/profile/{ProjectBlocks,StickyIdentity,SectionTabs}.tsx`, ProfileCover removed;
+- `src/app/globals.css`, `src/components/core/Card.tsx`;
+- `src/components/wizard/{StartupWizard,WizardParts}.tsx`, `src/app/[locale]/new/{page,loading}.tsx`;
+- `src/components/olympics/OlympicsBoard.tsx`, `src/app/[locale]/olympics/page.tsx`;
+- `messages/{th,en}.json`.
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit 640 passed / 17 skipped · e2e local 121 passed / 0 failed.
+- Screenshots at 1440 and 375, dark and light: project page th / en (cards fit after shortening the month on phones and letting labels wrap), Olympics, home.
+- Wizard (signed out, through a temporary local page, deleted before commit): empty, filled, step 2.
+
+**Not verified:** the real signed-in `/new` flow end to end (OAuth can't be automated here); share images still use the old card colours (separate renderer palette, unchanged on purpose).
+**Next:** owner review in the browser; push only on the owner's go.
+
 ## 2026-10-13 — Landing zone merged and live on the main domain
 
 **Done** (owner approved the release after the pre-release verification):

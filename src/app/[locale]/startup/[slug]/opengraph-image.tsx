@@ -78,7 +78,7 @@ export default async function Image({
         position: "relative",
       }}
     >
-      {/* Cover band: the screenshot, else the hero gradient (like ProfileCover). */}
+      {/* Cover band: the screenshot, else the hero gradient. */}
       {cover ? (
         // eslint-disable-next-line @next/next/no-img-element -- rendered by the OG renderer
         <img

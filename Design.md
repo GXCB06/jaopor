@@ -19,15 +19,15 @@ Defined in `src/app/globals.css` (shadcn variables). Values measured from the Fi
 
 | Token                                           | Dark (spec 2.1)                   | Light                             | Use                                                                                                                                                                                                                                                                                                    |
 | ----------------------------------------------- | --------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--background`                                  | `#0a0a0b`                         | `#ffffff`                         | Page                                                                                                                                                                                                                                                                                                   |
-| `--card`                                        | `#141416`                         | `#fafafa`                         | Cards, tiles, leaderboard, chart, filter sidebar                                                                                                                                                                                                                                                       |
+| `--background`                                  | `#0a0a0b`                         | `#f4f4f5`                         | Page                                                                                                                                                                                                                                                                                                   |
+| `--card`                                        | `#161618`                         | `#ffffff`                         | Cards, tiles, leaderboard, chart, filter sidebar                                                                                                                                                                                                                                                       |
 | `--popover` (spec `surface-2`)                  | `#1e1e20`                         | `#ffffff`                         | Dialogs, menus                                                                                                                                                                                                                                                                                         |
-| `--secondary` / `--muted` / `--accent`          | `#18181b`                         | `#f4f4f5`                         | Chips, dropdown buttons, hover fills, segmented controls                                                                                                                                                                                                                                               |
+| `--secondary` / `--muted` / `--accent`          | `#18181b`                         | `#ebebee`                         | Chips, dropdown buttons, hover fills, segmented controls                                                                                                                                                                                                                                               |
 | `--foreground`                                  | `#ededed`                         | `#09090b`                         | Headings, numbers                                                                                                                                                                                                                                                                                      |
 | `--muted-foreground`                            | `#a1a1a6`                         | `#52525b`                         | Descriptions, captions, body secondary                                                                                                                                                                                                                                                                 |
-| `--faint` (spec `text-subtle`)                  | `#8a8a8f`                         | `#71717a`                         | Metric labels, table headers, placeholders, dot separators                                                                                                                                                                                                                                             |
+| `--faint` (spec `text-subtle`)                  | `#8a8a8f`                         | `#67676f`                         | Metric labels, table headers, placeholders, dot separators                                                                                                                                                                                                                                             |
 | `--primary` / `--primary-foreground`            | `#f4f4f5` / `#09090b`             | `#18181b` / `#fafafa`             | Primary button (light on dark)                                                                                                                                                                                                                                                                         |
-| `--border`                                      | `#26262a`                         | `#e4e4e7`                         | All borders and dividers                                                                                                                                                                                                                                                                               |
+| `--border`                                      | `#2a2a2e`                         | `#e4e4e7`                         | All borders and dividers                                                                                                                                                                                                                                                                               |
 | `--input`                                       | `#3a3a40`                         | `#e4e4e7`                         | Input borders; input fill `bg-card`                                                                                                                                                                                                                                                                    |
 | `--ring`                                        | `#52525b`                         | `#a1a1aa`                         | Focus ring                                                                                                                                                                                                                                                                                             |
 | `--brand` ★ (spec `accent`)                     | `#6e6cf3`                         | `#4f46e5`                         | Fills: logo tile, selected, bars, borders (`border-brand/40`)                                                                                                                                                                                                                                          |
@@ -40,6 +40,13 @@ Defined in `src/app/globals.css` (shadcn variables). Values measured from the Fi
 | `--chart-2`                                     | `#0d9488`                         | `#0d9488`                         | Previous period (**dashed**) when "Compare" is on                                                                                                                                                                                                                                                      |
 
 Chart pair validated with the dataviz validator (2026-09-29; dark re-run 2026-09-30 with `#6e6cf3`): all checks pass. Re-run it if they change.
+
+**Page vs card (owner 2026-10-13, compared with TrustMRR: "พื้นหลังกับการ์ดกลืนกันจนอ่านยาก"):** cards must stand off the page in both themes.
+
+- **Light:** the page is light grey (`#f4f4f5`) and cards are white (`#ffffff`, was the reverse: `#fafafa` cards on a white page). Chips, hover fills and tracks (`--secondary`) step to `#ebebee` so they still show on both. `--faint` darkens to `#67676f` to keep ≥ 4.5:1 on the grey page (5.1:1) and on chips (4.8:1).
+- **Dark:** cards step up to `#161618` and borders to `#2a2a2e` (were `#141416` / `#26262a`).
+- `Card` adds a hairline shadow (`shadow-xs`) so the edge reads on white-on-grey.
+- Contrast on the new card (dark): muted 7.0:1, faint 5.3:1, `--brand-text` 5.5:1, chart lines `#6e6cf3` 4.4:1 / `#0d9488` 4.8:1 (≥ 3:1 for marks).
 
 **Region colours** (spec 4.2, `--region-*`, 2026-09-30), from the dataviz reference palette: north blue `#3987e5`/`#2a78d6`, northeast orange `#d95926`/`#eb6834`, central aqua `#199e70`/`#1baf7a`, east violet `#9085e9`/`#4a3aa7`, west yellow `#c98500`/`#eda100`, south magenta `#d55181`/`#e87ba4` (dark/light). Six hues can't pass an all-pairs check, so they were validated for the **8 pairs of bordering regions** in both themes (all pass). Several light values are under 3:1 on white: a region colour is always paired with its name (legend or label), never colour alone.
 
@@ -286,7 +293,22 @@ Rule for **every** list that drops from a control (selects, filters, action menu
 
 ### Profile header
 
-- **Two-column layout (owner 2026-10-12, from the Lovable mockup; supersedes the header row and "numbers first" order below where they differ):** from `lg` a grid `16.25rem | 1fr` (`gap-10`).
+- **Profile layout v3 (owner 2026-10-13, compared with TrustMRR: "overwhelming … ตำแหน่งการวาง layout"; supersedes the two-column layout, the cover, the headline number and the pinned left column below).** What a visitor should do here, in order: see the 4 key cards, read the chart, then Visit or Share. Everything else comes after.
+  - **One column**, `max-w-6xl`, no cover banner (the screenshots are further down; anonymous projects lose nothing).
+  - **Header row:** logo 64 (`rounded-2xl`, 56 on phones) · name `text-2xl sm:text-3xl font-bold` + tagline `font-prose text-body text-muted-foreground` (2 lines max on phones) · a meta row (`text-caption`): category link, FoundingBadge, team chip, VerifiedBadge, evidence-ladder ⓘ, anonymous chip, LiveViewersPill. **Right side (from `sm`): Share (outline) then "เข้าเว็บไซต์ ↗" (primary), both `h-9`**, top-aligned with the name, as on TrustMRR. Phones: the two buttons sit in one row under the header (Visit `flex-1`). Other project links (GitHub, store pages) stay as small chips under the meta row.
+  - **Four cards** right under the header (`KeyCards`: `grid grid-cols-2 gap-3 lg:grid-cols-4`, `StatCard` look: label `text-caption font-semibold text-faint uppercase`, value `text-2xl font-bold tabular-nums`, caption `text-caption text-muted-foreground`):
+    1. **รายได้ทั้งหมด** (verified) · caption "อันดับ #n" · ⓘ source.
+    2. **MRR** (verified) · caption active subscriptions · ⓘ what MRR counts, and, when MRR is above revenue so far, the per-source reason (was a line under the headline number).
+       - No verified revenue: these two slots take the next public numbers in this order: revenue shown as a range / growth (R2), visitors 30 days ("นับโดย {source}"), commits (GitHub), active users. A number used here isn't repeated in "ตัวเลขจากระบบที่เชื่อมต่อ".
+       - No public number at all: the slots are left out and the early-stage / upgrade card sits under the row (as before).
+    3. **ผู้ก่อตั้ง:** photo 28 + name `text-lg font-bold truncate`, caption = role (else headline, else @X); the card links to `/u/{handle}`. Anonymous projects: "ไม่เปิดเผยชื่อ".
+    4. **ก่อตั้ง:** month + year (`text-2xl`), caption = province with its Olympics rank (link) or country. No date: the card shows the province as the value instead; nothing at all: an owner-only "+ เพิ่ม" card.
+    - Phones: 2 × 2. Fewer cards: the row uses that many columns from `lg` (never an empty cell).
+  - **Chart card** next (full width), with its "ยืนยันผ่าน … · อัปเดตล่าสุด" stamp.
+  - **Then the story, in this order:** SectionTabs (ภาพผลงาน · เกี่ยวกับ · ข้อมูลเชิงลึก · อัปเดต; "ตัวเลข" dropped because the numbers are above) → screenshots → ตัวเลขจากระบบที่เชื่อมต่อ → เกี่ยวกับ → กำลังหา → ข้อความจากผู้ก่อตั้ง → ข้อมูลเชิงลึก → อัปเดต → ผลงานอื่น → QuickSearch.
+  - **StickyIdentity** now shows at every width (there is no pinned left column any more) once the header has scrolled away; the tab row pins under it (`top-[6.5rem]`).
+  - **Acceptance:** at 1440 × 900 the header, the four cards and the top of the chart are on the first screen; at 375 the header, both buttons and the four cards (2 × 2) are; no horizontal scroll; th / en; light and dark.
+- **Two-column layout (owner 2026-10-12, from the Lovable mockup; superseded 2026-10-13 by v3 above, kept for history):** from `lg` a grid `16.25rem | 1fr` (`gap-10`).
   - **Left column (who and what):** logo 80 `rounded-2xl` → name `text-2xl font-bold` + category link (`text-caption text-muted-foreground`) → badges row (anonymous chip, FoundingBadge, VerifiedBadge, evidence-ladder ⓘ) → tagline (`font-prose text-body leading-relaxed text-muted-foreground`) → full-width primary "เข้าเว็บไซต์ ↗" (`h-9`) + ShareStudio → other ProjectLinks → **FounderLine** (photo 40, name, "ผู้ก่อตั้ง · {role}", links to `/u/{handle}`, `hover:bg-accent`) → province / country and founded date (`text-caption`, MapPin / Calendar icons) → LiveViewersPill.
   - **Right column (numbers and story):** anonymous / demo notes → TractionTiles when they lead → StatCard row (`grid-cols-2`, auto-fit from `sm`) → chart card → TractionTiles otherwise → **"เกี่ยวกับ {name}"** (`text-lg font-bold`) + the long description (ClampedText) → LookingForBanner → screenshots → FounderMessage → InsightsGrid → updates.
   - **Phones:** one column, the left column first with the logo beside the name; the first number still shows on the first screen at 375 px.
@@ -478,7 +500,7 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
   - Each row carries a bar of its total against the leader's (`h-1 max-w-36 bg-brand/70`, at least 4% so it shows).
   - **Phones:** the rank-change column and the ProvinceBadge hide; the change moves beside the region name and the value column narrows to `w-24`.
   - On the projects board the "ผลงาน" count column is hidden (it repeated the value).
-- **Podium cards:** desktop only (`hidden md:block`), and only once **5** provinces compete (`PODIUM_MIN`). Then #1–3 hide from the table from `md` up.
+- **Podium cards:** desktop only (`hidden md:block`), and only once **5** provinces compete (`PODIUM_MIN`). The table still starts at #1 under it, so every province keeps its leader bar (owner 2026-10-13: "ranking bar … always display it"; until then #1–3 hid from `md` up).
 - **Coverage bar** under the subtitle: "ปลดล็อกแล้ว {n} จาก {total} จังหวัด" + % (`h-2 rounded-full bg-secondary`, fill `bg-brand`).
   - `n` = provinces with a published project (listing counts).
   - The header stat label on the projects board is "ผลงานที่นับคะแนน".
@@ -496,14 +518,14 @@ Supersedes the 2026-10-12 draft below where they differ. **Inspiration (owner's 
   - Steps are flat blocks, not 3D: `rounded-t-xl border border-b-0 bg-secondary`, heights #1 `h-20` · #2 `h-14` · #3 `h-10` (phones `h-16 / h-12 / h-8`), the place number centred in `text-2xl font-extrabold text-faint`. #1's step `border-warning/40 bg-warning/5` (medal tones from `core/Medal`, no new colours).
   - Whole block ≤ 220 px tall at 375 (today's three cards: about 450 px).
   - An empty place is a dashed step with "+ ที่ว่าง" → `/new` (kept from v3).
-- **Tier 2, rows from #4 (`RankRow`, today's table restyled):** rank `#n` (`w-8 text-faint tabular-nums`) · ProvinceBadge 32 · name `text-sm font-semibold` + sub-line `text-caption text-muted-foreground` ("{n} ผลงาน · ตัวท็อป {project}") · value `text-sm font-bold tabular-nums` right-aligned · **share ring** (see 6). Row ≈ 56 px, `divide-y`, the expand chevron and the top-projects sub-row stay.
+- **Tier 2, the full ranking from #1 (`RankRow`, today's table restyled; owner 2026-10-13: the leader bar always shows, so #1–3 stay in the list under the podium):** rank `#n` (`w-8 text-faint tabular-nums`) · ProvinceBadge 32 · name `text-sm font-semibold` + sub-line `text-caption text-muted-foreground` ("{n} ผลงาน · ตัวท็อป {project}") · value `text-sm font-bold tabular-nums` right-aligned · **leader bar** under the name (the row's total against #1, as built in part 1). Row ≈ 56 px, `divide-y`, the expand chevron and the top-projects sub-row stay.
 - **Tier 3, "ยังไม่มีผลงานจาก N จังหวัด"** chips, collapsed to one line + "+N".
 - **Your own province** is never hidden by the tiers: if it's on the podium its place gets a `ring-2 ring-brand` and "คุณ"; otherwise its row is highlighted as today.
 
 **2. Podium threshold (replaces part 1's "desktop only, ≥ 5").**
 
 - **Podium from 3 competing provinces, on every width**, because the stepped form is compact enough for phones. Part 1's rows from #1 stay for 1–2 provinces.
-- With 3–4 provinces the podium shows and the rows list "#4 …" or nothing; no separate "#1–3 again" rows (no duplicates at any width).
+- With 3+ provinces the podium shows above the full list; the list repeats #1–3 on purpose so the bar race is always complete.
 - **Sparse (1–2 competing):** no podium. Rows from #1 with Medals, and one line under them: "อีก {n} จังหวัดจะเปิดโพเดียม" (opens the podium) + "+ ส่งผลงานแทนจังหวัดคุณ".
 - **Empty (0 competing on this metric):** no table; a dashed card "ยังไม่มีจังหวัดไหนมี{metric}ที่ยืนยัน" + the metric's one-line meaning + "เชื่อมตัวเลขของผลงาน" → `/dashboard`. The "จำนวนผลงาน" board stays the default, so a visitor sees this only after choosing a verified metric.
 - Team projects never count (`isRankEligible`, unchanged).
@@ -535,7 +557,7 @@ Supersedes the 2026-10-12 draft below where they differ. **Inspiration (owner's 
   - **รายได้ 30 วัน / MRR:** sum of the province's projects, verified through Stripe or RevenueCat, in THB at today's rate; MRR as each source defines it (Stripe = our calculation, RevenueCat = theirs).
   - **ผู้เข้าชม 30 วัน:** counted by the connected analytics source ("นับโดย"), never called "verified".
   - **Commits:** public GitHub commits in the last 30 days, owner-checked repos.
-- **Share ring** on each row: the province's share of the national total for this metric (`size-8`, stroke `--brand`, track `--secondary`, % in `text-3xs tabular-nums` inside; `aria-label` "{n}% ของทั้งประเทศ"). This is what the ring means, stated in the column header "สัดส่วน" (sm+) and in the ⓘ text; it replaces part 1's leader bar (a bar and a ring would repeat each other).
+- **Leader bar** on each row (owner decision 2026-10-13, instead of the share ring from the image): the province's total against #1's, `h-1 max-w-36 bg-brand/70`, at least 4% so it shows; the ⓘ text says "แถบ = เทียบกับอันดับ 1".
 - Value chips and rows show the unit (฿, ครั้ง, ผลงาน) and use the same formatters as today; ties show "=" before the rank.
 
 **7. Motion (§7 rules):** steps rise once on first view (`--motion-slow`, staggered 2 → 1 → 3), rings fill once, metric switch slides rows (FLIP); reduced motion: everything static and complete.
@@ -544,14 +566,14 @@ Supersedes the 2026-10-12 draft below where they differ. **Inspiration (owner's 
 
 - 375 px: podium of 3 side by side, ≤ 220 px tall, names not cut mid-glyph (truncate with "…"), no horizontal page scroll; desktop 1440 podium centred ≤ 640 px.
 - 0 / 1 / 2 / 3 / 4 / 5+ / 77 competing provinces each render the state above (unit test the tier split, Playwright screenshots of 0, 2, 3 and many via the metric switch).
-- No province appears twice on screen (podium vs rows).
+- Every row from #1 has its leader bar at every width, with and without the podium.
 - Your province: findable in ≤ 1 tap from anywhere on the page on phones (sticky bar).
 - Every metric shows its one-line explanation; visitors are never labelled "verified".
 - Team projects absent from podium, rows and rings' totals.
 - th / en strings, tokens only, `tabular-nums`, reduced motion, keyboard: podium places and rows are links with visible focus.
 - Before / after screenshots at 1440 and 375, e2e and unit tests green.
 
-**Open question for the owner:** keep part 1's leader bar instead of the share ring? The ring reads "how big is this province's slice of Thailand"; the bar reads "how far behind #1". The proposal picks the ring because the reference image uses one and the gap line in your-province bar already says the distance.
+**Decided (owner 2026-10-13):** the leader bar stays on every row, always; no share ring.
 
 #### Draft — Olympics v4 (2026-10-12; superseded by the complete proposal above)
 
@@ -699,6 +721,18 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - **Welcome banner** on `/startups?welcome=1`: dismissible `rounded-xl border border-brand/30 bg-brand/5 px-4 py-3` row under the hero, "ยินดีต้อนรับสู่ JaoPor 👋 ดูผลงานของคนอื่นก่อนได้ สร้างอะไรด้วย AI อยู่ก็เพิ่มของคุณได้เมื่อพร้อม" + "เพิ่มผลงานของฉัน →" link to `/new` + × close.
 
 ### Add-startup wizard v2 (`/new`, 2026-10-05, first-user test: "adding a startup is hard", most skipped verification)
+
+- **v3 (owner 2026-10-13: "ดูเหมือน plain text … no interactive experience"; make each step's job obvious).** Same fields, data and rules as v2 below; only the presentation changes.
+  - **Page:** `max-w-5xl`. Title + one line "3 ขั้น ใช้เวลาราว 2 นาที แก้ได้ทุกอย่างทีหลัง".
+  - **Stepper (`WizardStepper`, `<ol aria-label>`, `aria-current="step"`):** three steps in a row joined by a line: ① ลงผลงาน ("ลิงก์ ชื่อ หมวดหมู่ จังหวัด") ② ยืนยันตัวเลข ("ไม่บังคับ ทำทีหลังได้") ③ เปิดหน้าผลงาน ("พร้อมแชร์"). Circle `size-8 rounded-full`: current `bg-brand text-brand-foreground ring-4 ring-brand/15`; done `bg-brand/10 text-brand-text` with a Check; upcoming `border text-muted-foreground`. The connector before a done step fills `bg-brand`. Sub-lines from `sm`.
+  - **Step 1 = three section cards** (`Card p-4 sm:p-5`), each with a header: a number badge that turns into a green CircleCheck once the section is complete, a title `text-sm font-semibold`, and a one-line `text-caption text-muted-foreground` of what to do:
+    1. **"วางลิงก์ผลงาน"** ("ลิงก์เดียวพอ เราเติมชื่อ คำโปรย และโลโก้ให้"): the link, its type and the auto-fill status. Complete = a valid link that isn't already listed.
+    2. **"ผลงานชื่ออะไร ทำอะไร"**: name, category, one-liner. Complete = name + category.
+    3. **"อยู่จังหวัดไหน"** (Olympics) + logo + the anonymous option. Complete = province.
+    - Under the cards: "พร้อมแล้ว {n} จาก 3 ส่วน" with an `h-1.5` brand bar, then the submit button (still sticky at the bottom on phones).
+  - **Live side panel (from `lg`, `sticky top-20`, 20rem):** "ตัวอย่างการ์ดของคุณ" with the preview card shown from the start ("ชื่อผลงานของคุณ" until a name is typed), the existing hint, then "หลังจากนี้" (3 rows with icons: ยืนยันตัวเลข → การ์ดโชว์ตัวเลขจริง · หน้าผลงานพร้อมแชร์ · ลงแข่งโอลิมปิกจังหวัด). Phones: the preview sits under the cards, before the button.
+  - **Step 2** opens with a success card (`border-positive/30 bg-positive/5`, CircleCheck): "สร้างหน้าผลงานแล้ว" + "{name} เปิดให้ทุกคนเห็นแล้ว ขั้นนี้ไม่บังคับ …", then the stage cards and the VerifyPanel as before; the side panel keeps the preview.
+  - Motion: the section check and the progress bar change with `--motion-fast`; nothing moves with reduced motion.
 
 - **Loading (`/new/loading.tsx`, 2026-10-07, owner: "takes longer to open"):** a skeleton shaped like step 1 (title, 2 step bars, intro line, link field, name + category, one-liner, logo tile, button) shows the moment "เพิ่มผลงาน" is clicked, while the sign-in check runs. The verify step's code loads in the background after step 1 shows.
 - **Step labels:** "1. ลงผลงาน" / "List it" · "2. ยืนยันตัวเลข" / "Verify". Same 2-segment `border-t-2` bar; labels `text-caption font-semibold`, no uppercase (2026-10-08: the 10 px uppercase labels were hard to read in Thai).

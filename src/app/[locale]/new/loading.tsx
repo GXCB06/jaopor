@@ -6,12 +6,17 @@ export default function NewStartupLoading() {
   return (
     <main
       aria-busy="true"
-      className="mx-auto w-full max-w-2xl space-y-6 px-4 py-8"
+      className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8"
     >
-      <Skeleton className="h-8 w-64 md:h-9" />
-      <div className="flex gap-2">
-        <Skeleton className="h-1 flex-1" />
-        <Skeleton className="h-1 flex-1" />
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-64 md:h-9" />
+        <Skeleton className="h-4 w-72" />
+      </div>
+      {/* The three-step stepper (wizard v3). */}
+      <div className="flex justify-around">
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} className="size-8 rounded-full" />
+        ))}
       </div>
       <Skeleton className="h-4 w-full max-w-md" />
       <div className="grid gap-4 sm:grid-cols-2">

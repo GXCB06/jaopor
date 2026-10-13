@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 // Design.md §5 Profile layout, section tabs (owner 2026-10-12): a row of links to the parts of a
-// long project page, pinned under the header (and under the phone identity bar) while the right
-// column scrolls. The tab of the part on screen is marked. Tabs whose part renders nothing for
-// this visitor (e.g. no screenshots) are dropped after the first paint; with fewer than three
-// parts left the row goes away.
+// long project page, pinned under the header and the identity bar while the page scrolls. The
+// tab of the part on screen is marked. Tabs whose part renders nothing for this visitor (e.g. no
+// screenshots) are dropped after the first paint; with fewer than three parts left the row goes
+// away.
 
 export type SectionTab = { id: string; label: string };
 
@@ -52,7 +52,7 @@ export function SectionTabs({
   return (
     <nav
       aria-label={label}
-      className="sticky top-[6.5rem] z-20 -mx-4 border-b bg-background/95 px-4 backdrop-blur lg:top-14 lg:mx-0 lg:px-0"
+      className="sticky top-[6.5rem] z-20 -mx-4 border-b bg-background/95 px-4 backdrop-blur lg:mx-0 lg:px-0"
     >
       <ul className="flex [scrollbar-width:none] gap-1 overflow-x-auto">
         {shown.map((tab) => (

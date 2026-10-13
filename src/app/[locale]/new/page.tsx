@@ -33,10 +33,12 @@ export default async function NewStartupPage({
   ]);
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">
+    // Design.md §5 Add-startup wizard v3: wider page for the form + live side panel.
+    <main className="mx-auto w-full max-w-5xl px-4 py-8">
+      <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
         {t("title")}
       </h1>
+      <p className="mt-1 mb-6 text-sm text-muted-foreground">{t("subtitle")}</p>
       <StartupWizard
         userId={user.id}
         githubLogin={githubLoginOf(user)}

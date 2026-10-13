@@ -464,7 +464,32 @@
     "previewLabel": "How it looks in the project list",
     "previewHint": "Verify your numbers in the next step and the card shows revenue or GitHub activity.",
     "autofillPrivacy": "We only read the name, description and logo from your home page",
-    "limitAhead": "You already have 5 projects (the maximum). Edit or delete one in My projects."
+    "limitAhead": "You already have 5 projects (the maximum). Edit or delete one in My projects.",
+    "subtitle": "3 steps, about 2 minutes. You can change everything later.",
+    "stepsLabel": "Steps to add your project",
+    "stepBasicsHint": "Link, name, category, province",
+    "stepRevenueHint": "Optional, can wait",
+    "stepProfile": "Open your page",
+    "stepProfileHint": "Ready to share",
+    "stepDone": "Done",
+    "sections": {
+      "link": "Paste your project link",
+      "linkHint": "One link is enough: we fill in the name, one-liner and logo.",
+      "about": "What is it called and what does it do?",
+      "aboutHint": "A name and a category help people find it.",
+      "place": "Which province?",
+      "placeHint": "It competes for your province in the Olympics. Add a logo if you have one.",
+      "complete": "This part is complete"
+    },
+    "progress": "{done} of {total} parts ready",
+    "previewTitle": "Your card preview",
+    "previewPlaceholder": "Your project's name",
+    "afterTitle": "What happens next",
+    "afterVerify": "Verify a number and the card shows real revenue or commits",
+    "afterShare": "Your project page is ready to share, with a post image",
+    "afterOlympics": "It competes for your province in the Olympics",
+    "createdTitle": "Your project page is live",
+    "createdBody": "{name} is now public. This step is optional: verify a number so the card shows real figures and joins the leaderboards."
   },
   "Errors": {
     "invalid_key": "{source} didn't accept that key or link — check it and paste again.",
