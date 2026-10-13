@@ -84,7 +84,11 @@ export async function HomeTeasers({ thbPerUsd }: { thbPerUsd: number | null }) {
                     className="group flex items-center gap-3"
                   >
                     <Medal rank={i + 1} />
-                    <ProvinceBadge region={p.region} className="h-8 w-11" />
+                    <ProvinceBadge
+                      region={p.region}
+                      province={p.slug}
+                      className="h-8 w-11"
+                    />
                     <span className="min-w-0 flex-1 truncate text-xs font-semibold group-hover:underline">
                       {localizedName(p, locale)}
                     </span>
@@ -103,7 +107,9 @@ export async function HomeTeasers({ thbPerUsd }: { thbPerUsd: number | null }) {
             })}
           </ol>
           <p className="mt-3 text-2xs text-faint">
-            {t(`olympicsTeaserSub.${isMoneyMetric(DEFAULT_METRIC) ? "money" : "projects"}`)}
+            {t(
+              `olympicsTeaserSub.${isMoneyMetric(DEFAULT_METRIC) ? "money" : "projects"}`,
+            )}
           </p>
         </Card>
       )}

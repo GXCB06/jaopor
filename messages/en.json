@@ -358,7 +358,8 @@
       "early": "No revenue yet / still building",
       "earlyHint": "Show commits and visitors now. No key needed",
       "revenue": "Already making money",
-      "revenueHint": "Verify revenue and MRR with a read-only key"
+      "revenueHint": "Verify revenue and MRR with a read-only key",
+      "hint": "Pick the closest one: we'll put the easiest way to verify first."
     },
     "publishNow": "Go to my project page",
     "title": "Add your project",
@@ -733,7 +734,7 @@
       "connected": "Connected"
     },
     "getStrip": [
-      "✓ on your card",
+      "on your card",
       "ranked on the leaderboard",
       "a badge for your site"
     ],
@@ -1039,8 +1040,6 @@
     "shareBodyProvince": "A ready-to-post card for Facebook, X and LINE: “{name} {rank}”",
     "downloadImage": "Download image",
     "copyLink": "Copy link",
-    "leader": "Season leader",
-    "topProject": "Top:",
     "updatedDaily": "Updated daily",
     "season": "Season {season}",
     "openTitle": "No projects yet from {n} provinces",

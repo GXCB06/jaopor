@@ -12,6 +12,52 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-13 — Olympics stepped podium, province dot on the map, clearer verify step, faster-feeling site
+
+**Done** (owner, testing production: Olympics "อยากให้มี bar ranking … ตัวอย่างก็ให้ดูแล้ว"; "รูปจังหวัดทำไมไม่ตรง"; step 2 "แอบดู plain text", the way back to change the verify method "หาไม่ค่อยเจอ", the stepper "ยังไม่สมบูรณ์"; the site "หน่วง ๆ แลค ๆ"):
+
+- **Olympics podium (`PodiumSteps`):**
+  - Flat steps 2 · 1 · 3, side by side on every width.
+  - Each place has the province badge, a medal next to the name, and its total in a chip; #1 gets a trophy.
+  - It shows as soon as one province competes; empty places are dashed "+ ที่ว่าง" steps → `/new`. Only 2 provinces compete today (JaoPor's own project never ranks), so a podium gated at 3 or 5 would never have shown.
+  - The full ranking with leader bars stays below. The old podium cards (`Podium.tsx`) are removed.
+- **Province badge:**
+  - A dot now marks the province itself (`lib/config/province-points`: capital lon / lat, projected the way the map was drawn).
+  - 6 coastal or border points are nudged; a test keeps all 77 inside their region.
+  - Olympics rows used `sm:block`, which dropped the centring, so the map hugged the tile's left edge. Fixed.
+- **Add Startup step 2:**
+  - Two cards with icon tiles like step 1.
+  - Stage cards show what you'd verify, as metric chips.
+  - The chosen method has an outline "← เปลี่ยนวิธี" button (was a small grey link).
+  - Metric rows got icon tiles and chevrons; the source switch is a segmented control. The edit page shares these.
+  - Stepper circles are opaque, so the line no longer runs through the done ✓.
+  - Fixed the doubled "✓ ✓" in the "what you get" strip.
+- **Faster feel:**
+  - `NavProgress`: a thin brand bar at the top starts on every internal link click (measured 38 ms) and completes when the new page renders. A root `loading.tsx` was tried first and dropped: it turned 404s into 200s (`e2e/not-found.spec.ts` caught it).
+  - The Recharts plot (~390 KB) loads after the page is interactive (`MetricChartPlot`, `next/dynamic` `ssr: false`, same-height placeholder); the total, controls and stamp still render on the server.
+  - Google Analytics now loads `lazyOnload`.
+
+**Measured** (Playwright + Chrome, CPU ×4; before = live site on the old code, after = local production build; one run each, different hosts, so indicative only):
+
+- Main-thread blocked time during load:
+  - project page 2.2 → 1.4 s (desktop), 2.5 → 1.9 s (375);
+  - Olympics 1.4 → 0.9 s / 1.6 → 1.3 s;
+  - home 1.2 → 0.9 s / 1.5 → 1.35 s;
+  - builder profile and feed about unchanged.
+- Scroll p95 frame: project page and home 34–50 → 17 ms.
+- CPU profile: Recharts and gtag now run after load rather than before; total work is similar, moved off the first moments.
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit 642 passed / 17 skipped · e2e local 121 passed / 0 failed · build ✓.
+- Screenshots: Olympics 1440 / 375 dark / light; zoomed podium; wizard step 2 and the picked method 1440 / 375 (temporary local page, deleted).
+
+**Not verified:** a real phone; the signed-in step 1 → 2 for real.
+**Next:**
+
+- Owner review, then push.
+- Open decision: keep Google Analytics (≈330 ms of main thread per page on a mid phone) or rely on Vercel Analytics only.
+
 ## 2026-10-13 — Next / back in Add Startup and onboarding starts the step at its top
 
 **Done** (owner, on production: "กดถัดไปแล้วมันค้างอยู่ส่วนนั้น แต่ผมกลับต้องเลื่อนขึ้นเอง"):

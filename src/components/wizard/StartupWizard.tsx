@@ -2,6 +2,9 @@
 
 import {
   ArrowLeftIcon,
+  ChartColumnIcon,
+  CompassIcon,
+  GitBranchIcon,
   CircleCheckIcon,
   CreditCardIcon,
   EyeIcon,
@@ -12,6 +15,7 @@ import {
   Share2Icon,
   ShieldCheckIcon,
   SproutIcon,
+  type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
@@ -110,6 +114,13 @@ export async function uploadLogo(userId: string, file: File): Promise<string> {
   return path;
 }
 
+/** Metric icons for the stage chips (same as VerifyPanel's rows; kept here so step 1 doesn't load it). */
+const KIND_ICON: Record<SourceKind, LucideIcon> = {
+  revenue: CreditCardIcon,
+  traffic: ChartColumnIcon,
+  build: GitBranchIcon,
+};
+
 /** Step 2 order for a project without revenue yet: no-key proof first (Design.md §5). */
 const EARLY_ORDER: readonly SourceKind[] = ["build", "traffic", "revenue"];
 
@@ -140,6 +151,7 @@ export function StartupWizard({
   anonymousReady?: boolean;
 }) {
   const t = useTranslations("Wizard");
+  const ts = useTranslations("Sources");
   const an = useTranslations("Anonymous");
   const common = useTranslations("Common");
   const lt = useTranslations("Links");
@@ -703,22 +715,29 @@ export function StartupWizard({
                   </p>
                 </div>
               </div>
-              {/* Design.md §5 VerifyPanel chooser, stage first: no revenue yet → no-key proof first. */}
-              <fieldset className="space-y-2">
-                <legend className="mb-2 text-sm font-semibold">
-                  {t("stage.title")}
-                </legend>
-                <div className="grid gap-2 sm:grid-cols-2">
+              {/* Design.md §5 wizard v3.2: step 2 as two cards like step 1. Stage first: no
+                  revenue yet → no-key proof first. */}
+              <WizardSection
+                icon={CompassIcon}
+                title={t("stage.title")}
+                hint={t("stage.hint")}
+                done={stage !== null}
+              >
+                <div
+                  role="radiogroup"
+                  aria-label={t("stage.title")}
+                  className="grid gap-2 sm:grid-cols-2"
+                >
                   {(
                     [
-                      ["early", SproutIcon],
-                      ["revenue", CreditCardIcon],
+                      ["early", SproutIcon, ["build", "traffic"]],
+                      ["revenue", CreditCardIcon, ["revenue"]],
                     ] as const
-                  ).map(([id, Icon]) => (
+                  ).map(([id, Icon, kinds]) => (
                     <label
                       key={id}
                       className={cn(
-                        "flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
+                        "flex cursor-pointer flex-col gap-2 rounded-xl border p-3 transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
                         stage === id
                           ? "border-brand bg-brand/5"
                           : "bg-card hover:bg-accent",
@@ -732,34 +751,62 @@ export function StartupWizard({
                         onChange={() => setStage(id)}
                         className="sr-only"
                       />
-                      <Icon
-                        className="mt-0.5 size-4 shrink-0 text-muted-foreground"
-                        aria-hidden="true"
-                      />
-                      <span className="min-w-0">
-                        <span className="block text-sm font-semibold">
+                      <span className="flex items-center gap-2">
+                        <Icon
+                          className={cn(
+                            "size-4 shrink-0",
+                            stage === id
+                              ? "text-brand-text"
+                              : "text-muted-foreground",
+                          )}
+                          aria-hidden="true"
+                        />
+                        <span className="text-sm font-semibold">
                           {t(`stage.${id}`)}
                         </span>
-                        <span className="block text-caption text-muted-foreground">
-                          {t(`stage.${id}Hint`)}
-                        </span>
+                      </span>
+                      <span className="text-caption text-muted-foreground">
+                        {t(`stage.${id}Hint`)}
+                      </span>
+                      {/* What you'd show, with the same icons as the verify rows below. */}
+                      <span className="flex flex-wrap gap-1.5">
+                        {kinds.map((k) => {
+                          const KIcon = KIND_ICON[k];
+                          return (
+                            <span
+                              key={k}
+                              className="inline-flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-2xs text-muted-foreground"
+                            >
+                              <KIcon className="size-3" aria-hidden="true" />
+                              {ts(`metric.${k}`)}
+                            </span>
+                          );
+                        })}
                       </span>
                     </label>
                   ))}
                 </div>
-              </fieldset>
-              <VerifyPanel
-                order={stage === "early" ? EARLY_ORDER : undefined}
-                startupId={saved.id}
-                connections={[]}
-                websiteHost={ownWebsiteHost(saved.website)}
-                githubLogin={githubLogin}
-                attemptId={attemptId}
-                onConnected={(source) => {
-                  setVerified(true);
-                  if (SOURCE_KIND[source] !== "traffic") setProven(true);
-                }}
-              />
+              </WizardSection>
+              <WizardSection
+                icon={ShieldCheckIcon}
+                title={ts("metric.title")}
+                hint={ts("metric.hint")}
+                done={verified}
+              >
+                <VerifyPanel
+                  showTitle={false}
+                  order={stage === "early" ? EARLY_ORDER : undefined}
+                  startupId={saved.id}
+                  connections={[]}
+                  websiteHost={ownWebsiteHost(saved.website)}
+                  githubLogin={githubLogin}
+                  attemptId={attemptId}
+                  onConnected={(source) => {
+                    setVerified(true);
+                    if (SOURCE_KIND[source] !== "traffic") setProven(true);
+                  }}
+                />
+              </WizardSection>
               <div className="flex flex-wrap items-center gap-3 border-t pt-4">
                 <Button
                   variant="ghost"

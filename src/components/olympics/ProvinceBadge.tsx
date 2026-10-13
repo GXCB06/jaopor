@@ -1,14 +1,20 @@
 import { getRegion, type Region } from "@/lib/config/provinces";
 import { localizedName } from "@/lib/config/localized";
+import { provincePoint } from "@/lib/config/province-points";
 import { cn } from "@/lib/utils";
 import { ThailandMap } from "./ThailandMap";
 
-/** Design.md §5 ProvinceBadge: 56×40 tile with the Thailand silhouette, the region highlighted. */
+/**
+ * Design.md §5 ProvinceBadge: 56×40 tile with the Thailand silhouette, the region highlighted and,
+ * given `province`, a dot on the province itself (two provinces of one region no longer look alike).
+ */
 export function ProvinceBadge({
   region,
+  province,
   className,
 }: {
   region: Region;
+  province?: string;
   className?: string;
 }) {
   return (
@@ -19,7 +25,10 @@ export function ProvinceBadge({
         className,
       )}
     >
-      <ThailandMap highlight={region} />
+      <ThailandMap
+        highlight={region}
+        dot={province ? provincePoint(province) : null}
+      />
     </span>
   );
 }

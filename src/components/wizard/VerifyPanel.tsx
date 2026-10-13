@@ -2,6 +2,7 @@
 
 import {
   ArrowLeftIcon,
+  ChevronRightIcon,
   ChartColumnIcon,
   CheckIcon,
   CopyIcon,
@@ -133,6 +134,7 @@ export function VerifyPanel({
   onConnected,
   attemptId,
   order,
+  showTitle = true,
 }: {
   startupId: number;
   connections: ConnectionInfo[];
@@ -143,6 +145,8 @@ export function VerifyPanel({
   attemptId?: string;
   /** Order of the chooser's metric rows (wizard stage choice); default revenue first. */
   order?: readonly SourceKind[];
+  /** False when the host already shows the chooser's question as its own heading (wizard v3.2). */
+  showTitle?: boolean;
 }) {
   const t = useTranslations("Sources");
   if (connections.length === 0)
@@ -154,6 +158,7 @@ export function VerifyPanel({
         onConnected={onConnected}
         attemptId={attemptId}
         order={order}
+        showTitle={showTitle}
       />
     );
   return (
@@ -174,7 +179,7 @@ export function VerifyPanel({
   );
 }
 
-const METRIC_ICON: Record<SourceKind, LucideIcon> = {
+export const METRIC_ICON: Record<SourceKind, LucideIcon> = {
   revenue: CreditCardIcon,
   traffic: ChartColumnIcon,
   build: GitBranchIcon,
@@ -194,6 +199,7 @@ function VerifyChooser({
   onConnected,
   attemptId,
   order = METRICS,
+  showTitle = true,
 }: {
   startupId: number;
   websiteHost: string | null;
@@ -201,6 +207,7 @@ function VerifyChooser({
   onConnected?: (source: SourceId) => void;
   attemptId?: string;
   order?: readonly SourceKind[];
+  showTitle?: boolean;
 }) {
   const t = useTranslations("Sources");
   // Which metric is expanded (null = the three metric rows).
@@ -237,10 +244,14 @@ function VerifyChooser({
 
   return (
     <div id="verify" className="scroll-mt-24 space-y-3">
-      <div className="space-y-1">
-        <h3 className="text-sm font-semibold">{t("metric.title")}</h3>
-        <p className="text-caption text-muted-foreground">{t("metric.hint")}</p>
-      </div>
+      {showTitle && (
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold">{t("metric.title")}</h3>
+          <p className="text-caption text-muted-foreground">
+            {t("metric.hint")}
+          </p>
+        </div>
+      )}
       {/* What verifying unlocks, before the choice (Design.md §5, issue 3). */}
       <ul className="flex flex-wrap gap-x-3 gap-y-1 text-caption text-muted-foreground">
         {(t.raw("getStrip") as string[]).map((item) => (
@@ -271,12 +282,12 @@ function VerifyChooser({
                 id={METRIC_ANCHOR[kind]}
                 type="button"
                 onClick={() => openMetric(kind)}
-                className="flex scroll-mt-24 items-start gap-3 rounded-xl border bg-card p-3 text-left transition-colors hover:bg-accent"
+                className="group flex scroll-mt-24 items-start gap-3 rounded-xl border bg-card p-3 text-left transition-colors hover:border-brand/40 hover:bg-accent"
               >
-                <Icon
-                  className="mt-0.5 size-4 shrink-0 text-muted-foreground"
-                  aria-hidden="true"
-                />
+                {/* Design.md §5 VerifyPanel chooser: icon tile + chevron (owner 2026-10-13). */}
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand-text">
+                  <Icon className="size-4.5" aria-hidden="true" />
+                </span>
                 <span className="min-w-0 flex-1 space-y-0.5">
                   <span className="flex items-center gap-2">
                     <span className="text-sm font-semibold">
@@ -313,30 +324,47 @@ function VerifyChooser({
                     {t(`metric.${kind}Note`)}
                   </span>
                 </span>
+                <ChevronRightIcon
+                  className="mt-2.5 size-4 shrink-0 text-faint transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
               </button>
             );
           })}
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <button
+          {/* The chosen metric with a visible way back (owner 2026-10-13: "หาไม่ค่อยเจอ"). */}
+          <div className="flex items-center gap-3 rounded-xl border bg-card p-3">
+            {(() => {
+              const Icon = METRIC_ICON[metric];
+              return (
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand-text">
+                  <Icon className="size-4.5" aria-hidden="true" />
+                </span>
+              );
+            })()}
+            <h3 className="min-w-0 flex-1 text-sm font-semibold">
+              {t(`metric.${metric}`)}
+            </h3>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 shrink-0 px-3"
               onClick={() => {
                 setMetric(null);
                 setSource(null);
               }}
-              className="inline-flex items-center gap-1 text-caption text-muted-foreground hover:text-foreground"
             >
               <ArrowLeftIcon className="size-3.5" aria-hidden="true" />
               {t("choose.change")}
-            </button>
-            <h3 className="text-sm font-semibold">{t(`metric.${metric}`)}</h3>
+            </Button>
           </div>
           <section className="space-y-3 rounded-lg border p-4">
             {sourcesFor(metric).length > 1 && (
               <div
-                className="flex flex-wrap gap-1.5"
+                className="flex w-fit max-w-full flex-wrap gap-1 rounded-lg bg-secondary p-1"
                 role="group"
                 aria-label={t(`metric.${metric}`)}
               >
@@ -347,9 +375,9 @@ function VerifyChooser({
                     aria-pressed={s === source}
                     onClick={() => setSource(s)}
                     className={cn(
-                      "rounded-md border px-3 py-1 text-xs transition-colors",
+                      "rounded-md px-3 py-1 text-xs font-medium transition-colors",
                       s === source
-                        ? "bg-accent text-foreground"
+                        ? "bg-card text-foreground shadow-xs"
                         : "text-muted-foreground hover:text-foreground",
                     )}
                   >

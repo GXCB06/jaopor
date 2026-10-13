@@ -13,6 +13,7 @@ import { LivePresenceProvider } from "@/components/live/LivePresence";
 import { PrefsSync } from "@/components/PrefsSync";
 import { ScrollReveal } from "@/components/core/ScrollReveal";
 import { SiteFooter } from "@/components/SiteFooter";
+import { NavProgress } from "@/components/NavProgress";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { routing } from "@/i18n/routing";
@@ -123,11 +124,13 @@ export default async function LocaleLayout({
         />
         {gaId && (
           <>
+            {/* lazyOnload: analytics waits until the page is idle (Design.md §7 Loading,
+                2026-10-13: gtag cost ~340 ms of main thread during load on a mid phone). */}
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-              strategy="afterInteractive"
+              strategy="lazyOnload"
             />
-            <Script id="ga-init" strategy="afterInteractive">
+            <Script id="ga-init" strategy="lazyOnload">
               {gaInitScript(gaId)}
             </Script>
           </>
@@ -137,12 +140,16 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={clientMessages(messages)}>
           <LivePresenceProvider>
             <PrefsSync />
+            {/* Design.md §7 Loading: instant feedback on every link click. */}
+            <NavProgress />
             {/* Design.md §7 Motion: sections fade up once as they scroll into view. */}
             <ScrollReveal />
             <SiteHeader />
             {/* overflow-x-clip: full-width hero layers never cause sideways scroll (no scroll box, so
                 sticky children still work). */}
-            <div className="flex flex-1 flex-col overflow-x-clip">{children}</div>
+            <div className="flex flex-1 flex-col overflow-x-clip">
+              {children}
+            </div>
             <SiteFooter />
             <Toaster position="bottom-center" />
           </LivePresenceProvider>

@@ -6,7 +6,7 @@ import { MetricSwitch } from "@/components/olympics/MetricSwitch";
 import { OlympicsBoard, RankChange } from "@/components/olympics/OlympicsBoard";
 import { OlympicsMap } from "@/components/olympics/OlympicsMap";
 import { OlympicValue } from "@/components/olympics/OlympicValue";
-import { Podium } from "@/components/olympics/Podium";
+import { PodiumSteps } from "@/components/olympics/PodiumSteps";
 import { ProvinceActivity } from "@/components/olympics/ProvinceActivity";
 import { ProvinceBadge } from "@/components/olympics/ProvinceBadge";
 import { RegionStandings } from "@/components/olympics/RegionStandings";
@@ -54,8 +54,6 @@ export async function generateMetadata({
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
 const OPEN_CHIPS = 10;
-/** The podium cards show (desktop only) once this many provinces compete (Olympics v4). */
-const PODIUM_MIN = 5;
 
 // Design.md §6 Olympics page (v3, 2026-10-01: Claude Design structure + our open-spot podium and
 // map): season header + national stats · podium cards · metric/region controls · your province +
@@ -121,9 +119,6 @@ export default async function OlympicsPage({
       />
     </Card>
   );
-  // Podium cards only on desktop and only with enough provinces: a podium of 2–3 reads as empty,
-  // and on phones three cards stacked into blocks (owner 2026-10-12). Rows carry the medals instead.
-  const showPodium = board.length >= PODIUM_MIN;
   const unlocked = Object.keys(listed).length;
 
   const regionHref = (r: Region | null) => ({
@@ -233,10 +228,11 @@ export default async function OlympicsPage({
         </div>
       </header>
 
-      {/* Podium: desktop only, from PODIUM_MIN competing provinces (Olympics v4). */}
-      {showPodium && (
-        <section aria-label={t("podium")} className="mt-8 hidden md:block">
-          <Podium
+      {/* Olympics v4 stepped podium: every width, as soon as one province competes; empty
+          places are dashed "+ ที่ว่าง" steps (owner 2026-10-13: "อยากให้มี bar ranking"). */}
+      {board.length > 0 && (
+        <section aria-label={t("podium")} className="mt-8">
+          <PodiumSteps
             top={board.slice(0, 3)}
             metric={metric}
             thbPerUsd={thbPerUsd}
@@ -371,7 +367,11 @@ export default async function OlympicsPage({
                         href={`/province/${p.slug}`}
                         className="flex items-center gap-2.5 text-caption hover:underline"
                       >
-                        <ProvinceBadge region={p.region} className="h-7 w-10" />
+                        <ProvinceBadge
+                          region={p.region}
+                          province={p.slug}
+                          className="h-7 w-10"
+                        />
                         <span className="min-w-0 flex-1 truncate">
                           {localizedName(p, locale)}
                         </span>

@@ -501,14 +501,14 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
   - Each row carries a bar of its total against the leader's (`h-1 max-w-36 bg-brand/70`, at least 4% so it shows).
   - **Phones:** the rank-change column and the ProvinceBadge hide; the change moves beside the region name and the value column narrows to `w-24`.
   - On the projects board the "ผลงาน" count column is hidden (it repeated the value).
-- **Podium cards:** desktop only (`hidden md:block`), and only once **5** provinces compete (`PODIUM_MIN`). The table still starts at #1 under it, so every province keeps its leader bar (owner 2026-10-13: "ranking bar … always display it"; until then #1–3 hid from `md` up).
+- **Podium cards:** (superseded 2026-10-13 by the stepped podium below, shown on every width from one province). The table still starts at #1 under it, so every province keeps its leader bar (owner 2026-10-13: "ranking bar … always display it"; until then #1–3 hid from `md` up).
 - **Coverage bar** under the subtitle: "ปลดล็อกแล้ว {n} จาก {total} จังหวัด" + % (`h-2 rounded-full bg-secondary`, fill `bg-brand`).
   - `n` = provinces with a published project (listing counts).
   - The header stat label on the projects board is "ผลงานที่นับคะแนน".
 - **Map card on phones** sits right after the ranking (`lg:hidden`); on desktop it stays in the sidebar.
 - **Not built yet (rest of the proposal):** the map as the hero, a sticky your-province bar, region chips → select on phones, and search inside the table header.
 
-#### Proposal — Olympics v4, complete (2026-10-13; NOT built, waits for owner approval)
+#### Olympics v4, complete (2026-10-13; podium part BUILT on the owner's go: "อยากให้มี bar ranking … ตัวอย่างก็ให้ดูแล้ว")
 
 Supersedes the 2026-10-12 draft below where they differ. **Inspiration (owner's reference image, 2026-10-13):** a stepped podium (2 · 1 · 3, the middle step tallest) with an avatar and a value chip above each step, then plain list rows: rank · avatar · name + sub-line · a progress ring at the end. We take the structure (podium on steps, then rows), not the image's art, colours or 3D rendering.
 
@@ -525,9 +525,9 @@ Supersedes the 2026-10-12 draft below where they differ. **Inspiration (owner's 
 
 **2. Podium threshold (replaces part 1's "desktop only, ≥ 5").**
 
-- **Podium from 3 competing provinces, on every width**, because the stepped form is compact enough for phones. Part 1's rows from #1 stay for 1–2 provinces.
+- **Podium as soon as one province competes, on every width (built 2026-10-13):** places without a province are dashed "+ ที่ว่าง" steps → `/new`. Today only 2 provinces compete (JaoPor's own project never ranks), so the owner would never have seen a podium gated at 3.
 - With 3+ provinces the podium shows above the full list; the list repeats #1–3 on purpose so the bar race is always complete.
-- **Sparse (1–2 competing):** no podium. Rows from #1 with Medals, and one line under them: "อีก {n} จังหวัดจะเปิดโพเดียม" (opens the podium) + "+ ส่งผลงานแทนจังหวัดคุณ".
+- **Sparse (1–2 competing):** the podium still shows, with the missing places as dashed open steps; rows from #1 with Medals and leader bars below.
 - **Empty (0 competing on this metric):** no table; a dashed card "ยังไม่มีจังหวัดไหนมี{metric}ที่ยืนยัน" + the metric's one-line meaning + "เชื่อมตัวเลขของผลงาน" → `/dashboard`. The "จำนวนผลงาน" board stays the default, so a visitor sees this only after choosing a verified metric.
 - Team projects never count (`isRankEligible`, unchanged).
 
@@ -765,9 +765,15 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - **Step 2:** the VerifyPanel **chooser** (below), then the footer row: ghost "← ย้อนกลับ" (left) · muted "ยืนยันทีหลังได้จากหน้าผลงานของคุณ" · outline "ข้ามไปก่อน" (primary "ไปที่หน้าผลงาน" once something is connected).
 - **Back (2026-10-07, owner: "I could not return to the previous step"):** "ย้อนกลับ" returns to step 1 with every field kept. The project already exists, so the button reads "บันทึกและไปต่อ" and saves the changes to the same project (link, name, one-liner, category; the logo only when it changed). It never creates a second listing, and the "Already listed" note ignores the project itself.
 
+- **v3.2 (owner 2026-10-13, production test: step 2 "แอบดู plain text"; going back to change the verify method "หาไม่ค่อยเจอ"; the stepper "เหมือนจะยังไม่สมบูรณ์" because the line ran through the translucent done circle):**
+  - **Stepper circles are opaque:** done = solid `bg-brand text-brand-foreground` with a Check; current = `border-2 border-brand bg-card text-brand-text ring-4 ring-brand/15`; upcoming = `border bg-card text-muted-foreground`. The connecting line sits behind them and never shows through.
+  - **Step 2 = two cards like step 1** (`WizardSection`): Compass "ตอนนี้ผลงานของคุณอยู่ช่วงไหน?" (turns ✓ once chosen) and ShieldCheck "อยากพิสูจน์อะไร? …" holding the VerifyPanel (its own heading hidden there, `showTitle={false}`).
+  - **Stage cards** use the VisibilityChoice look: icon tile, title, one line, then chips of what you'd show with their metric icons (early: การสร้าง · ผู้เข้าชม; revenue: รายได้ / MRR).
+
 ### VerifyPanel chooser (no source connected yet: wizard step 2 and the edit page)
 
 - **Stage first, in the wizard (owner 2026-10-12: grow quantity, don't scare people without revenue):** above the chooser, "ตอนนี้ผลงานของคุณอยู่ช่วงไหน?" with two radio cards (`rounded-xl border p-3`, chosen = `border-brand bg-brand/5`): **"ยังไม่มีรายได้ / กำลังสร้าง"** (Sprout; "โชว์ commit และผู้เข้าชมได้เลย ไม่ต้องใช้คีย์") and **"มีรายได้แล้ว"** (CreditCard; "ยืนยันรายได้และ MRR ด้วยคีย์อ่านอย่างเดียว"). Nothing is chosen at first, and the chooser keeps its usual order. Early → the metric rows become build · visitors · revenue, and the footer's main button is a filled "ไปหน้าผลงานเลย" (adding proof later is the normal path). Revenue keeps today's order. The choice isn't stored.
+- **Clear rows and a visible way back (owner 2026-10-13):** each metric row leads with an icon tile (`size-9 rounded-xl bg-brand/10 text-brand-text`) and ends with a ChevronRight. After picking one, its header is a bordered row: the icon tile, the metric's name, and on the right an outline button "← เปลี่ยน" (`h-8`; was a small grey text link). The source switch is a segmented control (`rounded-lg bg-secondary p-1`, chosen `bg-card shadow-xs text-foreground`).
 - **Metric-first (A2, 2026-10-10):** the question is "อยากพิสูจน์อะไร? เลือกหนึ่งอย่างก่อน" + hint, then the "what you get" strip (a `flex flex-wrap` of `text-caption text-muted-foreground` items each with a `CheckIcon text-positive`: ✓ บนการ์ดของคุณ · ขึ้นบอร์ดผู้นำ · ป้ายสำหรับเว็บของคุณ). Three **metric rows** (`grid gap-2`), each a `button` `rounded-xl border bg-card p-3 text-left hover:bg-accent` with a lucide icon (size-4, muted), title `text-sm font-semibold`, a `text-caption text-muted-foreground` line of what it measures, a `text-2xs text-faint` source list and a `text-2xs text-faint` limits line, plus the chip `text-2xs` ("ไม่ต้องใช้คีย์" positive / "คีย์อ่านอย่างเดียว" muted):
   1. **รายได้ / MRR** (CreditCard) → Stripe · RevenueCat.
   2. **ผู้เข้าชม** (ChartColumn) → JaoPor snippet · Plausible · Umami · Cloudflare · Google Analytics (only when JaoPor's GA4 service account is configured).
@@ -888,6 +894,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 - `h-10 w-14 rounded-lg border bg-background` tile holding **ThailandMap**: a hand-simplified silhouette (6 region paths, ~150 points, viewBox 84×150). Other regions `fill-muted-foreground/30`, the province's region `--region-*`; `stroke-card` separates regions. Never an official provincial seal. Decorative (`aria-hidden`): the region name is always printed next to it.
 - The OG renderers draw the same paths (`REGION_HEX` in `share-palette.ts`).
+- **Province dot (owner 2026-10-13: "รูปจังหวัดทำไมไม่ตรง", two provinces of one region looked identical):** the region stays tinted and a dot marks the province itself (`lib/config/province-points`: the capital's lon / lat projected as x = (lon − 97.35) × 10, y = (20.46 − lat) × 10; a test keeps every dot inside its region's outline). Dot `r=5` in `--foreground` with a `stroke-card` ring. The map is centred in the tile at a fixed height (`h-8 w-auto`).
 
 ### Province page (`/[locale]/province/[slug]`, spec 6.7)
 
@@ -975,6 +982,8 @@ Unchanged behaviour (see git history of this file for the full spec); restyle on
 ## 7. States
 
 - **Loading:** skeletons shaped like the final component (`bg-muted animate-pulse rounded`). No spinners in content areas.
+- **Instant page feedback (owner 2026-10-13: the site felt "หน่วง ๆ แลค ๆ"; measured: every public page except /new showed nothing for 0.3–0.7 s after a click while the server rendered):** `NavProgress` in the root layout, a 2 px `bg-brand` bar fixed at the top that starts on any internal link click (no modifier keys, not `_blank`, a different path or query) and eases to 85 % (`--ease-settle`, 2.4 s), then completes and fades when the new path renders; it gives up after 10 s. Not a route-level `loading.tsx`: streaming a shell first turns real 404s into 200s (caught by `e2e/not-found.spec.ts`).
+- **Heavy code off the first paint:** the chart library (Recharts, ~390 KB) loads after the page is interactive (`MetricChart` via `next/dynamic`, `ssr: false`, with a same-height skeleton); Google Analytics loads `lazyOnload`.
 - **Empty:** muted one-liner + a primary action.
 - **Error:** `text-destructive text-sm` inline, plus a retry. Never raw errors.
 - **Unverified:** founder-typed numbers are never shown as revenue; show "Not verified yet".

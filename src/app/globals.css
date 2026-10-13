@@ -359,6 +359,20 @@ li:nth-child(5n + 5) > .card-rise {
   pointer-events: none;
 }
 
+/* NavProgress (Design.md §7 Loading): the bar eases towards 85% while the next page renders.
+   Reduced motion: the global rule above makes it appear at its end width at once. */
+.nav-progress {
+  animation: nav-progress 2.4s var(--ease-settle) forwards;
+}
+@keyframes nav-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 85%;
+  }
+}
+
 @keyframes chart-hidden {
   from,
   to {

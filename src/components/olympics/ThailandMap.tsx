@@ -21,9 +21,12 @@ export const REGION_PATH: Record<Region, string> = {
 
 export function ThailandMap({
   highlight,
+  dot,
   className,
 }: {
   highlight?: Region | null;
+  /** Marks one place (a province, ProvinceBadge) in map coordinates. */
+  dot?: { x: number; y: number } | null;
   className?: string;
 }) {
   return (
@@ -44,6 +47,14 @@ export function ThailandMap({
           strokeLinejoin="round"
         />
       ))}
+      {dot && (
+        <circle
+          cx={dot.x}
+          cy={dot.y}
+          r={5}
+          className="fill-foreground stroke-card stroke-[2.5]"
+        />
+      )}
     </svg>
   );
 }

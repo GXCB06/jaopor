@@ -3,16 +3,7 @@
 import { ChoiceSelect } from "@/components/core/ChoiceSelect";
 import { useFormatter, useTranslations } from "next-intl";
 import { useId, useState } from "react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Line,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import dynamic from "next/dynamic";
 import {
   CHART_METRICS,
   CHART_PERIODS,
@@ -28,6 +19,16 @@ import { formatCompact, money } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { InView } from "./core/InView";
 import { GrowthPill } from "./StartupBits";
+
+// Design.md §7 Loading (owner 2026-10-13, "หน่วง"): Recharts (~390 KB) is the heaviest code on the
+// project page, so only the plot loads after the page is interactive; the total, the controls and
+// the stamp still render on the server. The placeholder keeps the h-64 box, so nothing shifts.
+const Plot = dynamic(() => import("./MetricChartPlot"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-full w-full animate-pulse rounded-md bg-muted/40" />
+  ),
+});
 
 function Switch({
   checked,
@@ -218,92 +219,18 @@ export function MetricChart({
           role="img"
           aria-label={`${metricLabel(metric)} · ${periodLabel(period)}: ${fmt(w.total, true)}`}
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={data}
-              margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
-            >
-              <defs>
-                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="0%"
-                    stopColor="var(--chart-1)"
-                    stopOpacity={0.25}
-                  />
-                  <stop
-                    offset="100%"
-                    stopColor="var(--chart-1)"
-                    stopOpacity={0}
-                  />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} stroke="var(--border)" />
-              <XAxis
-                dataKey="day"
-                tickFormatter={label}
-                tickLine={false}
-                axisLine={false}
-                minTickGap={28}
-                tick={{ fill: "var(--faint)", fontSize: 12 }}
-              />
-              <YAxis
-                width={52}
-                ticks={ticks}
-                domain={[0, ticks[ticks.length - 1]]}
-                interval={0}
-                tickFormatter={(v: number) => fmt(v)}
-                tickLine={false}
-                axisLine={false}
-                tick={{ fill: "var(--faint)", fontSize: 12 }}
-              />
-              <Tooltip
-                cursor={{ stroke: "var(--faint)", strokeDasharray: "3 3" }}
-                content={({ active, payload }) => {
-                  if (!active || !payload?.length) return null;
-                  const row = payload[0].payload as (typeof data)[number];
-                  return (
-                    <div className="rounded-md border bg-popover px-2.5 py-1.5 text-caption">
-                      <p className="text-muted-foreground">
-                        {period === 365
-                          ? t("weekOf", { day: label(row.day) })
-                          : label(row.day)}
-                      </p>
-                      <p className="font-bold tabular-nums">
-                        {fmt(row.value, true)}
-                      </p>
-                      {compare && (
-                        <p className="text-muted-foreground tabular-nums">
-                          {t("prevPeriod")}: {fmt(row.previous, true)}
-                        </p>
-                      )}
-                    </div>
-                  );
-                }}
-              />
-              {compare && (
-                <Line
-                  type="monotone"
-                  dataKey="previous"
-                  stroke="var(--chart-2)"
-                  strokeWidth={2}
-                  strokeDasharray="4 4"
-                  dot={false}
-                  connectNulls
-                  isAnimationActive={false}
-                />
-              )}
-              <Area
-                type="monotone"
-                dataKey="value"
-                stroke="var(--chart-1)"
-                strokeWidth={2}
-                fill={`url(#${gradientId})`}
-                activeDot={{ r: 4, stroke: "var(--card)", strokeWidth: 2 }}
-                connectNulls
-                isAnimationActive={false}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <Plot
+            data={data}
+            ticks={ticks}
+            gradientId={gradientId}
+            compare={compare}
+            fmt={fmt}
+            label={label}
+            tipDay={(day) =>
+              period === 365 ? t("weekOf", { day: label(day) }) : label(day)
+            }
+            prevLabel={t("prevPeriod")}
+          />
         </div>
       </InView>
 

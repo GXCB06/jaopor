@@ -92,7 +92,7 @@ export default async function ProvincePage({ params }: Props) {
       </nav>
 
       <div className="flex items-center gap-3">
-        <ProvinceBadge region={p.region} />
+        <ProvinceBadge region={p.region} province={p.slug} />
         <h1 className="min-w-0 text-2xl font-bold tracking-tight">
           {t("title", { name })}
         </h1>

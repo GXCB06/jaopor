@@ -51,9 +51,10 @@ export function WizardStepper({ step }: { step: 1 | 2 }) {
             <span
               className={cn(
                 "relative z-10 flex size-8 items-center justify-center rounded-full text-xs font-bold tabular-nums transition-colors duration-(--motion-fast)",
+                // Opaque at every state, so the connecting line never shows through (v3.2).
                 current &&
-                  "bg-brand text-brand-foreground ring-4 ring-brand/15",
-                done && "bg-brand/10 text-brand-text ring-1 ring-brand/30",
+                  "border-2 border-brand bg-card text-brand-text ring-4 ring-brand/15",
+                done && "bg-brand text-brand-foreground",
                 !current && !done && "border bg-card text-muted-foreground",
               )}
             >

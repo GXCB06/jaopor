@@ -58,7 +58,11 @@ export async function ProvinceActivity({
               {line}
             </span>
           </span>
-          <ProvinceBadge region={p.region} className="h-6 w-9 shrink-0" />
+          <ProvinceBadge
+            region={p.region}
+            province={p.slug}
+            className="h-6 w-9 shrink-0"
+          />
         </Link>
       </li>
     );

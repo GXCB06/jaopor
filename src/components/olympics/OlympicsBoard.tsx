@@ -141,6 +141,7 @@ export function OlympicsBoard({
             >
               <ProvinceBadge
                 region={getProvince(mine)!.region}
+                province={mine}
                 className="h-7 w-10"
               />
               {name(mine).main}
@@ -276,7 +277,9 @@ export function OlympicsBoard({
                         >
                           <ProvinceBadge
                             region={p.region}
-                            className="hidden h-8 w-11 sm:block"
+                            province={p.slug}
+                            // sm:flex, not sm:block: block dropped the centring (map hugged the left).
+                            className="hidden h-8 w-11 sm:flex"
                           />
                           <span className="min-w-0">
                             <span className="block truncate text-xs font-semibold group-hover:underline">
