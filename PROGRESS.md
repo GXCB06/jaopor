@@ -12,6 +12,29 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-13 — Olympics podium on every metric + LINE OA link guide
+
+**Done** (owner: the podium "doesn't display in every category", plus a request for a guide for LINE OA links):
+
+- **Podium never disappears.** It was gated on `board.length > 0`, so for `revenue30d` / `mrr` / `visitors` / `commits` — where no province had data yet — the podium _and_ the whole standings table vanished, leaving a large hole (confirmed on prod: `?metric=mrr` → 0 podium steps, 0 tables). The podium now renders for every metric and every region filter; unfilled places are dashed invite steps ("ที่ว่าง · จังหวัดของคุณ?") and, when fewer than three provinces qualify, a one-line invitation with the add-project link sits under the steps.
+- **Board empty state.** Instead of rendering nothing, the standings area shows "ยังไม่มีจังหวัดที่มียอด<metric>" + a short body + "เพิ่มผลงาน".
+- **Motion.** Places rise in, staggered, once when the podium is first seen and again on a metric / region switch (the section is keyed `metric-region` so it remounts); reduced motion is instant. Reuses `InView` + globals.css — no new dependency.
+- **LINE OA guide.** The add-startup link field now has a collapsed "ลิงก์แบบไหนใช้ได้บ้าง?" guide listing each accepted link and where to find a LINE OA `@id` (LINE Official Account Manager → account page, or a `lin.ee/…` / `page.line.me/…` link).
+
+**Files:** `src/components/olympics/PodiumSteps.tsx`, `src/components/olympics/OlympicsBoard.tsx`, `src/app/[locale]/olympics/page.tsx`, `src/app/globals.css`, `src/components/wizard/StartupWizard.tsx`, `messages/{th,en}.json`
+
+**Verified:** `npx tsc --noEmit` ✓ · `npx eslint` (touched files) ✓ · `npx vitest run` 658 passed / 17 skipped ✓ · `npx next build` ✓. **Not visually verified** — no local Supabase env, so the page can't be rendered here; check the Vercel preview after a push.
+
+**Next:** owner says "push" → the app redeploy ships the podium fix + guide.
+
+## 2026-10-13 — Store logo gets its own read budget (App Store / Google Play auto-fill)
+
+**Done** (owner: on production the Google Play link filled the name and tagline but not the logo, though it worked locally): the icon fetch shared the same 3 s `AbortSignal.timeout` as the metadata read, which is slow on Vercel, so the text parsed but the icon fetch was already aborted. Both `appStoreAutofill` and `playStoreAutofill` now start the logo fetch on a fresh 3 s signal (`signal.aborted ? null : await firstLogo(...)`).
+
+**Files:** `src/lib/net/link-preview.ts`
+**Verified:** typecheck ✓ · lint ✓ · unit 658 passed / 17 skipped ✓ · `next build` ✓ (temporary live checks deleted).
+**Next:** ship with the next app push (commit `363aa17`).
+
 ## 2026-10-13 — Add-startup auto-fill now works for App Store and Google Play links
 
 **Done** (owner: "when i tried to add app store link, that function did not work" — store links were excluded from auto-fill by design, so they returned `not_website` and nothing filled):

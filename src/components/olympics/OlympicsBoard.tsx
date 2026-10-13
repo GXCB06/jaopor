@@ -7,6 +7,7 @@ import {
   ArrowRightIcon,
   ChevronDownIcon,
   MapPinIcon,
+  PlusIcon,
   SearchIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -437,12 +438,28 @@ export function OlympicsBoard({
             </button>
           )}
         </div>
+      ) : q ? (
+        <p className="rounded-xl border border-dashed bg-card px-4 py-6 text-center text-caption text-muted-foreground">
+          {t("noProvinceMatch", { q: query })}
+        </p>
       ) : (
-        q && (
-          <p className="rounded-xl border border-dashed bg-card px-4 py-6 text-center text-caption text-muted-foreground">
-            {t("noProvinceMatch", { q: query })}
+        // No province has this metric yet (the podium stays up and invites one): the board used to
+        // render nothing here, which read as a broken page (owner 2026-10-13).
+        <div className="rounded-xl border border-dashed bg-card px-4 py-8 text-center">
+          <p className="text-sm font-bold">
+            {t("boardEmptyTitle", { metric: t(`metrics.${metric}`) })}
           </p>
-        )
+          <p className="mt-1 text-caption text-muted-foreground">
+            {t("boardEmptyBody")}
+          </p>
+          <Link
+            href="/new"
+            className="mt-3 inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground hover:opacity-90"
+          >
+            <PlusIcon className="size-3.5" aria-hidden="true" />
+            {t("addProject")}
+          </Link>
+        </div>
       )}
     </div>
   );

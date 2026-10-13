@@ -228,17 +228,17 @@ export default async function OlympicsPage({
         </div>
       </header>
 
-      {/* Olympics v4 stepped podium: every width, as soon as one province competes; empty
-          places are dashed "+ ที่ว่าง" steps (owner 2026-10-13: "อยากให้มี bar ranking"). */}
-      {board.length > 0 && (
-        <section aria-label={t("podium")} className="mt-8">
-          <PodiumSteps
-            top={board.slice(0, 3)}
-            metric={metric}
-            thbPerUsd={thbPerUsd}
-          />
-        </section>
-      )}
+      {/* Olympics v4 stepped podium: every width and every metric. Unfilled places invite a
+          project (owner 2026-10-13: it used to disappear for metrics no province had yet). The
+          key remounts the places on a metric / region change so the rise transition replays. */}
+      <section aria-label={t("podium")} className="mt-6">
+        <PodiumSteps
+          key={`${metric}-${region ?? "all"}`}
+          top={board.slice(0, 3)}
+          metric={metric}
+          thbPerUsd={thbPerUsd}
+        />
+      </section>
 
       {/* Controls */}
       <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center">

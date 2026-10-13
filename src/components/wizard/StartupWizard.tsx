@@ -3,11 +3,13 @@
 import {
   ArrowLeftIcon,
   ChartColumnIcon,
+  ChevronDownIcon,
   CompassIcon,
   GitBranchIcon,
   CircleCheckIcon,
   CreditCardIcon,
   EyeIcon,
+  InfoIcon,
   Link2Icon,
   MapPinIcon,
   MedalIcon,
@@ -229,8 +231,7 @@ export function StartupWizard({
   // website, so it can't duplicate one). Auto-fill reads the project's own site and its store
   // listings; a platform page (A1.2, a Facebook page) or a GitHub / LINE link is never read.
   const generalUrl = parsed?.kind === "website" ? parsed.url : null;
-  const isStore =
-    parsed?.kind === "app_store" || parsed?.kind === "play_store";
+  const isStore = parsed?.kind === "app_store" || parsed?.kind === "play_store";
   const siteUrl =
     parsed && !parsed.platform && (parsed.kind === "website" || isStore)
       ? parsed.url
@@ -550,10 +551,31 @@ export function StartupWizard({
                         : t("autofillReading")}
                       {/* C-14: what we read, at the moment we read it. */}
                       <span className="block text-2xs text-faint">
-                        {t(isStore ? "autofillPrivacyStore" : "autofillPrivacy")}
+                        {t(
+                          isStore ? "autofillPrivacyStore" : "autofillPrivacy",
+                        )}
                       </span>
                     </p>
                   )}
+                  {/* Which links work, and where to find each: LINE OA's @id is the one founders
+                      ask about (owner 2026-10-13). Collapsed so the form stays short. */}
+                  <details className="group text-caption">
+                    <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
+                      <InfoIcon className="size-3.5" aria-hidden="true" />
+                      {t("linkGuideSummary")}
+                      <ChevronDownIcon
+                        className="size-3.5 transition-transform group-open:rotate-180"
+                        aria-hidden="true"
+                      />
+                    </summary>
+                    <ul className="mt-2 list-disc space-y-1 rounded-md border bg-card p-3 pl-6 text-muted-foreground">
+                      <li>{t("linkGuideWebsite")}</li>
+                      <li>{t("linkGuideStore")}</li>
+                      <li>{t("linkGuideLine")}</li>
+                      <li>{t("linkGuideGithub")}</li>
+                      <li>{t("linkGuideOther")}</li>
+                    </ul>
+                  </details>
                 </Field>
               </WizardSection>
               <WizardSection
