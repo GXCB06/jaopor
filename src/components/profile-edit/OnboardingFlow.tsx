@@ -3,6 +3,7 @@
 import { ArrowLeftIcon, ArrowRightIcon, Loader2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
+import { useStepScroll } from "@/lib/use-step-scroll";
 import { toast } from "sonner";
 import { saveProfile, saveSkills } from "@/app/actions/profile";
 import { Card } from "@/components/core/Card";
@@ -75,8 +76,15 @@ export function OnboardingFlow({
 
   const canNext = current !== "handle" || handleState === "ok";
 
+  // "ถัดไป" / "ย้อนกลับ" starts the next step at its top (useStepScroll).
+  const topRef = useStepScroll<HTMLDivElement>(step);
+
   return (
-    <Card className="space-y-6 p-6">
+    <Card
+      ref={topRef}
+      tabIndex={-1}
+      className="scroll-mt-20 space-y-6 p-6 outline-none"
+    >
       <div className="space-y-3">
         {!quick && (
           <p className="text-2xs font-semibold tracking-wider text-faint uppercase">

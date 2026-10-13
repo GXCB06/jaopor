@@ -12,6 +12,26 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-13 — Next / back in Add Startup and onboarding starts the step at its top
+
+**Done** (owner, on production: "กดถัดไปแล้วมันค้างอยู่ส่วนนั้น แต่ผมกลับต้องเลื่อนขึ้นเอง"):
+
+- New `useStepScroll` (`src/lib/use-step-scroll.ts`). When the step changes, the top of the flow comes back under the header, smoothly or instantly with reduced motion, and only when it is off screen. Focus moves there for keyboards and screen readers.
+- Used in the Add Startup wizard (step 1 ↔ 2) and the onboarding steps. The edit page already scrolled up.
+- Design.md §5: the rule for every multi-step flow.
+
+**Verified:**
+
+- Playwright on a temporary local wizard page (deleted). Scrolled to the bottom of step 2, then "ย้อนกลับ":
+  - 375 px: scroll 778 → 32, stepper 68 px from the top, just under the header;
+  - 1440 px: scroll 670 → 0;
+  - the same with reduced motion;
+  - focus lands on the flow's top.
+- typecheck ✓ · lint ✓ · unit 640 passed · e2e local 121 passed / 0 failed.
+
+**Not verified:** step 1 → 2 for real (it needs a signed-in insert); it uses the same hook on the same element.
+**Next:** push on the owner's go.
+
 ## 2026-10-13 — Aetox text updated; app pushed
 
 **Done** (owner: "Push + A"; the founder's consent was relayed by the owner):

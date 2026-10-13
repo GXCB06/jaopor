@@ -39,6 +39,7 @@ import { createClient } from "@/lib/supabase/client";
 import { revalidateStartup } from "@/app/actions/revalidate";
 import { useSessionDraft } from "@/lib/use-session-draft";
 import { cn } from "@/lib/utils";
+import { useStepScroll } from "@/lib/use-step-scroll";
 import { LinkTypeStatus } from "./LinkTypeStatus";
 import { linkProblemText } from "./link-text";
 import { Field, inputClass } from "./fields";
@@ -431,6 +432,7 @@ export function StartupWizard({
     });
   };
 
+  const topRef = useStepScroll<HTMLDivElement>(step);
   // Design.md §5 wizard v3: each part of step 1 shows a check once it's complete.
   const linkDone = Boolean(parsed) && !existing;
   const aboutDone = Boolean(name.trim()) && Boolean(category);
@@ -456,7 +458,12 @@ export function StartupWizard({
   );
 
   return (
-    <div className="space-y-6">
+    // Next / back starts the new step at its top (useStepScroll), not where the button was.
+    <div
+      ref={topRef}
+      tabIndex={-1}
+      className="scroll-mt-20 space-y-6 outline-none"
+    >
       <WizardStepper step={step} />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
         <div className="min-w-0">
