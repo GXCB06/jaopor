@@ -12,6 +12,24 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-13 — Landing zone merged and live on the main domain
+
+**Done** (owner approved the release after the pre-release verification):
+
+- **Merged `landing-zone` into `master`** (`c117510`, 3 commits, `next.config.ts` +18 and `src/proxy.ts` +5) and pushed. The push also carried `2f3ba65`, another chat's docs-only commit (Design.md, PROGRESS.md, Project.md). Vercel production deployment `dpl_8vfBMaxByTNc7hwfYvNZKV7muHDz` (`c117510`) is READY.
+- **Before the push:** `d0486f5` (live map always on, swipeable home rows) had already been pushed by someone else and was validated here: typecheck, lint, 640 unit tests, build, browser checks at 375 / 420 / 768 / 1280. A merged candidate (`master` + `landing-zone`, isolated worktree, removed afterwards) passed the same checks plus route and metadata checks.
+- **Corrects earlier entries:** the 2026-10-13 entries that say the landing is "local only / not committed / not deployed" are out of date: landing commits `4e2d0c2` and `4a4cb37` are pushed, deployed (`dpl_EHm4gVtehF4DTqzbBwNRc17PaJL5`), and now served at `/`.
+
+**Verified on production (https://jaopor.vercel.app, read-only):**
+
+- `/` 200 serves the landing (Thai by default, `Accept-Language` and `NEXT_LOCALE` pick th / en); canonical, `og:url`, `og:image` point at the domain; `/landing/og` 200 image/png 1200×630; landing assets under `/landing/_next` 200.
+- App routes unchanged: `/th`, `/en`, `/th|en/startups`, `/th/olympics`, `/th/feed`, `/th/security`, `/th/new`, `/th/startup/jaopor`, `/api/public/landing`, `/robots.txt`, `/sitemap.xml` all 200 with the right language and canonical; `/startups` still 307 → `/th/startups`.
+- All 12 landing links to the app (new, startups, a project, builders, security, feed, categories, privacy, terms, olympics, a builder handle) return 200.
+- e2e on production: 136 passed, 6 skipped, 0 failed (1.5 min).
+
+**Not verified:** Safari / Firefox / a real phone for the pinned scene and the swipeable rows; the world-map mode of the live board; a user arriving with a language other than th / en. No email, domain or search-console changes were made.
+**Next:** watch production for a day (Vercel logs, `/` latency, the landing project's health: if it is down, `/` is down); the landing is one project, so rollback is on the app project (see Project.md); add a custom domain when chosen.
+
 ## 2026-10-13 — Landing shows JaoPor's MRR as an unranked team project (local only); Olympics v4 and tabs proposals
 
 **Done** (owner brief: landing local only, Aetox option B, Olympics v4 proposal with the podium image as inspiration, tabs analysis; no push / deploy / merge):

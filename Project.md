@@ -157,10 +157,11 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [x] A. App: `GET /api/public/landing` + `lib/public-landing.ts` + tests (2026-10-12)
 - [x] B. `jaopor-landing` built locally (Next.js, th + en, dark + light, live data; no mock rows, so no sample labels) (2026-10-12)
 - [x] B2. GitHub repo `GXCB06/jaopor-landing` (private), Vercel project `jaopor-landing` (deployed by hand; git link failed with a 500), app pushed with the endpoint (2026-10-12)
-- [ ] C. Multi-zone: landing answers `/`, the app keeps `/th`, `/en`, `/api`. **Built and verified on the `landing-zone` preview (2026-10-12); merge to master waits for the owner's go**
+- [x] Landing deployed to `jaopor-landing.vercel.app` (commit `4a4cb37`, 2026-10-13)
+- [x] C. Multi-zone: landing answers `/`, the app keeps `/th`, `/en`, `/api` — `landing-zone` merged into `master` (`c117510`) and live on the main domain (2026-10-13). Rollback: Vercel Instant Rollback to `dpl_33LyzWtjrVJTHrnyMRh7ovBoLw9q` (`d0486f5`), or revert `c117510`
 - [x] Landing hero: space backdrop (spotlight, stars, horizon, mouse light), language switch keeps the scroll (2026-10-12)
-- [x] Landing: Proof network (sources → project → verified / counted), "built with" scene under the hero, cheaper hero motion, anchored language-switch scroll, complete Open Graph — committed + pushed to the landing repo `4e2d0c2`, **not deployed, not merged** (2026-10-12)
-- [x] Landing: "built with" text is scroll-linked and pinned like Aetox; features tabs advance only while in view (local, not committed or pushed) (2026-10-13)
+- [x] Landing: Proof network (sources → project → verified / counted), "built with" scene under the hero, cheaper hero motion, anchored language-switch scroll, complete Open Graph (2026-10-12; landing repo `4e2d0c2`, deployed 2026-10-13)
+- [x] Landing: "built with" text is scroll-linked and pinned like Aetox; features tabs advance only while in view (landing repo `4a4cb37`, deployed 2026-10-13)
 - [ ] Landing: the "add a project" steps from the owner's screens
 - [ ] Later: restyle the app toward the landing (tokens → chrome → home; never data screens)
 
