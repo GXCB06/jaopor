@@ -12,6 +12,31 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-13 — Landing release: copy pass, example MRR card, two-line scene headline
+
+**Done** (owner: "commit, push และ deploy" plus four small changes; landing repo `da10466`, deployed as `dpl_83Vws4qXuTjhXM7u4bYeqDCvh81t`, READY, live on both `jaopor-landing.vercel.app` and the main domain):
+
+- **Hero MRR card:** the owner wanted it filled with a made-up example and a chart. With no verified MRR the card now shows a clearly labelled example (neutral dot, "ข้อมูลสมมติ / Sample data" pill, ฿48,000 / $1,400, a rising chart, "made-up numbers, to show how it looks once connected"); no verified shield, no "verified" wording. When a project has a verified MRR the real card and its real chart are shown as before.
+- **Wording:** scene sub-line "แชร์ Product ที่คุณสร้าง แล้วให้ตัวเลขยืนยันความสำเร็จ" (en "Share the product you built, and let real numbers confirm its success."); proof title "ตัวเลขทุกตัว มีที่มาที่ไป" (en "Every number has a clear origin").
+- **Scene headline:** the first line no longer runs across the whole screen on wide displays: it is two short lines, "ทุกเครื่องมือ ทุกภาษาโค้ด" / "ทุกเอเจนต์ AI ที่คุณใช้สร้าง" (new key `Stack.line1b`), max width 54 rem.
+- **Copy pass** (previous entry) shipped in the same commit.
+
+**Verified:** typecheck ✓ · lint ✓ · 22 unit tests ✓ · build ✓; screenshots: card th/en, dark/light, 375 / 1280 / 1900 (no clipping, no sideways scroll); live pages on both URLs contain the new strings and none of the old ones.
+**Slip:** `git add -A` also committed an untracked `.cursor/settings.json` (a Vercel plugin toggle created by a tool, no secrets). Harmless; remove it with a follow-up commit if unwanted.
+**Not done:** the app repo's unpushed docs commit (`6839cac`) and this entry are not pushed (a push redeploys the app); the leaderboard badge "VERIFIED SOURCES ONLY" is unchanged; "success" in the scene sub-line is the owner's wording (early projects have no success numbers yet).
+
+## 2026-10-13 — Landing copy pass (English + Thai), local only
+
+**Done** (owner pasted a section-by-section copy review and asked to apply it in English and Thai; landing repo; Hero untouched as asked; since released, see the entry above):
+
+- **Applied:** "What do you get when you add your project to JaoPor?" + lead ("meet people to build with"; Thai "คนร่วมสร้าง" instead of "คนร่วมทาง"); Projects ("What Thai builders are building" / "สิ่งที่คนไทยกำลังลงมือสร้าง"); leaderboard footnote (metrics synced from connected sources, a dash means no verified data, visitor counts come from analytics tools and are not verified by JaoPor); the 77-provinces card ("Great work can start anywhere"); Security headline and lead ("Share your metrics, not your private data"); founder title ("Built by a builder, for builders", Thai "สร้างโดยคนสร้าง เพื่อคนสร้าง") and a light grammar fix of the quote; CTA headline, text and the three steps (step 3 now says it is optional); footer line.
+- **Adjusted from the review on purpose:** (1) headings stay in sentence case like the rest of the page, not Title Case; (2) "What we never touch" became "What we never store or ask for" (th "สิ่งที่เราไม่เก็บและไม่ขอสิทธิ์"), because that matches the app's own Security page ("We never store your customers' data…") and the connectors do read API responses that may contain such fields, so "don't access" would overclaim; (3) the founder quote only got a grammar fix (owner's voice kept), the heavier rewrite was not applied.
+- **Bug:** the CTA headline had no space between its two parts in the text (`it.Let`); fixed in `Closing.tsx` (the same pattern in the Hero was left alone as asked; it is invisible on screen).
+
+**Verified:** typecheck ✓ · lint ✓ · 22 unit tests ✓ · build ✓; th + en at 1280 and 375: no sideways scroll, no clipped text, CTA text reads "You've built it. Let people see it."; screenshots of Features, CTA, Builders, Security checked.
+**Not changed (flag):** the leaderboard badge still says "VERIFIED SOURCES ONLY" while the board also ranks visitors and commits, which the footnote now says are not verified by JaoPor. Worth a decision.
+**Next:** owner review; then explicit go to commit, push and deploy the landing.
+
 ## 2026-10-13 — Olympics stepped podium, province dot on the map, clearer verify step, faster-feeling site
 
 **Done** (owner, testing production: Olympics "อยากให้มี bar ranking … ตัวอย่างก็ให้ดูแล้ว"; "รูปจังหวัดทำไมไม่ตรง"; step 2 "แอบดู plain text", the way back to change the verify method "หาไม่ค่อยเจอ", the stepper "ยังไม่สมบูรณ์"; the site "หน่วง ๆ แลค ๆ"):
