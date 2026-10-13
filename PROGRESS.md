@@ -25,7 +25,7 @@
 
 **Verified:** app typecheck ✓ · lint ✓ · unit 654 passed / 17 skipped ✓ · local build renders `/th/login` + `/en/login` with the hint and legal line, no raw key ✓ · landing typecheck ✓ · lint ✓ · 30 unit tests ✓ · `npm run build` ✓.
 
-**Next:** owner says "push" → push landing (`master` at `84a703f`) + app (login hint) and deploy landing; app redeploy also ships the hint.
+**Live:** owner said "push" → pushed landing `master` (`84a703f`) and app `master` (`dd5c218`); both Vercel projects auto-deploy from GitHub. Confirmed on prod: `/th/login` + `/en/login` show the new hint, and the landing (root + `/th`) shows "รอยืนยันตัวเลข", the footer "โอลิมปิกจังหวัด", and the proof example line — the old "โอลิมปิก 77 จังหวัด" is gone.
 
 ## 2026-10-13 — Founder profile: 4 key cards like TrustMRR (revenue · MRR · followers · projects)
 
