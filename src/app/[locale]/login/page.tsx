@@ -41,6 +41,7 @@ export default async function LoginPage({
       </div>
       {sp.error && <p className="text-sm text-destructive">{t("error")}</p>}
       <LoginButtons next={next} locale={locale} />
+      <p className="text-xs text-muted-foreground">{t("noAccount")}</p>
       <p className="text-xs text-muted-foreground">{t("legal")}</p>
     </main>
   );

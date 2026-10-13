@@ -349,6 +349,7 @@
     "github": "Continue with GitHub",
     "error": "Sign-in failed. Please try again.",
     "legal": "By continuing you agree to our Terms and Privacy Policy.",
+    "noAccount": "No account yet? Use Google or GitHub to create one free.",
     "titleAdd": "Sign in to add your project",
     "titleContact": "Sign in to send a request"
   },

@@ -162,6 +162,7 @@ Status: ☐ not started · ◐ in progress · ☑ done
 - [x] Landing hero: space backdrop (spotlight, stars, horizon, mouse light), language switch keeps the scroll (2026-10-12)
 - [x] Landing: Proof network (sources → project → verified / counted), "built with" scene under the hero, cheaper hero motion, anchored language-switch scroll, complete Open Graph (2026-10-12; landing repo `4e2d0c2`, deployed 2026-10-13)
 - [x] Landing: "built with" text is scroll-linked and pinned like Aetox; features tabs advance only while in view (landing repo `4a4cb37`, deployed 2026-10-13)
+- [x] Landing: the hero reads the app's `featured` real data (JaoPor team MRR pill, Sample card only if none); boards never list team projects and open at 3; quick text set (nav/footer Olympics labels match the app, "Awaiting verification / รอยืนยันตัวเลข", proof example line); removed stray `.cursor/settings.json` (landing repo `8c2e9dd` + `b0215f9` + `84a703f`, 2026-10-13; **not pushed/deployed**)
 - [ ] Landing: the "add a project" steps from the owner's screens
 - [ ] Later: restyle the app toward the landing (tokens → chrome → home; never data screens)
 

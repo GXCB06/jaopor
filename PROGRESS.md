@@ -12,6 +12,21 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-13 — Landing uses real featured data + quick text set; app login hint
+
+**Done** (carried over after the previous session hit its limit; all three remaining decisions implemented — nothing pushed or deployed without the owner's go):
+
+- **Hero contradiction fixed** (`feat/featured-team-project` merged into landing `master` as `8c2e9dd`): the card now reads the app's `featured` (JaoPor's real verified MRR, pill "ผลงานของทีม JaoPor · ไม่จัดอันดับ"); the Sample card stays as the only fallback when nothing is verified. Boards never list team projects and open at 3 (`rankedRows`, `Board.emptyMin`/`unavailable`; `featured.ts` + 8 tests). Only hero conflict — resolved so the real card wins and `p && featured` replaces the old `p && top`.
+- **Quick text set** (`b0215f9`): nav/footer Olympics labels match the app (nav "โอลิมปิก"/"Olympics", footer "โอลิมปิกจังหวัด"/"Province Olympics"); "Pending / รอยืนยัน" → "Awaiting verification / รอยืนยันตัวเลข"; Proof section example one-liner (MRR verified through Stripe at the source · 30-day visitors counted by Plausible); dropped the double-read `aria-labelledby` on the stack scene.
+- **Cleanup** (`84a703f`): removed the accidentally committed `.cursor/settings.json`, added `.cursor/` to `.gitignore`.
+- **App login hint:** `/login` adds "ยังไม่มีบัญชี? กด Google หรือ GitHub เพื่อสร้างบัญชีฟรี" / "No account yet? Use Google or GitHub to create one free." under the sign-in buttons.
+
+**Files:** landing `src/components/Hero.tsx`, `src/lib/featured.ts`, `src/lib/featured.test.ts`, `src/components/Leaderboard.tsx`, `src/components/ProofNetwork.tsx`, `src/components/StartupConstellation.tsx`, `messages/{en,th}.json`; app `src/app/[locale]/login/page.tsx`, `messages/{en,th}.json`.
+
+**Verified:** app typecheck ✓ · lint ✓ · unit 654 passed / 17 skipped ✓ · local build renders `/th/login` + `/en/login` with the hint and legal line, no raw key ✓ · landing typecheck ✓ · lint ✓ · 30 unit tests ✓ · `npm run build` ✓.
+
+**Next:** owner says "push" → push landing (`master` at `84a703f`) + app (login hint) and deploy landing; app redeploy also ships the hint.
+
 ## 2026-10-13 — Founder profile: 4 key cards like TrustMRR (revenue · MRR · followers · projects)
 
 **Done** (owner, from TrustMRR's founder profile: "ชอบ … followers จาก social media และ total startups"; GA kept):
