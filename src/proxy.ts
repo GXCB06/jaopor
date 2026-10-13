@@ -10,6 +10,11 @@ import { publicEnv } from "./lib/public-env";
 const intl = createIntlMiddleware(routing);
 
 export default async function proxy(request: NextRequest) {
+  // `/` and `/landing/*` belong to the landing zone (next.config.ts rewrites them); no locale
+  // redirect, no session refresh (the landing is public and reads no session).
+  const { pathname } = request.nextUrl;
+  if (pathname === "/" || pathname.startsWith("/landing/"))
+    return NextResponse.next();
   // /@handle → /{locale}/u/{handle} (Phase 9b short profile links).
   const at = atPathTarget(request.nextUrl.pathname, routing.defaultLocale);
   const response = at
