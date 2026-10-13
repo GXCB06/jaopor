@@ -1676,7 +1676,7 @@
       "onsite": "เข้าออฟฟิศ",
       "hybrid": "ผสม"
     },
-    "statWorks": "ผลงาน",
+    "statWorks": "ผลงานทั้งหมด",
     "statMrr": "รายได้ยืนยันแล้ว",
     "perMonth": "/เดือน",
     "statBuilding": "สร้างมาแล้ว",
@@ -1744,9 +1744,6 @@
     "statMrrTotal": "MRR รวม",
     "statMrrNote": "จาก {n, number} ผลงานที่ยืนยัน",
     "statRevenueTotal": "รายได้ทั้งหมด",
-    "statRevenueNote": "ตั้งแต่เริ่มขาย",
-    "statPosts": "อัปเดตผลงาน",
-    "statPostsNote": "โพสต์ใน 6 เดือน",
     "tabRevenue": "รายได้รวม",
     "tabActivity": "กิจกรรมการสร้าง",
     "tabsLabel": "มุมมอง",
@@ -1773,7 +1770,13 @@
     "revenueEmptyOwner": "ยังไม่มีรายได้ที่ยืนยัน (ผลงานตัวอย่างไม่นับ) เชื่อมต่อ Stripe หรือ RevenueCat ในผลงานของคุณ แล้วกราฟรายได้รวมจะขึ้นที่นี่",
     "revenueEmptyCta": "ไปที่ผลงานของฉัน",
     "todayShort": "วันนี้",
-    "monthShort": "เดือนนี้"
+    "monthShort": "เดือนนี้",
+    "statAcrossWorks": "จากทุกผลงาน",
+    "statNoRevenue": "ยังไม่มีรายได้ที่ยืนยัน",
+    "statWorksNote": "ยืนยันตัวเลขแล้ว {n, number} ชิ้น",
+    "statFollowersGrowth": "+{n, number} ใน 30 วัน",
+    "statFollowersOn": "บน JaoPor",
+    "statGithubFollowers": "GitHub {n, number} (@{login})"
   },
   "Builders": {
     "title": "คนสร้าง",

@@ -1680,7 +1680,7 @@
       "onsite": "On-site",
       "hybrid": "Hybrid"
     },
-    "statWorks": "Projects",
+    "statWorks": "Total projects",
     "statMrr": "Verified revenue",
     "perMonth": "/month",
     "statBuilding": "Building for",
@@ -1748,9 +1748,6 @@
     "statMrrTotal": "Total MRR",
     "statMrrNote": "from {n, plural, one {# verified project} other {# verified projects}}",
     "statRevenueTotal": "All-time revenue",
-    "statRevenueNote": "since the first sale",
-    "statPosts": "Project updates",
-    "statPostsNote": "posts in 6 months",
     "tabRevenue": "Revenue",
     "tabActivity": "Build activity",
     "tabsLabel": "View",
@@ -1777,7 +1774,13 @@
     "revenueEmptyOwner": "No verified revenue yet (demo projects don't count). Connect Stripe or RevenueCat on your projects and your total revenue chart appears here.",
     "revenueEmptyCta": "Go to my projects",
     "todayShort": "Today",
-    "monthShort": "This month"
+    "monthShort": "This month",
+    "statAcrossWorks": "Across all projects",
+    "statNoRevenue": "No verified revenue yet",
+    "statWorksNote": "{n, plural, one {# with verified numbers} other {# with verified numbers}}",
+    "statFollowersGrowth": "+{n, number} in 30 days",
+    "statFollowersOn": "on JaoPor",
+    "statGithubFollowers": "GitHub {n, number} (@{login})"
   },
   "Builders": {
     "title": "Builders",

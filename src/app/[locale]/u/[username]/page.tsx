@@ -27,6 +27,8 @@ import { ReportDialog } from "@/components/builder/ReportDialog";
 import { ProfileChartTabs } from "@/components/builder/ProfileChartTabs";
 import { toolbarButton } from "@/components/builder/toolbar";
 import { Card } from "@/components/core/Card";
+import { StatCard } from "@/components/ProfileBlocks";
+import { verifiedGithubFollowers } from "@/lib/data/github-followers";
 import { PostCard } from "@/components/posts/PostCard";
 import { GrowthValue, Money, StartupLogo } from "@/components/StartupBits";
 import { Link, redirect } from "@/i18n/navigation";
@@ -131,7 +133,11 @@ export default async function BuilderProfilePage({
       },
       locale,
     });
-  const revenue = await getBuilderRevenue(works);
+  const [revenue, followers] = await Promise.all([
+    getBuilderRevenue(works),
+    // Card 3 adds GitHub followers only for the builder's own account (listed = sign-in account).
+    verifiedGithubFollowers(profile.id, profile.social_links?.github),
+  ]);
   const now = renderNow();
   const name = profile.display_name ?? profile.handle;
   const province = getProvince(profile.province);
@@ -149,7 +155,6 @@ export default async function BuilderProfilePage({
   );
   // Demo projects carry sample numbers: never count them as this person's.
   const real = works.filter((w) => !w.is_demo);
-  const commits = real.reduce((s, w) => s + (w.build_commits ?? 0), 0);
   const stars = real.reduce((s, w) => s + (w.build_stars ?? 0), 0);
   const months = monthsBuilding(
     real.map((w) => w.build_first_commit_at ?? w.created_at),
@@ -634,67 +639,72 @@ export default async function BuilderProfilePage({
             </Card>
           )}
 
-          {/* Proof strip (verified numbers only; zero tiles hidden) */}
-          {(() => {
-            const stats = [
-              mrrCents > 0 && {
-                k: "mrr",
-                label: t("statMrrTotal"),
-                value: <Money cents={mrrCents} thbPerUsd={thbPerUsd} />,
-                note: t("statMrrNote", { n: verified.length }),
-              },
-              revenueCents > 0 && {
-                k: "revenue",
-                label: t("statRevenueTotal"),
-                value: <Money cents={revenueCents} thbPerUsd={thbPerUsd} />,
-                note: t("statRevenueNote"),
-              },
-              stars + commits > 0 && {
-                k: "github",
-                label: "GitHub",
-                value: (
-                  <span className="inline-flex items-center gap-1.5">
-                    <StarIcon
-                      className="size-5 fill-current"
-                      aria-hidden="true"
-                    />
-                    {stars.toLocaleString("en")}
-                  </span>
-                ),
-                note: commits > 0 ? t("commits", { n: commits }) : "",
-              },
-              counts.posts6m > 0 && {
-                k: "posts",
-                label: t("statPosts"),
-                value: <>{counts.posts6m}</>,
-                note: t("statPostsNote"),
-              },
-            ].filter(Boolean) as {
-              k: string;
-              label: string;
-              value: React.ReactNode;
-              note: string;
-            }[];
-            return stats.length ? (
-              <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                {stats.map((s) => (
-                  <li key={s.k}>
-                    <Card className="h-full space-y-2 p-4">
-                      <p className="truncate text-2xs tracking-wider text-faint uppercase">
-                        {s.label}
-                      </p>
-                      <p className="text-2xl font-extrabold tabular-nums">
-                        {s.value}
-                      </p>
-                      {s.note && (
-                        <p className="truncate text-2xs text-faint">{s.note}</p>
-                      )}
-                    </Card>
-                  </li>
-                ))}
-              </ul>
-            ) : null;
-          })()}
+          {/* Design.md §6 Builder profile key cards (owner 2026-10-13, TrustMRR founder profile):
+              always revenue · MRR · followers · projects, in that order. */}
+          <ul className="grid grid-cols-2 gap-3 lg:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
+            <li className="min-w-0 [&>*]:h-full">
+              <StatCard
+                label={t("statRevenueTotal")}
+                value={
+                  revenueCents > 0 ? (
+                    <Money cents={revenueCents} thbPerUsd={thbPerUsd} />
+                  ) : (
+                    "—"
+                  )
+                }
+                caption={
+                  revenueCents > 0 ? t("statAcrossWorks") : t("statNoRevenue")
+                }
+              />
+            </li>
+            <li className="min-w-0 [&>*]:h-full">
+              <StatCard
+                label={t("statMrrTotal")}
+                value={
+                  mrrCents > 0 ? (
+                    <Money cents={mrrCents} thbPerUsd={thbPerUsd} />
+                  ) : (
+                    "—"
+                  )
+                }
+                caption={
+                  mrrCents > 0
+                    ? t("statMrrNote", { n: verified.length })
+                    : t("statNoRevenue")
+                }
+              />
+            </li>
+            <li className="min-w-0 [&>*]:h-full">
+              <StatCard
+                label={t("followers")}
+                value={profile.followers.toLocaleString("en")}
+                caption={[
+                  counts.newFollowers > 0
+                    ? t("statFollowersGrowth", { n: counts.newFollowers })
+                    : t("statFollowersOn"),
+                  followers &&
+                    t("statGithubFollowers", {
+                      n: followers.followers,
+                      login: followers.login,
+                    }),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              />
+            </li>
+            <li className="min-w-0 [&>*]:h-full">
+              <StatCard
+                label={t("statWorks")}
+                value={real.length.toLocaleString("en")}
+                caption={[
+                  t("statWorksNote", { n: verified.length }),
+                  stars > 0 && `★ ${stars.toLocaleString("en")}`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              />
+            </li>
+          </ul>
 
           {/* Revenue | activity (Design.md §6 Builder profile v2) */}
           {revenue || totalActivity > 0 || isOwner ? (
