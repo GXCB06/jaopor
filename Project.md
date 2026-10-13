@@ -364,7 +364,7 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
   - [x] Profile layout v3 (4 key cards, Share + Visit top right), page/card contrast in both themes, Add Startup v3 (stepper, section checks, live preview) (2026-10-13, local).
   - [ ] Owner approval: complete Olympics v4 proposal (Design.md, stepped podium from 3 provinces on every width). Leader bar vs share ring decided 2026-10-13: the bar, always (built). Rest not built.
   - [ ] Owner approval: product-page tabs, recommendation A (smooth anchor scroll + focus + steady active tab) vs B (switching panels) (Design.md). Not built.
-  - [ ] **Aetox text:** the project's founder has agreed (owner, 2026-10-13). The new text is 189 characters but the one-liner is capped at 140 (`startups_tagline_check`), so it can't go in word for word. Waiting for the owner to pick: the full text as the description plus a 137- or 101-character one-liner. No data changed yet.
+  - [x] **Aetox text (2026-10-13):** founder's consent relayed by the owner; owner chose option A. One-liner = the 137-character version, description = the founder's full 189-character text (DB row `aetox-harness`, updated directly).
   - [ ] **Spacing and type scale (owner 2026-10-13):** the site reads easier at 90% browser zoom than at 100%, though text then looks a little small. Revisit spacing / density together with the owner.
 
 - [ ] **Landing repo** (2026-10-12): the owner creates the GitHub repo (or approves `gh repo create`); pick the production domain (only `jaopor.vercel.app` exists); review the landing's light palette (made and contrast-checked 2026-10-12); add a province count to the API (the landing's provinces tab only counts the 12 most recent projects); Thai-aware OG image.

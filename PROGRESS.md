@@ -12,6 +12,16 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-13 — Aetox text updated; app pushed
+
+**Done** (owner: "Push + A"; the founder's consent was relayed by the owner):
+
+- Aetox (`aetox-harness`) one-liner set to option A (137 characters, within the 140 cap). The description, which was empty, is now the founder's full 189-character text. One row updated with `execute_sql`; no other data touched.
+- Pushed the 3 local app commits: profile v3, theme contrast, Add Startup v3 / v3.1, Olympics bar, builder columns. Then this log.
+
+**Verified:** the update returned the row with lengths 137 / 189.
+**Next:** check production after Vercel's build: the project page, `/new` signed in, and the Aetox card.
+
 ## 2026-10-13 — Add Startup with icons and a clear "who sees the name" choice; founder page columns scroll together
 
 **Done** (owner: "ไม่รู้เลยว่าปุ่ม anonymous หมายความว่ายังไง … ใช้พลังงานสมองให้น้อยที่สุด"; "ตอนเลื่อนลงให้มันเลื่อนไปพร้อมกัน … รู้สึกเวียนหัว"):
