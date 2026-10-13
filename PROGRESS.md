@@ -12,6 +12,23 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-13 — Landing shows JaoPor's MRR as an unranked team project (local only); Olympics v4 and tabs proposals
+
+**Done** (owner brief: landing local only, Aetox option B, Olympics v4 proposal with the podium image as inspiration, tabs analysis; no push / deploy / merge):
+
+- **Landing** (separate repo; worktree `C:\Users\ACER\jaopor-landing-featured`, branch `feat/featured-team-project`, commit `7d8819b`, **not pushed**):
+  - The hero MRR card reads the app API's `featured` field (contract checked against `lib/public-landing.ts`); the team project shows its real MRR with "ผลงานของทีม JaoPor · ไม่จัดอันดับ" / "JaoPor team project · Not ranked", keeping source, chart and update date.
+  - The leaderboard never lists a team project and opens only from 3 ranked projects; otherwise an honest empty line, and a separate line when the API is unreachable.
+  - An older API without `featured` falls back to the top independent project, never a team one.
+  - 8 files, +239 / −15; patch `C:\tmp\jaopor-landing-featured.patch`. The landing's OG image and metadata don't use API data, so they're unchanged.
+- **Aetox:** option B recorded as a pending content decision (Project.md §7). No text or data changed.
+- **Design.md:** the complete Olympics v4 proposal (stepped 2-1-3 podium on every width from 3 provinces, rows from #4 with a share ring, your-province bar, map placement, 0 / 1–2 / 3–4 / 5+ states, one-line metric explanations, acceptance criteria). The product-page tabs analysis (measured: instant 450–930 px jumps, focus not moved) recommends keeping anchors with smooth scrolling, a steady active tab and focus on the heading, over switching panels. **Neither is built.**
+
+**Files:** landing `src/lib/featured.ts` (+ test), `src/lib/landing-types.ts`, `src/components/Hero.tsx`, `src/components/Leaderboard.tsx`, `messages/{th,en}.json`, `DESIGN.md`; app `Design.md`, `Project.md`.
+**Verified:** landing: unit tests 30 passed, lint ✓, typecheck ✓, production build ✓; th / en at 1440 and 375: card, pill and chart shown, board empty line, no horizontal scroll. Tabs: Playwright measurements on the local app at 1440 and 375.
+**Not verified:** the landing "unavailable" line in a browser (Next's 5-minute fetch cache kept serving data while the API was down; covered by unit tests only).
+**Next:** owner review of the landing diff (then push / deploy), and approval of the Olympics v4 and tabs proposals.
+
 ## 2026-10-13 — Live map always on; home rows swipe on phones
 
 **Done** (owner: "เอา map ผมขึ้นมาสิ ไม่ใช่ทำให้หายไป"; "สินค้าใหม่ให้ปัดดูได้"):
@@ -127,6 +144,7 @@
   - Olympics "จังหวัดที่ลงแข่ง 2 / 77", "ผลงานที่นับคะแนน 2", and Mukdahan not listed as empty.
 
 **Risks:**
+
 - Landing hero (see D).
 - Olympics now ranks 2 provinces.
 - The e2e first run had one failure while the dev server recompiled after edits; the rerun passed (17 / 17 in the related specs).
