@@ -271,7 +271,11 @@ async function appStoreAutofill(
   };
   const identity = (country ? await lookup(country) : null) ?? (await lookup());
   if (!identity) return null;
-  const logo = await firstLogo(identity.icons, signal);
+  // A fresh budget for the icon itself: the lookup already spent most of `signal`, and on a slow
+  // network the artwork would otherwise time out (name/tagline fill, logo stays empty).
+  const logo = signal.aborted
+    ? null
+    : await firstLogo(identity.icons, AbortSignal.timeout(TIMEOUT_MS));
   return identity.name || identity.tagline || logo
     ? { name: identity.name, tagline: identity.tagline, logo }
     : null;
@@ -285,7 +289,9 @@ async function playStoreAutofill(
   const page = await fetchHtml(link, signal, STORE_MAX_BYTES);
   if (!page) return null;
   const identity = parsePlayStore(page.html, page.url);
-  const logo = await firstLogo(identity.icons, signal);
+  const logo = signal.aborted
+    ? null
+    : await firstLogo(identity.icons, AbortSignal.timeout(TIMEOUT_MS));
   return identity.name || identity.tagline || logo
     ? { name: identity.name, tagline: identity.tagline, logo }
     : null;
