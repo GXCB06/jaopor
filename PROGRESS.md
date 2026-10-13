@@ -12,6 +12,21 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-13 — Add-startup auto-fill now works for App Store and Google Play links
+
+**Done** (owner: "when i tried to add app store link, that function did not work" — store links were excluded from auto-fill by design, so they returned `not_website` and nothing filled):
+
+- **App Store** (`apps.apple.com/.../idN`): reads Apple's public lookup API (`itunes.apple.com/lookup?id=N`, storefront from the URL path, 256 KB) → name (`trackName`), one-liner (first sentence of the description, ≤ 140) and logo (`artworkUrl512`, resized to 256 px PNG). The store page's own og tags are skipped — they name the store ("App Store", Apple's favicon), not the app.
+- **Google Play** (`play.google.com/store/apps/details?id=…`): reads the page (2 MB; Play's og tags sit ~1 MB in, after a large inline state) → name (`og:title` minus the " - Apps on Google Play" suffix), one-liner (`og:description`, ≤ 140) and logo (`og:image`, its `=s0-br30` / `=w240-h480` size suffix rewritten to `=s512`; Google's own favicon dropped).
+- **Wizard:** auto-fill now runs for store links too (`siteUrl` covers website + both stores, never a platform page or GitHub / LINE), with honest status copy ("เติมจากหน้าร้านแล้ว" / "we read the name, tagline and icon from the store page").
+- Same SSRF guard (`lib/net/public-url`), 3 s budget and 1 h memo as the website path.
+
+**Files:** `src/lib/og-parse{,.test}.ts` (pure `appStoreId`, `parseAppStoreLookup`, `parsePlayStore`), `src/lib/net/link-preview.ts` (`getStoreAutofill`), `src/app/api/startups/preview/route.ts`, `src/components/wizard/StartupWizard.tsx`, `messages/{th,en}.json`, `Design.md` §5.
+
+**Verified:** typecheck ✓ · lint ✓ · unit 658 passed / 17 skipped (4 new parser tests) ✓ · build ✓ · **live run** (temporary test, deleted): `apps.apple.com/th/app/line/id443904275` → name "LINE" + first-sentence one-liner + 512 icon as a PNG data URL; `play.google.com/.../com.whatsapp` → "WhatsApp Messenger", "Simple. Reliable. Private." + icon.
+
+**Next:** owner says "push" → the app redeploy ships store auto-fill.
+
 ## 2026-10-13 — Landing uses real featured data + quick text set; app login hint
 
 **Done** (carried over after the previous session hit its limit; all three remaining decisions implemented — nothing pushed or deployed without the owner's go):

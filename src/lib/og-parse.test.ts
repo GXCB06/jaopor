@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { parseOpenGraph, parseSiteIdentity } from "./og-parse";
+import {
+  appStoreId,
+  parseAppStoreLookup,
+  parseOpenGraph,
+  parsePlayStore,
+  parseSiteIdentity,
+} from "./og-parse";
 
 describe("parseOpenGraph", () => {
   it("prefers Open Graph tags and resolves a relative image", () => {
@@ -115,6 +121,68 @@ describe("parseSiteIdentity (Add-startup auto-fill)", () => {
       name: null,
       tagline: null,
       icons: ["https://www.acme.co.th/apple-touch-icon.png"],
+    });
+  });
+});
+
+describe("store links (Add-startup auto-fill)", () => {
+  it("reads the numeric app id from an App Store URL", () => {
+    expect(appStoreId("https://apps.apple.com/th/app/line/id443904275")).toBe(
+      "443904275",
+    );
+    expect(appStoreId("https://apps.apple.com/app/id123456789?l=en")).toBe(
+      "123456789",
+    );
+    expect(appStoreId("https://apps.apple.com/th/app/line")).toBeNull();
+  });
+
+  it("maps Apple's lookup JSON to name, one-liner and icon", () => {
+    const json = {
+      resultCount: 1,
+      results: [
+        {
+          trackName: "LINE",
+          subtitle: "",
+          description:
+            "LINE is transforming the way people communicate. And a lot more text after that.",
+          artworkUrl512: "https://is1-ssl.mzstatic.com/thumb/512x512bb.jpg",
+          artworkUrl100: "https://is1-ssl.mzstatic.com/thumb/100x100bb.jpg",
+        },
+      ],
+    };
+    expect(parseAppStoreLookup(json)).toEqual({
+      name: "LINE",
+      // Empty subtitle falls back to the first sentence of the description.
+      tagline: "LINE is transforming the way people communicate.",
+      icons: [
+        "https://is1-ssl.mzstatic.com/thumb/512x512bb.jpg",
+        "https://is1-ssl.mzstatic.com/thumb/100x100bb.jpg",
+      ],
+    });
+  });
+
+  it("returns null when the lookup finds nothing usable", () => {
+    expect(parseAppStoreLookup({ resultCount: 0, results: [] })).toBeNull();
+    expect(parseAppStoreLookup(null)).toBeNull();
+    expect(parseAppStoreLookup("nope")).toBeNull();
+  });
+
+  it("reads a Play page: trims the store suffix and uses the app icon", () => {
+    const html = `<head>
+      <meta property="og:title" content="WhatsApp Messenger - Apps on Google Play">
+      <meta property="og:description" content="Simple. Reliable. Private.">
+      <meta property="og:image" content="https://play-lh.googleusercontent.com/abc=s0-br30">
+      <link rel="icon" href="/favicon.ico">
+    </head>`;
+    expect(
+      parsePlayStore(
+        html,
+        "https://play.google.com/store/apps/details?id=com.whatsapp",
+      ),
+    ).toEqual({
+      name: "WhatsApp Messenger",
+      tagline: "Simple. Reliable. Private.",
+      icons: ["https://play-lh.googleusercontent.com/abc=s512"],
     });
   });
 });

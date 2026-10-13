@@ -208,3 +208,66 @@ export function parseSiteIdentity(html: string, pageUrl: string): SiteIdentity {
 
   return { name, tagline, icons };
 }
+
+// Store links (App Store / Google Play): the Add-startup auto-fill reads the **store's own**
+// metadata, not the page's og tags — an App Store page's tags describe the store itself (name
+// "App Store", Apple's own favicon), not the app. Apple's public lookup API gives clean values;
+// a Play page's tags name the app once the " - Apps on Google Play" suffix is removed.
+
+/** Numeric app id from an apps.apple.com URL (`.../id444934666`), else null. */
+export function appStoreId(url: string): string | null {
+  return /\/id(\d{5,})/.exec(url)?.[1] ?? null;
+}
+
+/** The first sentence of a long store description, clamped (the lookup API has no subtitle). */
+function firstSentence(s: string | null, max: number): string | null {
+  if (!s) return null;
+  const one = s.replace(/\s+/g, " ").trim();
+  const m = /^.{1,160}?[.!?。](?=\s|$)/.exec(one);
+  return clean(m ? m[0] : one, max);
+}
+
+/** Apple's iTunes lookup JSON → name / one-liner / icon candidates. Null when nothing is usable. */
+export function parseAppStoreLookup(payload: unknown): SiteIdentity | null {
+  const r = (payload as { results?: unknown[] } | null)?.results?.[0] as
+    | Record<string, unknown>
+    | undefined;
+  if (!r || typeof r !== "object") return null;
+  const str = (k: string) => (typeof r[k] === "string" ? (r[k] as string) : null);
+  const name = clean(str("trackName") ?? undefined, 80);
+  const tagline = firstSentence(str("subtitle") || str("description"), 140);
+  const icons = [
+    ...new Set(
+      [str("artworkUrl512"), str("artworkUrl100")].filter(
+        (u): u is string => !!u && u.startsWith("https://") && u.length <= 500,
+      ),
+    ),
+  ];
+  if (!name && !tagline && !icons.length) return null;
+  return { name, tagline, icons };
+}
+
+/** A Google Play page → name / one-liner / the app icon (Google's own favicon is dropped). */
+export function parsePlayStore(html: string, pageUrl: string): SiteIdentity {
+  const page = new URL(pageUrl);
+  const meta = metaTags(html);
+  const rawTitle =
+    meta.get("og:title") ??
+    /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1] ??
+    "";
+  const name = clean(
+    rawTitle.replace(/\s*[-–—|]\s*(apps on )?google play\s*$/i, "").trim(),
+    80,
+  );
+  const tagline = clean(
+    meta.get("og:description") ?? meta.get("description"),
+    140,
+  );
+  const ogImage = imageUrl(meta.get("og:image"), page);
+  // Play serves the icon through size params ("...=w240-h480"); ask for a large square instead.
+  const icon =
+    ogImage && ogImage.includes("googleusercontent.com")
+      ? ogImage.replace(/=[^/=]*$/, "=s512")
+      : ogImage;
+  return { name, tagline, icons: icon ? [icon] : [] };
+}

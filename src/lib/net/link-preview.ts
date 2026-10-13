@@ -1,8 +1,12 @@
 import "server-only";
 import {
+  appStoreId,
+  parseAppStoreLookup,
   parseOpenGraph,
+  parsePlayStore,
   parseSiteIdentity,
   type LinkPreview,
+  type SiteIdentity,
 } from "@/lib/og-parse";
 import { hasOwnerSnippet, sameSite } from "@/lib/traffic/pixel";
 import { guardedGet } from "./public-url";
@@ -16,6 +20,7 @@ const TIMEOUT_MS = 3000;
 const MAX_BYTES = 512 * 1024;
 const MAX_REDIRECTS = 3;
 const TTL_MS = 86_400_000;
+const UA = "JaoPorBot/1.0 (+https://jaopor.vercel.app)";
 const memo = new Map<string, { at: number; value: LinkPreview | null }>();
 
 /** Up to `max` bytes of the body; `whole` is false when the body was longer (or cut off). */
@@ -62,7 +67,7 @@ async function fetchGuarded(
     link.replace(/^http:/i, "https:"),
     {
       headers: {
-        "user-agent": "JaoPorBot/1.0 (+https://jaopor.vercel.app)",
+        "user-agent": UA,
         accept,
       },
       maxRedirects: MAX_REDIRECTS,
@@ -211,6 +216,101 @@ export async function getSiteAutofill(
   }
   if (identityMemo.size > 100) identityMemo.clear();
   identityMemo.set(link, { at: Date.now(), value });
+  return value;
+}
+
+// ---- Store links (App Store / Google Play) ------------------------------------------------------
+
+const STORE_MAX_BYTES = 2 * 1024 * 1024; // Play's og tags sit ~1 MB in, after a large inline state
+const storeMemo = new Map<string, { at: number; value: SiteAutofill | null }>();
+
+/** The first icon candidate that decodes to a usable logo (≥ 48 px), else null. */
+async function firstLogo(
+  icons: string[],
+  signal: AbortSignal,
+): Promise<string | null> {
+  for (const icon of icons.slice(0, 3)) {
+    const logo = await iconPng(icon, signal).catch(() => null);
+    if (logo || signal.aborted) return logo;
+  }
+  return null;
+}
+
+/** App Store: Apple's public lookup API (name, first line of the description, the 512 icon). */
+async function appStoreAutofill(
+  link: string,
+  signal: AbortSignal,
+): Promise<SiteAutofill | null> {
+  const id = appStoreId(link);
+  if (!id) return null;
+  // The store URL carries the storefront ("apps.apple.com/th/…"): read from it, else the default.
+  const country = /apps\.apple\.com\/([a-z]{2})\//.exec(link)?.[1];
+  const lookup = async (
+    c?: string,
+  ): Promise<SiteIdentity | null> => {
+    const { response: res } = await guardedGet(
+      `https://itunes.apple.com/lookup?id=${id}${c ? `&country=${c}` : ""}`,
+      {
+        headers: { "user-agent": UA, accept: "application/json, text/javascript, */*" },
+        maxRedirects: MAX_REDIRECTS,
+        maxBytes: 256 * 1024,
+        signal,
+      },
+    );
+    if (!res.ok) {
+      await res.body?.cancel().catch(() => {});
+      return null;
+    }
+    const { bytes, whole } = await readBytes(res, 256 * 1024);
+    if (!whole) return null;
+    try {
+      return parseAppStoreLookup(JSON.parse(new TextDecoder().decode(bytes)));
+    } catch {
+      return null;
+    }
+  };
+  const identity = (country ? await lookup(country) : null) ?? (await lookup());
+  if (!identity) return null;
+  const logo = await firstLogo(identity.icons, signal);
+  return identity.name || identity.tagline || logo
+    ? { name: identity.name, tagline: identity.tagline, logo }
+    : null;
+}
+
+/** Google Play: the page's own tags, with the app icon (Google's favicon is dropped). */
+async function playStoreAutofill(
+  link: string,
+  signal: AbortSignal,
+): Promise<SiteAutofill | null> {
+  const page = await fetchHtml(link, signal, STORE_MAX_BYTES);
+  if (!page) return null;
+  const identity = parsePlayStore(page.html, page.url);
+  const logo = await firstLogo(identity.icons, signal);
+  return identity.name || identity.tagline || logo
+    ? { name: identity.name, tagline: identity.tagline, logo }
+    : null;
+}
+
+/** Name, one-liner and logo for an App Store / Google Play link, or null when it can't be read. */
+export async function getStoreAutofill(
+  link: string,
+  kind: "app_store" | "play_store",
+): Promise<SiteAutofill | null> {
+  const key = `${kind}:${link}`;
+  const hit = storeMemo.get(key);
+  if (hit && Date.now() - hit.at < 3_600_000) return hit.value;
+  let value: SiteAutofill | null = null;
+  try {
+    const signal = AbortSignal.timeout(TIMEOUT_MS);
+    value =
+      kind === "app_store"
+        ? await appStoreAutofill(link, signal)
+        : await playStoreAutofill(link, signal);
+  } catch {
+    value = null; // blocked, timed out, or unreadable: the founder fills the fields in
+  }
+  if (storeMemo.size > 100) storeMemo.clear();
+  storeMemo.set(key, { at: Date.now(), value });
   return value;
 }
 

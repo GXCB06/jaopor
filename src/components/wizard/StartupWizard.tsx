@@ -225,10 +225,16 @@ export function StartupWizard({
 
   const check = checkProjectLink(link, linkChoice);
   const parsed = check?.ok ? check : null;
-  // Any general link (own site or platform page) for "already listed"; only the project's own
-  // site is read for auto-fill (A1.2: a Facebook page isn't the project's website).
+  // Any general link (own site or platform page) for "already listed" (a store listing isn't the
+  // website, so it can't duplicate one). Auto-fill reads the project's own site and its store
+  // listings; a platform page (A1.2, a Facebook page) or a GitHub / LINE link is never read.
   const generalUrl = parsed?.kind === "website" ? parsed.url : null;
-  const siteUrl = generalUrl && !parsed?.platform ? generalUrl : null;
+  const isStore =
+    parsed?.kind === "app_store" || parsed?.kind === "play_store";
+  const siteUrl =
+    parsed && !parsed.platform && (parsed.kind === "website" || isStore)
+      ? parsed.url
+      : null;
 
   // One business, one listing (Design.md §5 Add-startup wizard v2 "Already listed"): the owner's
   // projects, to catch a website they already listed before a second copy is created.
@@ -540,11 +546,11 @@ export function StartupWizard({
                       )}
                     >
                       {fillState === "done"
-                        ? t("autofillDone")
+                        ? t(isStore ? "autofillDoneStore" : "autofillDone")
                         : t("autofillReading")}
                       {/* C-14: what we read, at the moment we read it. */}
                       <span className="block text-2xs text-faint">
-                        {t("autofillPrivacy")}
+                        {t(isStore ? "autofillPrivacyStore" : "autofillPrivacy")}
                       </span>
                     </p>
                   )}

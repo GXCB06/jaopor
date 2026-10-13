@@ -3,12 +3,13 @@ import { parseProjectLink } from "@/lib/links";
 import { geminiJson } from "@/lib/ai/gemini";
 import { CATEGORIES, isCategory, type Category } from "@/lib/catalog";
 import { keywordCategory } from "@/lib/category-suggest";
-import { getSiteAutofill } from "@/lib/net/link-preview";
+import { getSiteAutofill, getStoreAutofill } from "@/lib/net/link-preview";
 import { createClient } from "@/lib/supabase/server";
 
-// Design.md §5 Add-startup wizard v2: signed-in users only. Reads the website they just pasted
-// (SSRF-guarded, see getSiteAutofill) and returns name, one-liner and logo to pre-fill step 1,
-// plus a suggested category.
+// Design.md §5 Add-startup wizard v2: signed-in users only. Reads the link they just pasted
+// (SSRF-guarded, see getSiteAutofill) — the project's own website, its App Store listing or its
+// Google Play listing — and returns name, one-liner and logo to pre-fill step 1, plus a suggested
+// category.
 // Nothing is saved here; the wizard shows the values in editable fields.
 
 const WINDOW_MS = 60_000;
@@ -32,11 +33,21 @@ export async function POST(req: Request) {
 
   const { link } = (await req.json().catch(() => ({}))) as { link?: unknown };
   const parsed = typeof link === "string" ? parseProjectLink(link) : null;
-  // A1.2: a platform page (Facebook…) isn't read: it isn't the project's own site.
-  if (!parsed || parsed.kind !== "website" || parsed.platform)
+  // A1.2: a platform page (Facebook…) isn't read: it isn't the project's own site. Store listings
+  // are read from the store's own metadata (App Store lookup / Play page), not the page HTML.
+  if (
+    !parsed ||
+    parsed.platform ||
+    (parsed.kind !== "website" &&
+      parsed.kind !== "app_store" &&
+      parsed.kind !== "play_store")
+  )
     return NextResponse.json({ error: "not_website" }, { status: 400 });
 
-  const site = await getSiteAutofill(parsed.url);
+  const site =
+    parsed.kind === "website"
+      ? await getSiteAutofill(parsed.url)
+      : await getStoreAutofill(parsed.url, parsed.kind);
   if (!site)
     return NextResponse.json({ error: "site_unreachable" }, { status: 502 });
   // Category suggestion (owner-approved 2026-10-12), shown as a one-click chip, never preselected.
