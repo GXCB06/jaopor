@@ -162,7 +162,8 @@ Where the warmth goes: welcome moments, empty states, Add-project intro, the pos
   - (the live board is exempt: its map always shows, owner 2026-10-13).
 - **Radius:** `--radius: 0.5rem`. Compact cards and dropdown buttons `rounded-lg` (8); profile tiles, insight cards, chart card, leaderboard, large cards `rounded-xl` (12); buttons/inputs `rounded-md` (6); pills `rounded-full`; tags `rounded-sm` (4).
 - **Spacing:** compact card `p-3`, large card / tile `p-4`, chart card `p-6`; section gap `mt-9` (36), `mt-12` between home sections; grids `gap-3`.
-- **Elevation:** none. Separation from `bg-card` + `border`.
+- **Elevation:** separation from `bg-card` + `border`, plus a hairline `shadow-xs` on `Card` (2026-10-13, white cards on the grey light page). No other shadows.
+- **Columns scroll together (owner 2026-10-13: "เลื่อนลงให้มันเลื่อนไปพร้อมกัน … รู้สึกเวียนหัว"):** a side column with content (the builder profile's sidebar, the project page, the Olympics sidebar) scrolls with the page; never pin one content column while the other moves. Only navigation may stay pinned: the site header, the identity bar and section tabs, the feed's view rail, the edit page's section nav, the wizard's live preview (it has to stay in view while you type), and bottom action bars.
 - **Native controls:** `color-scheme` follows the theme (date pickers, scrollbars). No native `<select>` anywhere: see §5 Dropdowns.
 
 ## 5. Components
@@ -540,7 +541,7 @@ Supersedes the 2026-10-12 draft below where they differ. **Inspiration (owner's 
 
 **4. Map placement.**
 
-- **Desktop (`lg`):** the sidebar keeps the map card at the top ("ภาคไหนแรงสุด": OlympicsMap + RegionStandings), sticky with the sidebar. It explains regions next to the rows rather than above them.
+- **Desktop (`lg`):** the sidebar keeps the map card at the top ("ภาคไหนแรงสุด": OlympicsMap + RegionStandings); the sidebar scrolls with the page (no pinned columns, owner 2026-10-13). It explains regions next to the rows rather than above them.
 - **Phones:** the map card stays right after the ranking (part 1). Not in the first screen: the race (podium) is the first thing to see; the map is the second look.
 - Tapping a province on the map opens the province page (as today); it does not filter the board. Region filtering stays in the controls.
 
@@ -733,6 +734,13 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
   - **Live side panel (from `lg`, `sticky top-20`, 20rem):** "ตัวอย่างการ์ดของคุณ" with the preview card shown from the start ("ชื่อผลงานของคุณ" until a name is typed), the existing hint, then "หลังจากนี้" (3 rows with icons: ยืนยันตัวเลข → การ์ดโชว์ตัวเลขจริง · หน้าผลงานพร้อมแชร์ · ลงแข่งโอลิมปิกจังหวัด). Phones: the preview sits under the cards, before the button.
   - **Step 2** opens with a success card (`border-positive/30 bg-positive/5`, CircleCheck): "สร้างหน้าผลงานแล้ว" + "{name} เปิดให้ทุกคนเห็นแล้ว ขั้นนี้ไม่บังคับ …", then the stage cards and the VerifyPanel as before; the side panel keeps the preview.
   - Motion: the section check and the progress bar change with `--motion-fast`; nothing moves with reduced motion.
+  - **v3.1 (owner 2026-10-13: "ไม่รู้เลยว่าปุ่ม anonymous หมายความว่ายังไง … ใช้พลังงานสมองให้น้อยที่สุด", too much plain text):**
+    - **Icons instead of paragraphs:** the two intro paragraphs become a row of 4 icon chips (`rounded-full border bg-card px-2.5 py-1 text-caption`, icon `size-3.5 text-brand-text`): Sparkles "วางลิงก์เดียว เราเติมให้" · PencilLine "แก้ได้ทุกอย่างทีหลัง" · Globe "กดเผยแพร่แล้วทุกคนเห็นทันที" · BadgeCheck "ตัวเลขที่ยืนยันมาจากขั้นที่ 2".
+    - **Section icons:** each card's header leads with an icon tile (`size-9 rounded-xl bg-brand/10 text-brand-text`): Link2 (ลิงก์), PencilLine (ชื่อ หมวดหมู่ โลโก้), MapPin (จังหวัด), Eye (ใครเห็นชื่อ). It becomes a green CircleCheck tile (`bg-positive/10 text-positive`) once the part is complete. The logo moves into part 2 (what the project looks like); part 3 is just the province.
+    - **"ใครเห็นชื่อผลงาน?" (part 4, optional, only when anonymous mode is live)** replaces the checkbox with two choice cards (`role="radiogroup"`, chosen = `border-brand bg-brand/5`), each with a tiny picture of what others will see:
+      - Eye **"แสดงชื่อผลงาน"** + "แนะนำ" chip: "คนอื่นเห็นชื่อ โลโก้ และลิงก์ของผลงาน"; picture = a logo square + the name.
+      - EyeOff **"ไม่เปิดเผยชื่อ"**: "ซ่อนชื่อ โลโก้ และลิงก์ แต่ยังโชว์ตัวเลขที่ยืนยันได้ เหมาะถ้ายังไม่อยากบอกว่าเป็นผลงานไหน"; picture = a grey square + a blurred bar.
+      - Default "แสดงชื่อผลงาน"; locked after the project is created (as before); the live preview card follows the choice.
 
 - **Loading (`/new/loading.tsx`, 2026-10-07, owner: "takes longer to open"):** a skeleton shaped like step 1 (title, 2 step bars, intro line, link field, name + category, one-liner, logo tile, button) shows the moment "เพิ่มผลงาน" is clicked, while the sign-in check runs. The verify step's code loads in the background after step 1 shows.
 - **Step labels:** "1. ลงผลงาน" / "List it" · "2. ยืนยันตัวเลข" / "Verify". Same 2-segment `border-t-2` bar; labels `text-caption font-semibold`, no uppercase (2026-10-08: the 10 px uppercase labels were hard to read in Thai).
@@ -786,7 +794,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 ### Builder profile v2 (`/u/[username]`, also `/@username`; Phase 10e, Figma "Founder Prfile 2nd" 160-2)
 
-- Breadcrumb (JaoPor › คนสร้าง › name, `text-2xs text-faint`), then `lg:grid-cols-[296px_minmax(0,1fr)] gap-12`; the sidebar is `lg:sticky lg:top-20` and stacks above the main column below `lg`.
+- Breadcrumb (JaoPor › คนสร้าง › name, `text-2xs text-faint`), then `lg:grid-cols-[296px_minmax(0,1fr)] gap-12`; the sidebar scrolls with the page (owner 2026-10-13: a pinned side column while the other scrolls felt dizzying; was `lg:sticky lg:top-20`) and stacks above the main column below `lg`.
 - **Sidebar:** avatar 144 (240 at `lg`) with a status dot · name `text-2xl font-bold` · `@handle` · **proof line** "{n} ผลงาน · {v} ยืนยันแล้ว · สร้างมา {m} เดือน" (`text-caption text-muted-foreground tabular-nums`, parts with no data left out) · headline · StatusPill · bio · ProfileActions (ติดต่อ / ติดตาม + "แชร์โปรไฟล์") · followers with the 30-day gain in positive ("128 ผู้ติดตาม +12 · 42 กำลังติดตาม") · info list · badges (round, grid of 4) · skills: superpowers as large chips (`border-brand bg-brand/15 px-3 py-1 font-bold text-brand-text`), the rest small (`bg-card px-2.5 text-2xs`) · "สร้างด้วย" · report.
 - **Main:** looking-for card → **4 stat tiles** (MRR รวม "จาก n ผลงานที่ยืนยัน" · รายได้ทั้งหมด "ตั้งแต่เริ่มขาย" · GitHub ★ "n commits" · อัปเดตผลงาน "โพสต์ใน 6 เดือน"; zero tiles hidden) → **revenue / activity card** (see "Profile revenue dashboard" below; "กิจกรรมการสร้าง" = the heatmap; no verified revenue → visitors see the heatmap alone, the owner sees both tabs with a "connect a payment provider" prompt) → pinned works (4, "ดูทั้งหมด n ›" shows the rest in place via `?works=all`) → experience (`sm:grid-cols-2 lg:grid-cols-3`, each entry `border-l-2 pl-3.5`, the current role `border-brand`) → **อัปเดตผลงาน** (latest 4 PostCards, `variant="profile"`, `md:columns-2` masonry, "ดูฟีดทั้งหมด →").
 - **Phone order (2026-10-10, master audit item 9):** below `lg` the sidebar keeps only identity — photo, name, proof line, headline, StatusPill, actions, followers, province — plus a skill preview that links to `#profile-extras`; bio, links, badges, the full skills list, "สร้างด้วย" and report move to the bottom of the main column (`#profile-extras`). The main column leads with looking-for → proof → revenue → pinned works → **experience → อัปเดตผลงาน** (experience moved above the feed so the founder's history isn't buried under posts).

@@ -1,6 +1,16 @@
 "use client";
 
-import { CheckIcon, CircleCheckIcon } from "lucide-react";
+import {
+  BadgeCheckIcon,
+  CheckIcon,
+  CircleCheckIcon,
+  EyeIcon,
+  EyeOffIcon,
+  GlobeIcon,
+  PencilLineIcon,
+  SparklesIcon,
+  type LucideIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/core/Card";
 import { cn } from "@/lib/utils";
@@ -74,15 +84,18 @@ export function WizardStepper({ step }: { step: 1 | 2 }) {
   );
 }
 
-/** One numbered part of step 1; the number turns into a green check once `done`. */
+/**
+ * One part of step 1: an icon tile, a title and one line of what to do. The tile turns into a
+ * green check once `done` (v3.1: icons instead of numbers and paragraphs).
+ */
 export function WizardSection({
-  n,
+  icon: Icon,
   title,
   hint,
   done,
   children,
 }: {
-  n: number;
+  icon: LucideIcon;
   title: string;
   hint: string;
   done: boolean;
@@ -96,20 +109,24 @@ export function WizardSection({
         done && "border-positive/30",
       )}
     >
-      <div className="flex items-start gap-3">
-        {done ? (
-          <CircleCheckIcon
-            className="size-6 shrink-0 text-positive"
-            aria-label={t("sections.complete")}
-          />
-        ) : (
-          <span
-            aria-hidden="true"
-            className="flex size-6 shrink-0 items-center justify-center rounded-full border text-caption font-bold text-muted-foreground tabular-nums"
-          >
-            {n}
-          </span>
-        )}
+      <div className="flex items-center gap-3">
+        <span
+          className={cn(
+            "flex size-9 shrink-0 items-center justify-center rounded-xl transition-colors duration-(--motion-fast)",
+            done
+              ? "bg-positive/10 text-positive"
+              : "bg-brand/10 text-brand-text",
+          )}
+        >
+          {done ? (
+            <CircleCheckIcon
+              className="size-5"
+              aria-label={t("sections.complete")}
+            />
+          ) : (
+            <Icon className="size-4.5" aria-hidden="true" />
+          )}
+        </span>
         <div className="min-w-0">
           <h2 className="text-sm font-semibold">{title}</h2>
           <p className="text-caption text-muted-foreground">{hint}</p>
@@ -144,5 +161,135 @@ export function WizardProgress({
         />
       </div>
     </div>
+  );
+}
+
+/**
+ * Part 4 "ใครเห็นชื่อผลงาน?" (v3.1): two choice cards instead of the anonymous checkbox, each
+ * with a tiny picture of what others will see. Locked once the project exists (as before).
+ */
+export function VisibilityChoice({
+  anonymous,
+  onChange,
+  disabled,
+  name,
+}: {
+  anonymous: boolean;
+  onChange: (anonymous: boolean) => void;
+  disabled: boolean;
+  /** The typed name, shown in the "public" picture. */
+  name: string;
+}) {
+  const t = useTranslations("Wizard");
+  const options = [
+    {
+      value: false,
+      icon: EyeIcon,
+      title: t("visibility.public"),
+      hint: t("visibility.publicHint"),
+      picture: (
+        <span className="flex items-center gap-1.5">
+          <span className="size-4 rounded bg-brand/60" />
+          <span className="max-w-24 truncate text-2xs font-semibold">
+            {name || t("previewPlaceholder")}
+          </span>
+        </span>
+      ),
+    },
+    {
+      value: true,
+      icon: EyeOffIcon,
+      title: t("visibility.anonymous"),
+      hint: t("visibility.anonymousHint"),
+      picture: (
+        <span className="flex items-center gap-1.5">
+          <span className="size-4 rounded bg-muted-foreground/30" />
+          <span className="h-2 w-16 rounded-full bg-muted-foreground/40 blur-[2px]" />
+        </span>
+      ),
+    },
+  ];
+  return (
+    <div role="radiogroup" className="space-y-2">
+      <div className="grid gap-2 sm:grid-cols-2">
+        {options.map((o) => {
+          const chosen = anonymous === o.value;
+          return (
+            <label
+              key={String(o.value)}
+              className={cn(
+                "flex cursor-pointer flex-col gap-2 rounded-xl border p-3 transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
+                chosen ? "border-brand bg-brand/5" : "bg-card hover:bg-accent",
+                disabled && "cursor-not-allowed opacity-60",
+              )}
+            >
+              <input
+                type="radio"
+                name="visibility"
+                checked={chosen}
+                disabled={disabled}
+                onChange={() => onChange(o.value)}
+                className="sr-only"
+              />
+              <span className="flex items-center gap-2">
+                <o.icon
+                  className={cn(
+                    "size-4 shrink-0",
+                    chosen ? "text-brand-text" : "text-muted-foreground",
+                  )}
+                  aria-hidden="true"
+                />
+                <span className="text-sm font-semibold">{o.title}</span>
+                {!o.value && (
+                  <span className="rounded-full bg-positive/10 px-2 py-0.5 text-2xs font-semibold text-positive">
+                    {t("visibility.recommended")}
+                  </span>
+                )}
+              </span>
+              <span className="text-caption text-muted-foreground">
+                {o.hint}
+              </span>
+              {/* What others will see. */}
+              <span
+                aria-hidden="true"
+                className="w-fit rounded-md border bg-background px-2 py-1.5"
+              >
+                {o.picture}
+              </span>
+            </label>
+          );
+        })}
+      </div>
+      {disabled && (
+        <p className="text-caption text-faint">{t("visibility.locked")}</p>
+      )}
+    </div>
+  );
+}
+
+/** v3.1: the intro as four icon chips instead of two paragraphs. */
+export function WizardIntro() {
+  const t = useTranslations("Wizard");
+  const chips = [
+    [SparklesIcon, t("intro.autofill")],
+    [PencilLineIcon, t("intro.editLater")],
+    [GlobeIcon, t("intro.live")],
+    [BadgeCheckIcon, t("intro.verified")],
+  ] as const;
+  return (
+    <ul className="flex flex-wrap gap-2">
+      {chips.map(([Icon, text]) => (
+        <li
+          key={text}
+          className="inline-flex items-center gap-1.5 rounded-full border bg-card px-2.5 py-1 text-caption text-muted-foreground"
+        >
+          <Icon
+            className="size-3.5 shrink-0 text-brand-text"
+            aria-hidden="true"
+          />
+          {text}
+        </li>
+      ))}
+    </ul>
   );
 }

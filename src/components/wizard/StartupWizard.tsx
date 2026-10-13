@@ -4,7 +4,11 @@ import {
   ArrowLeftIcon,
   CircleCheckIcon,
   CreditCardIcon,
+  EyeIcon,
+  Link2Icon,
+  MapPinIcon,
   MedalIcon,
+  PencilLineIcon,
   Share2Icon,
   ShieldCheckIcon,
   SproutIcon,
@@ -40,7 +44,13 @@ import { linkProblemText } from "./link-text";
 import { Field, inputClass } from "./fields";
 import { CategoryField } from "./CategoryField";
 import { LogoField } from "./LogoField";
-import { WizardProgress, WizardSection, WizardStepper } from "./WizardParts";
+import {
+  VisibilityChoice,
+  WizardIntro,
+  WizardProgress,
+  WizardSection,
+  WizardStepper,
+} from "./WizardParts";
 import { Card } from "@/components/core/Card";
 
 // Step 2 only: kept out of the first screen's JavaScript, then fetched in the background as soon as
@@ -452,13 +462,10 @@ export function StartupWizard({
         <div className="min-w-0">
           {step === 1 && (
             <form onSubmit={create} className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                {t("basicsIntro")}
-              </p>
-              {/* Item 8: what the founder types is owner-stated; verified numbers come from step 2. */}
-              <p className="text-caption text-faint">{t("selfReportedNote")}</p>
+              {/* Item 8 (owner-stated vs verified) lives in the last chip. */}
+              <WizardIntro />
               <WizardSection
-                n={1}
+                icon={Link2Icon}
                 title={t("sections.link")}
                 hint={t("sections.linkHint")}
                 done={linkDone}
@@ -525,7 +532,7 @@ export function StartupWizard({
                 </Field>
               </WizardSection>
               <WizardSection
-                n={2}
+                icon={PencilLineIcon}
                 title={t("sections.about")}
                 hint={t("sections.aboutHint")}
                 done={aboutDone}
@@ -571,25 +578,6 @@ export function StartupWizard({
                     />
                   </Field>
                 </div>
-              </WizardSection>
-              <WizardSection
-                n={3}
-                title={t("sections.place")}
-                hint={t("sections.placeHint")}
-                done={placeDone}
-              >
-                <Field
-                  label={t("province")}
-                  htmlFor="wizard-province"
-                  hint={t("provinceHint")}
-                >
-                  <ProvinceField
-                    id="wizard-province"
-                    value={province}
-                    onChange={setProvince}
-                    required
-                  />
-                </Field>
                 <Field
                   label={t("logo")}
                   htmlFor="logo"
@@ -613,26 +601,41 @@ export function StartupWizard({
                     }}
                   />
                 </Field>
-                {anonymousReady && (
-                  <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border p-3">
-                    <input
-                      type="checkbox"
-                      checked={anonymous}
-                      disabled={!!saved}
-                      onChange={(ev) => setAnonymous(ev.target.checked)}
-                      className="mt-0.5 size-4 shrink-0 accent-(--brand)"
-                    />
-                    <span className="space-y-0.5">
-                      <span className="block text-xs font-semibold">
-                        {an("wizardLabel")}
-                      </span>
-                      <span className="block text-caption text-muted-foreground">
-                        {an("wizardHint")}
-                      </span>
-                    </span>
-                  </label>
-                )}
               </WizardSection>
+              <WizardSection
+                icon={MapPinIcon}
+                title={t("sections.place")}
+                hint={t("sections.placeHint")}
+                done={placeDone}
+              >
+                <Field
+                  label={t("province")}
+                  htmlFor="wizard-province"
+                  hint={t("provinceHint")}
+                >
+                  <ProvinceField
+                    id="wizard-province"
+                    value={province}
+                    onChange={setProvince}
+                    required
+                  />
+                </Field>
+              </WizardSection>
+              {anonymousReady && (
+                <WizardSection
+                  icon={EyeIcon}
+                  title={t("sections.visibility")}
+                  hint={t("sections.visibilityHint")}
+                  done={false}
+                >
+                  <VisibilityChoice
+                    anonymous={anonymous}
+                    onChange={setAnonymous}
+                    disabled={!!saved}
+                    name={name.trim()}
+                  />
+                </WizardSection>
+              )}
               <div className="lg:hidden">{preview}</div>
               <WizardProgress done={sectionsDone} total={3} />
               {error && (

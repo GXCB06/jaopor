@@ -408,8 +408,6 @@
     "finish": "Publish profile",
     "limitReached": "You can list up to 5 projects.",
     "choose": "Choose…",
-    "basicsIntro": "Start with one link: we fill in the name, one-liner and logo from your site, and you can edit every field. Your project page goes live as soon as you publish, and you can edit or delete it any time.",
-    "selfReportedNote": "What you type shows as “owner-stated”; verified numbers come from the next step.",
     "nextVerifyHint": "Next: verify numbers (optional) — with Stripe, GitHub or a visitor counter.",
     "openStripe": "Open Stripe key page",
     "openStripeTest": "test mode",
@@ -476,10 +474,12 @@
       "link": "Paste your project link",
       "linkHint": "One link is enough: we fill in the name, one-liner and logo.",
       "about": "What is it called and what does it do?",
-      "aboutHint": "A name and a category help people find it.",
+      "aboutHint": "A name, category and logo help people remember and find it.",
       "place": "Which province?",
-      "placeHint": "It competes for your province in the Olympics. Add a logo if you have one.",
-      "complete": "This part is complete"
+      "placeHint": "It competes for your province in the Olympics.",
+      "complete": "This part is complete",
+      "visibility": "Who sees the project's name?",
+      "visibilityHint": "Optional. Most people show it."
     },
     "progress": "{done} of {total} parts ready",
     "previewTitle": "Your card preview",
@@ -489,7 +489,21 @@
     "afterShare": "Your project page is ready to share, with a post image",
     "afterOlympics": "It competes for your province in the Olympics",
     "createdTitle": "Your project page is live",
-    "createdBody": "{name} is now public. This step is optional: verify a number so the card shows real figures and joins the leaderboards."
+    "createdBody": "{name} is now public. This step is optional: verify a number so the card shows real figures and joins the leaderboards.",
+    "intro": {
+      "autofill": "One link, we fill in the rest",
+      "editLater": "Change anything later",
+      "live": "Public as soon as you publish",
+      "verified": "Verified numbers come in step 2"
+    },
+    "visibility": {
+      "public": "Show the name",
+      "publicHint": "Others see the project's name, logo and links.",
+      "recommended": "Recommended",
+      "anonymous": "Keep it anonymous",
+      "anonymousHint": "Hide the name, logo and links but still show verified numbers. For when you're not ready to say which project it is.",
+      "locked": "Change it on the edit page once the project exists."
+    }
   },
   "Errors": {
     "invalid_key": "{source} didn't accept that key or link — check it and paste again.",
@@ -2198,9 +2212,7 @@
     "turnOff": "Turn off",
     "on": "Anonymous mode is on",
     "off": "Anonymous mode is off",
-    "notReady": "This isn’t available yet. Please try again later.",
-    "wizardLabel": "Keep the project name private (anonymous)",
-    "wizardHint": "Show verified numbers without the name, logo or links. You can change it later on the edit page."
+    "notReady": "This isn’t available yet. Please try again later."
   },
   "CategoryPicker": {
     "suggested": "Suggested from your website:",

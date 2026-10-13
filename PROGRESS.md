@@ -12,6 +12,31 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-13 — Add Startup with icons and a clear "who sees the name" choice; founder page columns scroll together
+
+**Done** (owner: "ไม่รู้เลยว่าปุ่ม anonymous หมายความว่ายังไง … ใช้พลังงานสมองให้น้อยที่สุด"; "ตอนเลื่อนลงให้มันเลื่อนไปพร้อมกัน … รู้สึกเวียนหัว"):
+
+- **Add Startup v3.1:**
+  - The two intro paragraphs became 4 icon chips: one link, we fill the rest · change anything later · public when you publish · verified numbers come in step 2.
+  - Each part has an icon tile (link, pencil, map pin, eye) that turns into a green check once the part is complete.
+  - The logo moved into part 2, so part 3 is just the province.
+  - **"ใครเห็นชื่อผลงาน?"** replaces the anonymous checkbox with two picture cards:
+    - "แสดงชื่อผลงาน" (recommended), showing a logo and the typed name;
+    - "ไม่เปิดเผยชื่อ", showing a grey square and a blurred bar.
+  - Strings that are no longer used were removed (`Wizard.basicsIntro`, `selfReportedNote`, `Anonymous.wizardLabel/Hint`).
+- **Founder profile (`/u/…`):** the sidebar is no longer pinned, so both columns scroll together.
+- **Design.md §4:** new rule "Columns scroll together". Only navigation, bars and the wizard's live preview may stay pinned.
+- **Recorded in Project.md §7:**
+  - Aetox: consent given, but the 189-character text doesn't fit the 140-character one-liner, so the owner picks the wording.
+  - Spacing: the site reads easier at 90% zoom; to revisit.
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit 640 passed / 17 skipped · e2e local 121 passed / 0 failed.
+- Wizard screenshots at 1440 and 375, dark and light, through a temporary local page (deleted).
+
+**Next:** the owner picks the Aetox one-liner; push on the owner's go.
+
 ## 2026-10-13 — Project page like TrustMRR (4 key cards, Share + Visit on top), clearer cards in both themes, Add Startup with steps, Olympics bar always on
 
 **Done** (owner: profile "overwhelming" next to TrustMRR, wants 4 cards + Visit / Share placed properly; cards blend into the light page; Add Startup "plain text, no interactive experience"; "ranking bar … always display it"):

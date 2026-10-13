@@ -89,7 +89,7 @@ const isVerified = (s: BuilderWork) =>
   s.verification_status === "verified" && !s.is_demo;
 
 // Design.md §6 Builder profile (/u/[username], also /@username; Phase 9b, docs/design/profile.png):
-// sticky sidebar (who, actions, info, badges, skills, tools) + main column (looking-for card,
+// sidebar (who, actions, info, badges, skills, tools; scrolls with the page) + main column (looking-for card,
 // proof strip, pinned works, activity heatmap, experience | recent activity). Visitors never see
 // an empty section; the owner sees dashed "+ เพิ่ม…" prompts.
 export default async function BuilderProfilePage({
@@ -421,8 +421,8 @@ export default async function BuilderProfilePage({
         <span className="truncate text-foreground">{name}</span>
       </nav>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[296px_minmax(0,1fr)] lg:gap-12">
-        {/* Sidebar */}
-        <aside className="space-y-6 lg:sticky lg:top-20 lg:self-start">
+        {/* Sidebar: scrolls with the page (Design.md §4 "Columns scroll together", 2026-10-13). */}
+        <aside className="space-y-6 lg:self-start">
           <div className="relative w-fit">
             <span className="flex size-36 items-center justify-center overflow-hidden rounded-full border bg-secondary text-4xl font-bold text-muted-foreground uppercase lg:size-60 lg:text-7xl">
               <PersonPhoto
