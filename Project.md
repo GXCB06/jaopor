@@ -364,7 +364,8 @@ Phase 2+: `listings` · `listing_views` · `saves` · `conversations` · `messag
   - [x] Olympics v4 part 1 (rows, medals, bars, gated podium, coverage bar).
   - [x] Profile layout v3 (4 key cards, Share + Visit top right), page/card contrast in both themes, Add Startup v3 (stepper, section checks, live preview) (2026-10-13, local).
   - [x] Olympics v4 stepped podium built on the owner's go (2026-10-13; from 1 competing province, empty places dashed). Rest of the proposal (sticky your-province bar on phones, metric one-liners, region select on phones) not built yet.
-  - [ ] Decision: keep Google Analytics (~330 ms main thread per page on a mid phone, now lazyOnload) or rely on Vercel Analytics only.
+  - [x] Decision (owner 2026-10-13): keep Google Analytics (now lazyOnload).
+  - [x] Founder profile 4 key cards: revenue · MRR · followers (+30 days, GitHub when verified) · projects (2026-10-13). X followers not offered (paid API).
   - [ ] Owner approval: product-page tabs, recommendation A (smooth anchor scroll + focus + steady active tab) vs B (switching panels) (Design.md). Not built.
   - [x] **Aetox text (2026-10-13):** founder's consent relayed by the owner; owner chose option A. One-liner = the 137-character version, description = the founder's full 189-character text (DB row `aetox-harness`, updated directly).
   - [ ] **Spacing and type scale (owner 2026-10-13):** the site reads easier at 90% browser zoom than at 100%, though text then looks a little small. Revisit spacing / density together with the owner.

@@ -12,6 +12,22 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-13 — Founder profile: 4 key cards like TrustMRR (revenue · MRR · followers · projects)
+
+**Done** (owner, from TrustMRR's founder profile: "ชอบ … followers จาก social media และ total startups"; GA kept):
+
+- **The `/u/…` number strip** is now always the same 4 cards (the project page's StatCard look):
+  - รายได้รวม and MRR รวม: verified only, "—" + "ยังไม่มีรายได้ที่ยืนยัน" when none.
+  - **ผู้ติดตาม**: JaoPor followers with "+n ใน 30 วัน". It adds "GitHub n (@login)" only when the GitHub listed on the profile is the account the builder signs in with (`lib/data/github-followers`, GitHub public API, cached a day; 12 unit tests).
+  - **ผลงานทั้งหมด**: with "ยืนยันตัวเลขแล้ว n ชิ้น · ★ stars".
+- The old tiles (posts in 6 months, GitHub stars card) are folded into these cards.
+- **X followers are not offered:** X's API is paid, and we don't show numbers we can't check.
+- **Google Analytics as a visitor source in Add Startup:** the code and migration are live but the option stays hidden until JaoPor's Google service account exists (owner tasks in Project.md §7: create it, then add `GA4_SERVICE_ACCOUNT_JSON` and `NEXT_PUBLIC_GA4_SERVICE_EMAIL` in Vercel).
+
+**Verified:** typecheck ✓ · lint ✓ · unit 654 passed / 17 skipped · e2e local 121 passed / 0 failed.
+**Not verified:** the founder page in a browser. It can't render locally without `SUPABASE_SECRET_KEY`, which Claude doesn't handle. To check on production after the push.
+**Next:** owner says "push", then check `/th/u/gxcb06` at 1440 and 375.
+
 ## 2026-10-13 — Landing release: copy pass, example MRR card, two-line scene headline
 
 **Done** (owner: "commit, push และ deploy" plus four small changes; landing repo `da10466`, deployed as `dpl_83Vws4qXuTjhXM7u4bYeqDCvh81t`, READY, live on both `jaopor-landing.vercel.app` and the main domain):
