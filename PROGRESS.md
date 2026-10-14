@@ -12,6 +12,20 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-14 — Chat: edit and delete your own messages (+ card, bubble and wizard fixes)
+
+**Done** (owner: after the dark-theme chat review, "yes" to edit/delete + commit):
+
+- **Edit / delete your own chat messages.** New soft-delete migration `chat_message_edit_delete`: `chat_messages` gains `edited_at` / `deleted_at`, an author-only RLS UPDATE policy (live row, open conversation) and `private.chat_messages_edit_guard`. A delete empties the body and stamps `deleted_at`, so both people see "ข้อความถูกลบ" and the order is unchanged. New `editMessage` / `deleteMessage` server actions; the bubble's `⋯` menu (mine only) offers แก้ไข / ลบ with an inline editor; a realtime `UPDATE` subscription patches edits and deletes live; an edited bubble shows "· แก้ไขแล้ว". The conversation-list preview shows the deleted placeholder too.
+- **Card and bubble fixes.** The large StartupCard's category tag moved to its own full-width line (the header's copy-link / ✓ verified block was squeezing it to ~57px); the BuilderCard footer wraps its groups instead of overflowing; the incoming chat bubble gets a `border-border` outline (in the dark theme `--secondary` #18181b sat ~2 levels from the card #161618 and vanished into the thread).
+- **Wizard hint.** A pasted link we never read (LINE OA, GitHub, a social page) now says so, so the founder fills the name and details in.
+
+**Files:** `supabase/migrations/20261014120000_chat_message_edit_delete.sql`, `src/app/actions/chat.ts`, `src/components/chat/{ChatThread,ChatShell}.tsx`, `src/lib/data/chat.ts`, `src/lib/supabase/database.types.ts`, `src/components/StartupCard.tsx`, `src/components/builder/BuilderCard.tsx`, `src/components/wizard/StartupWizard.tsx`, `messages/{th,en}.json`, `supabase/tests/rls_smoke.sql`, `Design.md`
+
+**Verified:** `npm run typecheck` ✓ · `npm run lint` ✓ · `npx vitest run` 661 passed / 17 skipped ✓ · `npm run build` ✓ (60/60). Committed `a0a038b`, pushed to `master`. **Chat UI not visually checked** (needs a signed-in conversation) and the migration is **not applied** yet.
+
+**Next:** owner applies `20261014120000_chat_message_edit_delete.sql` → regenerate `database.types.ts` → advisors + `rls_smoke.sql` (T98a–d) → a signed-in click-through of edit/delete.
+
 ## 2026-10-14 — Main domain opens the product; the landing stays on its own domain
 
 **Done** (owner: the landing already lives at `jaopor-landing.vercel.app`, so serving it from `jaopor.vercel.app` too is redundant — a click on `jaopor.vercel.app` should open the product):
