@@ -117,7 +117,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: localeAlternates(locale, `/startup/${startup.slug}`),
+    alternates: {
+      ...localeAlternates(locale, `/startup/${startup.slug}`),
+      // A Markdown twin for AI agents (Design.md §4 SEO).
+      types: { "text/markdown": `/${locale}/startup/${startup.slug}/md` },
+    },
     openGraph: {
       type: "website",
       siteName: "JaoPor",

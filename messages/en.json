@@ -2245,6 +2245,12 @@
     "off": "Anonymous mode is off",
     "notReady": "This isn’t available yet. Please try again later."
   },
+  "Md": {
+    "details": "Basics",
+    "links": "Links",
+    "canonical": "Web page",
+    "lastUpdated": "Last updated"
+  },
   "CategoryPicker": {
     "suggested": "Suggested from your website:",
     "placeholder": "Type a category, e.g. games, education, shop",

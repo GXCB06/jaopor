@@ -157,6 +157,7 @@ Where the warmth goes: welcome moments, empty states, Add-project intro, the pos
   - Category and province pages with 0 projects are `noindex, follow` (`EMPTY_PAGE_ROBOTS`).
   - `app/robots.ts` allows the site and keeps out `/api`, dashboard, new, onboarding and login.
   - `app/sitemap.ts` lists static pages, published non-anonymous projects, directory builders, and non-empty categories and provinces, in both languages with alternates; revalidated hourly.
+  - **AI-readable surfaces (launch-plan §Should-have, 2026-10-14):** `app/llms.txt/route.ts` serves an [llms.txt](https://llmstxt.org/) index (plain text: key pages, non-empty categories and recent non-demo projects, each linked to its Markdown twin), revalidated hourly. Every public project also has a Markdown twin at `/{locale}/startup/{slug}/md`, built by `lib/llms.ts` (localized labels; each counted or verified number is followed by an em-dash and its source). The profile page advertises the twin with `<link rel="alternate" type="text/markdown">`, and the proxy rewrites the human URL to the twin when a client sends `Accept: text/markdown`. Demo projects never get a twin.
 - **Thresholded home (product audit 2026-10-12):** a module that would show too little data gives way to something honest instead of looking empty:
   - each leaderboard opens on its own at 3 rankable projects (§5 LeaderboardCard);
   - (the live board is exempt: its map always shows, owner 2026-10-13).

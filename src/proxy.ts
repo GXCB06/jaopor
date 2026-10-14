@@ -3,6 +3,7 @@ import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
 import { atPathTarget } from "./lib/at-path";
+import { markdownPathTarget } from "./lib/llms";
 import { publicEnv } from "./lib/public-env";
 
 // Next.js 16 renamed Middleware to Proxy.
@@ -10,6 +11,13 @@ import { publicEnv } from "./lib/public-env";
 const intl = createIntlMiddleware(routing);
 
 export default async function proxy(request: NextRequest) {
+  // An AI agent that asks for Markdown gets the profile's .md twin (Design.md §4 SEO).
+  const markdown = markdownPathTarget(
+    request.nextUrl.pathname,
+    request.headers.get("accept"),
+  );
+  if (markdown) return NextResponse.rewrite(new URL(markdown, request.url));
+
   // /@handle → /{locale}/u/{handle} (Phase 9b short profile links).
   const at = atPathTarget(request.nextUrl.pathname, routing.defaultLocale);
   const response = at
