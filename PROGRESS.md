@@ -12,6 +12,19 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-14 — Content-driven BuilderCard footer + drag-to-reorder screenshots
+
+**Done** (owner: the founder card should lay out safely for arbitrary user content at any width, and the screenshot `<`/`>` reorder was frustrating — make it drag-and-drop):
+
+- **BuilderCard footer is now content-driven and robust.** The previous fix used a zero-basis flexible spacer to push the province right, but a spacer still consumes the `gap-x-3` column gap, so at some widths it wrapped onto the province's own line and its `flex-grow` pushed the _wrapped_ province to the far right (the exact bug it was meant to prevent). Replaced the spacer with `justify-between` and the province as the row's second child: on one line the province sits at the right edge, and because `space-between` falls back to the start for a lone item, a province that wraps to its own line lands at the **left** edge. Every part wraps internally (`min-w-0` + `[overflow-wrap:anywhere]`); no item carries `nowrap` and nothing is width-fixed. Also added `title` tooltips on name / handle / headline and made skill chips truncate (`max-w-full truncate`).
+- **Screenshots reorder is now drag-and-drop.** Native HTML5 DnD on each tile with real feedback: a `GripVerticalIcon` handle, the dragged tile fades to 40% (`opacity-40`), and the hovered drop target gets `ring-2 ring-brand`. `draggable={false}` on the image and `text/plain` set on the dataTransfer (Firefox won't start a drag without data). The pure `moveShot` helper was extracted to `lib/media.ts` and unit-tested; the `<`/`>` buttons stay for keyboard and touch (native DnD doesn't work on touch) and the caption input keeps `select-text`.
+
+**Files:** `src/components/builder/BuilderCard.tsx`, `src/components/wizard/ScreenshotsManager.tsx`, `src/lib/media.ts`, `src/lib/media.test.ts`, `Design.md`
+
+**Verified:** `npm run typecheck` ✓ · `npm run lint` ✓ · `npx vitest run` 665 passed / 17 skipped ✓ · `npm run build` ✓ (60/60). BuilderCard measured with a temporary stress route (fixed-width fixtures at **360→110 px**, th + en, desktop 1280 + mobile-375): same-row province right-aligned, wrapped-alone province **left**-aligned, no horizontal overflow, and the revenue badge + amount always on one row (both alignment branches exercised). Temporary route + Playwright spec deleted afterwards. Committed `3ca6e29`, pushed to `master`.
+
+**Next:** owner click-through of drag reordering on the edit page (needs a signed-in my project); builder profile pages still need `SUPABASE_SECRET_KEY` to render locally.
+
 ## 2026-10-14 — Fix four owner-reported issues: unread badge, login logos, Stripe guide, GA4
 
 **Done** (owner: four issues after using the product — the messages badge didn't clear, the login buttons had no provider logos, the Stripe restricted-key guide was confusing after Stripe changed its flow, and Google Analytics never appeared as a choice):
