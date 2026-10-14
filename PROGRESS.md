@@ -12,6 +12,22 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-14 — AI-readable surfaces: `llms.txt` + a Markdown twin per project
+
+**Done** (roadmap item "`llms.txt` + Markdown pages", launch-plan §Should-have; the visitor-chart half of the neighbouring roadmap row turned out to be already shipped):
+
+- **`/llms.txt`** — a plain-text [llms.txt](https://llmstxt.org/) index generated from the same public data as the site: key pages, non-empty categories and up to 60 recent non-demo projects, each linking to its Markdown twin. English-only machine file, `Content-Type: text/plain`, hourly revalidation.
+- **A Markdown twin per project** at `/{locale}/startup/{slug}/md` — localized labels, a blockquote summary, the verified/counted numbers each stamped with its source (the page's `tractionTiles` logic), then Basics / Description / Problem / Value / Links, and a provenance footer (canonical URL + last updated). Demos and bad locales/slugs 404.
+- **Discovery + negotiation** — the profile advertises the twin with `<link rel="alternate" type="text/markdown">`, and the proxy rewrites the human URL to the twin on `Accept: text/markdown` (`markdownPathTarget` in `lib/llms.ts`).
+- **Visitors chart was already shipped** — `getChartSeries` builds the `visitors` series when traffic disclosure is exact and the chart already renders it; no code change, just the roadmap tick.
+- Decisions: the canonical twin is a `/md` sub-path (not a `.md` suffix) so the proxy's dot-based matcher stays untouched; builders (`/u/…`) are excluded — they read through the admin client (`SUPABASE_SECRET_KEY`).
+
+**Files:** `src/lib/llms.ts`, `src/lib/llms.test.ts`, `src/app/llms.txt/route.ts`, `src/app/[locale]/startup/[slug]/md/route.ts`, `src/proxy.ts`, `src/app/[locale]/startup/[slug]/page.tsx`, `e2e/llms.spec.ts`, `messages/{th,en}.json`, `Design.md`, `Project.md`
+
+**Verified:** `npm run typecheck` ✓ · `npm run lint` ✓ · `npx vitest run` 673 passed / 17 skipped ✓ · `npm run build` ✓ · `npm run test:e2e` 125 passed / 21 skipped ✓ · prettier ✓. Runtime: `/llms.txt` 200 with real data; `/th/startup/jaopor/md` shows the Thai fact bullets with source stamps; `/en/…/md` shows English labels; `Accept: text/markdown` on the human URL returns the twin; an unknown slug 404s. Committed `cd5f441`, pushed to `master`.
+
+**Next:** item 5 (OG-card font, analytics-connection re-check) → item 1 (Polar / LemonSqueezy / PostHog / App Store Connect) → item 3 (bookmarks/saves + claim flow, ships a migration the owner applies).
+
 ## 2026-10-14 — Content-driven BuilderCard footer + drag-to-reorder screenshots
 
 **Done** (owner: the founder card should lay out safely for arbitrary user content at any width, and the screenshot `<`/`>` reorder was frustrating — make it drag-and-drop):
