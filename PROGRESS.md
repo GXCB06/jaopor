@@ -12,6 +12,21 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-14 — Fix four owner-reported issues: unread badge, login logos, Stripe guide, GA4
+
+**Done** (owner: four issues after using the product — the messages badge didn't clear, the login buttons had no provider logos, the Stripe restricted-key guide was confusing after Stripe changed its flow, and Google Analytics never appeared as a choice):
+
+- **Header messages badge now clears when you read.** `markRead` stamps `conversation_reads.last_read_at` with the **database's own clock** (the newest message's `created_at`) instead of the server's `new Date()` — server/frontend clock skew left the last message reading as unread forever. `unreadByConversation` also skips soft-deleted messages. `ChatThread` dispatches a `READ_EVENT` on `window` after each read; `MessagesLink` listens for it (plus window focus), so the badge drops the moment you open a thread instead of waiting up to the 60s poll.
+- **Login buttons show provider logos.** Monochrome Google "G" and GitHub marks (Simple Icons paths) inside `LoginButtons`, sized by the Button's `[&_svg]` rule.
+- **Stripe restricted-key guide matches the new dashboard flow.** Steps now walk Stripe › Developers › API keys › Create restricted key → "Building your own integration" → "Custom permissions", and the permission table labels each row's category — **Charges sits under Core, Subscriptions under Billing**, so setting all of Core to Read is not enough (the owner's exact trap). `ProviderError("missing_permission")` now carries the resource as `detail`, so the error names it: "คีย์ยังขาดสิทธิ์อ่านสำหรับ Subscriptions — ตั้ง Subscriptions เป็น Read ตามขั้นตอนด้านบน".
+- **Google Analytics is always offered in the verify chooser.** Removed the `NEXT_PUBLIC_GA4_SERVICE_EMAIL` gate on visibility; when the email isn't set the email box shows a "not configured on this deployment" note (the secret `GA4_SERVICE_ACCOUNT_JSON` still gates a real connect). Also dropped the stale "Google Analytics not supported yet" traffic note.
+
+**Files:** `src/lib/chat.ts`, `src/app/actions/chat.ts`, `src/components/chat/{ChatThread,MessagesLink}.tsx`, `src/components/LoginButtons.tsx`, `src/components/wizard/VerifyPanel.tsx`, `src/lib/revenue/providers/stripe.ts`, `messages/{th,en}.json`
+
+**Verified:** `npm run typecheck` ✓ · `npm run lint` ✓ · `npx vitest run` 661 passed / 17 skipped ✓ · `npm run build` ✓ (60/60). Committed `9bc555c`, pushed to `master`. UI not visually checked (badge needs a signed-in conversation; the GA4 email box needs `NEXT_PUBLIC_GA4_SERVICE_EMAIL`).
+
+**Next:** owner sets `NEXT_PUBLIC_GA4_SERVICE_EMAIL` (public) **and** `GA4_SERVICE_ACCOUNT_JSON` (secret) in Vercel for GA4 to connect; a signed-in click-through that the header badge clears after reading a thread.
+
 ## 2026-10-14 — Chat: edit and delete your own messages (+ card, bubble and wizard fixes)
 
 **Done** (owner: after the dark-theme chat review, "yes" to edit/delete + commit):
