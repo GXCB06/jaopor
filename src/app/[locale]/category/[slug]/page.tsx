@@ -68,7 +68,7 @@ export default async function CategoryPage({ params }: Props) {
     .slice(0, 12);
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 pt-8">
+    <main className="mx-auto w-full max-w-page px-4 pt-8">
       <nav
         aria-label="breadcrumb"
         className="mb-6 flex min-w-0 items-center justify-center gap-1.5 text-caption text-faint"

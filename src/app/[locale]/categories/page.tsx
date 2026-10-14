@@ -48,7 +48,7 @@ export default async function CategoriesPage({
   const empty = anyListed ? cards.filter((c) => c.count === 0) : [];
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 pt-8">
+    <main className="mx-auto w-full max-w-page px-4 pt-8">
       <nav
         aria-label="breadcrumb"
         className="mb-6 flex items-center justify-center gap-1.5 text-caption text-faint"

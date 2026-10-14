@@ -72,6 +72,9 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* Design.md §4 Container (2026-10-14): the one public page container. 64rem = 1152px at the
+     112.5% root, matching TrustMRR's container; header, footer, identity bar and every page share it. */
+  --container-page: 64rem;
 }
 
 :root {

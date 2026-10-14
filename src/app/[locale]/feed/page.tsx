@@ -177,7 +177,7 @@ export default async function FeedPage({
   );
 
   return (
-    <main className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 px-4 pt-8 pb-16 lg:grid-cols-[12.5rem_minmax(0,1fr)] xl:grid-cols-[12.5rem_minmax(0,1fr)_18rem]">
+    <main className="mx-auto grid w-full max-w-page grid-cols-1 gap-8 px-4 pt-8 pb-16 lg:grid-cols-[12.5rem_minmax(0,1fr)] xl:grid-cols-[12.5rem_minmax(0,1fr)_18rem]">
       <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
         <div className="space-y-1">
           <h1 className="text-2xl font-extrabold">{t("title")}</h1>

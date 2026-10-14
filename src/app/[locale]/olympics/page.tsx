@@ -140,7 +140,7 @@ export default async function OlympicsPage({
   );
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 pt-6">
+    <main className="mx-auto w-full max-w-page px-4 pt-6">
       <nav
         aria-label="breadcrumb"
         className="mb-4 flex items-center gap-1.5 text-2xs text-faint"

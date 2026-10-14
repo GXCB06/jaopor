@@ -75,7 +75,7 @@ export default async function ProvincePage({ params }: Props) {
   );
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 pt-8">
+    <main className="mx-auto w-full max-w-page px-4 pt-8">
       <nav
         aria-label="breadcrumb"
         className="mb-4 flex min-w-0 items-center gap-1.5 text-2xs text-faint"

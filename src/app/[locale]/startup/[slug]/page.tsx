@@ -373,7 +373,7 @@ export default async function StartupPage({ params }: Props) {
 
   return (
     <OwnerProvider ownerId={startup.owner_id} startupId={startup.id}>
-      <main className="mx-auto w-full max-w-6xl space-y-6 px-4 pt-8">
+      <main className="mx-auto w-full max-w-page space-y-6 px-4 pt-8">
         <nav
           aria-label="breadcrumb"
           className="flex items-center gap-1.5 text-2xs text-faint"

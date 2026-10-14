@@ -149,7 +149,7 @@ Where the warmth goes: welcome moments, empty states, Add-project intro, the pos
 
 ## 4. Layout
 
-- **Container (layout audit 2026-10-12):** one public container, **`max-w-6xl px-4`**, the same as the site header and footer, so every page's left edge lines up with the logo. It applies to home, project profile, directories, feed and Olympics. Only forms keep `max-w-5xl` (the project edit page) for line length. No horizontal scroll at 375px.
+- **Container (layout audit 2026-10-12; width refined 2026-10-14):** one public container, **`max-w-page px-4`** (`--container-page: 64rem` = **1152px** at the 112.5% root, matching TrustMRR's `max-w-5xl`), the same as the site header, footer and identity bar, so every page's left edge lines up with the logo. It applies to home, project profile, directories, feed and Olympics. (Before the 2026-10-14 pass it was `max-w-6xl` = 72rem = 1296px, which left almost no side whitespace on a 1280–1440 laptop; `max-w-6xl` scaled with the root and was wider than assumed.) Only forms keep `max-w-5xl` (the project edit page) for line length. No horizontal scroll at 375px.
 - **Sparse grids:** a grid never leaves whole empty columns because of a low count. Home card rows use fewer, wider columns: 3 cards → 3 columns, 4 → 4 (2×2 at `md`), 5 or more → 5. Directory grids with a sidebar (`/startups`, `/builders`) are `sm:2 · xl:3` columns. Grids beside a sidebar use `minmax(0,1fr)` so long content can't widen them.
 - **Section rhythm on home:** sections are `mt-12` apart. A section heading outside a card is `text-lg font-bold tracking-tight`; a heading inside a card is `text-base font-bold` (`text-sm` below `sm` where the row also holds controls, e.g. the LeaderboardCard).
 - **SEO (product audit 2026-10-12):**
@@ -191,7 +191,7 @@ Each lives in `src/components/` (shadcn primitives in `src/components/ui/`).
 
 ### SiteHeader (sticky, ledgerly pattern)
 
-- `sticky top-0 z-40 border-b bg-background`, `h-14`, inner `max-w-6xl`, gaps `gap-3` (`md:gap-6`).
+- `sticky top-0 z-40 border-b bg-background`, `h-14`, inner `max-w-page`, gaps `gap-3` (`md:gap-6`).
 - Left: `BrandLogo` = `<Logo>` (blue app tile 28px + "JaoPor"). **Nav links from `lg`** (`text-xs text-muted-foreground hover:text-foreground`): ผลงาน · หมวดหมู่ · โอลิมปิก · กระดานผู้นำ · แดชบอร์ด (`whitespace-nowrap`, `gap-4`/`xl:gap-5`; แดชบอร์ด only from `xl` because five links don't fit at 1024px and it is also in the avatar menu). Right-side gaps `lg:gap-2 xl:gap-3`.
 - Right: **CurrencyToggle** (฿/$; "THB/USD" text from `xl`), **search trigger** (`/` shortcut), primary **"+ เพิ่มผลงาน"** (icon-only below `sm`), **HeaderAuth** (signed out: "เข้าสู่ระบบ" from `sm`, a `LogIn` icon button below; signed in: avatar menu), TH/EN (full name from `xl`; both moved from `lg` on 2026-10-08: the English header overflowed 1024 px by about 45 px) and ThemeToggle (both from `sm`), then **MobileNav** below `lg`: a `size-8` `Menu` icon button opening a DropdownMenu with the nav links, and below `sm` also the language switch and the theme switch.
 - Must fit 360px (no horizontal scroll), 768px and 1024px in both languages.
@@ -295,7 +295,7 @@ Rule for **every** list that drops from a control (selects, filters, action menu
 ### Profile header
 
 - **Profile layout v3 (owner 2026-10-13, compared with TrustMRR: "overwhelming … ตำแหน่งการวาง layout"; supersedes the two-column layout, the cover, the headline number and the pinned left column below).** What a visitor should do here, in order: see the 4 key cards, read the chart, then Visit or Share. Everything else comes after.
-  - **One column**, `max-w-6xl`, no cover banner (the screenshots are further down; anonymous projects lose nothing).
+  - **One column**, `max-w-page`, no cover banner (the screenshots are further down; anonymous projects lose nothing).
   - **Header row:** logo 64 (`rounded-2xl`, 56 on phones) · name `text-2xl sm:text-3xl font-bold` + tagline `font-prose text-body text-muted-foreground` (2 lines max on phones) · a meta row (`text-caption`): category link, FoundingBadge, team chip, VerifiedBadge, evidence-ladder ⓘ, anonymous chip, LiveViewersPill. **Right side (from `sm`): Share (outline) then "เข้าเว็บไซต์ ↗" (primary), both `h-9`**, top-aligned with the name, as on TrustMRR. Phones: the two buttons sit in one row under the header (Visit `flex-1`). Other project links (GitHub, store pages) stay as small chips under the meta row.
   - **Four cards** right under the header (`KeyCards`: `grid grid-cols-2 gap-3 lg:grid-cols-4`, `StatCard` look: label `text-caption font-semibold text-faint uppercase`, value `text-2xl font-bold tabular-nums`, caption `text-caption text-muted-foreground`):
     1. **รายได้ทั้งหมด** (verified) · caption "อันดับ #n" · ⓘ source.
@@ -467,7 +467,7 @@ Card renderer (next/og, renderer palette in `lib/share-palette.ts`):
 
 ### Categories page (`/[locale]/categories`, spec 6.6; compact redesign 2026-09-30, user: "too big to scan", TrustMRR pattern)
 
-- `main max-w-6xl`: centred breadcrumb (JaoPor › หมวดหมู่, `text-caption text-faint`) → centred H1 "สำรวจหมวดหมู่" (`text-2xl md:text-3xl font-bold`) → subtitle.
+- `main max-w-page`: centred breadcrumb (JaoPor › หมวดหมู่, `text-caption text-faint`) → centred H1 "สำรวจหมวดหมู่" (`text-2xl md:text-3xl font-bold`) → subtitle.
 - Grid `grid gap-3 sm:grid-cols-2 lg:grid-cols-4` of **one-line CategoryCards**: `rounded-xl border bg-card p-3 flex items-center gap-3` link (hover `border-border-strong`) → 40px icon box (`size-10 rounded-lg bg-background`, icon 18px) · name (`text-sm font-semibold truncate`) + count (`text-2xs font-bold text-brand-text`, "{n} ผลงาน", only when > 0) · description one line (`text-caption text-muted-foreground truncate`).
 - Sorted by count, then config order. Count 0 → icon `opacity-50`, name `text-muted-foreground`.
 - **Empty categories fold away (2026-10-07, UX review: 36 of 37 were empty cards):** when at least one category has projects, only those get cards. The empty ones follow as one compact chip row: heading "ยังว่าง {n} หมวด" (`text-sm font-bold`) + hint "ลงผลงานเป็นคนแรกในหมวดเหล่านี้" with a `text-brand-text` link "เพิ่มผลงาน →" (`/new`), then chips `rounded-full border bg-card px-2.5 py-1 text-caption text-muted-foreground` with the 14px icon, each linking to `/category/{slug}`. With no projects anywhere, the card grid stays as it is.
@@ -866,7 +866,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 
 ### Feed (`/feed`, Phase 10c, Figma "Feed Ux/ui" 160-555)
 
-- Three columns from `xl` (`xl:grid-cols-[12.5rem_minmax(0,1fr)_18rem] gap-8`, max-w-6xl; the right rail is a fixed 18rem so names and follow buttons fit, layout audit 2026-10-12); at `lg` two columns with the right rail under the posts (1024px is too narrow for three); below `lg` one column, the view tabs become a horizontal scroll row and type / province / category fold into the CSS-only "ตัวกรอง" toggle as on /startups.
+- Three columns from `xl` (`xl:grid-cols-[12.5rem_minmax(0,1fr)_18rem] gap-8`, max-w-page; the right rail is a fixed 18rem so names and follow buttons fit, layout audit 2026-10-12); at `lg` two columns with the right rail under the posts (1024px is too narrow for three); below `lg` one column, the view tabs become a horizontal scroll row and type / province / category fold into the CSS-only "ตัวกรอง" toggle as on /startups.
 - **Left:** "ฟีด" `text-2xl font-extrabold` + "คนสร้างอัปเดตอะไรกันบ้าง"; view links ล่าสุด / กำลังติดตาม / ยอดนิยมสัปดาห์นี้ (`h-10 rounded-lg px-3`, active `bg-secondary font-bold`); "ประเภท" chips (ทั้งหมด + 5 types, each in its type colour, active = filled `bg-foreground text-background`); จังหวัด and หมวดหมู่ MultiChoice filters (GET form, several values each). Everything lives in the URL (`view`, `type`, `province`, `category`, `waiting`).
 - **Center:** Composer, then PostCards (`space-y-4`), then "โหลดเพิ่ม" (`h-12 w-full rounded-xl border`) which appends the next page in place (cursor = the last post's time; popular uses an offset). Empty: dashed one-liner per view (following with no follows → "ติดตามคนสร้างเพื่อเห็นอัปเดตที่นี่" + link to /builders).
 - **Right rail** (`space-y-5`): "คนสร้างที่น่าติดตาม" (3 rows: avatar 36, name + "● หา Co-founder" in positive when looking, startup · province, ติดตาม outline button) · "อัปเดตบ่อยสุดสัปดาห์นี้" (top 3 startups by posts in 7 days: logo 28, name, "n โพสต์") · "รอ Feedback จากคุณ" teal card (`border-info/40 bg-info/10`; count of feedback posts from the last 14 days that aren't mine and I haven't commented on; "ดูโพสต์ที่รอคำตอบ" → `?type=feedback&waiting=1`). Signed-out visitors see the count of feedback posts with no comments yet.

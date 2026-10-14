@@ -195,7 +195,7 @@ export default async function StartupsPage({
   );
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4">
+    <main className="mx-auto w-full max-w-page px-4">
       <section className="mx-auto flex max-w-2xl flex-col items-center pt-10 pb-8 text-center">
         <BrandPill />
         <h1 className="mb-3 text-2xl leading-tight font-bold tracking-tight md:text-[2.125rem]">

@@ -409,7 +409,7 @@ export default async function BuilderProfilePage({
   );
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 pt-6 pb-16">
+    <main className="mx-auto w-full max-w-page px-4 pt-6 pb-16">
       <ProfileViewBeacon profileId={profile.id} />
       <nav
         aria-label={t("breadcrumb")}

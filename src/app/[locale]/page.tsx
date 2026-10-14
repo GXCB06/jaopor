@@ -137,7 +137,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const freshTraction = traction.filter((s) => !shownRecent.has(s.id));
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4">
+    <main className="mx-auto w-full max-w-page px-4">
       <section className="relative isolate flex flex-col items-center pt-10 pb-10 text-center md:pt-14">
         <HeroLight />
         <HeroBrand />
