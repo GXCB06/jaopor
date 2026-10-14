@@ -4,6 +4,7 @@ import {
   SOURCE_KIND,
   SOURCE_NAME,
   SOURCES,
+  recommendedMetric,
   sourcesOfKind,
   type SourceId,
 } from "@/lib/sources/catalog";
@@ -50,5 +51,21 @@ describe("sources catalog — metric mapping", () => {
     expect(SOURCE_NAME.ga4).toBe("Google Analytics");
     const all: readonly string[] = SOURCES;
     expect(all).not.toContain("google-analytics" as SourceId);
+  });
+});
+
+// The wizard's "Recommended" badge: derived from the chosen stage, never a separate choice.
+describe("sources catalog — recommended metric per stage", () => {
+  it("recommends build proof while there is no revenue yet", () => {
+    expect(recommendedMetric("early")).toBe("build");
+  });
+
+  it("recommends revenue once the project earns", () => {
+    expect(recommendedMetric("revenue")).toBe("revenue");
+  });
+
+  it("recommends nothing before a stage is chosen", () => {
+    expect(recommendedMetric(null)).toBeUndefined();
+    expect(recommendedMetric(undefined)).toBeUndefined();
   });
 });

@@ -23,6 +23,23 @@ export type SourceKind = "revenue" | "traffic" | "build";
  */
 export const METRICS: readonly SourceKind[] = ["revenue", "traffic", "build"];
 
+/** Where a project is right now (the wizard's first choice). Not stored: it only orders the
+ *  chooser and picks which metric the "Recommended" badge points at. */
+export type ProjectStage = "early" | "revenue";
+
+/**
+ * The metric to recommend for a stage: a project with no revenue yet is easiest to prove with
+ * build proof (no key needed), one already earning with its revenue. Once a stage is chosen the
+ * badge follows it, so switching the stage moves the recommendation without forcing the choice.
+ */
+export function recommendedMetric(
+  stage: ProjectStage | null | undefined,
+): SourceKind | undefined {
+  if (stage === "early") return "build";
+  if (stage === "revenue") return "revenue";
+  return undefined;
+}
+
 export const SOURCE_KIND: Record<SourceId, SourceKind> = {
   stripe: "revenue",
   revenuecat: "revenue",

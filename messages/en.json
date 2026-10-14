@@ -740,7 +740,8 @@
       "readKey": "Read-only key",
       "change": "Change method",
       "addAnother": "Add another source",
-      "connected": "Connected"
+      "connected": "Connected",
+      "recommended": "Recommended"
     },
     "getStrip": [
       "on your card",
@@ -749,8 +750,8 @@
     ],
     "stripeReadOnlyNote": "Read-only · totals only · revoke any time",
     "metric": {
-      "title": "What do you want to prove? Pick one to start",
-      "hint": "About a minute. Every option is read-only, and you can add more sources later.",
+      "title": "Choose how to verify your work",
+      "hint": "We suggest the method that fits your project stage. You can add other kinds of proof later.",
       "revenue": "Revenue / MRR",
       "revenueHint": "Money received and recurring revenue",
       "revenueNote": "You get ✓ verified revenue and revenue-board ranking · Omise / 2C2P not supported yet",

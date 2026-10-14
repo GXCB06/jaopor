@@ -40,7 +40,11 @@ import {
   type LinkColumn,
 } from "@/lib/links";
 import type { SiteAutofill } from "@/lib/net/link-preview";
-import { SOURCE_KIND, type SourceKind } from "@/lib/sources/catalog";
+import {
+  SOURCE_KIND,
+  recommendedMetric,
+  type SourceKind,
+} from "@/lib/sources/catalog";
 import { createClient } from "@/lib/supabase/client";
 import { revalidateStartup } from "@/app/actions/revalidate";
 import { useSessionDraft } from "@/lib/use-session-draft";
@@ -824,6 +828,7 @@ export function StartupWizard({
                 <VerifyPanel
                   showTitle={false}
                   order={stage === "early" ? EARLY_ORDER : undefined}
+                  recommend={recommendedMetric(stage)}
                   startupId={saved.id}
                   connections={[]}
                   websiteHost={ownWebsiteHost(saved.website)}

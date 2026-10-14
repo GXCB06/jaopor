@@ -134,6 +134,7 @@ export function VerifyPanel({
   onConnected,
   attemptId,
   order,
+  recommend,
   showTitle = true,
 }: {
   startupId: number;
@@ -145,6 +146,8 @@ export function VerifyPanel({
   attemptId?: string;
   /** Order of the chooser's metric rows (wizard stage choice); default revenue first. */
   order?: readonly SourceKind[];
+  /** Metric the "Recommended" badge points at (wizard stage choice); omitted → no badge. */
+  recommend?: SourceKind;
   /** False when the host already shows the chooser's question as its own heading (wizard v3.2). */
   showTitle?: boolean;
 }) {
@@ -158,6 +161,7 @@ export function VerifyPanel({
         onConnected={onConnected}
         attemptId={attemptId}
         order={order}
+        recommend={recommend}
         showTitle={showTitle}
       />
     );
@@ -199,6 +203,7 @@ function VerifyChooser({
   onConnected,
   attemptId,
   order = METRICS,
+  recommend,
   showTitle = true,
 }: {
   startupId: number;
@@ -207,6 +212,7 @@ function VerifyChooser({
   onConnected?: (source: SourceId) => void;
   attemptId?: string;
   order?: readonly SourceKind[];
+  recommend?: SourceKind;
   showTitle?: boolean;
 }) {
   const t = useTranslations("Sources");
@@ -266,7 +272,9 @@ function VerifyChooser({
       </ul>
 
       {metric === null ? (
-        <div className="grid gap-2">
+        /* auto-rows-fr: the "Recommended" badge can wrap a header to a second line on phones, so
+           the rows share the tallest height instead of one card jumping out of the stack. */
+        <div className="grid auto-rows-fr gap-2">
           {order.map((kind) => {
             const Icon = METRIC_ICON[kind];
             const isDone = metricDone(kind);
@@ -289,10 +297,15 @@ function VerifyChooser({
                   <Icon className="size-4.5" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1 space-y-0.5">
-                  <span className="flex items-center gap-2">
+                  <span className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-semibold">
                       {t(`metric.${kind}`)}
                     </span>
+                    {kind === recommend && (
+                      <span className="shrink-0 rounded-full bg-brand/10 px-2 py-0.5 text-2xs font-semibold text-brand-text">
+                        {t("choose.recommended")}
+                      </span>
+                    )}
                     <span
                       className={cn(
                         "shrink-0 rounded-full border px-2 py-0.5 text-2xs",
