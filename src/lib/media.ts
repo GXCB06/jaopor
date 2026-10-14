@@ -27,6 +27,29 @@ export function detectKind(width: number, height: number): ScreenshotKind {
   return width / height >= 1.1 ? "desktop" : "mobile";
 }
 
+/**
+ * Moves the item at `from` to index `to` (drag or ← / → reorder), returning a new array. Returns
+ * null when the move is a no-op or out of range, so callers can skip the write.
+ */
+export function moveShot<T>(
+  list: readonly T[],
+  from: number,
+  to: number,
+): T[] | null {
+  if (
+    from === to ||
+    from < 0 ||
+    from >= list.length ||
+    to < 0 ||
+    to >= list.length
+  )
+    return null;
+  const next = [...list];
+  const [moved] = next.splice(from, 1);
+  next.splice(to, 0, moved);
+  return next;
+}
+
 /** Longest side capped at `max`, aspect ratio kept. */
 export function fitWithin(width: number, height: number, max = 2400) {
   const scale = Math.min(1, max / Math.max(width, height));

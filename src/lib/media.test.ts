@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectKind, fitWithin, videoEmbed } from "./media";
+import { detectKind, fitWithin, moveShot, videoEmbed } from "./media";
 
 describe("videoEmbed", () => {
   it("turns supported links into embeds", () => {
@@ -43,5 +43,28 @@ describe("screenshot helpers", () => {
     expect(fitWithin(4800, 3000)).toEqual({ width: 2400, height: 1500 });
     expect(fitWithin(1170, 2532)).toEqual({ width: 1109, height: 2400 });
     expect(fitWithin(800, 600)).toEqual({ width: 800, height: 600 });
+  });
+});
+
+describe("moveShot", () => {
+  it("moves an item forward and backward", () => {
+    expect(moveShot(["a", "b", "c", "d"], 0, 2)).toEqual(["b", "c", "a", "d"]);
+    expect(moveShot(["a", "b", "c", "d"], 3, 1)).toEqual(["a", "d", "b", "c"]);
+  });
+
+  it("returns a new array and never mutates the input", () => {
+    const list = ["a", "b", "c"];
+    const next = moveShot(list, 0, 1);
+    expect(next).toEqual(["b", "a", "c"]);
+    expect(list).toEqual(["a", "b", "c"]);
+    expect(next).not.toBe(list);
+  });
+
+  it("returns null for no-op or out-of-range moves", () => {
+    expect(moveShot(["a", "b"], 1, 1)).toBeNull();
+    expect(moveShot(["a", "b"], -1, 1)).toBeNull();
+    expect(moveShot(["a", "b"], 0, 2)).toBeNull();
+    expect(moveShot(["a", "b"], 0, -1)).toBeNull();
+    expect(moveShot([], 0, 1)).toBeNull();
   });
 });

@@ -4,6 +4,7 @@ import { ChoiceSelect } from "@/components/core/ChoiceSelect";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  GripVerticalIcon,
   ImagePlusIcon,
   Loader2Icon,
   XIcon,
@@ -17,6 +18,7 @@ import {
   SCREENSHOT_KINDS,
   SCREENSHOT_TYPES,
   detectKind,
+  moveShot,
   screenshotUrl,
   type Screenshot,
   type ScreenshotKind,
@@ -48,7 +50,9 @@ export function ScreenshotsManager({
   }, [shots, onCountChange]);
   const [busy, setBusy] = useState(0);
   const [over, setOver] = useState(false);
-  const dragFrom = useRef<number | null>(null);
+  // Drag-to-reorder: which tile is being dragged, and which one the pointer is over (for feedback).
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const db = () => createClient();
 
@@ -127,10 +131,8 @@ export function ScreenshotsManager({
   }
 
   async function reorder(from: number, to: number) {
-    if (from === to || to < 0 || to >= shots.length) return;
-    const next = [...shots];
-    const [moved] = next.splice(from, 1);
-    next.splice(to, 0, moved);
+    const next = moveShot(shots, from, to);
+    if (!next) return;
     const withPos = next.map((s, i) => ({ ...s, position: i }));
     setShots(withPos);
     await Promise.all(
@@ -211,25 +213,43 @@ export function ScreenshotsManager({
               key={s.id}
               draggable
               onDragStart={(e) => {
-                dragFrom.current = i;
+                setDragIndex(i);
                 e.dataTransfer.effectAllowed = "move";
+                // Firefox needs data set for a drag to start; the value is unused by our own drop.
+                e.dataTransfer.setData("text/plain", String(i));
               }}
               onDragOver={(e) => {
-                if (dragFrom.current !== null) e.preventDefault();
+                if (dragIndex === null) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                if (dropIndex !== i) setDropIndex(i);
               }}
               onDrop={(e) => {
-                if (dragFrom.current === null) return;
+                if (dragIndex === null) return;
                 e.preventDefault();
-                void reorder(dragFrom.current, i);
-                dragFrom.current = null;
+                void reorder(dragIndex, i);
+                setDragIndex(null);
+                setDropIndex(null);
               }}
-              className="space-y-1.5 rounded-lg border bg-card p-2"
+              onDragEnd={() => {
+                setDragIndex(null);
+                setDropIndex(null);
+              }}
+              className={cn(
+                "cursor-grab space-y-1.5 rounded-lg border bg-card p-2 transition-opacity select-none active:cursor-grabbing",
+                dragIndex === i && "opacity-40",
+                dropIndex === i &&
+                  dragIndex !== null &&
+                  dragIndex !== i &&
+                  "ring-2 ring-brand",
+              )}
             >
               <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element -- owner-only thumbnail */}
                 <img
                   src={screenshotUrl(s.path)}
                   alt={s.caption || t("thumbAlt", { n: i + 1 })}
+                  draggable={false}
                   className="size-full object-cover object-top"
                 />
                 {i === 0 && (
@@ -237,6 +257,12 @@ export function ScreenshotsManager({
                     {t("cover")}
                   </span>
                 )}
+                <span
+                  aria-hidden="true"
+                  className="absolute bottom-1 left-1 inline-flex size-6 items-center justify-center rounded-md bg-background/90 text-muted-foreground"
+                >
+                  <GripVerticalIcon className="size-3.5" aria-hidden="true" />
+                </span>
                 <button
                   type="button"
                   onClick={() => void remove(s)}
@@ -299,7 +325,7 @@ export function ScreenshotsManager({
                     void update(s.id, { caption });
                   }
                 }}
-                className={cn(inputClass, "h-7 px-2 text-2xs")}
+                className={cn(inputClass, "h-7 px-2 text-2xs select-text")}
               />
             </li>
           ))}

@@ -45,17 +45,26 @@ export function BuilderCard({
             />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate font-semibold group-hover:underline">
+            <span
+              className="block truncate font-semibold group-hover:underline"
+              title={b.name}
+            >
               {b.name}
             </span>
-            <span className="block truncate text-2xs text-faint">
+            <span
+              className="block truncate text-2xs text-faint"
+              title={`@${b.handle}`}
+            >
               @{b.handle}
             </span>
           </span>
         </div>
 
         {b.headline && (
-          <p className="line-clamp-2 text-caption text-muted-foreground">
+          <p
+            className="line-clamp-2 text-caption text-muted-foreground"
+            title={b.headline}
+          >
             {b.headline}
           </p>
         )}
@@ -63,43 +72,68 @@ export function BuilderCard({
 
         {skills.length > 0 && (
           <ul className="flex flex-wrap gap-1.5">
-            {skills.map((s) => (
-              <li
-                key={s.slug}
-                className={cn(
-                  "rounded-full border px-2 py-0.5 text-2xs",
-                  s.superpower
-                    ? "border-brand/40 text-brand-text"
-                    : "bg-secondary text-muted-foreground",
-                )}
-              >
-                {localizedName(s.def!, locale)}
-              </li>
-            ))}
+            {skills.map((s) => {
+              const label = localizedName(s.def!, locale);
+              return (
+                <li
+                  key={s.slug}
+                  title={label}
+                  className={cn(
+                    "max-w-full truncate rounded-full border px-2 py-0.5 text-2xs",
+                    s.superpower
+                      ? "border-brand/40 text-brand-text"
+                      : "bg-secondary text-muted-foreground",
+                  )}
+                >
+                  {label}
+                </li>
+              );
+            })}
           </ul>
         )}
 
-        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-3 text-caption tabular-nums">
-          <span className="whitespace-nowrap text-muted-foreground">
-            {t("works", { n: b.works })}
-          </span>
-          {b.mrrCents > 0 && (
-            <span className="flex items-center gap-1 whitespace-nowrap font-semibold">
-              <span aria-hidden="true" className="text-faint">
-                ·
-              </span>
-              <BadgeCheckIcon
-                className="size-3.5 shrink-0 text-positive"
-                aria-hidden="true"
-              />
-              <Money cents={b.mrrCents} thbPerUsd={thbPerUsd} />
-              <span className="font-normal text-faint">{t("perMonth")}</span>
-            </span>
+        {/*
+          Footer (Design.md §5). Content-driven. When a location is present the row is
+          `justify-between` with two children: the [works · revenue] group on the left and the
+          province on the right. On one line the province sits at the right edge; if it wraps to its
+          own line, `space-between` falls back to the start (a lone item is left-aligned), so a
+          wrapped location lands at the left edge rather than the far right. No fixed widths, no
+          sample-length assumptions, and only the groups — never the row — carry `nowrap`.
+        */}
+        <div
+          className={cn(
+            "mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-3 text-caption tabular-nums",
+            province && "justify-between",
           )}
+        >
+          <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="min-w-0 [overflow-wrap:anywhere] text-muted-foreground">
+              {t("works", { n: b.works })}
+            </span>
+            {b.mrrCents > 0 && (
+              <span className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 font-semibold">
+                <span aria-hidden="true" className="text-faint">
+                  ·
+                </span>
+                {/* Icon + amount stay together; the unit can drop below only if space is extreme. */}
+                <span className="inline-flex min-w-0 items-center gap-1">
+                  <BadgeCheckIcon
+                    className="size-3.5 shrink-0 text-positive"
+                    aria-hidden="true"
+                  />
+                  <Money cents={b.mrrCents} thbPerUsd={thbPerUsd} />
+                </span>
+                <span className="font-normal text-faint">{t("perMonth")}</span>
+              </span>
+            )}
+          </span>
           {province && (
-            <span className="ml-auto flex min-w-0 items-center gap-1 text-2xs text-faint">
+            <span className="flex min-w-0 items-center gap-1 text-2xs text-faint">
               <MapPinIcon className="size-3 shrink-0" aria-hidden="true" />
-              <span className="truncate">
+              <span
+                className="min-w-0 [overflow-wrap:anywhere]"
+                title={localizedName(province, locale)}
+              >
                 {localizedName(province, locale)}
               </span>
             </span>
