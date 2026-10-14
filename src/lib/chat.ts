@@ -7,6 +7,13 @@ import type { Database } from "./supabase/database.types";
 export const MAX_MESSAGE = 2000;
 export const MESSAGE_WARN_AT = 1800;
 
+/**
+ * Fired on `window` right after a conversation is marked read, so the header badge can drop the
+ * count immediately instead of waiting for its next poll (owner report 2026-10-14: the badge stayed
+ * after the message was read).
+ */
+export const READ_EVENT = "jaopor:read";
+
 type Db = SupabaseClient<Database>;
 
 /** Unread messages (from the other person, newer than my "read up to") per recent conversation. */
@@ -35,6 +42,7 @@ export async function unreadByConversation(
         .from("chat_messages")
         .select("id", { count: "exact", head: true })
         .eq("conversation_id", id)
+        .is("deleted_at", null)
         .neq("sender_id", me);
       const read = readAt.get(id);
       if (read) q = q.gt("created_at", read);

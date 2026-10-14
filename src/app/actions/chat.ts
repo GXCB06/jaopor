@@ -112,10 +112,20 @@ export async function deleteMessage(
 export async function markRead(conversationId: number): Promise<void> {
   const { supabase, user } = await me();
   if (!user) return;
+  // Stamp with the database's own clock (the newest message's created_at), never this server's
+  // clock: server/frontend clock skew left the last message reading as unread forever, so the
+  // header badge never cleared (owner report 2026-10-14).
+  const { data: last } = await supabase
+    .from("chat_messages")
+    .select("created_at")
+    .eq("conversation_id", conversationId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
   await supabase.from("conversation_reads").upsert({
     conversation_id: conversationId,
     user_id: user.id,
-    last_read_at: new Date().toISOString(),
+    last_read_at: last?.created_at ?? new Date().toISOString(),
   });
 }
 

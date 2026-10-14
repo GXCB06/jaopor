@@ -519,7 +519,7 @@
   "Errors": {
     "invalid_key": "{source} didn't accept that key or link — check it and paste again.",
     "not_read_only": "This key can do more than read ({detail}). Make it read-only, then paste it again.",
-    "missing_permission": "The key is missing a read permission we need — see the steps above.",
+    "missing_permission": "{detail, select, none {The key is missing a read permission we need — see the steps above.} other {The key needs Read access for {detail} — set {detail} to Read as shown above.}}",
     "rate_limited": "{source} is rate-limiting us — try again in a minute.",
     "upstream": "{source} didn't respond as expected. Try again shortly.",
     "cooldown": "Refreshed recently — try again in a few minutes.",
@@ -663,9 +663,9 @@
     "open": "Open {source} settings",
     "openTest": "test mode",
     "stripe": {
-      "howTo1": "Click the button below → name the key, e.g. JaoPor",
-      "howTo2": "Set Charges → Read and Subscriptions → Read (leave the rest as None)",
-      "howTo3": "Click Create key → copy the key starting with rk_ → paste it below",
+      "howTo1": "Stripe → Developers → API keys → Create restricted key",
+      "howTo2": "On “Choose how you'll use this key”, pick “Building your own integration”, then “Custom permissions”",
+      "howTo3": "Set only the two permissions below, then click Create key → verify → paste the key starting with rk_ below",
       "key": "Restricted key (rk_…)"
     },
     "revenuecat": {
@@ -734,7 +734,8 @@
       "propertyId": "GA4 Property ID",
       "emailLabel": "JaoPor's email (add it as a Viewer in GA4):",
       "copy": "Copy email",
-      "copied": "Email copied"
+      "copied": "Email copied",
+      "notConfigured": "Google Analytics isn't set up on this deployment yet, so it can't connect — ask the admin to set NEXT_PUBLIC_GA4_SERVICE_EMAIL."
     },
     "choose": {
       "noKey": "No key needed",
@@ -758,15 +759,17 @@
       "revenueNote": "You get ✓ verified revenue and revenue-board ranking · Omise / 2C2P not supported yet",
       "traffic": "Visitors",
       "trafficHint": "Unique visitors per day and the 30-day total",
-      "trafficNote": "These are “counted”, not audited · Google Analytics not supported yet",
+      "trafficNote": "These are “counted”, not audited",
       "build": "Build proof",
       "buildHint": "Commits on a public repo, and how much was co-written with Claude",
       "buildNote": "Public repos owned by your GitHub account"
     },
     "stripeGuide": {
       "label": "Permissions to set on the key",
+      "core": "Core",
+      "billing": "Billing",
       "rest": "Everything else",
-      "caption": "As it looks in Stripe › Developers › API keys › Create restricted key"
+      "caption": "In Stripe › Developers › API keys › Create restricted key. Use the permission search box: Charges sits under Core and Subscriptions under Billing, so setting all of Core to Read is not enough."
     },
     "trust": {
       "keepTitle": "What we store and show",

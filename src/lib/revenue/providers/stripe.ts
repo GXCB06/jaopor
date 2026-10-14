@@ -114,6 +114,7 @@ export function createStripeProvider(
       throw new ProviderError(
         "missing_permission",
         `The restricted key needs Read access for ${context}.`,
+        context,
       );
     }
     if (status === 429)

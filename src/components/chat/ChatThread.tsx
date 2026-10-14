@@ -27,7 +27,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, useRouter } from "@/i18n/navigation";
-import { MAX_MESSAGE, MESSAGE_WARN_AT, groupMessages } from "@/lib/chat";
+import {
+  MAX_MESSAGE,
+  MESSAGE_WARN_AT,
+  READ_EVENT,
+  groupMessages,
+} from "@/lib/chat";
 import type { ChatMessage, ChatPerson } from "@/lib/data/chat";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -125,6 +130,13 @@ export function ChatThread({
     });
   }, []);
 
+  // Mark read and tell the header badge (READ_EVENT), so its count clears the moment we read
+  // instead of waiting for the next poll.
+  const readNow = useCallback(async () => {
+    await markRead(conversationId);
+    window.dispatchEvent(new Event(READ_EVENT));
+  }, [conversationId]);
+
   // Live channel; mark read whenever the other person's message arrives while I'm here.
   useEffect(() => {
     const db = createClient();
@@ -141,7 +153,7 @@ export function ChatThread({
         (payload) => {
           const r = payload.new as Row;
           add([toMessage(r)]);
-          if (r.sender_id !== viewer) void markRead(conversationId);
+          if (r.sender_id !== viewer) void readNow();
         },
       )
       .on(
@@ -155,11 +167,11 @@ export function ChatThread({
         (payload) => merge([toMessage(payload.new as Row)]),
       )
       .subscribe((status) => setLive(status === "SUBSCRIBED"));
-    void markRead(conversationId);
+    void readNow();
     return () => {
       void db.removeChannel(channel);
     };
-  }, [conversationId, viewer, add, merge]);
+  }, [conversationId, viewer, add, merge, readNow]);
 
   // Fallback: poll for newer messages while the live channel is down.
   useEffect(() => {
@@ -176,11 +188,11 @@ export function ChatThread({
       const { data } = await q;
       if (data?.length) {
         add(data.map((r) => toMessage(r as Row)));
-        void markRead(conversationId);
+        void readNow();
       }
     }, POLL_MS);
     return () => clearInterval(id);
-  }, [live, conversationId, add]);
+  }, [live, conversationId, add, readNow]);
 
   // Scroll the message list only (scrollIntoView would also scroll the page).
   useEffect(() => {

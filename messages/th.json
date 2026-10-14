@@ -519,7 +519,7 @@
   "Errors": {
     "invalid_key": "{source} ไม่ยอมรับคีย์หรือลิงก์นี้ — ตรวจแล้ววางใหม่อีกครั้ง",
     "not_read_only": "คีย์นี้มีสิทธิ์มากกว่าอ่านอย่างเดียว ({detail}) — แก้สิทธิ์ให้อ่านอย่างเดียวแล้ววางใหม่",
-    "missing_permission": "คีย์ยังขาดสิทธิ์อ่านที่จำเป็น — ดูขั้นตอนด้านบน",
+    "missing_permission": "{detail, select, none {คีย์ยังขาดสิทธิ์อ่านที่จำเป็น — ดูขั้นตอนด้านบน} other {คีย์ยังขาดสิทธิ์อ่านสำหรับ {detail} — ตั้ง {detail} เป็น Read ตามขั้นตอนด้านบน}}",
     "rate_limited": "{source} จำกัดจำนวนคำขอชั่วคราว ลองใหม่ในอีกสักครู่",
     "upstream": "{source} ตอบกลับผิดปกติ ลองใหม่อีกครั้งภายหลัง",
     "cooldown": "เพิ่งรีเฟรชไป ลองใหม่อีกไม่กี่นาที",
@@ -663,9 +663,9 @@
     "open": "เปิดหน้าตั้งค่า {source}",
     "openTest": "โหมดทดสอบ",
     "stripe": {
-      "howTo1": "กดปุ่มด้านล่าง → ตั้งชื่อคีย์ เช่น JaoPor",
-      "howTo2": "ตั้ง Charges → Read และ Subscriptions → Read (ที่เหลือปล่อยเป็น None)",
-      "howTo3": "กด Create key → คัดลอกคีย์ที่ขึ้นต้นด้วย rk_ → วางด้านล่าง",
+      "howTo1": "Stripe → Developers → API keys → Create restricted key",
+      "howTo2": "ในหน้า “Choose how you'll use this key” เลือก “Building your own integration” แล้วเลือก “Custom permissions”",
+      "howTo3": "ตั้งเฉพาะ 2 สิทธิ์ด้านล่าง แล้วกด Create key → ยืนยัน → วางคีย์ที่ขึ้นต้นด้วย rk_ ด้านล่าง",
       "key": "Restricted key (rk_…)"
     },
     "revenuecat": {
@@ -734,7 +734,8 @@
       "propertyId": "GA4 Property ID",
       "emailLabel": "อีเมลของ JaoPor (เพิ่มเป็น Viewer ใน GA4):",
       "copy": "คัดลอกอีเมล",
-      "copied": "คัดลอกอีเมลแล้ว"
+      "copied": "คัดลอกอีเมลแล้ว",
+      "notConfigured": "ยังไม่ได้ตั้งค่าบัญชีบริการของ Google Analytics บนระบบนี้ จึงยังเชื่อมต่อไม่ได้ — แจ้งผู้ดูแลให้ตั้งค่า NEXT_PUBLIC_GA4_SERVICE_EMAIL"
     },
     "choose": {
       "noKey": "ไม่ต้องใช้คีย์",
@@ -754,15 +755,17 @@
       "revenueNote": "ได้ ✓ ยืนยันรายได้ และขึ้นบอร์ดรายได้ · Omise / 2C2P ยังไม่รองรับ",
       "traffic": "ผู้เข้าชม",
       "trafficHint": "ผู้เข้าชมไม่ซ้ำต่อวัน และยอดรวม 30 วัน",
-      "trafficNote": "เป็นยอด “นับโดย” ไม่ใช่ยอดตรวจสอบ · Google Analytics ยังไม่รองรับ",
+      "trafficNote": "เป็นยอด “นับโดย” ไม่ใช่ยอดตรวจสอบ",
       "build": "การสร้าง (build proof)",
       "buildHint": "จำนวน commit บน repo สาธารณะ และสัดส่วนที่เขียนร่วมกับ Claude",
       "buildNote": "ใช้ได้กับ repo สาธารณะที่เป็นบัญชี GitHub ของคุณ"
     },
     "stripeGuide": {
       "label": "สิทธิ์ที่ต้องตั้งในคีย์",
+      "core": "Core",
+      "billing": "Billing",
       "rest": "ทุกอย่างที่เหลือ",
-      "caption": "หน้าตาในหน้า Stripe › Developers › API keys › Create restricted key"
+      "caption": "ในหน้า Stripe › Developers › API keys › Create restricted key ใช้ช่องค้นหาชื่อสิทธิ์: Charges อยู่ในหมวด Core และ Subscriptions อยู่ในหมวด Billing ดังนั้นตั้ง Core เป็น Read ทั้งหมดจึงยังไม่พอ"
     },
     "trust": {
       "keepTitle": "สิ่งที่เราเก็บและแสดง",

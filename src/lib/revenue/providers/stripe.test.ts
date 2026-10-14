@@ -141,6 +141,17 @@ describe("stripe.validateKey", () => {
     );
   });
 
+  it("names the resource with the missing read permission", async () => {
+    const { impl } = mockFetch((_m, path) =>
+      path.startsWith("/v1/subscriptions")
+        ? { status: 403 }
+        : { status: 200, body: { data: [], has_more: false } },
+    );
+    await expect(
+      createStripeProvider(impl).validateKey(RK),
+    ).rejects.toMatchObject({ code: "missing_permission", detail: "Subscriptions" });
+  });
+
   it("reports a revoked key", async () => {
     const { impl } = mockFetch(() => ({ status: 401 }));
     expect(await codeOf(createStripeProvider(impl).validateKey(RK))).toBe(

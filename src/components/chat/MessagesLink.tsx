@@ -4,7 +4,7 @@ import { MessageCircleIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Link } from "@/i18n/navigation";
-import { totalUnread, unreadByConversation } from "@/lib/chat";
+import { READ_EVENT, totalUnread, unreadByConversation } from "@/lib/chat";
 import { createClient } from "@/lib/supabase/client";
 
 const POLL_MS = 60_000;
@@ -23,10 +23,17 @@ export function MessagesLink({ userId }: { userId: string }) {
     };
     void tick();
     const id = setInterval(tick, POLL_MS);
-    document.addEventListener("visibilitychange", tick);
+    // Reading a thread fires READ_EVENT, and coming back to the tab refocuses: refresh now so the
+    // badge doesn't linger up to a full poll interval after the message was already read.
+    const refresh = () => void tick();
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("focus", refresh);
+    window.addEventListener(READ_EVENT, refresh);
     return () => {
       clearInterval(id);
-      document.removeEventListener("visibilitychange", tick);
+      document.removeEventListener("visibilitychange", refresh);
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener(READ_EVENT, refresh);
     };
   }, [userId]);
 

@@ -120,12 +120,6 @@ const SETTINGS_URL: Partial<Record<SourceId, { live: string; test?: string }>> =
     ga4: { live: "https://analytics.google.com/analytics/web/" },
   };
 
-/**
- * Google Analytics is offered only when JaoPor's service account is configured (its email is
- * public: founders add it as a Viewer). Without it the source never appears.
- */
-const available = (s: SourceId) => s !== "ga4" || ga4ServiceEmail !== null;
-
 export function VerifyPanel({
   startupId,
   connections,
@@ -227,10 +221,9 @@ function VerifyChooser({
 
   // The snippet needs a website; without one only analytics remain (issue 4, metric-first).
   const sourcesFor = (kind: SourceKind): SourceId[] =>
-    (kind === "traffic" && !websiteHost
+    kind === "traffic" && !websiteHost
       ? sourcesOfKind("traffic").filter((s) => s !== "jaopor")
-      : sourcesOfKind(kind)
-    ).filter(available);
+      : sourcesOfKind(kind);
   const metricDone = (kind: SourceKind) =>
     sourcesFor(kind).some((s) => done.includes(s));
 
@@ -470,10 +463,14 @@ function VerifyChooser({
  */
 function StripePermissions() {
   const t = useTranslations("Sources");
-  const rows: { name: string; level: "Read" | "None" }[] = [
-    { name: "Charges", level: "Read" },
-    { name: "Subscriptions", level: "Read" },
-    { name: t("stripeGuide.rest"), level: "None" },
+  const rows: {
+    where: string | null;
+    name: string;
+    level: "Read" | "None";
+  }[] = [
+    { where: t("stripeGuide.core"), name: "Charges", level: "Read" },
+    { where: t("stripeGuide.billing"), name: "Subscriptions", level: "Read" },
+    { where: null, name: t("stripeGuide.rest"), level: "None" },
   ];
   return (
     <figure className="space-y-1.5">
@@ -487,6 +484,9 @@ function StripePermissions() {
             className="flex items-center justify-between gap-3 px-3 py-2"
           >
             <span className={r.level === "None" ? "text-muted-foreground" : ""}>
+              {r.where && (
+                <span className="text-faint">{r.where} · </span>
+              )}
               {r.name}
             </span>
             <span
@@ -574,10 +574,7 @@ function SourceGroup({
   onConnected?: (source: SourceId) => void;
 }) {
   const t = useTranslations("Sources");
-  // A connected source always shows (even if GA4 were switched off later); others only if offered.
-  const sources = sourcesOfKind(kind).filter(
-    (s) => available(s) || connections.some((c) => c.source === s),
-  );
+  const sources = sourcesOfKind(kind);
   const current = connections.find((c) => SOURCE_KIND[c.source] === kind);
   const [selected, setSelected] = useState<SourceId>(
     current?.source ?? sources[0],
@@ -651,7 +648,8 @@ function useErrorText() {
     errors.has(code)
       ? errors(code as "server", {
           source: SOURCE_NAME[source],
-          detail: detail ?? "",
+          // "none" (not "") so messages can branch on whether the server sent a specific resource.
+          detail: detail || "none",
         })
       : errors("server");
 }
@@ -764,9 +762,14 @@ function SourceForm({
       ) : (
         <form onSubmit={submit} className="space-y-3">
           {source === "jaopor" && <SnippetBox projectId={startupId} />}
-          {source === "ga4" && ga4ServiceEmail && (
-            <Ga4EmailBox email={ga4ServiceEmail} />
-          )}
+          {source === "ga4" &&
+            (ga4ServiceEmail ? (
+              <Ga4EmailBox email={ga4ServiceEmail} />
+            ) : (
+              <p className="text-caption text-warning">
+                {t("ga4.notConfigured")}
+              </p>
+            ))}
           {source === "stripe" && (
             <p className="text-caption text-muted-foreground">
               {t("stripeReadOnlyNote")}
