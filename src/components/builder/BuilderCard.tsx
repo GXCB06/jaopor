@@ -44,7 +44,7 @@ export function BuilderCard({
               loading="lazy"
             />
           </span>
-          <span className="min-w-0">
+          <span className="min-w-0 flex-1">
             <span className="block truncate font-semibold group-hover:underline">
               {b.name}
             </span>
@@ -79,17 +79,17 @@ export function BuilderCard({
           </ul>
         )}
 
-        <div className="mt-auto flex items-center gap-2 border-t pt-3 text-caption tabular-nums">
-          <span className="text-muted-foreground">
+        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-3 text-caption tabular-nums">
+          <span className="whitespace-nowrap text-muted-foreground">
             {t("works", { n: b.works })}
           </span>
           {b.mrrCents > 0 && (
-            <span className="flex items-center gap-1 font-semibold">
+            <span className="flex items-center gap-1 whitespace-nowrap font-semibold">
               <span aria-hidden="true" className="text-faint">
                 ·
               </span>
               <BadgeCheckIcon
-                className="size-3.5 text-positive"
+                className="size-3.5 shrink-0 text-positive"
                 aria-hidden="true"
               />
               <Money cents={b.mrrCents} thbPerUsd={thbPerUsd} />

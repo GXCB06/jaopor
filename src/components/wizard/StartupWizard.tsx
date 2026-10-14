@@ -561,6 +561,13 @@ export function StartupWizard({
                       </span>
                     </p>
                   )}
+                  {/* A link we never read (LINE OA, GitHub, a social page): say so, so the founder
+                      knows to fill the name and details in themselves (owner 2026-10-14). */}
+                  {parsed && !siteUrl && !existing && (
+                    <p className="text-caption text-muted-foreground">
+                      {t("autofillNotWebsite")}
+                    </p>
+                  )}
                   {/* Which links work, and where to find each: LINE OA's @id is the one founders
                       ask about (owner 2026-10-13). Collapsed so the form stays short. */}
                   <details className="group text-caption">

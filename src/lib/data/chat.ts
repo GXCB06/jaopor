@@ -18,6 +18,10 @@ export type ChatMessage = {
   senderId: string;
   body: string;
   createdAt: string;
+  /** Set when the author edited the text (shown as "(แก้ไขแล้ว)"). */
+  editedAt: string | null;
+  /** Set when the author deleted it: the body is empty and shown as a muted placeholder. */
+  deletedAt: string | null;
 };
 
 export type ConversationSummary = {
@@ -25,7 +29,13 @@ export type ConversationSummary = {
   /** null when the other person deleted their account. */
   other: ChatPerson | null;
   blocked: boolean;
-  last: { body: string; mine: boolean; at: string } | null;
+  last: {
+    body: string;
+    mine: boolean;
+    at: string;
+    /** The last message was deleted → show a placeholder instead of the (empty) body. */
+    deleted: boolean;
+  } | null;
   unread: number;
 };
 
@@ -73,7 +83,7 @@ export async function listConversations(): Promise<ConversationSummary[]> {
       rows.map((c) =>
         supabase
           .from("chat_messages")
-          .select("body, sender_id, created_at")
+          .select("body, sender_id, created_at, deleted_at")
           .eq("conversation_id", c.id)
           .order("created_at", { ascending: false })
           .limit(1)
@@ -94,6 +104,7 @@ export async function listConversations(): Promise<ConversationSummary[]> {
             body: last.body,
             mine: last.sender_id === viewer,
             at: last.created_at,
+            deleted: last.deleted_at !== null,
           }
         : null,
       unread: unread.get(c.id) ?? 0,
@@ -113,7 +124,7 @@ export async function getConversation(id: number) {
   if (!c) return null;
   const { data: msgs, error } = await supabase
     .from("chat_messages")
-    .select("id, sender_id, body, created_at")
+    .select("id, sender_id, body, created_at, edited_at, deleted_at")
     .eq("conversation_id", id)
     .order("created_at", { ascending: false })
     .limit(200);
@@ -130,6 +141,8 @@ export async function getConversation(id: number) {
       senderId: m.sender_id,
       body: m.body,
       createdAt: m.created_at,
+      editedAt: m.edited_at,
+      deletedAt: m.deleted_at,
     })),
   };
 }

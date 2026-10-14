@@ -27,6 +27,8 @@ export async function sendMessage(
         senderId: string;
         body: string;
         createdAt: string;
+        editedAt: string | null;
+        deletedAt: string | null;
       };
     }
   | { ok: false; error: string }
@@ -54,8 +56,57 @@ export async function sendMessage(
       senderId: data.sender_id,
       body: data.body,
       createdAt: data.created_at,
+      editedAt: null,
+      deletedAt: null,
     },
   };
+}
+
+/**
+ * Edit my own message's text (RLS + the edit guard: author only, live row, open conversation).
+ * Returns the edited time to stamp locally, or `forbidden` when the row isn't mine to change.
+ */
+export async function editMessage(
+  conversationId: number,
+  messageId: number,
+  body: string,
+): Promise<{ ok: true; editedAt: string } | { ok: false; error: string }> {
+  const { supabase, user } = await me();
+  if (!user) return { ok: false, error: "signin" };
+  const text = body.trim();
+  if (!text || text.length > MAX_MESSAGE) return { ok: false, error: "body" };
+  const { data, error } = await supabase
+    .from("chat_messages")
+    .update({ body: text })
+    .eq("id", messageId)
+    .eq("conversation_id", conversationId)
+    .select("id, edited_at")
+    .maybeSingle();
+  if (error) return { ok: false, error: postErrorKey(error.code) };
+  if (!data) return { ok: false, error: "forbidden" };
+  return { ok: true, editedAt: data.edited_at ?? new Date().toISOString() };
+}
+
+/**
+ * Delete my own message: soft delete (empty the body, stamp deleted_at) so both people see it was
+ * removed without the order changing. RLS + the edit guard apply, same as edit.
+ */
+export async function deleteMessage(
+  conversationId: number,
+  messageId: number,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { supabase, user } = await me();
+  if (!user) return { ok: false, error: "signin" };
+  const { data, error } = await supabase
+    .from("chat_messages")
+    .update({ body: "", deleted_at: new Date().toISOString() })
+    .eq("id", messageId)
+    .eq("conversation_id", conversationId)
+    .select("id")
+    .maybeSingle();
+  if (error) return { ok: false, error: postErrorKey(error.code) };
+  if (!data) return { ok: false, error: "forbidden" };
+  return { ok: true };
 }
 
 export async function markRead(conversationId: number): Promise<void> {

@@ -84,7 +84,7 @@ export function ChatShell({
                           {c.blocked
                             ? t("blockedShort")
                             : c.last
-                              ? `${c.last.mine ? `${t("you")}: ` : ""}${c.last.body}`
+                              ? `${c.last.mine ? `${t("you")}: ` : ""}${c.last.deleted ? t("deletedMessage") : c.last.body}`
                               : c.other
                                 ? t("sayHi")
                                 : null}

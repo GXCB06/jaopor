@@ -21,6 +21,7 @@ declare
   k int;
   conv bigint;
   msg bigint;
+  amsg bigint;
   c1 uuid := '00000000-0000-4000-8000-0000000000c1';
   c2 uuid := '00000000-0000-4000-8000-0000000000c2';
   ov uuid := '00000000-0000-4000-8000-0000000000d1';
@@ -620,6 +621,30 @@ begin
   end;
   insert into public.reports (reporter_id, target_type, target_id, reason) values (a, 'message', msg::text, 'harassment');
   out := out || 'T98 participant reports a message: ok | ';
+
+  -- Edit / soft-delete my own message only (migration chat_message_edit_delete). RLS filters other
+  -- people's rows silently (0 rows), so these assert row counts, not exceptions.
+  insert into public.chat_messages (conversation_id, sender_id, body) values (conv, a, 'edit me')
+  returning id into amsg;
+  update public.chat_messages set body = 'tampered' where id = msg;  -- msg is B's
+  get diagnostics n = row_count;
+  out := out || format('T98a edits another person''s message: %s row (expect 0) | ', n);
+  update public.chat_messages set body = 'edited' where id = amsg;
+  get diagnostics n = row_count;
+  out := out || format('T98b edits own message: %s row (expect 1), edited_at set=%s (expect true) | ',
+    n, (select edited_at is not null from public.chat_messages where id = amsg));
+  update public.chat_messages set body = '', deleted_at = now() where id = amsg;
+  out := out || format('T98c soft-deletes own message: empty=%s (expect true), deleted=%s (expect true) | ',
+    (select body = '' from public.chat_messages where id = amsg),
+    (select deleted_at is not null from public.chat_messages where id = amsg));
+  update public.chat_messages set body = 'again' where id = amsg;
+  get diagnostics n = row_count;
+  out := out || format('T98d edits own deleted message: %s row (expect 0) | ', n);
+  -- Remove the test row as the owner so later counts (T103, T104) are unchanged.
+  execute 'reset role';
+  delete from public.chat_messages where id = amsg;
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
 
   -- A third person sees nothing and can't write or report.
   execute 'reset role';

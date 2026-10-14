@@ -456,6 +456,7 @@
     "autofillReading": "Reading your page…",
     "autofillDone": "✨ Filled in from your site. Edit anything.",
     "autofillDoneStore": "✨ Filled in from the store. Edit anything.",
+    "autofillNotWebsite": "This link is a channel or detail of your project (e.g. LINE OA, GitHub, a social page) — we save the link, but don't auto-fill the name or details. Please type them in.",
     "taglineCount": "{count}/140",
     "taglinePlaceholder": "e.g. Tax invoices in one minute",
     "logoUpload": "Upload",
@@ -2000,7 +2001,17 @@
     "unblockTitle": "Unblock {name}?",
     "unblockBody": "The chat reopens, you can message each other again, and your LINE / email are shared as they were before the block.",
     "unblocked": "Unblocked",
-    "blockedByMeNote": "You blocked this chat"
+    "blockedByMeNote": "You blocked this chat",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edited": "edited",
+    "deletedMessage": "Message deleted",
+    "messageMenu": "Message options",
+    "deleteTitle": "Delete this message?",
+    "deleteBody": "The message disappears for both of you, replaced by a “deleted” note. This can't be undone.",
+    "deleted": "Message deleted"
   },
   "Security": {
     "metaTitle": "How we handle your key",

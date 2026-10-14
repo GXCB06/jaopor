@@ -70,6 +70,8 @@ export type Database = {
           body: string;
           conversation_id: number;
           created_at: string;
+          deleted_at: string | null;
+          edited_at: string | null;
           id: number;
           sender_id: string;
         };
@@ -77,6 +79,8 @@ export type Database = {
           body: string;
           conversation_id: number;
           created_at?: string;
+          deleted_at?: string | null;
+          edited_at?: string | null;
           id?: never;
           sender_id: string;
         };
@@ -84,6 +88,8 @@ export type Database = {
           body?: string;
           conversation_id?: number;
           created_at?: string;
+          deleted_at?: string | null;
+          edited_at?: string | null;
           id?: never;
           sender_id?: string;
         };

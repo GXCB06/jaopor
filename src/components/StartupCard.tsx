@@ -286,11 +286,7 @@ export function StartupCard({
             >
               <ProjectName name={startup.name} slug={startup.slug} />
             </h3>
-            {large ? (
-              <span className="mt-1 inline-flex rounded-sm border bg-secondary px-1.5 text-3xs text-muted-foreground">
-                {categoryName(startup.category, locale)}
-              </span>
-            ) : (
+            {!large && (
               <p className="flex min-w-0 items-center gap-1.5 text-2xs text-faint">
                 <span className="truncate">
                   {categoryName(startup.category, locale)}
@@ -304,6 +300,11 @@ export function StartupCard({
             <Tag startup={startup} large={large} />
           </div>
         </div>
+        {large && (
+          <span className="mt-3 inline-block max-w-full truncate rounded-sm border bg-secondary px-1.5 text-3xs text-muted-foreground">
+            {categoryName(startup.category, locale)}
+          </span>
+        )}
         {large && (
           <p className="mt-3 line-clamp-2 min-h-[2.5em] text-caption text-muted-foreground">
             {startup.tagline}
