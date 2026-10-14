@@ -12,6 +12,17 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-14 — Main domain opens the product; the landing stays on its own domain
+
+**Done** (owner: the landing already lives at `jaopor-landing.vercel.app`, so serving it from `jaopor.vercel.app` too is redundant — a click on `jaopor.vercel.app` should open the product):
+
+- **Reverted the multi-zone.** Removed the `beforeFiles` rewrites in `next.config.ts` (`/` → landing, `/landing/:path*` → landing) and the `LANDING_ORIGIN` constant; the proxy (`src/proxy.ts`) no longer bypasses `/` and `/landing/*`, so next-intl handles `/` as usual.
+- **Result:** `jaopor.vercel.app/` → **307 `location: /th`** (product home); `/en` and all other paths unchanged. The landing is now served **only** at `jaopor-landing.vercel.app`. The app keeps `GET /api/public/landing`, which the landing still reads for live numbers.
+
+**Files:** `next.config.ts`, `src/proxy.ts`
+**Verified:** `npm run typecheck` ✓ · `npm run lint` ✓ · `npx vitest run` 658 passed / 17 skipped ✓ · `npm run build` ✓ (60/60). Runtime (`next start`, port 3999): `curl -I /` → `HTTP/1.1 307` `location: /th`; `/th` → 200.
+**Next:** owner go → push; the app redeploys and the main-domain root stops serving the landing. Landing repo later: point its canonical/OG at `jaopor-landing.vercel.app` (currently `jaopor.vercel.app`).
+
 ## 2026-10-13 — Olympics podium on every metric + LINE OA link guide
 
 **Done** (owner: the podium "doesn't display in every category", plus a request for a guide for LINE OA links):
