@@ -73,6 +73,27 @@ export function sourcesOfKind(kind: SourceKind): SourceId[] {
   return SOURCES.filter((s) => SOURCE_KIND[s] === kind);
 }
 
+/**
+ * Sources whose proof is bound to an asset the listing already carries — its website (analytics
+ * snippet / share link) or its GitHub repo — so proving it also proves who owns the listing.
+ * Revenue keys are excluded: holding a payment key shows you took a payment, not which listing is
+ * yours. Used by the claim flow (an imported listing can only be claimed with these).
+ */
+export const CLAIM_SOURCES: readonly SourceId[] = [
+  "jaopor",
+  "plausible",
+  "umami",
+  "cloudflare",
+  "ga4",
+  "github",
+];
+
+export function isClaimSource(v: unknown): v is SourceId {
+  return (
+    typeof v === "string" && (CLAIM_SOURCES as readonly string[]).includes(v)
+  );
+}
+
 /** What the connect form sends, per source. Everything is optional here; each connector validates. */
 export type ConnectInput = {
   key?: string;

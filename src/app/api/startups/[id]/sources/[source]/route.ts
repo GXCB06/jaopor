@@ -39,7 +39,11 @@ function logVerifyResult(
   code: string | null,
 ) {
   if (!VERIFY_SOURCE_SET.has(source)) return;
-  const safeCode = ok ? null : code && VERIFY_CODE_SET.has(code) ? code : "server";
+  const safeCode = ok
+    ? null
+    : code && VERIFY_CODE_SET.has(code)
+      ? code
+      : "server";
   try {
     after(async () => {
       try {
@@ -103,7 +107,11 @@ export async function POST(req: Request, ctx: Ctx) {
       result.ok ? null : result.code,
     );
     return result.ok
-      ? json({ ok: true, ownerVerified: result.ownerVerified })
+      ? json({
+          ok: true,
+          ownerVerified: result.ownerVerified,
+          claimed: result.claimed,
+        })
       : json(
           {
             ok: false,

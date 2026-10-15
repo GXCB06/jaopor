@@ -1230,6 +1230,7 @@ export type Database = {
           tech_stack: Json;
           traffic_provider: string | null;
           traffic_synced_at: string | null;
+          unclaimed: boolean;
           updated_at: string;
           value_proposition: string | null;
           verification_status: string;
@@ -1294,6 +1295,7 @@ export type Database = {
           tech_stack?: Json;
           traffic_provider?: string | null;
           traffic_synced_at?: string | null;
+          unclaimed?: boolean;
           updated_at?: string;
           value_proposition?: string | null;
           verification_status?: string;
@@ -1358,6 +1360,7 @@ export type Database = {
           tech_stack?: Json;
           traffic_provider?: string | null;
           traffic_synced_at?: string | null;
+          unclaimed?: boolean;
           updated_at?: string;
           value_proposition?: string | null;
           verification_status?: string;

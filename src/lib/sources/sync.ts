@@ -50,6 +50,7 @@ import {
   parseServiceAccount,
 } from "@/lib/traffic/ga4";
 import {
+  isClaimSource,
   SOURCE_KIND,
   sourcesOfKind,
   type ConnectInput,
@@ -65,8 +66,9 @@ import { ownerAnonymousWebsites, withRealLinks } from "@/lib/data/anonymous";
 type Admin = SupabaseClient<Database>;
 
 export type SourceResult =
-  /** ownerVerified: JaoPor snippet only, whether it was found on the website (Owner verified). */
-  | { ok: true; ownerVerified?: boolean }
+  /** ownerVerified: JaoPor snippet only, whether it was found on the website (Owner verified).
+   *  claimed: this connect also transferred an imported listing to the founder (claim flow). */
+  | { ok: true; ownerVerified?: boolean; claimed?: boolean }
   | {
       ok: false;
       code: ProviderErrorCode | "not_connected";
@@ -546,6 +548,21 @@ async function ownedStartup(admin: Admin, startupId: number, userId: string) {
 }
 
 /**
+ * The startup row a connect acts on. Used by the claim flow too, where the actor is not (yet) the
+ * owner: it returns the row regardless, and `connectSource` decides who may act — the owner, or
+ * anyone claiming an imported (`unclaimed`) listing. Real links for anonymous projects, as before.
+ */
+async function connectableStartup(admin: Admin, startupId: number) {
+  const { data } = await admin
+    .from("startups")
+    .select("id, owner_id, website_url, github_url, unclaimed")
+    .eq("id", startupId)
+    .maybeSingle();
+  if (!data) throw new ForbiddenError();
+  return withRealLinks(admin, data);
+}
+
+/**
  * One business, one listing (UX review 2026-10-07: the same site and Stripe account were listed
  * twice, so the leaderboard and the founder's totals counted the revenue twice). Revenue and
  * visitors can't be connected when another of the owner's projects with the same website already
@@ -628,7 +645,14 @@ async function prepare(
   admin: Admin,
   source: SourceId,
   input: ConnectInput,
-  ctx: { userId: string; website: string | null },
+  ctx: {
+    userId: string;
+    startupId: number;
+    website: string | null;
+    githubUrl: string | null;
+    /** Claim flow: the actor is proving an imported listing is theirs, not connecting their own. */
+    claiming: boolean;
+  },
 ): Promise<Stored & { hint: string | null }> {
   const key = input.key?.trim() ?? "";
   switch (source) {
@@ -698,6 +722,18 @@ async function prepare(
       // No credential: our server finds the snippet on the website (Owner verified), then
       // visits from that website count.
       requireWebsite(ctx.website);
+      if (ctx.claiming) {
+        // A claim needs the proof now, not later: the code must already be on the listed site.
+        const found = await findOwnerSnippet(
+          ctx.website ?? "",
+          String(ctx.startupId),
+        );
+        if (found !== "found")
+          throw new ProviderError(
+            "not_claimable",
+            "We couldn't find your JaoPor code on that website.",
+          );
+      }
       return { secret: null, config: {}, hint: null };
     }
     case "github": {
@@ -709,6 +745,15 @@ async function prepare(
         await githubLogin(admin, ctx.userId),
         serverEnv.githubToken(),
       );
+      if (ctx.claiming) {
+        // A claim must use the repo the listing already shows, not a different one you own.
+        const listed = parseRepo(ctx.githubUrl ?? "");
+        if (!listed || listed.toLowerCase() !== repo.toLowerCase())
+          throw new ProviderError(
+            "not_claimable",
+            "That isn't the repo linked on this project.",
+          );
+      }
       return { secret: null, config: { repo }, hint: null };
     }
   }
@@ -723,7 +768,21 @@ export async function connectSource(
     data: ConnectInput;
   },
 ): Promise<SourceResult> {
-  const startup = await ownedStartup(admin, input.startupId, input.userId);
+  const startup = await connectableStartup(admin, input.startupId);
+  // The actor is either the owner, or someone claiming an imported (`unclaimed`) listing.
+  const claiming =
+    startup.owner_id !== input.userId && startup.unclaimed === true;
+  if (startup.owner_id !== input.userId && !claiming)
+    throw new ForbiddenError();
+  // A claim must be proven by an asset that belongs to the listing, never a payment key.
+  if (claiming && !isClaimSource(input.source))
+    return toResult(
+      new ProviderError(
+        "not_claimable",
+        "This project can't be claimed with that source.",
+      ),
+    );
+
   const duplicate = await duplicateListing(
     admin,
     startup,
@@ -742,11 +801,29 @@ export async function connectSource(
   try {
     stored = await prepare(admin, input.source, input.data, {
       userId: input.userId,
+      startupId: startup.id,
       website: startup.website_url,
+      githubUrl: startup.github_url,
+      claiming,
     });
   } catch (err) {
     if (err instanceof ProviderError) return toResult(err);
     throw err;
+  }
+
+  // Claim: hand the listing to the founder before storing anything, so no connection is ever left
+  // pointing at the old owner. The compare-and-set on `unclaimed` makes a concurrent claim lose.
+  if (claiming) {
+    const { data: moved } = await admin
+      .from("startups")
+      .update({ owner_id: input.userId, unclaimed: false })
+      .eq("id", startup.id)
+      .eq("unclaimed", true)
+      .select("id");
+    if (!moved?.length)
+      return toResult(
+        new ProviderError("not_claimable", "This project was already claimed."),
+      );
   }
 
   // One source of truth per kind: connecting RevenueCat replaces Stripe (and clears its numbers).
@@ -768,7 +845,10 @@ export async function connectSource(
       .eq("startup_id", startup.id)
       .eq("provider", "jaopor")
       .maybeSingle();
-    if (existing) return syncSource(admin, startup.id, "jaopor");
+    if (existing) {
+      const r = await syncSource(admin, startup.id, "jaopor");
+      return claiming && r.ok ? { ...r, claimed: true } : r;
+    }
   }
 
   const { error } = await admin.from("provider_connections").upsert(
@@ -787,7 +867,8 @@ export async function connectSource(
   );
   if (error) throw error;
 
-  return syncSource(admin, startup.id, input.source);
+  const result = await syncSource(admin, startup.id, input.source);
+  return claiming && result.ok ? { ...result, claimed: true } : result;
 }
 
 // ---------------------------------------------------------------------------

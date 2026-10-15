@@ -5,6 +5,7 @@ import {
   PencilIcon,
   PlugIcon,
   PlusIcon,
+  SearchIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -383,8 +384,22 @@ export default async function DashboardPage({
                 </span>
               </span>
             </Link>
-            {/* The "claim a project" tile (coming soon) is hidden until the claim flow exists:
-                a disabled tile in the main column was a dead end (UX audit C-6). */}
+            <Link
+              href="/dashboard/claim"
+              className="flex gap-3 rounded-xl border border-dashed p-4 transition-colors hover:border-brand/60"
+            >
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-background">
+                <SearchIcon className="size-4" aria-hidden="true" />
+              </span>
+              <span>
+                <span className="block text-xs font-semibold">
+                  {t("claimWork")}
+                </span>
+                <span className="mt-0.5 block text-2xs text-muted-foreground">
+                  {t("claimWorkHint")}
+                </span>
+              </span>
+            </Link>
           </div>
           {owned.length === 0 && dash.startups.length === 0 && (
             <p className="px-5 pb-5 text-caption text-muted-foreground">

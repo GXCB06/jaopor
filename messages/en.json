@@ -139,8 +139,8 @@
     "emptyCta": "Verify your numbers",
     "updatedDaily": "Updated daily",
     "basis": {
-    "mrr": "Current MRR at the last update (daily), verified via Stripe / Polar / RevenueCat · “Growth” = revenue in the last 30 days vs the 30 days before",
-    "revenue30d": "Revenue in the last 30 days, verified via Stripe / Polar / RevenueCat · “Growth” = vs the 30 days before",
+      "mrr": "Current MRR at the last update (daily), verified via Stripe / Polar / RevenueCat · “Growth” = revenue in the last 30 days vs the 30 days before",
+      "revenue30d": "Revenue in the last 30 days, verified via Stripe / Polar / RevenueCat · “Growth” = vs the 30 days before",
       "visitors": "Visitors in the last 30 days, counted by the JaoPor script or the project's analytics (counted, not verified) · “Growth” = vs the 30 days before",
       "commits": "All-time commits on the default branch of a public repo, verified via GitHub"
     },
@@ -530,7 +530,8 @@
     "not_owner": "That repo doesn't belong to the GitHub account you signed in with.",
     "no_github_identity": "Sign in with GitHub at least once so we can confirm the repo is yours.",
     "no_website": "Add the project's own website first (not a Facebook or YouTube page): visitors are matched to it.",
-    "duplicate_listing": "Your project “{detail}” already has this website’s numbers connected. One business, one listing: use that project instead."
+    "duplicate_listing": "Your project “{detail}” already has this website’s numbers connected. One business, one listing: use that project instead.",
+    "not_claimable": "This project can't be claimed with that proof. Use an analytics site or repo that belongs to it, and check the link."
   },
   "ErrorPage": {
     "notFoundCode": "404",
@@ -595,7 +596,7 @@
     "other": "Other link (social page, link-in-bio)",
     "type": "Link type",
     "autoDetected": "detected from the link; change it if it's wrong",
-      "platformNote": "A {platform} page isn't the project's own website, so we don't read it and the JaoPor visitor counter can't run there. You can verify numbers with Stripe, Polar, RevenueCat or GitHub.",
+    "platformNote": "A {platform} page isn't the project's own website, so we don't read it and the JaoPor visitor counter can't run there. You can verify numbers with Stripe, Polar, RevenueCat or GitHub.",
     "platforms": {
       "facebook": "Facebook",
       "instagram": "Instagram",
@@ -645,7 +646,7 @@
     "revenue": "Revenue",
     "traffic": "Visitors",
     "build": "Build proof",
-      "revenueHint": "Web SaaS → Stripe or Polar · Mobile apps → RevenueCat",
+    "revenueHint": "Web SaaS → Stripe or Polar · Mobile apps → RevenueCat",
     "trafficHint": "Real visitors to your site: use the JaoPor snippet (no analytics account needed) or connect the analytics you already have. Must be the same domain as your website.",
     "buildHint": "Commits, first commit and the share co-authored with Claude, from a public repo.",
     "connect": "Verify",
@@ -807,7 +808,23 @@
       "revoke": "Disconnect at any time: the key and that source's numbers are deleted immediately.",
       "more": "How we handle your key"
     },
-    "successCounted": "Connected! Visitors counted by {source} are on your project page now."
+    "successCounted": "Connected! Visitors counted by {source} are on your project page now.",
+    "claim": {
+      "claimed": "Claimed! This project is now yours."
+    }
+  },
+  "Claim": {
+    "title": "Claim a project",
+    "intro": "Is a project already on JaoPor without you? Find it, prove it's yours with a read-only key or your GitHub repo, and take it over.",
+    "searchLabel": "Search by name or website",
+    "searchPlaceholder": "yourapp.com",
+    "search": "Search",
+    "empty": "No claimable projects match.",
+    "emptyHint": "Check the website address, or add the project as new instead.",
+    "addNew": "Add it as new",
+    "website": "Website",
+    "claimThis": "This is mine",
+    "exists": "This project is no longer claimable — it may already have an owner."
   },
   "Share": {
     "share": "Share",

@@ -30,6 +30,8 @@ declare
   old_slug text;
   anon_sid bigint;
   real_name text;
+  sys_owner uuid := '00000000-0000-4000-a000-000000000001';
+  claim_sid bigint;
 begin
   insert into auth.users (id, email, raw_user_meta_data, aud, role)
   values (a, 'rls-a@test.local', '{"full_name":"Tester A"}', 'authenticated', 'authenticated'),
@@ -1492,6 +1494,40 @@ begin
     perform count(*) from public.saves;
     out := out || 'T172 anon reads saves: ALLOWED (BAD) | ';
   exception when insufficient_privilege then out := out || 'T172 anon reads saves: denied (good) | ';
+  end;
+  execute 'reset role';
+  -- T173–T176: claim flow ("อ้างสิทธิ์ผลงาน", migration 20261015160000_claim_startup; NOT APPLIED
+  -- until the owner approves, so these lines only pass after it is applied). Imported listings are
+  -- owned by the JaoPor system account and flagged `unclaimed`; only the server key can set or clear
+  -- the flag or move ownership, so a founder can never claim (or un-claim) a listing by hand.
+  select count(*) into n from public.profiles where id = sys_owner;
+  out := out || format('T173 system-owner profile exists: %s (expect 1) | ', n);
+  insert into public.startups (owner_id, name, slug, website_url, category, country, province, unclaimed)
+    values (sys_owner, 'Imported Co', 'rls-imported-co', 'https://imported.example', 'saas', 'TH', 'bangkok', true)
+    returning id into claim_sid;
+  out := out || format('T174 imported listing: unclaimed=%s, founding_number=%s (expect t / null) | ',
+    (select unclaimed from public.startups where id = claim_sid),
+    coalesce((select founding_number from public.startups where id = claim_sid)::text, 'null'));
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  begin
+    update public.startups set owner_id = b, unclaimed = false where id = claim_sid;
+    out := out || 'T175 client moves ownership or flag: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T175 client moves ownership or flag: denied (good) | ';
+  end;
+  execute 'reset role';
+  out := out || format('T175b still system-owned and unclaimed: %s / %s (expect t / t) | ',
+    (select owner_id = sys_owner from public.startups where id = claim_sid),
+    (select unclaimed from public.startups where id = claim_sid));
+  begin
+    perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+    execute 'set local role authenticated';
+    insert into public.startups (owner_id, name, slug, website_url, category, country, province, unclaimed)
+      values (a, 'Sneaky', 'rls-sneaky-claim', 'https://sneaky.example', 'saas', 'TH', 'bangkok', true);
+    out := out || 'T176 client sets unclaimed on insert: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T176 client sets unclaimed on insert: denied (good) | ';
   end;
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;

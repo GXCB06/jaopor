@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  CLAIM_SOURCES,
+  isClaimSource,
   METRICS,
   SOURCE_KIND,
   SOURCE_NAME,
@@ -67,5 +69,31 @@ describe("sources catalog — recommended metric per stage", () => {
   it("recommends nothing before a stage is chosen", () => {
     expect(recommendedMetric(null)).toBeUndefined();
     expect(recommendedMetric(undefined)).toBeUndefined();
+  });
+});
+
+// Claim flow: only asset-bound proofs (the listing's site or its repo) can claim an imported
+// listing — a payment key proves you took a payment, not which listing is yours.
+describe("sources catalog — claim sources", () => {
+  it("offers the asset-bound sources only", () => {
+    expect(CLAIM_SOURCES).toEqual([
+      "jaopor",
+      "plausible",
+      "umami",
+      "cloudflare",
+      "ga4",
+      "github",
+    ]);
+  });
+
+  it("never lets a revenue source claim a listing", () => {
+    for (const s of sourcesOfKind("revenue"))
+      expect(isClaimSource(s)).toBe(false);
+  });
+
+  it("isClaimSource rejects unknown strings", () => {
+    expect(isClaimSource("stripe")).toBe(false);
+    expect(isClaimSource("nope")).toBe(false);
+    for (const s of CLAIM_SOURCES) expect(isClaimSource(s)).toBe(true);
   });
 });

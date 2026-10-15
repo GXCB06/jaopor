@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
+  isClaimSource,
   METRICS,
   SOURCE_KIND,
   SOURCE_NAME,
@@ -135,6 +136,7 @@ export function VerifyPanel({
   order,
   recommend,
   showTitle = true,
+  claim = false,
 }: {
   startupId: number;
   connections: ConnectionInfo[];
@@ -149,9 +151,11 @@ export function VerifyPanel({
   recommend?: SourceKind;
   /** False when the host already shows the chooser's question as its own heading (wizard v3.2). */
   showTitle?: boolean;
+  /** Claim flow: only asset-bound sources, and a successful connect transfers the listing. */
+  claim?: boolean;
 }) {
   const t = useTranslations("Sources");
-  if (connections.length === 0)
+  if (claim || connections.length === 0)
     return (
       <VerifyChooser
         startupId={startupId}
@@ -162,6 +166,7 @@ export function VerifyPanel({
         order={order}
         recommend={recommend}
         showTitle={showTitle}
+        claim={claim}
       />
     );
   return (
@@ -204,6 +209,7 @@ function VerifyChooser({
   order = METRICS,
   recommend,
   showTitle = true,
+  claim = false,
 }: {
   startupId: number;
   websiteHost: string | null;
@@ -213,6 +219,7 @@ function VerifyChooser({
   order?: readonly SourceKind[];
   recommend?: SourceKind;
   showTitle?: boolean;
+  claim?: boolean;
 }) {
   const t = useTranslations("Sources");
   // Which metric is expanded (null = the three metric rows).
@@ -225,10 +232,13 @@ function VerifyChooser({
   const [owner, setOwner] = useState(false);
 
   // The snippet needs a website; without one only analytics remain (issue 4, metric-first).
-  const sourcesFor = (kind: SourceKind): SourceId[] =>
-    kind === "traffic" && !websiteHost
-      ? sourcesOfKind("traffic").filter((s) => s !== "jaopor")
-      : sourcesOfKind(kind);
+  // A claim only accepts asset-bound sources (the listing's site or its repo), never a key alone.
+  const sourcesFor = (kind: SourceKind): SourceId[] => {
+    const list = sourcesOfKind(kind).filter((s) => !claim || isClaimSource(s));
+    return kind === "traffic" && !websiteHost
+      ? list.filter((s) => s !== "jaopor")
+      : list;
+  };
   const metricDone = (kind: SourceKind) =>
     sourcesFor(kind).some((s) => done.includes(s));
 
@@ -429,6 +439,7 @@ function VerifyChooser({
                   replaces={replaces}
                   websiteHost={websiteHost}
                   githubLogin={githubLogin}
+                  claim={claim}
                   onConnected={(s, ownerVerified) => {
                     setDone((d) => [
                       ...d.filter((x) => SOURCE_KIND[x] !== SOURCE_KIND[s]),
@@ -489,9 +500,7 @@ function StripePermissions() {
             className="flex items-center justify-between gap-3 px-3 py-2"
           >
             <span className={r.level === "None" ? "text-muted-foreground" : ""}>
-              {r.where && (
-                <span className="text-faint">{r.where} · </span>
-              )}
+              {r.where && <span className="text-faint">{r.where} · </span>}
               {r.name}
             </span>
             <span
@@ -666,6 +675,7 @@ function SourceForm({
   websiteHost,
   githubLogin,
   onConnected,
+  claim = false,
 }: {
   source: SourceId;
   startupId: number;
@@ -673,6 +683,7 @@ function SourceForm({
   websiteHost: string | null;
   githubLogin: string | null;
   onConnected?: (source: SourceId, ownerVerified?: boolean) => void;
+  claim?: boolean;
 }) {
   const t = useTranslations("Sources");
   const errorText = useErrorText();
@@ -700,8 +711,16 @@ function SourceForm({
         error?: string;
         detail?: string;
         ownerVerified?: boolean;
+        claimed?: boolean;
       };
       if (res.ok && body.ok) {
+        // A claim also transfers the listing: say so and leave for the dashboard (it is theirs now).
+        if (claim && body.claimed) {
+          toast.success(t("claim.claimed"));
+          router.push("/dashboard");
+          router.refresh();
+          return;
+        }
         // The snippet is only proof once our server found it on the site: until then it says so,
         // never "Verified! The numbers are on your profile" (there are none yet).
         // Analytics counts are "counted", not "verified" (Design.md §3 Verified vs counted).
