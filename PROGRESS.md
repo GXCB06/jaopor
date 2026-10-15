@@ -12,6 +12,22 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-15 — Bookmarks: a `saves` table, a Save button, and a real "ที่บันทึกไว้" page
+
+**Done** (owner picked item 3; the saves half lands now, the claim flow next):
+
+- **`public.saves`** (`supabase/migrations/20261015120000_saves.sql`, **owner applies**) — `(user_id, startup_id)` PK, `created_at`, cascade deletes, `saves_user_created_idx` / `saves_startup_id_idx`, RLS showing a save only to its saver (no public read), grants: anon none, authenticated select/insert/delete, service_role all. Hand-added to `database.types.ts` until the owner regenerates.
+- **`SaveButton`** on the project page (header actions, before Share) — a client toggle that reads its state after mount (the profile is ISR and cookie-free), links signed-out users to `/login?next=…`, and flips optimistically with `useTransition` + a toast on failure.
+- **`/dashboard/saved`** is no longer a placeholder: it lists the viewer's saves newest-first as large `StartupCard`s, dropping anything no longer published, with an empty state.
+- **Server actions** `getSaveState` / `setSave` (idempotent upsert / delete, `revalidatePath` on the saved page) plus a `getStartupsByIds` loader.
+- RLS smoke tests **T169–T172** added (own row only, no cross-user read/delete, anon denied) — they only pass once the owner applies the migration.
+
+**Files:** `supabase/migrations/20261015120000_saves.sql`, `supabase/tests/rls_smoke.sql`, `src/app/actions/saves.ts`, `src/lib/data/saves.ts`, `src/lib/data/startups.ts`, `src/lib/supabase/database.types.ts`, `src/components/SaveButton.tsx`, `src/app/[locale]/startup/[slug]/page.tsx`, `src/app/[locale]/dashboard/saved/page.tsx`, `messages/{th,en}.json`, `Design.md`, `Project.md`
+
+**Verified:** `npm run typecheck` ✓ · `npm run lint` ✓ · `npx vitest run` 673 passed / 17 skipped ✓ · `npm run build` ✓. Migration **not applied** (owner), so the RLS smoke block is unrun.
+
+**Next:** the claim flow (imported unclaimed listings) → item 1 (Polar / LemonSqueezy / PostHog / App Store Connect) → item 5 (analytics re-check).
+
 ## 2026-10-14 — AI-readable surfaces: `llms.txt` + a Markdown twin per project
 
 **Done** (roadmap item "`llms.txt` + Markdown pages", launch-plan §Should-have; the visitor-chart half of the neighbouring roadmap row turned out to be already shipped):
