@@ -1015,6 +1015,39 @@ export type Database = {
           },
         ];
       };
+      saves: {
+        Row: {
+          created_at: string;
+          startup_id: number;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          startup_id: number;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          startup_id?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "saves_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "saves_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       startup_members: {
         Row: {
           created_at: string;

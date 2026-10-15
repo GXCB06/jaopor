@@ -1511,8 +1511,9 @@
     "received": "Received",
     "sent": "Sent",
     "noSent": "You haven't sent any requests",
-    "savedSoon": "Saved is coming",
-    "savedSoonHint": "Soon you'll be able to save projects and builders to look at later",
+    "savedEmpty": "No saved projects yet",
+    "savedHint": "Tap the bookmark icon on a project page to keep it here",
+    "browse": "Browse projects",
     "followers": "Followers ({n})",
     "following": "Following ({n})",
     "noFollowers": "No followers yet",
@@ -2256,5 +2257,11 @@
     "placeholder": "Type a category, e.g. games, education, shop",
     "noMatch": "No such category. Try another word or pick “Other”.",
     "popular": "Popular categories"
+  },
+  "Save": {
+    "save": "Save",
+    "saved": "Saved",
+    "signIn": "Sign in to save",
+    "failed": "Couldn't save. Try again"
   }
 }

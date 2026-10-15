@@ -49,6 +49,7 @@ import { SectionTabs } from "@/components/profile/SectionTabs";
 import { ShowMore } from "@/components/profile/ShowMore";
 import { MetricHelp } from "@/components/core/MetricHelp";
 import { ShareStudio } from "@/components/share/ShareStudio";
+import { SaveButton } from "@/components/SaveButton";
 import { FoundingBadge, Money, StartupLogo } from "@/components/StartupBits";
 import { QuickSearchSection } from "@/components/search/QuickSearchSection";
 import { StartupCard } from "@/components/StartupCard";
@@ -469,6 +470,10 @@ export default async function StartupPage({ params }: Props) {
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2 max-sm:[&>a]:flex-1">
+              <SaveButton
+                startupId={startup.id}
+                signedInPath={`/${locale}/startup/${startup.slug}`}
+              />
               <ShareStudio
                 slug={startup.slug}
                 url={url}

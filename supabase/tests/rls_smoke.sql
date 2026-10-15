@@ -1463,6 +1463,36 @@ begin
     (select slug from public.startups where id = anon_sid),
     (select website_url from public.startups where id = anon_sid));
   execute 'reset role';
+  -- T169–T172: saves / bookmarks ("ที่บันทึกไว้", migration 20261015120000_saves; NOT APPLIED until
+  -- the owner approves, so these lines only pass after it is applied). A save is private to its
+  -- owner: only the saver reads, inserts and deletes it.
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  insert into public.saves (user_id, startup_id) values (a, pid);
+  insert into public.saves (user_id, startup_id) values (a, pid) on conflict do nothing;
+  out := out || format('T169 a saves a project, twice: own rows=%s (expect 1) | ',
+    (select count(*) from public.saves));
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  out := out || format('T170 b reads a''s saves: rows=%s (expect 0) | ',
+    (select count(*) from public.saves));
+  delete from public.saves where startup_id = pid;
+  get diagnostics n = row_count;
+  out := out || format('T171 b deletes a''s save: %s rows (expect 0) | ', n);
+  begin
+    insert into public.saves (user_id, startup_id) values (a, pid);
+    out := out || 'T172b b saves on behalf of a: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T172b b saves on behalf of a: denied (good) | ';
+  end;
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  execute 'set local role anon';
+  begin
+    perform count(*) from public.saves;
+    out := out || 'T172 anon reads saves: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then out := out || 'T172 anon reads saves: denied (good) | ';
+  end;
   execute 'reset role';
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;
 end $$;

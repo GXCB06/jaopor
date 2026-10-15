@@ -702,7 +702,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - Requests: two Cards (ได้รับ / ส่งไป); rows show avatar, name (→ profile), topic, status pill (pending warning, accepted positive), relative time, message; accepted rows reveal the other side's LINE / email in a `border-positive/30 bg-positive/10` strip. Received pending: ยอมรับ / ข้าม / บล็อก; sent pending: ยกเลิกคำขอ. Opening the page marks notifications read.
 - Connections: followers / following lists (avatar, name, @handle · headline).
 - Settings: per-field visibility as 3-way segmented radios (สาธารณะ / สมาชิก / ซ่อน), directory checkbox, a `border-negative/30` delete-account card (email request until self-service).
-- Saved: honest placeholder (no bookmarks table yet).
+- Saved: the viewer's saves, newest first, as large `StartupCard`s (rows are dropped if the project is no longer published); an empty state explains it. The project page's `SaveButton` (header actions, before Share) toggles a save, sending signed-out users to sign in. Private to each saver — `saves` RLS has no public read.
 
 ### Phase 6 polish (2026-10-08, UX audit)
 
