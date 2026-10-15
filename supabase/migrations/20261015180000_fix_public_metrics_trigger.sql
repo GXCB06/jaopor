@@ -1,0 +1,27 @@
+-- Fix: writes to public.startups by anon / authenticated / service_role were rejected.
+--
+-- Root cause: 20261011130000_disclosure_levels.sql created the BEFORE INSERT OR UPDATE trigger
+-- private.startups_public_metrics() as SECURITY INVOKER (the new default), while the same migration
+-- revoked EXECUTE on the helper functions it calls -- private.disclosure_band / disclosure_growth /
+-- disclosure_level -- from public, anon, authenticated (see that file's grants at ~lines 139-141).
+-- A SECURITY INVOKER trigger body runs with the privileges of the role that fired the statement, so
+-- every non-owner INSERT/UPDATE on public.startups failed with
+-- 42501 "permission denied for function disclosure_band".
+-- The add-product wizard (src/components/wizard/StartupWizard.tsx, the step-1 .insert) surfaced that
+-- as the generic "มีบางอย่างผิดพลาด กรุณาลองอีกครั้ง" error, while its client-side "3/3" counter still
+-- showed ready because it never touches the database. Cron sync (service_role) hit the same denial.
+--
+-- Fix: run the trigger as its owner (postgres). This matches every other write-path trigger on this
+-- table (startups_anonymity / startups_before_insert / startups_reserve_old_slugs are all
+-- SECURITY DEFINER), and it is safe because the body is already hardened:
+--   * SET search_path = '' is pinned (verified: proconfig = [search_path=""]), so nothing can be
+--     hijacked via the search path;
+--   * every reference is schema-qualified: public.fx_rates and private.disclosure_band/growth/level;
+--   * it only reads the public reference table public.fx_rates and rewrites NEW -- it grants no reach
+--     the writer did not already have by writing the row itself;
+--   * trigger functions cannot be invoked directly, so no EXECUTE grant is added (verified that a
+--     trigger function's EXECUTE is not re-checked when the trigger fires: the pre-existing DEFINER
+--     triggers above carry a postgres-only ACL and still fire for authenticated).
+--
+-- Applied: (pending owner approval).
+alter function private.startups_public_metrics() security definer;
