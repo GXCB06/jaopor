@@ -16,7 +16,7 @@ type OgFont = NonNullable<
 
 /** Body text: IBM Plex Sans Thai, Latin subset first, Thai subset for Thai and "฿". */
 export const OG_SANS = "Plex, PlexThai";
-/** Numbers: Inconsolata (Latin only); "฿" comes from the Thai subset. */
+/** Numbers: JetBrains Mono (Latin only), matching the site UI; "฿" comes from the Thai subset. */
 export const OG_MONO = "Mono, PlexThai";
 
 const font = (file: string) =>
@@ -28,7 +28,7 @@ export async function ogFonts(): Promise<OgFont[]> {
     font("ibm-plex-sans-thai-latin-700-normal.woff"),
     font("ibm-plex-sans-thai-thai-400-normal.woff"),
     font("ibm-plex-sans-thai-thai-700-normal.woff"),
-    font("inconsolata-latin-700-normal.woff"),
+    font("jetbrains-mono-latin-700-normal.woff"),
   ]);
   return [
     { name: "Plex", data: latin, weight: 400, style: "normal" },
