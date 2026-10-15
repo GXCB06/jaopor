@@ -9,7 +9,7 @@
 --      table through the API, including the service role" holds literally. The service role still
 --      writes/reads only through the SECURITY DEFINER functions below.
 --
--- NOT APPLIED. Apply only after owner approval, then run the advisors, RLS smoke T137–T145, and
+-- Applied 2026-10-11 (remote 20261011054920). Applied only after owner approval; run the advisors, RLS smoke T137–T145, and
 -- regenerate the types (src/lib/supabase/database.types.ts).
 
 -- 1. A schema the Data API doesn't expose, and the one table.

@@ -1,3 +1,4 @@
+-- Applied 2026-10-15 (owner: "go"; remote 20261015160000).
 -- Claim flow ("อ้างสิทธิ์ผลงาน"). Design (Project.md §7): imported/unclaimed listings carry an
 -- `unclaimed` flag and a system owner; a founder proves ownership with a read-only credential and the
 -- listing transfers to them. The transfer itself is done server-side with the service key (the app

@@ -1,3 +1,4 @@
+-- Applied 2026-10-15 (owner: "go"; remote 20261015140000).
 -- Polar as a revenue source (owner request; /add-payment-provider). The founder pastes a
 -- read-only Organization Access Token (OAT); the server proves it cannot write before storing it.
 -- Ownership is the credential itself (like Stripe/RevenueCat): no domain to match.

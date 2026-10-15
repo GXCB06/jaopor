@@ -12,6 +12,35 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-15 — Fix: disclosure trigger blocked every startup write (42501 permission denied)
+
+**Done:**
+
+- **Root cause found (read-only investigation).** `20261011130000_disclosure_levels` created `private.startups_public_metrics()` as **SECURITY INVOKER** while the same file revoked EXECUTE on the helpers it calls (`private.disclosure_band` / `disclosure_growth` / `disclosure_level`) from `public, anon, authenticated` (its grants at ~lines 139-141). The trigger body runs as the role that fired the statement, so every non-owner `INSERT`/`UPDATE` on `public.startups` failed with `42501 permission denied for function disclosure_band`. That is why the add-product wizard's step 1 showed "พร้อมแล้ว 3/3" (a client-side counter that never touches the DB) yet "เผยแพร่และไปต่อ" returned the generic error — `StartupWizard.tsx` `create()` threw the DB error and fell into `setError(common("genericError"))`. Cron sync (`service_role`) hit the same denial. Evidence: `has_function_privilege('authenticated','private.disclosure_band(numeric,numeric[])','EXECUTE')` = `false` and `set role authenticated; select private.disclosure_band(5, array[1,2,3])` → `ERROR 42501`.
+- **Fix applied at the owner's approval:** new migration `20261015180000_fix_public_metrics_trigger.sql` — `alter function private.startups_public_metrics() security definer;`. Minimal: the applied migration is untouched, no EXECUTE was granted to `anon`/`authenticated`/`service_role` on the helpers, and the function body is unchanged (already `set search_path = ''` with schema-qualified `public.fx_rates` / `private.disclosure_*`). DEFINER matches the three other write-path triggers on this table (`startups_anonymity`, `startups_before_insert`, `startups_reserve_old_slugs`). Applied with `supabase db query --linked --file …` (exit 0) then recorded with `supabase migration repair --status applied 20261015180000` — never `db push`.
+- **Version collision noted:** this fix took the `20261015180000` version that the planned `flag-stale` draft was pencilled in for; that draft must move to a later version (e.g. `20261015190000_sync_stale.sql`).
+
+**Files:** `supabase/migrations/20261015180000_fix_public_metrics_trigger.sql`, `PROGRESS.md`, `Project.md`
+
+**Verified:** read-only, post-apply — `pg_proc`: `prosecdef = true`, owner `postgres`, `proconfig = [search_path=""]`; trigger `startups_public_metrics` still enabled (`O`); `supabase migration list` pairs `20261015180000` Local↔Remote. **End-to-end not yet confirmed** — no write test was run against production (owner constraint).
+
+**Next:** owner creates a product through the wizard (or a staging/local write test) to confirm step 1 → step 2 and that `service_role` sync writes succeed; then the security advisors + `supabase/tests/rls_smoke.sql` T146–T176.
+
+## 2026-10-15 — Applied the six pending migrations (disclosure, chat edit/delete, saves, claim, Polar, PostHog)
+
+**Done** (owner approved "apply the 6 pending migrations only" — no code, no commit, no push):
+
+- **All six pending migrations are live** on `letfxefyqxxrfujpwtri`, in dependency order: `20261011130000_disclosure_levels` → `20261014120000_chat_message_edit_delete` → `20261015120000_saves` → `20261015140000_polar_source` → `20261015160000_claim_startup` → `20261015170000_posthog_source`. The features that were code-only before (saves, claim, Polar, PostHog, chat edit/delete) now have their tables / columns / constraints, and the disclosure layer (`public_*`) exists.
+- **Method — never `db push`.** Every local migration version is unpaired with its remote version (the DB holds apply-time stamps, e.g. local `20261011120000_add_funnel_events` ↔ remote `20261011054920`), so `db push` / `migration up` would treat all 27 history migrations as pending and try to replay them. Instead each file was run with `supabase db query --linked --file <path>` (one implicit transaction per file) and recorded with `supabase migration repair --status applied <version>`. A comment-stripped/whitespace-normalised comparison confirmed the local files' executable SQL was identical to what the DB already held, so only comments had drifted.
+- **Disclosure backfill verified (Option A respected — the generated `proof_level` was not touched):** `startups.id = 105` → `proof_level = 3`, `public_proof_level = 3`, `public_revenue_level = exact`, `public_mrr_cents = 6880`, `public_traffic_level = exact`, `public_build_level = exact`.
+- **Migration headers corrected** (several still said "NOT APPLIED" / the wrong date). This is a deliberate exception to the "applied migrations aren't edited" convention, at the owner's request; SQL bodies are untouched.
+
+**Files:** `supabase/migrations/{20261011130000_disclosure_levels,20261014120000_chat_message_edit_delete,20261015120000_saves,20261015140000_polar_source,20261015160000_claim_startup,20261015170000_posthog_source,20261011120000_add_funnel_events,20261001181036_profile_avatars_v2}.sql` (header comments only), `Project.md`, `PROGRESS.md`
+
+**Verified:** read-only SQL after applying — all 38 `public_*` columns present, `startups_public_proof_level_idx` + trigger `startups_public_metrics` + `private.startups_public_metrics` live; `provider_connections_provider_check` = `stripe/revenuecat/polar/plausible/umami/cloudflare/ga4/jaopor/posthog/github`; `startups_verified_provider_check` incl. `polar`; `public.saves` exists with RLS on; `chat_messages` has `edited_at`/`deleted_at` + `private.chat_messages_edit_guard`; `supabase migration list` pairs all six Local↔Remote; live `https://jaopor.vercel.app/api/public/landing` → 200 with the identical payload (`mrrCents:6880`) and `/api/health` ok. Advisors + `rls_smoke.sql` (T146–T176) **not run yet**; `database.types.ts` **not regenerated**.
+
+**Next:** run the security advisors + `supabase/tests/rls_smoke.sql` T146–T176 against the live DB; regenerate `src/lib/supabase/database.types.ts`; still open — the `flag-stale` implementation (`20261015180000_sync_stale.sql` draft not yet written) and the real-key live checks (Polar OAT, PostHog `phx_`).
+
 ## 2026-10-15 — PostHog visitor source + App Store Connect connector (items 1 remainder + ASC research)
 
 **Done** (owner chose "Implement now" for PostHog and "connector + tests only" for App Store Connect):

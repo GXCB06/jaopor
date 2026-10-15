@@ -7,7 +7,7 @@
 -- the stored daily fx_rates row (no FX call on write), other groups in their own units.
 --
 -- Requires 20261011126000_anonymous_mode (is_anonymous is in the column grant below).
--- NOT APPLIED. Apply only after the 14 Oct post and the owner's explicit approval, then run the
+-- Applied 2026-10-15 (owner: "go"). It was gated behind the 14 Oct post and the owner's explicit approval; run the
 -- advisors, RLS smoke T146–T160, and regenerate src/lib/supabase/database.types.ts.
 --
 -- DEPLOY ORDER (important): this migration revokes the raw metric columns from anon and

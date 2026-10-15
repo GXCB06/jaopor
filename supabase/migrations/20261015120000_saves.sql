@@ -1,4 +1,4 @@
--- NOT APPLIED YET: the owner applies this and regenerates database.types.ts (the hand-written
+-- Applied 2026-10-15 (owner: "go"). The owner regenerates database.types.ts when convenient (the hand-written
 -- `saves` entry in src/lib/supabase/database.types.ts matches what `supabase gen types` produces).
 --
 -- Saves / bookmarks ("ที่บันทึกไว้", Phase 9d). One row per (user, project): a signed-in person

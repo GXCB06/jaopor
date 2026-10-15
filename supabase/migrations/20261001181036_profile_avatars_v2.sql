@@ -1,4 +1,4 @@
--- NOT APPLIED. Profile photos (owner request 2026-10-02): people can upload their own photo
+-- Applied 2026-10-01 (remote 20261001183006). Profile photos (owner request 2026-10-02): people can upload their own photo
 -- instead of only the one Google / GitHub gave at sign-up. Replaces the unapplied, unpushed draft
 -- 20261001175557_profile_avatars after the owner's security review checklist (2026-10-02);
 -- production facts below were checked on the live schema that day.

@@ -1,4 +1,4 @@
--- Applied 2026-10-14 (owner: "apply"). Chat (Phase 11 follow-up): edit and delete your own messages.
+-- Applied 2026-10-15 (owner: "go"). Chat (Phase 11 follow-up): edit and delete your own messages.
 --  * chat_messages gains edited_at / deleted_at.
 --  * A participant may UPDATE (edit the text) or soft-DELETE (clear the body) their own message while
 --    the conversation is still open. Nobody else, and never an already-deleted message.

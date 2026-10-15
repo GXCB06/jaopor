@@ -1,3 +1,4 @@
+-- Applied 2026-10-15 (owner: "go"; remote 20261015170000).
 -- PostHog as a visitor source (owner decision 2026-10-15; /add-payment-provider). The founder pastes a
 -- read-only personal API key (phx_…); the server proves it cannot write (a PATCH to the project must be
 -- refused) and that the project's authorized URL is the project's own website before storing it.
