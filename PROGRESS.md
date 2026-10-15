@@ -12,6 +12,22 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-15 — Polar revenue source (item 1, first provider)
+
+**Done** (owner picked item 1, "do all four providers"; Polar is first — read-only key confirmed by research):
+
+- **`createPolarProvider`** (`src/lib/revenue/providers/polar.ts`) — a `RevenueProvider` on `https://api.polar.sh/v1` with bearer `polar_oat_…`: `GET /orders/` (paid only, `net_amount − refunded_amount`) and `GET /subscriptions/`, both paginated (`?page=&limit=100`, up to 500 pages with retries). Read-only is proven by a **write probe**: three `PATCH` calls to a nonexistent UUID (`/products/`, `/customers/`, `/subscriptions/`, body `{}`) → `403` = read-only, `404`/`422` = writable → `not_read_only`. A non-`polar_oat_` key is rejected as `invalid_key` before any request.
+- **Wiring** — `ProviderId` / `TransactionProviderId` (`"stripe" | "polar"`) in `revenue/types.ts`; registry in `providers/index.ts`; `catalog.ts` (`SOURCES`, `SOURCE_KIND.polar = "revenue"`, `SOURCE_NAME`); `sync.ts` generalized `writeStripe` → **`writeRevenue(…, provider)`** with a `polar` case in `prepare` and the pull switch; `VERIFY_SOURCES`; `ProviderStrip` moved Polar to LIVE; `VerifyPanel` `FIELDS` / `HOW_TO` / `SETTINGS_URL`; profile page's `mrrAboveRevenue` treats Polar like Stripe; `Sources.polar.*` + provider-enumeration strings in `messages/{th,en}.json`.
+- **DB** — `supabase/migrations/20261015140000_polar_source.sql` (**not applied**): adds `polar` to `provider_connections_provider_check`, the one-revenue partial index, `startups_verified_provider_check`, and the `log_verify_result` source whitelist.
+- **Tests** — 5 new connector tests (`connectors.test.ts` `describe("Polar")`); `catalog.test.ts` revenue list → `["stripe","revenuecat","polar"]`; `add-funnel.test.ts` parity filter reads `_polar_source.sql`.
+- LemonSqueezy recorded as **blocked** (full-access-only keys); PostHog ownership-proof left open — both in `Project.md` §7.
+
+**Files:** `src/lib/revenue/providers/polar.ts`, `src/lib/revenue/types.ts`, `src/lib/revenue/providers/index.ts`, `src/lib/sources/catalog.ts`, `src/lib/sources/sync.ts`, `src/lib/sources/{catalog,connectors}.test.ts`, `src/lib/analytics/funnel-types.ts`, `src/lib/analytics/add-funnel.test.ts`, `src/components/wizard/VerifyPanel.tsx`, `src/components/ProviderStrip.tsx`, `src/app/[locale]/startup/[slug]/page.tsx`, `src/app/api/startups/[id]/sources/[source]/route.ts`, `supabase/migrations/20261015140000_polar_source.sql`, `messages/{th,en}.json`, `Design.md`, `Project.md`
+
+**Verified:** `npm run typecheck` ✓ · per-file `npx eslint` ✓ · `npx vitest run` 678 passed / 17 skipped ✓ · `npm run build` ✓ · `messages.test.ts` parity ✓. Migration **not applied** (owner) and no real Polar key yet, so the live end-to-end check is pending.
+
+**Next:** PostHog (resolve ownership proof) → App Store Connect (Team key + ES256 JWT) → the claim flow. LemonSqueezy stays out.
+
 ## 2026-10-15 — Bookmarks: a `saves` table, a Save button, and a real "ที่บันทึกไว้" page
 
 **Done** (owner picked item 3; the saves half lands now, the claim flow next):
