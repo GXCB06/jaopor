@@ -37,13 +37,18 @@ export const GROUP_COLUMNS = {
   ],
 } as const satisfies Record<MetricGroup, readonly string[]>;
 
-/** O1: a group connected for the first time starts here. Existing projects stay `exact`. */
+/**
+ * A group connected for the first time starts here. Owner decision 2026-10-15: a verified source
+ * shows its real numbers and graph by default (was `badge` for the money-like groups, so a freshly
+ * verified Stripe looked empty). The owner can still move any group to band / growth / badge /
+ * private in the C9 control. Mirrored by the trigger's O1 block (`startups_public_metrics`).
+ */
 export const DEFAULT_LEVEL_FOR_NEW_CONNECTION: Record<
   MetricGroup,
   DisclosureLevel
 > = {
-  revenue: "badge",
-  users: "badge",
+  revenue: "exact",
+  users: "exact",
   traffic: "exact",
   build: "exact",
 };

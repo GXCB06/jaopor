@@ -41,10 +41,10 @@ describe("parseDisclosure / levelOf", () => {
     expect(parseDisclosure("exact")).toEqual({});
   });
 
-  it("O1 defaults: money-like groups start hidden, counts start exact", () => {
+  it("defaults: every group starts exact, so a verified source shows its numbers", () => {
     expect(DEFAULT_LEVEL_FOR_NEW_CONNECTION).toEqual({
-      revenue: "badge",
-      users: "badge",
+      revenue: "exact",
+      users: "exact",
       traffic: "exact",
       build: "exact",
     });

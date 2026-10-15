@@ -71,7 +71,7 @@ Fixed, shared ladders (no per-owner bands, so a band never narrows). Proposed, t
 
 - **Where:** a new step in the verify flow right after a connection succeeds ("ใครเห็นตัวเลขนี้?"), plus the same control per group in the project's settings. Design.md gets the new pattern **before** any component (CLAUDE.md rule 2).
 - **Preview before publish:** the owner sees exactly what a visitor sees at the chosen level (card + project header), the way the share card preview already works.
-- **Default for new connections (recommendation, your call):** `revenue` → `badge`, `users` → `badge`, `traffic` and `build` → `exact`. Reason: revenue is the sensitive group; the goal metric is "owners with at least one verified or opted-in metric" (plan section 5), and a high-friction default hurts that. Existing projects stay on `exact`.
+- **Default for new connections (owner decision 2026-10-15):** every group → `exact`, so a verified source shows its real figures and graph by default (was `revenue` / `users` → `badge`, which left a freshly verified Stripe looking empty — issue 3). The C9 control still lets the owner move any group to `band` / `growth` / `badge` / `private`. Implemented in `src/lib/disclosure.ts` (`DEFAULT_LEVEL_FOR_NEW_CONNECTION`) and the trigger's O1 block (`20261015200000_disclosure_default_exact.sql`). Existing rows keep their stored level.
 - **Change anytime**, effective at the next page revalidation; the dashboard shows "คนอื่นเห็น: …" next to each number.
 - **Copy rules:** no pressure ("แนะนำให้เปิดเผย" is out), no shame for `private`. Each level has one plain sentence of what it does.
 
@@ -123,7 +123,7 @@ Audit list for the implementation; each needs a test that a hidden value is abse
 
 | ID  | Question                                                                                | Recommendation                                                           |
 | --- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| O1  | Default level for new `revenue` and `users` connections                                 | `badge`; `traffic` and `build` stay `exact`                              |
+| O1  | Default level for new `revenue` and `users` connections                                 | Resolved 2026-10-15: `exact` for every group (was `badge`); a verified source shows its numbers |
 | O2  | Does `private` also hide that the group is connected (no stamp at all)?                 | Yes (what "private" means), and it does not raise the public proof level |
 | O3  | Show visitors "ซ่อนตัวเลขตั้งแต่ …" when an owner moves from `exact` to a hidden level? | No by default; keep the history for the owner only                       |
 | O4  | View-based masking or precomputed `public_*` columns (section 4.2)?                     | View, after the embed spike; fall back to columns if the spike fails     |
