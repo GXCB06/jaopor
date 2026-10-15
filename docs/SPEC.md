@@ -500,7 +500,16 @@ show_in_directory = true. Add a "คน" group to QuickSearch.
   ผู้นำและโอลิมปิกจังหวัด" + "เชื่อมต่อ Stripe" + "ตัวเลือกอื่น".
   Below the table, two dashed tiles, clearly different:
   "เพิ่มผลงานใหม่" (never listed before) and "อ้างสิทธิ์ผลงาน"
-  (already listed by someone else; verify with a read-only API key).
+  (already imported but unclaimed; live since 2026-10-15 → `/dashboard/claim`).
+- Claim flow (`/dashboard/claim`, `/dashboard/claim/[id]`): a founder whose
+  project was imported proves it is theirs. Imported rows are owned by a
+  system account with `unclaimed = true`. The list is a search over name /
+  website; a row opens the project with the verify chooser forced open,
+  offering only **asset-bound** sources (the listing's website snippet /
+  analytics domain, or its GitHub repo) — a revenue key never proves which
+  listing is yours, so revenue sources are refused. On success ownership
+  transfers atomically (compare-and-set on `unclaimed`) and the listing
+  leaves the claim list.
 - Right column: "คำขอคุย" preview (the 2 latest pending, with
   accept / skip, and a note "LINE / อีเมลจะแสดงหลังกดยอมรับเท่านั้น"),
   and "โปรไฟล์ 7 วันที่ผ่านมา": views, and requests. Don't add the

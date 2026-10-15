@@ -12,6 +12,22 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-15 — Claim an imported listing (item 3, second half)
+
+**Done** (owner picked items 1/2/3/5; this finishes item 3):
+
+- **`unclaimed` flag + a system owner** (`supabase/migrations/20261015160000_claim_startup.sql`, **not applied**) — seeds a no-login system auth user (`00000000-0000-4000-a000-000000000001`), adds `startups.unclaimed boolean not null default false`, redefines `private.startups_before_insert` to skip `unclaimed` like `is_demo` (no founding number, no 5-cap), and adds a partial index. `owner_id` stays `NOT NULL`, so every existing RLS policy and `owner_id === userId` check keeps working.
+- **Proof must be asset-bound** — `CLAIM_SOURCES` + `isClaimSource` (`catalog.ts`): the listing's website (JaoPor snippet found live / Plausible / Umami / Cloudflare / GA4 domain match) or its GitHub repo matching the listing's `github_url`. **Revenue keys are refused** (`not_claimable`) — holding a payment key proves you took a payment, not which listing is yours.
+- **Atomic transfer** — `connectSource` (`sync.ts`) detects `claiming = owner_id !== userId && unclaimed === true`, refuses non-claim sources, then transfers `owner_id` + clears `unclaimed` with a compare-and-set (`.eq("unclaimed", true)`); a losing concurrent claimant gets `not_claimable`. The API route now returns `claimed`.
+- **UI** — dashboard tile re-enabled (`SearchIcon` → `/dashboard/claim`); list page (`?q` search over name / website) → detail page (`/dashboard/claim/[id]`) reusing `VerifyPanel` in a new `claim` mode (chooser forced open, sources filtered to claim-safe, success toast + return to `/dashboard`). `src/lib/data/claims.ts` holds the admin-client loaders.
+- **Tests/docs** — 3 claim-source catalog tests; RLS smoke T173–T176; messages `Errors.not_claimable` · `Sources.claim.claimed` · `Claim.*`; `Project.md` (§4/§5/§6/§7), `Design.md` (§5 claim section + dashboard tile), `docs/SPEC.md`.
+
+**Files:** `supabase/migrations/20261015160000_claim_startup.sql`, `src/lib/sources/sync.ts`, `src/lib/sources/catalog.ts`, `src/lib/sources/catalog.test.ts`, `src/lib/data/claims.ts`, `src/lib/revenue/types.ts`, `src/app/[locale]/dashboard/claim/{page.tsx,[id]/page.tsx}`, `src/app/[locale]/dashboard/page.tsx`, `src/app/api/startups/[id]/sources/[source]/route.ts`, `src/components/wizard/VerifyPanel.tsx`, `src/lib/supabase/database.types.ts`, `supabase/tests/rls_smoke.sql`, `messages/{th,en}.json`, `Project.md`, `Design.md`, `docs/SPEC.md`
+
+**Verified:** `npm run typecheck` ✓ · per-file `npx eslint` ✓ · `npx vitest run` 681 passed / 17 skipped ✓ (+3) · `npm run build` ✓ (claim routes present) · `messages.test.ts` parity ✓. Migration **not applied** and no importer yet, so the end-to-end claim is pending the owner's apply + imported rows.
+
+**Next:** PostHog source (resolve ownership proof) → App Store Connect (Team key + ES256 JWT). Owner applies `20261015160000_claim_startup.sql` + `20261015120000_saves.sql` + `20261015140000_polar_source.sql`.
+
 ## 2026-10-15 — Polar revenue source (item 1, first provider)
 
 **Done** (owner picked item 1, "do all four providers"; Polar is first — read-only key confirmed by research):
