@@ -139,8 +139,8 @@
     "emptyCta": "ยืนยันตัวเลขของคุณ",
     "updatedDaily": "อัปเดตทุกวัน",
     "basis": {
-      "mrr": "MRR ปัจจุบัน ณ การอัปเดตล่าสุด (วันละครั้ง) ยืนยันผ่าน Stripe / RevenueCat · “เติบโต” = รายได้ 30 วันล่าสุดเทียบ 30 วันก่อนหน้า",
-      "revenue30d": "รายได้ 30 วันล่าสุด ยืนยันผ่าน Stripe / RevenueCat · “เติบโต” = เทียบ 30 วันก่อนหน้า",
+    "mrr": "MRR ปัจจุบัน ณ การอัปเดตล่าสุด (วันละครั้ง) ยืนยันผ่าน Stripe / Polar / RevenueCat · “เติบโต” = รายได้ 30 วันล่าสุดเทียบ 30 วันก่อนหน้า",
+    "revenue30d": "รายได้ 30 วันล่าสุด ยืนยันผ่าน Stripe / Polar / RevenueCat · “เติบโต” = เทียบ 30 วันก่อนหน้า",
       "visitors": "ผู้เข้าชม 30 วันล่าสุด นับโดยสคริปต์ JaoPor หรือ analytics ของผลงาน (เป็นตัวเลขที่นับ ไม่ใช่ยืนยัน) · “เติบโต” = เทียบ 30 วันก่อนหน้า",
       "commits": "Commits ทั้งหมดบน branch หลักของ repo สาธารณะ ยืนยันผ่าน GitHub"
     },
@@ -206,7 +206,7 @@
       "traffic": "ผู้เข้าชม",
       "trafficHint": "วางโค้ดนับของ JaoPor บนเว็บ ไม่ต้องใช้คีย์",
       "revenue": "รายได้",
-      "revenueHint": "Stripe หรือ RevenueCat ด้วยคีย์อ่านอย่างเดียว",
+      "revenueHint": "Stripe, Polar หรือ RevenueCat ด้วยคีย์อ่านอย่างเดียว",
       "note": "คนอื่นจะเห็นการ์ด “ผลงานช่วงเริ่มต้น” ตรงนี้แทน จนกว่าคุณจะเชื่อมตัวเลข"
     },
     "tabs": {
@@ -328,7 +328,7 @@
     "ladder": {
       "button": "หลักฐานแต่ละแบบต่างกันอย่างไร",
       "title": "ตัวเลขบน JaoPor มาจากไหน",
-      "revenue": "ยืนยันรายได้: อ่านตรงจาก Stripe หรือ RevenueCat ด้วยคีย์อ่านอย่างเดียว",
+      "revenue": "ยืนยันรายได้: อ่านตรงจาก Stripe, Polar หรือ RevenueCat ด้วยคีย์อ่านอย่างเดียว",
       "build": "หลักฐานการสร้าง: commit จาก repo สาธารณะบน GitHub ของเจ้าของผลงาน",
       "owner": "ยืนยันเจ้าของเว็บ: พบโค้ดของ JaoPor บนเว็บไซต์ ยืนยันว่าเป็นเจ้าของ แต่ไม่ได้ยืนยันตัวเลข",
       "counted": "นับโดย: ผู้เข้าชมจากสคริปต์หรือ analytics ส่งเข้ามาจากเบราว์เซอร์ จึงเรียกว่า “นับ” ไม่ใช่ “ยืนยัน”",
@@ -595,7 +595,7 @@
     "other": "ลิงก์อื่น (เพจโซเชียล ลิงก์รวม)",
     "type": "ประเภทลิงก์",
     "autoDetected": "ตรวจจากลิงก์ เปลี่ยนได้ถ้าไม่ถูก",
-    "platformNote": "หน้า {platform} ไม่ใช่เว็บไซต์ของผลงานเอง เราจึงไม่ดึงข้อมูลจากหน้านี้ และนับผู้เข้าชมด้วยโค้ด JaoPor ไม่ได้ ยืนยันตัวเลขด้วย Stripe, RevenueCat หรือ GitHub ได้",
+      "platformNote": "หน้า {platform} ไม่ใช่เว็บไซต์ของผลงานเอง เราจึงไม่ดึงข้อมูลจากหน้านี้ และนับผู้เข้าชมด้วยโค้ด JaoPor ไม่ได้ ยืนยันตัวเลขด้วย Stripe, Polar, RevenueCat หรือ GitHub ได้",
     "platforms": {
       "facebook": "Facebook",
       "instagram": "Instagram",
@@ -645,7 +645,7 @@
     "revenue": "รายได้",
     "traffic": "ผู้เข้าชม",
     "build": "หลักฐานการสร้าง",
-    "revenueHint": "เว็บ SaaS ใช้ Stripe · แอปมือถือใช้ RevenueCat",
+      "revenueHint": "เว็บ SaaS ใช้ Stripe หรือ Polar · แอปมือถือใช้ RevenueCat",
     "trafficHint": "ผู้เข้าชมจริงของเว็บคุณ: ใช้สคริปต์ JaoPor (ไม่ต้องมี analytics) หรือเชื่อม analytics ที่มีอยู่ ต้องเป็นโดเมนเดียวกับเว็บไซต์",
     "buildHint": "จำนวน commit, commit แรก และสัดส่วนที่ร่วมเขียนกับ Claude จาก repo สาธารณะ",
     "connect": "ยืนยัน",
@@ -674,6 +674,12 @@
       "howTo3": "คัดลอกคีย์ sk_… และ Project ID (อยู่ใน URL: app.revenuecat.com/projects/{idTag}/…)",
       "key": "V2 secret key (sk_…)",
       "projectId": "Project ID"
+    },
+    "polar": {
+      "howTo1": "Polar → องค์กรของคุณ → Settings → สร้าง Organization Access Token",
+      "howTo2": "เลือกเฉพาะสิทธิ์อ่าน: Orders · Read และ Subscriptions · Read (อย่าเลือกอันที่มี Write)",
+      "howTo3": "คัดลอกโทเคน polar_oat_… แล้ววางด้านล่าง",
+      "key": "Organization Access Token (polar_oat_…)"
     },
     "plausible": {
       "howTo1": "Plausible → Account settings → API keys → New API key → เลือก Stats API",
@@ -1063,7 +1069,7 @@
     "moreProvinces": "+{n} จังหวัด",
     "risingTitle": "มาแรงเดือนนี้",
     "howTitle": "นับคะแนนยังไง",
-    "howBody": "จำนวนผลงาน: ทุกผลงานที่เผยแพร่ ยืนยันตัวเลขแล้วหรือยังก็นับ · รายได้ยืนยันผ่าน Stripe และ RevenueCat · commits ผ่าน GitHub · ผู้เข้าชมนับโดยสคริปต์ JaoPor หรือ analytics (Plausible, Umami, Cloudflare) · รายได้แปลงจาก USD เป็นบาทตามอัตราวันนี้ · ไม่รวมผลงานตัวอย่างและผลงานของทีม JaoPor (ยังแสดงในจังหวัด แต่ไม่นับคะแนน) · จังหวัดตามที่ผู้ก่อตั้งเลือก · อันดับขึ้น/ลงเทียบกับ 30 วันก่อนหน้า",
+    "howBody": "จำนวนผลงาน: ทุกผลงานที่เผยแพร่ ยืนยันตัวเลขแล้วหรือยังก็นับ · รายได้ยืนยันผ่าน Stripe, Polar และ RevenueCat · commits ผ่าน GitHub · ผู้เข้าชมนับโดยสคริปต์ JaoPor หรือ analytics (Plausible, Umami, Cloudflare) · รายได้แปลงจาก USD เป็นบาทตามอัตราวันนี้ · ไม่รวมผลงานตัวอย่างและผลงานของทีม JaoPor (ยังแสดงในจังหวัด แต่ไม่นับคะแนน) · จังหวัดตามที่ผู้ก่อตั้งเลือก · อันดับขึ้น/ลงเทียบกับ 30 วันก่อนหน้า",
     "startupLeaderboard": "ดูกระดานผู้นำ"
   },
   "Province": {
@@ -1787,7 +1793,7 @@
     "tableDate": "วันที่",
     "revenueFooter": "ยืนยันผ่าน {sources} · อัปเดตล่าสุด {time} · ไม่รวมผลงานที่ยังไม่ยืนยัน",
     "revenueFooterNoTime": "ยืนยันผ่าน {sources} · ไม่รวมผลงานที่ยังไม่ยืนยัน",
-    "revenueEmptyOwner": "ยังไม่มีรายได้ที่ยืนยัน (ผลงานตัวอย่างไม่นับ) เชื่อมต่อ Stripe หรือ RevenueCat ในผลงานของคุณ แล้วกราฟรายได้รวมจะขึ้นที่นี่",
+    "revenueEmptyOwner": "ยังไม่มีรายได้ที่ยืนยัน (ผลงานตัวอย่างไม่นับ) เชื่อมต่อ Stripe, Polar หรือ RevenueCat ในผลงานของคุณ แล้วกราฟรายได้รวมจะขึ้นที่นี่",
     "revenueEmptyCta": "ไปที่ผลงานของฉัน",
     "todayShort": "วันนี้",
     "monthShort": "เดือนนี้",
@@ -2033,6 +2039,10 @@
           {
             "b": "RevenueCat:",
             "t": "secret key (v2) ต้องไม่มีสิทธิ์เขียน เราตรวจแบบเดียวกันก่อนบันทึก"
+          },
+          {
+            "b": "Polar:",
+            "t": "Organization Access Token ที่มีเฉพาะสิทธิ์อ่าน เราทดสอบด้วยคำขอแก้ไขแบบว่างไปยังรายการที่ไม่มีอยู่จริง โทเคนต้องได้คำตอบว่า “ไม่มีสิทธิ์” จึงจะผ่าน"
           },
           {
             "b": "Cloudflare:",

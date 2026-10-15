@@ -81,9 +81,11 @@ describe("whitelist parity with the migration SQL", () => {
   const file = readdirSync(dir).find((f) =>
     f.endsWith("_add_funnel_events.sql"),
   );
-  // Later migrations extend the whitelists (e.g. _ga4_traffic_source adds the ga4 source).
-  const later = readdirSync(dir).filter((f) =>
-    f.endsWith("_ga4_traffic_source.sql"),
+  // Later migrations extend the whitelists (e.g. _ga4_traffic_source adds the ga4 source,
+  // _polar_source adds polar).
+  const later = readdirSync(dir).filter(
+    (f) =>
+      f.endsWith("_ga4_traffic_source.sql") || f.endsWith("_polar_source.sql"),
   );
   const sql = file
     ? [file, ...later]

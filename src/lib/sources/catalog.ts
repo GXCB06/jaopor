@@ -5,6 +5,7 @@
 export const SOURCES = [
   "stripe",
   "revenuecat",
+  "polar",
   "jaopor",
   "plausible",
   "umami",
@@ -43,6 +44,7 @@ export function recommendedMetric(
 export const SOURCE_KIND: Record<SourceId, SourceKind> = {
   stripe: "revenue",
   revenuecat: "revenue",
+  polar: "revenue",
   jaopor: "traffic",
   plausible: "traffic",
   umami: "traffic",
@@ -54,6 +56,7 @@ export const SOURCE_KIND: Record<SourceId, SourceKind> = {
 export const SOURCE_NAME: Record<SourceId, string> = {
   stripe: "Stripe",
   revenuecat: "RevenueCat",
+  polar: "Polar",
   jaopor: "JaoPor",
   plausible: "Plausible",
   umami: "Umami",

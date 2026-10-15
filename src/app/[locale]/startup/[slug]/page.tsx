@@ -269,7 +269,8 @@ export default async function StartupPage({ params }: Props) {
     startup.mrr_cents !== null &&
     startup.revenue_all_time_cents !== null &&
     startup.mrr_cents > startup.revenue_all_time_cents
-      ? startup.verified_provider === "stripe"
+      ? startup.verified_provider === "stripe" ||
+        startup.verified_provider === "polar"
         ? t("mrrAboveRevenueStripe")
         : startup.verified_provider === "revenuecat"
           ? t("mrrAboveRevenueRevenueCat")

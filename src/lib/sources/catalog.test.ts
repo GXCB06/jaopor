@@ -18,7 +18,7 @@ describe("sources catalog — metric mapping", () => {
   });
 
   it("maps revenue to the payment providers only", () => {
-    expect(sourcesOfKind("revenue")).toEqual(["stripe", "revenuecat"]);
+    expect(sourcesOfKind("revenue")).toEqual(["stripe", "revenuecat", "polar"]);
   });
 
   it("maps traffic to the visitor counters only", () => {

@@ -15,7 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 import { after } from "next/server";
 import { VERIFY_CODES, VERIFY_SOURCES } from "@/lib/analytics/funnel-types";
 
-// /api/startups/:id/sources/:source   source = stripe | revenuecat | plausible | umami | github
+// /api/startups/:id/sources/:source   source = stripe | revenuecat | polar | plausible | umami | github
 // POST   { key?, projectId?, siteId?, shareUrl?, repo? } → validate read-only, store encrypted, first sync
 // PATCH  {} → re-sync now ("Refresh"), max once per 10 minutes per source
 // DELETE {} → disconnect and remove that kind of verified numbers

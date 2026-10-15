@@ -1,7 +1,7 @@
 // Provider-agnostic revenue model (Project.md §5). Providers only fetch + normalize;
 // the metrics engine computes every number the same way for all providers.
 
-export type ProviderId = "stripe" | "revenuecat";
+export type ProviderId = "stripe" | "revenuecat" | "polar";
 
 /** A successful payment, net of refunds. Amounts are integer minor units (cents, satang…). */
 export type NormalizedCharge = {
@@ -57,7 +57,7 @@ export class ProviderError extends Error {
 }
 
 /** Providers that hand us raw transactions for the metrics engine (RevenueCat is pre-aggregated). */
-export type TransactionProviderId = Extract<ProviderId, "stripe">;
+export type TransactionProviderId = Extract<ProviderId, "stripe" | "polar">;
 
 export interface RevenueProvider {
   id: TransactionProviderId;

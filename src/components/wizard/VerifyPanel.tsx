@@ -35,9 +35,9 @@ import { copy } from "@/components/share/copy";
 import { logAddEvent } from "@/lib/analytics/add-funnel";
 import { Field, inputClass } from "./fields";
 
-// Design.md §5 VerifyPanel: revenue (Stripe | RevenueCat) · visitors (JaoPor snippet | Plausible |
-// Umami | Cloudflare) · build proof (GitHub). Every credential is read-only; the server proves it
-// before storing. The snippet needs no credential: a visit from the website activates it.
+// Design.md §5 VerifyPanel: revenue (Stripe | Polar | RevenueCat) · visitors (JaoPor snippet |
+// Plausible | Umami | Cloudflare) · build proof (GitHub). Every credential is read-only; the server
+// proves it before storing. The snippet needs no credential: a visit from the website activates it.
 // While nothing is connected it is a chooser instead, grouped by the metric a founder wants to
 // prove ("What do you want to prove?", Design.md §5 VerifyPanel chooser; issue 4). It is one
 // screen of three rows, so the first-user test's "three groups all open" skip doesn't repeat.
@@ -72,6 +72,9 @@ const FIELDS: Record<SourceId, FieldSpec[]> = {
     { name: "projectId", label: "projectId", placeholder: "proj1a2b3c4d" },
     { name: "key", label: "key", secret: true, placeholder: "sk_…" },
   ],
+  polar: [
+    { name: "key", label: "key", secret: true, placeholder: "polar_oat_…" },
+  ],
   plausible: [
     { name: "siteId", label: "siteId", placeholder: "yourapp.com" },
     { name: "key", label: "key", secret: true, placeholder: "••••••••" },
@@ -98,6 +101,7 @@ const FIELDS: Record<SourceId, FieldSpec[]> = {
 const HOW_TO: Record<SourceId, number> = {
   stripe: 3,
   revenuecat: 3,
+  polar: 3,
   plausible: 2,
   umami: 2,
   cloudflare: 3,
@@ -114,6 +118,7 @@ const SETTINGS_URL: Partial<Record<SourceId, { live: string; test?: string }>> =
       test: "https://dashboard.stripe.com/test/apikeys/create",
     },
     revenuecat: { live: "https://app.revenuecat.com/" },
+    polar: { live: "https://polar.sh/dashboard" },
     plausible: { live: "https://plausible.io/settings/api-keys" },
     umami: { live: "https://cloud.umami.is/" },
     cloudflare: { live: "https://dash.cloudflare.com/profile/api-tokens" },

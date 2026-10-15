@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fetchBuildProof, lastPage, parseRepo } from "@/lib/build/github";
+import { createPolarProvider } from "@/lib/revenue/providers/polar";
 import {
   fetchRevenueCatMetrics,
   validateRevenueCatKey,
@@ -261,6 +262,170 @@ describe("domainMatches", () => {
     ["notshop.co.th", "shop.co.th", false],
   ])("%s vs %s → %s", (site, web, expected) => {
     expect(domainMatches(site, web)).toBe(expected);
+  });
+});
+
+describe("Polar", () => {
+  const OAT = "polar_oat_abcdefghijklmnopqrstuvwx";
+  const page = () => ({ items: [], pagination: { total_count: 0, max_page: 0 } });
+  const isGet = (part: string) => (url: string, init?: RequestInit) =>
+    url.includes(part) && init?.method === "GET" ? ok(page()) : undefined;
+  const anyPatch = (url: string, init?: RequestInit) =>
+    init?.method === "PATCH" ? status(403) : undefined;
+
+  it("accepts a read-only OAT (every write probe refused)", async () => {
+    const f = fakeFetch(
+      (url, init) =>
+        url.includes("/orders/") && init?.method === "GET"
+          ? ok(page())
+          : undefined,
+      (url, init) =>
+        url.includes("/subscriptions/") && init?.method === "GET"
+          ? ok(page())
+          : undefined,
+      anyPatch,
+    );
+    expect(await code(createPolarProvider(f.impl).validateKey(OAT))).toBe(
+      "resolved",
+    );
+    expect(f.calls.some((c) => c.init?.method === "PATCH")).toBe(true);
+  });
+
+  it("rejects a token that can write", async () => {
+    const f = fakeFetch(
+      isGet("/orders/"),
+      isGet("/subscriptions/"),
+      has("/products/", () => status(404)),
+      anyPatch,
+    );
+    expect(await code(createPolarProvider(f.impl).validateKey(OAT))).toBe(
+      "not_read_only:Products",
+    );
+  });
+
+  it("maps a read 403 to missing_permission", async () => {
+    const f = fakeFetch(has("/orders/", () => status(403)));
+    expect(await code(createPolarProvider(f.impl).validateKey(OAT))).toBe(
+      "missing_permission:Orders",
+    );
+  });
+
+  it("rejects non-OAT keys before calling the API", async () => {
+    const f = fakeFetch();
+    expect(
+      await code(createPolarProvider(f.impl).validateKey("polar_pat_abc")),
+    ).toBe("invalid_key:");
+    expect(f.calls).toHaveLength(0);
+  });
+
+  it("normalizes orders (net of refunds, paid only) and subscriptions", async () => {
+    const f = fakeFetch(
+      (url, init) =>
+        url.includes("/orders/") && init?.method === "GET"
+          ? ok({
+              items: [
+                {
+                  id: "o1",
+                  created_at: "2026-09-28T10:00:00Z",
+                  status: "paid",
+                  paid: true,
+                  net_amount: 2500,
+                  refunded_amount: 0,
+                  currency: "usd",
+                  customer_id: "c1",
+                },
+                {
+                  id: "o2",
+                  created_at: "2026-09-27T10:00:00Z",
+                  status: "refunded",
+                  paid: true,
+                  net_amount: 1000,
+                  refunded_amount: 1000,
+                  currency: "usd",
+                  customer_id: "c2",
+                },
+                {
+                  id: "o3",
+                  created_at: "2026-09-26T10:00:00Z",
+                  status: "pending",
+                  paid: false,
+                  net_amount: 500,
+                  refunded_amount: 0,
+                  currency: "thb",
+                  customer_id: null,
+                },
+              ],
+              pagination: { total_count: 3, max_page: 1 },
+            })
+          : undefined,
+      (url, init) =>
+        url.includes("/subscriptions/") && init?.method === "GET"
+          ? ok({
+              items: [
+                {
+                  id: "s1",
+                  status: "active",
+                  amount: 1900,
+                  currency: "usd",
+                  recurring_interval: "month",
+                  recurring_interval_count: 1,
+                  customer_id: "c1",
+                },
+                {
+                  id: "s2",
+                  status: "canceled",
+                  amount: 500,
+                  currency: "usd",
+                  recurring_interval: "month",
+                  recurring_interval_count: 1,
+                  customer_id: "c3",
+                },
+              ],
+              pagination: { total_count: 2, max_page: 1 },
+            })
+          : undefined,
+    );
+    const p = createPolarProvider(f.impl);
+    const charges = [];
+    for await (const c of p.fetchCharges(OAT)) charges.push(c);
+    expect(charges).toEqual([
+      {
+        occurredAt: new Date("2026-09-28T10:00:00Z"),
+        amountMinor: 2500,
+        currency: "usd",
+        customerRef: "c1",
+      },
+    ]);
+    const subs = [];
+    for await (const s of p.fetchSubscriptions(OAT)) subs.push(s);
+    expect(subs).toEqual([
+      {
+        status: "active",
+        customerRef: "c1",
+        items: [
+          {
+            unitAmountMinor: 1900,
+            currency: "usd",
+            quantity: 1,
+            interval: "month",
+            intervalCount: 1,
+          },
+        ],
+      },
+      {
+        status: "other",
+        customerRef: "c3",
+        items: [
+          {
+            unitAmountMinor: 500,
+            currency: "usd",
+            quantity: 1,
+            interval: "month",
+            intervalCount: 1,
+          },
+        ],
+      },
+    ]);
   });
 });
 

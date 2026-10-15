@@ -19,7 +19,11 @@ import {
   fetchRevenueCatMetrics,
   validateRevenueCatKey,
 } from "@/lib/revenue/providers/revenuecat";
-import { ProviderError, type ProviderErrorCode } from "@/lib/revenue/types";
+import {
+  ProviderError,
+  type ProviderErrorCode,
+  type TransactionProviderId,
+} from "@/lib/revenue/types";
 import type { Database, Json } from "@/lib/supabase/database.types";
 import {
   fetchPlausibleTraffic,
@@ -55,8 +59,8 @@ import {
 import { ownerAnonymousWebsites, withRealLinks } from "@/lib/data/anonymous";
 
 // The one place that turns a founder's read-only credential into verified numbers on `startups`.
-// Revenue (Stripe, RevenueCat) → revenue columns + revenue_snapshots; traffic (Plausible, Umami)
-// → visitors + traffic_snapshots; build (GitHub) → build_* columns. Server-only (secret key).
+// Revenue (Stripe, Polar, RevenueCat) → revenue columns + revenue_snapshots; traffic (Plausible,
+// Umami) → visitors + traffic_snapshots; build (GitHub) → build_* columns. Server-only (secret key).
 
 type Admin = SupabaseClient<Database>;
 
@@ -93,11 +97,17 @@ async function collect<T>(iter: AsyncIterable<T>): Promise<T[]> {
 // Writers: one per kind. Numbers only ever come from here.
 // ---------------------------------------------------------------------------
 
-async function writeStripe(admin: Admin, startupId: number, key: string) {
+// Raw transactions (Stripe, Polar): the metrics engine computes every number the same way.
+async function writeRevenue(
+  admin: Admin,
+  startupId: number,
+  provider: TransactionProviderId,
+  key: string,
+) {
   const now = new Date();
   const [charges, subscriptions, rates] = await Promise.all([
-    collect(getProvider("stripe").fetchCharges(key)),
-    collect(getProvider("stripe").fetchSubscriptions(key)),
+    collect(getProvider(provider).fetchCharges(key)),
+    collect(getProvider(provider).fetchSubscriptions(key)),
     fetchUsdRates(),
   ]);
   // 60 days of daily rows: the profile chart shows 30 and compares against the 30 before.
@@ -112,7 +122,7 @@ async function writeStripe(admin: Admin, startupId: number, key: string) {
     .from("startups")
     .update({
       verification_status: "verified",
-      verified_provider: "stripe",
+      verified_provider: provider,
       mrr_cents: m.mrrCents,
       revenue_30d_cents: m.revenue30dCents,
       revenue_prev_30d_cents: m.revenuePrev30dCents,
@@ -334,7 +344,8 @@ async function pull(
 ): Promise<string | null> {
   switch (source) {
     case "stripe":
-      return writeStripe(admin, startupId, stored.secret ?? "");
+    case "polar":
+      return writeRevenue(admin, startupId, source, stored.secret ?? "");
     case "revenuecat":
       return writeRevenueCat(
         admin,
@@ -623,6 +634,9 @@ async function prepare(
   switch (source) {
     case "stripe":
       await getProvider("stripe").validateKey(key);
+      return { secret: key, config: {}, hint: keyHint(key) };
+    case "polar":
+      await getProvider("polar").validateKey(key);
       return { secret: key, config: {}, hint: keyHint(key) };
     case "revenuecat": {
       const projectId = input.projectId?.trim() ?? "";

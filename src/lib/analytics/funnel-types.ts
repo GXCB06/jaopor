@@ -31,6 +31,7 @@ export type VerifyChoice = (typeof VERIFY_CHOICES)[number];
 export const VERIFY_SOURCES = [
   "stripe",
   "revenuecat",
+  "polar",
   "jaopor",
   "plausible",
   "umami",

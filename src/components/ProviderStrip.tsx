@@ -11,6 +11,7 @@ type Item = { id: BrandIconId | "polar"; name: string };
 const LIVE: Item[] = [
   { id: "stripe", name: "Stripe" },
   { id: "revenuecat", name: "RevenueCat" },
+  { id: "polar", name: "Polar" },
   { id: "plausible", name: "Plausible" },
   { id: "umami", name: "Umami" },
   { id: "cloudflare", name: "Cloudflare" },
@@ -21,7 +22,6 @@ const LIVE: Item[] = [
   { id: "github", name: "GitHub" },
 ];
 const UPCOMING: Item[] = [
-  { id: "polar", name: "Polar" },
   { id: "lemonsqueezy", name: "Lemon Squeezy" },
   { id: "paddle", name: "Paddle" },
   { id: "appstore", name: "App Store" },

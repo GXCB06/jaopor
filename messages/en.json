@@ -139,8 +139,8 @@
     "emptyCta": "Verify your numbers",
     "updatedDaily": "Updated daily",
     "basis": {
-      "mrr": "Current MRR at the last update (daily), verified via Stripe / RevenueCat · “Growth” = revenue in the last 30 days vs the 30 days before",
-      "revenue30d": "Revenue in the last 30 days, verified via Stripe / RevenueCat · “Growth” = vs the 30 days before",
+    "mrr": "Current MRR at the last update (daily), verified via Stripe / Polar / RevenueCat · “Growth” = revenue in the last 30 days vs the 30 days before",
+    "revenue30d": "Revenue in the last 30 days, verified via Stripe / Polar / RevenueCat · “Growth” = vs the 30 days before",
       "visitors": "Visitors in the last 30 days, counted by the JaoPor script or the project's analytics (counted, not verified) · “Growth” = vs the 30 days before",
       "commits": "All-time commits on the default branch of a public repo, verified via GitHub"
     },
@@ -206,7 +206,7 @@
       "traffic": "Visitors",
       "trafficHint": "Add JaoPor's counter to your site. No key needed",
       "revenue": "Revenue",
-      "revenueHint": "Stripe or RevenueCat with a read-only key",
+      "revenueHint": "Stripe, Polar or RevenueCat with a read-only key",
       "note": "Until you connect a number, others see the “Early-stage project” card here."
     },
     "tabs": {
@@ -328,7 +328,7 @@
     "ladder": {
       "button": "How do these proofs differ?",
       "title": "Where the numbers on JaoPor come from",
-      "revenue": "Verified revenue: read directly from Stripe or RevenueCat with a read-only key",
+      "revenue": "Verified revenue: read directly from Stripe, Polar or RevenueCat with a read-only key",
       "build": "Build proof: commits from the owner's public GitHub repo",
       "owner": "Owner verified: JaoPor's code was found on the website. It proves ownership, not numbers",
       "counted": "Counted by: visitors from a script or analytics, sent by browsers, so they're “counted”, not “verified”",
@@ -595,7 +595,7 @@
     "other": "Other link (social page, link-in-bio)",
     "type": "Link type",
     "autoDetected": "detected from the link; change it if it's wrong",
-    "platformNote": "A {platform} page isn't the project's own website, so we don't read it and the JaoPor visitor counter can't run there. You can verify numbers with Stripe, RevenueCat or GitHub.",
+      "platformNote": "A {platform} page isn't the project's own website, so we don't read it and the JaoPor visitor counter can't run there. You can verify numbers with Stripe, Polar, RevenueCat or GitHub.",
     "platforms": {
       "facebook": "Facebook",
       "instagram": "Instagram",
@@ -645,7 +645,7 @@
     "revenue": "Revenue",
     "traffic": "Visitors",
     "build": "Build proof",
-    "revenueHint": "Web SaaS → Stripe · Mobile apps → RevenueCat",
+      "revenueHint": "Web SaaS → Stripe or Polar · Mobile apps → RevenueCat",
     "trafficHint": "Real visitors to your site: use the JaoPor snippet (no analytics account needed) or connect the analytics you already have. Must be the same domain as your website.",
     "buildHint": "Commits, first commit and the share co-authored with Claude, from a public repo.",
     "connect": "Verify",
@@ -674,6 +674,12 @@
       "howTo3": "Copy the sk_… key and the Project ID (in the URL: app.revenuecat.com/projects/{idTag}/…)",
       "key": "V2 secret key (sk_…)",
       "projectId": "Project ID"
+    },
+    "polar": {
+      "howTo1": "Polar → your organization → Settings → create an Organization Access Token",
+      "howTo2": "Give it only Read scopes: Orders · Read and Subscriptions · Read (nothing with Write)",
+      "howTo3": "Copy the polar_oat_… token and paste it below",
+      "key": "Organization Access Token (polar_oat_…)"
     },
     "plausible": {
       "howTo1": "Plausible → Account settings → API keys → New API key → choose Stats API",
@@ -1067,7 +1073,7 @@
     "moreProvinces": "+{n} provinces",
     "risingTitle": "Rising this month",
     "howTitle": "How scoring works",
-    "howBody": "Projects: every published project, numbers verified or not · revenue verified through Stripe and RevenueCat · commits through GitHub · visitors counted by the JaoPor script or analytics (Plausible, Umami, Cloudflare) · revenue converted from USD at today's rate · demo projects and the JaoPor team's own projects excluded (still listed in their province, but not scored) · province as chosen by the founder · rank changes compare with the previous 30 days",
+    "howBody": "Projects: every published project, numbers verified or not · revenue verified through Stripe, Polar and RevenueCat · commits through GitHub · visitors counted by the JaoPor script or analytics (Plausible, Umami, Cloudflare) · revenue converted from USD at today's rate · demo projects and the JaoPor team's own projects excluded (still listed in their province, but not scored) · province as chosen by the founder · rank changes compare with the previous 30 days",
     "startupLeaderboard": "See the leaderboard"
   },
   "Province": {
@@ -1791,7 +1797,7 @@
     "tableDate": "Date",
     "revenueFooter": "Verified via {sources} · Updated {time} · Unverified projects not included",
     "revenueFooterNoTime": "Verified via {sources} · Unverified projects not included",
-    "revenueEmptyOwner": "No verified revenue yet (demo projects don't count). Connect Stripe or RevenueCat on your projects and your total revenue chart appears here.",
+    "revenueEmptyOwner": "No verified revenue yet (demo projects don't count). Connect Stripe, Polar or RevenueCat on your projects and your total revenue chart appears here.",
     "revenueEmptyCta": "Go to my projects",
     "todayShort": "Today",
     "monthShort": "This month",
@@ -2037,6 +2043,10 @@
           {
             "b": "RevenueCat:",
             "t": "the secret key (v2) must have no write permission. We check it the same way before storing it."
+          },
+          {
+            "b": "Polar:",
+            "t": "an Organization Access Token with read scopes only. We send empty update requests for records that don't exist; the token must be told “no permission” to pass."
           },
           {
             "b": "Cloudflare:",
