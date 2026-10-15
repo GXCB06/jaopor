@@ -12,6 +12,20 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-15 — Owner disclosure control (C9) + wizard category auto-select (issues 3 & 2)
+
+**Done:**
+
+- **Issue 3 (C9, the last disclosure surface).** A "ใครเห็นตัวเลขนี้?" control now exists in two places: the wizard's step 2 (appears once a source connects) and the product's edit form (verify section). Picking a level writes `metric_disclosure` through the **owner's own Supabase client** — the row policy + the `update(metric_disclosure)` column grant decide, and the `startups_public_metrics` trigger validates and recomputes every `public_*` column. Reads go through the owner-only `get_my_startup_metrics()` RPC (the raw column isn't client-readable). A failed save reverts the selection and toasts — never a false success. The profile chart no longer shows the misleading "connect Stripe" prompt for verified-but-not-exact revenue: it now says "the chart starts soon" (exact, <2 days) or "the owner keeps this chart private" (owner-only), and only falls back to the connect prompt when nothing is connected.
+- **Issue 2.** The website preview now **preselects** a confident, valid category, with an "auto-filled from your website" note; a manual choice is never overwritten when the async preview lands later.
+- New: `setStartupDisclosure` server action + `DisclosureControl`; pure helpers `changedDisclosure` / `resolveCategory`; Thai + English strings for both.
+
+**Files:** `src/app/actions/disclosure.ts`, `src/components/wizard/DisclosureControl.tsx`, `src/lib/{disclosure.ts,category-suggest.ts}`, `src/components/wizard/{StartupWizard.tsx,StartupEditForm.tsx,CategoryField.tsx}`, `src/app/[locale]/startup/[slug]/page.tsx`, `messages/{th,en}.json`
+
+**Verified:** `npm run typecheck` ✓ · `npm run lint` ✓ · `npx vitest run` **710 passed / 17 skipped** (+9) ✓ (committed `7428c2e`, pushed). **Not verified against production** — no live connect / profile-chart check was run, and no production writes were made.
+
+**Next:** sign in on the deployed site, connect a source, and confirm the disclosure choice persists and the profile chart reflects it; then the security advisors + `rls_smoke.sql` T146–T176 and the `database.types.ts` regen.
+
 ## 2026-10-15 — Fix: disclosure trigger blocked every startup write (42501 permission denied)
 
 **Done:**
