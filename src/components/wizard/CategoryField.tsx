@@ -36,9 +36,12 @@ export function CategoryField({
   const t = useTranslations("CategoryPicker");
   const locale = useLocale();
   const options = useMemo(() => categoryOptions(locale), [locale]);
-  const suggested = !value
+  const suggested = suggestion
     ? options.find((o) => o.value === suggestion)
     : undefined;
+  // Offered as a one-click chip while the field is empty; shown as a plain note once preselected.
+  const offered = !value ? suggested : undefined;
+  const autoFilled = Boolean(suggested && value === suggested.value);
   const Icon = suggested?.lucideIcon;
   return (
     <div className="space-y-1.5">
@@ -53,17 +56,23 @@ export function CategoryField({
         labels={{ remove: (label) => label, noMatch: t("noMatch") }}
         pinned={{ values: POPULAR_CATEGORIES, label: t("popular") }}
       />
-      {suggested && (
+      {offered && (
         <p className="flex flex-wrap items-center gap-1.5 text-caption text-muted-foreground">
           {t("suggested")}
           <button
             type="button"
-            onClick={() => onChange(suggested.value)}
+            onClick={() => onChange(offered.value)}
             className="inline-flex items-center gap-1 rounded-full border border-brand/40 bg-brand/5 px-2.5 py-0.5 font-semibold text-brand-text hover:bg-brand/10"
           >
             {Icon && <Icon className="size-3.5" aria-hidden="true" />}
-            {suggested.label}
+            {offered.label}
           </button>
+        </p>
+      )}
+      {autoFilled && (
+        <p className="flex flex-wrap items-center gap-1.5 text-caption text-muted-foreground">
+          {Icon && <Icon className="size-3.5" aria-hidden="true" />}
+          {t("autoFilled")}
         </p>
       )}
     </div>

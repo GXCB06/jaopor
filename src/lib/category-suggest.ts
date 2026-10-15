@@ -39,3 +39,17 @@ export function keywordCategory(text: string): Category | null {
   // Two categories equally likely: no suggestion beats a wrong one.
   return tie ? null : (best?.slug ?? null);
 }
+
+/**
+ * Which category the wizard shows after a website preview resolves (Issue 2). A category the
+ * founder chose always wins, even when the preview lands later; otherwise a confident suggestion
+ * pre-fills the field, and an unusable (null) suggestion leaves whatever is there untouched.
+ */
+export function resolveCategory(
+  current: string,
+  suggestion: string | null,
+  userChose: boolean,
+): string {
+  if (userChose) return current;
+  return suggestion ?? current;
+}

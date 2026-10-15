@@ -76,7 +76,14 @@ import {
   valuesToStack,
 } from "./vocab-options";
 import { VerifyPanel, type ConnectionInfo } from "./VerifyPanel";
+import { DisclosureControl } from "./DisclosureControl";
 import { VocabCombobox } from "./VocabCombobox";
+import { SOURCE_KIND } from "@/lib/sources/catalog";
+import {
+  isMetricGroup,
+  type MetricDisclosure,
+  type MetricGroup,
+} from "@/lib/disclosure";
 
 // Design.md §5 Edit page (redesign 2026-09-30): seven sections shown one at a time with a
 // section nav, completion ticks, a progress header and a sticky save bar. Every field wrapper
@@ -138,6 +145,8 @@ export function StartupEditForm({
   startup: Tables<"startups"> & {
     /** Anonymous mode (lib/data/owner-startups.ts): `slug` is the public one, this the real one. */
     anonymous?: { realSlug: string } | null;
+    /** The owner's stored disclosure choices ({} = database defaults still apply). */
+    levels?: MetricDisclosure | null;
   };
   /** The anonymous-mode migration is live (else the switch stays hidden). */
   anonymousReady?: boolean;
@@ -175,6 +184,15 @@ export function StartupEditForm({
     () => new Intl.DisplayNames([locale], { type: "region" }),
     [locale],
   );
+  // Issue 3 / C9: offer a disclosure control for each metric group the owner has connected.
+  const disclosureGroups = useMemo(() => {
+    const set = new Set<MetricGroup>();
+    for (const c of connections) {
+      const kind = SOURCE_KIND[c.source];
+      if (isMetricGroup(kind)) set.add(kind);
+    }
+    return [...set];
+  }, [connections]);
 
   const initial = useMemo(
     () => ({
@@ -1377,13 +1395,22 @@ export function StartupEditForm({
 
           {section(
             "verify",
-            <div id="verify" className="sm:col-span-2">
+            <div id="verify" className="space-y-5 sm:col-span-2">
               <VerifyPanel
                 startupId={startup.id}
                 connections={connections}
                 websiteHost={ownWebsiteHost(startup.website_url)}
                 githubLogin={githubLogin}
               />
+              {disclosureGroups.length > 0 && (
+                <div className="border-t pt-5">
+                  <DisclosureControl
+                    startupId={startup.id}
+                    groups={disclosureGroups}
+                    initialLevels={startup.levels ?? {}}
+                  />
+                </div>
+              )}
             </div>,
           )}
 

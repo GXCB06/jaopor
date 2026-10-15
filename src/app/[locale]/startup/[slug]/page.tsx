@@ -1,5 +1,6 @@
 import {
   ArrowUpRightIcon,
+  ChartColumnIcon,
   ChevronRightIcon,
   FlaskConicalIcon,
   MapPinIcon,
@@ -23,6 +24,7 @@ import {
   EmptyOwnerCard,
   OwnerBar,
   OwnerProvider,
+  OwnerOnly,
   NoNumbersCard,
   UnverifiedLine,
 } from "@/components/profile/Owner";
@@ -671,7 +673,36 @@ export default async function StartupPage({ params }: Props) {
                 )}
               />
             </Card>
+          ) : startup.disclosure.revenue.level === "exact" ? (
+            // Issue 3: exact figures, but not two days of history yet — say so (never the
+            // "connect" prompt, which read as a failed sync).
+            <Card className="flex flex-col items-center gap-2 p-6 text-center sm:p-8">
+              <ChartColumnIcon
+                className="size-6 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <p className="text-sm font-semibold">{t("chartPendingTitle")}</p>
+              <p className="max-w-md text-caption text-muted-foreground">
+                {t("chartPendingBody")}
+              </p>
+            </Card>
+          ) : startup.disclosure.revenue.level !== null ? (
+            // Disclosed as a badge / range / growth: visitors see that instead; only the owner
+            // needs to know their own choice is why the chart is hidden (issue 3).
+            <OwnerOnly>
+              <Card className="flex flex-col items-center gap-2 p-6 text-center sm:p-8">
+                <ChartColumnIcon
+                  className="size-6 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <p className="text-sm font-semibold">{t("chartHiddenTitle")}</p>
+                <p className="max-w-md text-caption text-muted-foreground">
+                  {t("chartHiddenBody")}
+                </p>
+              </Card>
+            </OwnerOnly>
           ) : (
+            // Nothing connected (or kept private): the owner's prompt to connect a source.
             <EmptyOwnerCard field="revenue" label={t("connectChart")} />
           )}
         </section>

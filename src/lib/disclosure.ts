@@ -62,6 +62,20 @@ export function isMetricGroup(v: unknown): v is MetricGroup {
 }
 
 /**
+ * The stored `metric_disclosure` after the owner picks `level` for `group`. Returns null when the
+ * request is not a known group / level, so a bad input can never reach the (also-validating)
+ * database trigger. Only the chosen group changes; every other choice is kept.
+ */
+export function changedDisclosure(
+  current: MetricDisclosure,
+  group: unknown,
+  level: unknown,
+): MetricDisclosure | null {
+  if (!isMetricGroup(group) || !isDisclosureLevel(level)) return null;
+  return { ...current, [group]: level };
+}
+
+/**
  * Reads a stored `metric_disclosure` value. Anything unexpected is dropped, so a bad key can
  * never widen what is shown (the database check rejects it anyway).
  */

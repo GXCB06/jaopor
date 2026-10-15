@@ -7,6 +7,7 @@ import {
   SURFACES,
   bandFor,
   bandText,
+  changedDisclosure,
   compactEdge,
   effectiveLevel,
   growthPercent,
@@ -47,6 +48,28 @@ describe("parseDisclosure / levelOf", () => {
       traffic: "exact",
       build: "exact",
     });
+  });
+});
+
+describe("changedDisclosure (Issue 3 owner choice)", () => {
+  it("sets one group and keeps every other choice", () => {
+    expect(changedDisclosure({ build: "exact" }, "revenue", "exact")).toEqual({
+      build: "exact",
+      revenue: "exact",
+    });
+  });
+
+  it("lets revenue move off the O1 default (badge → exact)", () => {
+    expect(changedDisclosure({ revenue: "badge" }, "revenue", "exact")).toEqual({
+      revenue: "exact",
+    });
+  });
+
+  it("rejects an unknown group or level (never reaches the database)", () => {
+    expect(changedDisclosure({}, "mrr", "exact")).toBeNull();
+    expect(changedDisclosure({}, "revenue", "secret")).toBeNull();
+    expect(changedDisclosure({}, "revenue", 3)).toBeNull();
+    expect(changedDisclosure({}, null, null)).toBeNull();
   });
 });
 

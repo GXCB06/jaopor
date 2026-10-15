@@ -27,6 +27,7 @@ import { StartupCard, type CardStartup } from "@/components/StartupCard";
 import { ProvinceField } from "@/components/profile-edit/ProvinceField";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isCategory, slugify } from "@/lib/catalog";
+import { resolveCategory } from "@/lib/category-suggest";
 import {
   logAddEvent,
   newAttemptId,
@@ -45,6 +46,11 @@ import {
   recommendedMetric,
   type SourceKind,
 } from "@/lib/sources/catalog";
+import {
+  DEFAULT_LEVEL_FOR_NEW_CONNECTION,
+  type MetricDisclosure,
+  type MetricGroup,
+} from "@/lib/disclosure";
 import { createClient } from "@/lib/supabase/client";
 import { revalidateStartup } from "@/app/actions/revalidate";
 import { useSessionDraft } from "@/lib/use-session-draft";
@@ -54,6 +60,7 @@ import { LinkTypeStatus } from "./LinkTypeStatus";
 import { linkProblemText } from "./link-text";
 import { Field, inputClass } from "./fields";
 import { CategoryField } from "./CategoryField";
+import { DisclosureControl } from "./DisclosureControl";
 import { LogoField } from "./LogoField";
 import {
   VisibilityChoice,
@@ -180,6 +187,10 @@ export function StartupWizard({
   // only the latter opens the profile with the "Verified!" share dialog (Design.md §3 Moments).
   const [verified, setVerified] = useState(false);
   const [proven, setProven] = useState(false);
+  // Step 2: the groups connected here and the owner's disclosure choice for each (Issue 3 / C9).
+  // A connection defaults to the same level the database trigger sets (O1).
+  const [connectedGroups, setConnectedGroups] = useState<MetricGroup[]>([]);
+  const [disclosure, setDisclosure] = useState<MetricDisclosure>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -196,10 +207,18 @@ export function StartupWizard({
   // An uploaded logo and its object URL for the preview tile.
   const [logo, setLogo] = useState<{ file: File; url: string } | null>(null);
   const [autoLogo, setAutoLogo] = useState<string | null>(null);
-  // Suggested from the pasted website: a one-click chip, never preselected (UX audit M-9).
+  // Suggested from the pasted website: now preselected when the founder hasn't chosen (Issue 2),
+  // but a manual choice is never overwritten by an async preview result.
   const [suggestedCategory, setSuggestedCategory] = useState<string | null>(
     null,
   );
+  // True once the founder picked a category (or a draft restored one): the preview must not
+  // overwrite it. Kept in a ref so the async effect sees the latest value.
+  const categoryChosen = useRef(false);
+  const chooseCategory = (slug: string) => {
+    categoryChosen.current = true;
+    setCategory(slug);
+  };
   // Auto-fill status for one link: reading → done (nothing is shown when the site can't be read).
   const [fill, setFill] = useState<{
     url: string;
@@ -224,6 +243,8 @@ export function StartupWizard({
       setLink(d.link ?? "");
       setTagline(d.tagline ?? "");
       setCategory(d.category ?? "");
+      // A restored category was either chosen by the founder or already auto-filled: keep it.
+      if (d.category) categoryChosen.current = true;
       setProvince(d.province ?? defaultProvince);
       if (d.attemptId) setAttemptId(d.attemptId);
     },
@@ -285,8 +306,12 @@ export function StartupWizard({
         const site = (await res.json()) as SiteAutofill & {
           category?: string | null;
         };
-        setSuggestedCategory(
-          site.category && isCategory(site.category) ? site.category : null,
+        const suggestion =
+          site.category && isCategory(site.category) ? site.category : null;
+        setSuggestedCategory(suggestion);
+        // Issue 2: confident + valid + not already chosen → preselect; never overwrite a choice.
+        setCategory((cur) =>
+          resolveCategory(cur, suggestion, categoryChosen.current),
         );
         const prev = auto.current;
         const next = {
@@ -611,7 +636,7 @@ export function StartupWizard({
                       id="category"
                       required
                       value={category}
-                      onChange={setCategory}
+                      onChange={chooseCategory}
                       suggestion={suggestedCategory}
                     />
                   </Field>
@@ -844,9 +869,29 @@ export function StartupWizard({
                   onConnected={(source) => {
                     setVerified(true);
                     if (SOURCE_KIND[source] !== "traffic") setProven(true);
+                    // Issue 3 / C9: offer the disclosure choice for what was just connected.
+                    const group: MetricGroup = SOURCE_KIND[source];
+                    setConnectedGroups((g) =>
+                      g.includes(group) ? g : [...g, group],
+                    );
+                    setDisclosure((d) =>
+                      d[group]
+                        ? d
+                        : { ...d, [group]: DEFAULT_LEVEL_FOR_NEW_CONNECTION[group] },
+                    );
                   }}
                 />
               </WizardSection>
+              {connectedGroups.length > 0 && (
+                <Card className="p-4">
+                  <DisclosureControl
+                    startupId={saved.id}
+                    groups={connectedGroups}
+                    initialLevels={disclosure}
+                    onChange={setDisclosure}
+                  />
+                </Card>
+              )}
               <div className="flex flex-wrap items-center gap-3 border-t pt-4">
                 <Button
                   variant="ghost"

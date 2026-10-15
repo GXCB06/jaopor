@@ -296,6 +296,10 @@
     "chartStamp": "Verified via {source}",
     "chartUpdated": "Updated {time}",
     "connectChart": "Stripe to show the chart",
+    "chartPendingTitle": "The chart starts here soon",
+    "chartPendingBody": "The number above is the latest sync. The line chart needs at least two days of data — the sync didn’t fail.",
+    "chartHiddenTitle": "The owner keeps this chart private",
+    "chartHiddenBody": "Revenue is verified, but the owner chose not to show exact figures, so the chart is hidden.",
     "screenshots": "Screenshots",
     "screenshotAlt": "{name} screenshot {n}",
     "openShot": "Enlarge screenshot {n}",
@@ -2251,6 +2255,40 @@
       "private": "Nothing"
     }
   },
+  "DisclosureControl": {
+    "title": "Who sees these numbers?",
+    "subtitle": "Choose how much of your verified numbers others see. You can change this any time in your project settings. Your exact figures stay private unless you pick “Exact figures”.",
+    "saved": "Disclosure updated",
+    "saveFailed": "Couldn’t save — try again",
+    "group": {
+      "revenue": "Revenue / MRR",
+      "users": "Users",
+      "traffic": "Visitors",
+      "build": "Build proof"
+    },
+    "level": {
+      "exact": {
+        "label": "Exact figures",
+        "desc": "Others see your real numbers, and the history chart can show"
+      },
+      "band": {
+        "label": "A range",
+        "desc": "Others see a range like ฿10k–25k, not the exact figure"
+      },
+      "growth": {
+        "label": "Growth (%)",
+        "desc": "Others see only the growth percentage, not the figures"
+      },
+      "badge": {
+        "label": "Badge only",
+        "desc": "Others see just a “Verified” badge, no figures (the default for revenue)"
+      },
+      "private": {
+        "label": "Hide",
+        "desc": "Others see nothing, and this group won’t count toward your proof level"
+      }
+    }
+  },
   "Choice": {
     "search": "Search",
     "clear": "Clear",
@@ -2289,6 +2327,7 @@
   },
   "CategoryPicker": {
     "suggested": "Suggested from your website:",
+    "autoFilled": "Category filled in from your website — edit any time",
     "placeholder": "Type a category, e.g. games, education, shop",
     "noMatch": "No such category. Try another word or pick “Other”.",
     "popular": "Popular categories"
