@@ -12,6 +12,21 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-15 — PostHog visitor source + App Store Connect connector (items 1 remainder + ASC research)
+
+**Done** (owner chose "Implement now" for PostHog and "connector + tests only" for App Store Connect):
+
+- **PostHog is now a visitor (traffic) source** — `src/lib/traffic/posthog.ts`: ownership is proven two ways, never by the public `phc_…` token. (1) The key must be **read-only**: a `PATCH /api/projects/:id/` write probe must be refused (`2xx` → `not_read_only`; `401/403` ok; else `upstream`, fail-closed). (2) The project's authorized URL (`app_urls`) must match the listing's website host (`domainMatches`). Visitors 30d / prev 30d from `web_analytics/weekly_digest?days=30&compare=true`; the connector **fails closed** if the returned `metadata` window isn't ≈30 days. Host is region-split and allow-listed (`us.posthog.com` / `eu.posthog.com`; self-hosted unsupported → no SSRF surface). `phx_` only (`phs_` beta → not required yet).
+- **PostHog wiring** — `TrafficProviderId` + `"posthog"`; `catalog.ts` (`SOURCES` / `SOURCE_KIND` / `SOURCE_NAME` / `CLAIM_SOURCES` — asset-bound via `app_urls`); `sync.ts` `prepare` case (validate + `app_urls` + first read), `readTraffic` + `pull` switch; `VERIFY_SOURCES`; `ConnectInput.host`; `VerifyPanel` `FIELDS` / `HOW_TO` / `SETTINGS_URL` (`https://app.posthog.com/settings/user-api-keys`); `BRAND_ICONS.posthog` (Simple Icons, black tile) + `ProviderStrip` LIVE; `Sources.posthog.*` in `messages/{th,en}.json`. Migration `supabase/migrations/20261015170000_posthog_source.sql` (**not applied**: `provider_connections_provider_check` + `log_verify_result` whitelist).
+- **App Store Connect connector (lib + tests only, no DB/UI)** — `src/lib/appstore/client.ts`: `signAppStoreToken` (ES256 JWT, `.p8` PKCS#8, `ieee-p1363` raw signature, `kid`/`iss`/`aud:"appstoreconnect-v1"`, lifetime capped at Apple's 20 min), `buildSalesUrl` + `fetchSalesReport` (gzipped-TSV `GET /v1/salesReports`, `SALES`+`SUMMARY`), and pure helpers `gunzipSalesReport` / `parseSalesTsv` / `appleIdFromUrl` / `countsAsDownload` / `sumDownloads`. The `downloads` metric kind (option A) is **not** built — it needs owner sign-off.
+- **Tests** — 9 PostHog connector tests + `catalog.test.ts` traffic list + claim list + `add-funnel.test.ts` migration-filter now reads `_posthog_source.sql`; 11 App Store Connect tests. Research/design doc: `docs/research/posthog-and-appstore.md`.
+
+**Files:** `src/lib/traffic/posthog.ts`, `src/lib/appstore/client.ts`, `src/lib/appstore/client.test.ts`, `src/lib/traffic/types.ts`, `src/lib/sources/{catalog.ts,catalog.test.ts,connectors.test.ts,sync.ts}`, `src/lib/analytics/{funnel-types.ts,add-funnel.test.ts}`, `src/lib/brand-icons.ts`, `src/components/ProviderStrip.tsx`, `src/components/wizard/VerifyPanel.tsx`, `supabase/migrations/20261015170000_posthog_source.sql`, `messages/{th,en}.json`, `docs/research/posthog-and-appstore.md`, `Project.md`, `Design.md`, `docs/SPEC.md`
+
+**Verified:** `npm run typecheck` ✓ · per-file `npx eslint` ✓ · `npx vitest run` **701 passed / 17 skipped** ✓ (+20) · `npm run build` ✓ · `messages.test.ts` parity + `config.test.ts` ✓. Migrations **not applied**; live PostHog real-key check pending (the `weekly_digest?days=30` window still needs confirming against a real project).
+
+**Next:** owner applies `20261015170000_posthog_source.sql` (+ `20261015160000_claim_startup.sql`, `20261015120000_saves.sql`, `20261015140000_polar_source.sql`); a real read-only `phx_` key to run the PostHog live check; owner sign-off on the `downloads` metric (option A) before wiring App Store Connect into the public surface.
+
 ## 2026-10-15 — Claim an imported listing (item 3, second half)
 
 **Done** (owner picked items 1/2/3/5; this finishes item 3):

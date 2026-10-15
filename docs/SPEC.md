@@ -24,7 +24,7 @@
 **JaoPor (เจ้าพ่อ, "the godfather")** is a permanent home for things Thai (and Asian) builders make with AI: websites, mobile apps, LINE OA bots, GitHub projects. Each project shows **verified** numbers pulled directly from providers, not screenshots.
 
 - Tagline: **"1 คน + AI พีคได้แค่ไหน — ดูผลงานจริง ตัวเลขจริง"**
-- Verification providers (already built): Stripe, RevenueCat, Plausible, Umami, GitHub. Coming soon: Polar, Lemon Squeezy, Paddle, App Store.
+- Verification providers (already built): Stripe, RevenueCat, Polar, Plausible, Umami, Cloudflare, Google Analytics, PostHog, GitHub. Coming soon: Lemon Squeezy, Paddle, App Store Connect downloads.
 - Metrics: MRR, revenue (30d / 12m / all-time), visitors (30d), active users (28d), commits.
 - Unique filters (already built, keep them): **สร้างด้วย** (Claude Code, Cursor, Codex, Windsurf, Lovable, v0, Replit, Bolt…), **ประเภทโปรเจกต์** (เว็บไซต์ / แอปมือถือ / LINE OA / GitHub), **กำลังหา** (ผู้ใช้, Feedback, คนช่วยทดสอบ, Co-founder, ผู้ซื้อกิจการ, นักลงทุน).
 - Currency: startups report in THB or USD. Show each startup's own currency. For combined totals (provinces, categories), convert to THB using a `fx_rates` table updated daily (fallback: `FX_USD_THB` env var).
