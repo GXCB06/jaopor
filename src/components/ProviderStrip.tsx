@@ -15,6 +15,7 @@ const LIVE: Item[] = [
   { id: "plausible", name: "Plausible" },
   { id: "umami", name: "Umami" },
   { id: "cloudflare", name: "Cloudflare" },
+  { id: "posthog", name: "PostHog" },
   // Offered only once JaoPor's GA4 service account is configured (lib/public-env).
   ...(ga4ServiceEmail
     ? [{ id: "ga4" as const, name: "Google Analytics" }]

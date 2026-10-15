@@ -744,6 +744,14 @@
       "copied": "คัดลอกอีเมลแล้ว",
       "notConfigured": "ยังไม่ได้ตั้งค่าบัญชีบริการของ Google Analytics บนระบบนี้ จึงยังเชื่อมต่อไม่ได้ — แจ้งผู้ดูแลให้ตั้งค่า NEXT_PUBLIC_GA4_SERVICE_EMAIL"
     },
+    "posthog": {
+      "howTo1": "PostHog → Project settings → โปรเจกต์ของคุณ หรือที่บัญชี → Personal API keys",
+      "howTo2": "สร้าง personal API key (phx_…) ให้มีเฉพาะสิทธิ์อ่าน: Web analytics · Read และ Project · Read (ห้ามมี Write เราจะปฏิเสธคีย์ที่เขียนได้)",
+      "howTo3": "วาง Project ID (ตัวเลขใน URL ของโปรเจกต์) และ region ของคุณ ตัวเลขที่ได้คือผู้เข้าชมไม่ซ้ำ ซึ่งนับโดย PostHog",
+      "projectId": "Project ID",
+      "host": "Region host (us หรือ eu)",
+      "key": "Personal API key (phx_…)"
+    },
     "choose": {
       "noKey": "ไม่ต้องใช้คีย์",
       "readKey": "คีย์อ่านอย่างเดียว",

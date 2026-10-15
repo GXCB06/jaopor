@@ -10,6 +10,12 @@ import {
   fetchPlausibleTraffic,
   validatePlausibleKey,
 } from "@/lib/traffic/plausible";
+import {
+  assertPosthogWebsite,
+  fetchPosthogTraffic,
+  posthogHost,
+  validatePosthogKey,
+} from "@/lib/traffic/posthog";
 import { domainMatches } from "@/lib/traffic/types";
 import { fetchUmamiTraffic, parseUmamiShareUrl } from "@/lib/traffic/umami";
 
@@ -468,5 +474,133 @@ describe("GitHub build proof", () => {
       aiCommits: 500,
       stars: 12,
     });
+  });
+});
+
+describe("PostHog", () => {
+  const KEY = "phx_abcdefghijklmnopqrstuvwx";
+  const project = (init?: RequestInit) => {
+    if (init?.method === "PATCH") return status(403);
+    return ok({ app_urls: ["https://shop.co.th"], api_token: "phc_public" });
+  };
+
+  it("resolves the region host and refuses anything else", () => {
+    expect(posthogHost(undefined)).toBe("https://us.posthog.com");
+    expect(posthogHost("us")).toBe("https://us.posthog.com");
+    expect(posthogHost("eu")).toBe("https://eu.posthog.com");
+    expect(posthogHost("us.posthog.com")).toBe("https://us.posthog.com");
+    expect(posthogHost("https://eu.posthog.com/")).toBe(
+      "https://eu.posthog.com",
+    );
+    expect(() => posthogHost("https://posthog.example.com")).toThrow(
+      ProviderError,
+    );
+  });
+
+  it("refuses the public project token (phc_)", async () => {
+    const f = fakeFetch();
+    expect(await code(validatePosthogKey("phc_public", "123", "https://us.posthog.com", f.impl))).toMatch(
+      /^invalid_key:/,
+    );
+  });
+
+  it("refuses a non-numeric project id", async () => {
+    const f = fakeFetch();
+    expect(await code(validatePosthogKey(KEY, "shop", "https://us.posthog.com", f.impl))).toMatch(
+      /^not_found:/,
+    );
+  });
+
+  it("rejects a key that can write (the probe was not refused)", async () => {
+    const f = fakeFetch((url, init) => {
+      if (init?.method === "PATCH")
+        return ok({ id: 123, name: "changed" });
+      return ok({ app_urls: ["https://shop.co.th"], api_token: "phc_x" });
+    });
+    expect(
+      await code(validatePosthogKey(KEY, "123", "https://us.posthog.com", f.impl)),
+    ).toBe("not_read_only:project:write");
+  });
+
+  it("accepts a read-only key and returns the authorized URLs", async () => {
+    const f = fakeFetch((url, init) => {
+      if (url.includes("/api/projects/123/")) return project(init);
+      return undefined;
+    });
+    const p = await validatePosthogKey(
+      KEY,
+      "123",
+      "https://us.posthog.com",
+      f.impl,
+    );
+    expect(p.appUrls).toEqual(["https://shop.co.th"]);
+    expect(p.apiToken).toBe("phc_public");
+  });
+
+  it("maps a rejected key to invalid_key and an odd probe to upstream", async () => {
+    const denied = fakeFetch(has("/api/projects/", () => status(401)));
+    expect(
+      await code(
+        validatePosthogKey(KEY, "123", "https://us.posthog.com", denied.impl),
+      ),
+    ).toMatch(/^invalid_key:/);
+
+    const odd = fakeFetch((url, init) =>
+      init?.method === "PATCH" ? status(500) : ok({ app_urls: [] }),
+    );
+    expect(
+      await code(validatePosthogKey(KEY, "123", "https://us.posthog.com", odd.impl)),
+    ).toMatch(/^upstream:/);
+  });
+
+  it("ties the project to the website via its authorized URLs", () => {
+    expect(assertPosthogWebsite(["https://shop.co.th", "https://x.com"], "shop.co.th")).toBe(
+      "https://shop.co.th",
+    );
+    expect(() => assertPosthogWebsite(["https://other.com"], "shop.co.th")).toThrow(
+      ProviderError,
+    );
+    expect(() => assertPosthogWebsite([], "shop.co.th")).toThrow(ProviderError);
+  });
+
+  it("reads 30-day visitors and fails closed on a mismatched window", async () => {
+    const good = fakeFetch(
+      has("/web_analytics/weekly_digest", () =>
+        ok({
+          visitors: { current: 420, previous: 390 },
+          metadata: {
+            date_from: "2026-08-30T00:00:00Z",
+            date_to: "2026-09-29T00:00:00Z",
+          },
+        }),
+      ),
+    );
+    const r = await fetchPosthogTraffic(
+      KEY,
+      "123",
+      "https://us.posthog.com",
+      good.impl,
+    );
+    expect(r.visitors30d).toBe(420);
+    expect(r.visitorsPrev30d).toBe(390);
+    expect(r.daily).toEqual([]);
+    expect(r.domain).toBe(null);
+
+    const week = fakeFetch(
+      has("/web_analytics/weekly_digest", () =>
+        ok({
+          visitors: { current: 80, previous: 70 },
+          metadata: {
+            date_from: "2026-09-22T00:00:00Z",
+            date_to: "2026-09-29T00:00:00Z",
+          },
+        }),
+      ),
+    );
+    expect(
+      await code(
+        fetchPosthogTraffic(KEY, "123", "https://us.posthog.com", week.impl),
+      ),
+    ).toMatch(/^upstream:/);
   });
 });

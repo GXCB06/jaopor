@@ -93,6 +93,11 @@ const FIELDS: Record<SourceId, FieldSpec[]> = {
     { name: "key", label: "key", secret: true, placeholder: "••••••••" },
   ],
   ga4: [{ name: "propertyId", label: "propertyId", placeholder: "123456789" }],
+  posthog: [
+    { name: "projectId", label: "projectId", placeholder: "12345" },
+    { name: "host", label: "host", placeholder: "us.posthog.com" },
+    { name: "key", label: "key", secret: true, placeholder: "phx_…" },
+  ],
   jaopor: [],
   github: [
     { name: "repo", label: "repo", placeholder: "https://github.com/you/app" },
@@ -107,6 +112,7 @@ const HOW_TO: Record<SourceId, number> = {
   umami: 2,
   cloudflare: 3,
   ga4: 3,
+  posthog: 3,
   jaopor: 2,
   github: 2,
 };
@@ -124,6 +130,7 @@ const SETTINGS_URL: Partial<Record<SourceId, { live: string; test?: string }>> =
     umami: { live: "https://cloud.umami.is/" },
     cloudflare: { live: "https://dash.cloudflare.com/profile/api-tokens" },
     ga4: { live: "https://analytics.google.com/analytics/web/" },
+    posthog: { live: "https://app.posthog.com/settings/user-api-keys" },
   };
 
 export function VerifyPanel({

@@ -11,6 +11,7 @@ export const SOURCES = [
   "umami",
   "cloudflare",
   "ga4",
+  "posthog",
   "github",
 ] as const;
 export type SourceId = (typeof SOURCES)[number];
@@ -50,6 +51,7 @@ export const SOURCE_KIND: Record<SourceId, SourceKind> = {
   umami: "traffic",
   cloudflare: "traffic",
   ga4: "traffic",
+  posthog: "traffic",
   github: "build",
 };
 
@@ -62,6 +64,7 @@ export const SOURCE_NAME: Record<SourceId, string> = {
   umami: "Umami",
   cloudflare: "Cloudflare",
   ga4: "Google Analytics",
+  posthog: "PostHog",
   github: "GitHub",
 };
 
@@ -85,6 +88,7 @@ export const CLAIM_SOURCES: readonly SourceId[] = [
   "umami",
   "cloudflare",
   "ga4",
+  "posthog",
   "github",
 ];
 
@@ -104,4 +108,6 @@ export type ConnectInput = {
   repo?: string;
   /** Google Analytics 4 Property ID (or a GA URL containing it). */
   propertyId?: string;
+  /** PostHog region host (us.posthog.com or eu.posthog.com). */
+  host?: string;
 };

@@ -30,6 +30,7 @@ describe("sources catalog — metric mapping", () => {
       "umami",
       "cloudflare",
       "ga4",
+      "posthog",
     ]);
   });
 
@@ -53,6 +54,11 @@ describe("sources catalog — metric mapping", () => {
     expect(SOURCE_NAME.ga4).toBe("Google Analytics");
     const all: readonly string[] = SOURCES;
     expect(all).not.toContain("google-analytics" as SourceId);
+  });
+
+  it("lists PostHog as a visitor source (counted, never revenue)", () => {
+    expect(SOURCE_KIND.posthog).toBe("traffic");
+    expect(SOURCE_NAME.posthog).toBe("PostHog");
   });
 });
 
@@ -82,6 +88,7 @@ describe("sources catalog — claim sources", () => {
       "umami",
       "cloudflare",
       "ga4",
+      "posthog",
       "github",
     ]);
   });

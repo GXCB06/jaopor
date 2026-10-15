@@ -43,6 +43,12 @@ import {
 } from "@/lib/traffic/types";
 import { fetchUmamiTraffic, parseUmamiShareUrl } from "@/lib/traffic/umami";
 import {
+  assertPosthogWebsite,
+  fetchPosthogTraffic,
+  posthogHost,
+  validatePosthogKey,
+} from "@/lib/traffic/posthog";
+import {
   assertGa4Property,
   fetchGa4Traffic,
   ga4AccessToken,
@@ -267,7 +273,7 @@ function ga4Creds() {
 }
 
 async function readTraffic(
-  source: "plausible" | "umami" | "cloudflare" | "ga4",
+  source: "plausible" | "umami" | "cloudflare" | "ga4" | "posthog",
   stored: Stored,
 ): Promise<TrafficReading> {
   if (source === "ga4")
@@ -280,6 +286,12 @@ async function readTraffic(
       stored.secret ?? "",
       stored.config.accountId ?? "",
       stored.config.host ?? "",
+    );
+  if (source === "posthog")
+    return fetchPosthogTraffic(
+      stored.secret ?? "",
+      stored.config.projectId ?? "",
+      stored.config.host ?? "https://us.posthog.com",
     );
   return source === "plausible"
     ? fetchPlausibleTraffic(stored.secret ?? "", stored.config.siteId ?? "")
@@ -366,6 +378,7 @@ async function pull(
     case "umami":
     case "cloudflare":
     case "ga4":
+    case "posthog":
       return writeTraffic(
         admin,
         startupId,
@@ -717,6 +730,22 @@ async function prepare(
       // Proves we can read its numbers before we store anything.
       await fetchGa4Traffic(token, propertyId);
       return { secret: null, config: { propertyId }, hint: null };
+    }
+    case "posthog": {
+      // A read-only personal key (owner decision 2026-10-15). The project's authorized URL must be
+      // the project's own website — the public phc_ token is never an ownership proof.
+      const websiteHost = requireWebsite(ctx.website);
+      const region = posthogHost(input.host);
+      const projectId = input.projectId?.trim() ?? "";
+      const { appUrls } = await validatePosthogKey(key, projectId, region);
+      assertPosthogWebsite(appUrls, websiteHost);
+      // Proves we can read the numbers before we store anything.
+      await fetchPosthogTraffic(key, projectId, region);
+      return {
+        secret: key,
+        config: { projectId, host: region },
+        hint: keyHint(key),
+      };
     }
     case "jaopor": {
       // No credential: our server finds the snippet on the website (Owner verified), then

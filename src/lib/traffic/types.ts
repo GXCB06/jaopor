@@ -4,7 +4,7 @@
 // account (founders add it as a Viewer); the JaoPor snippet needs no credential at all.
 
 export type TrafficProviderId =
-  "plausible" | "umami" | "cloudflare" | "ga4" | "jaopor";
+  "plausible" | "umami" | "cloudflare" | "ga4" | "posthog" | "jaopor";
 
 export type TrafficReading = {
   /** Unique visitors in the 30 whole UTC days before today. */

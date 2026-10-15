@@ -744,6 +744,14 @@
       "copied": "Email copied",
       "notConfigured": "Google Analytics isn't set up on this deployment yet, so it can't connect — ask the admin to set NEXT_PUBLIC_GA4_SERVICE_EMAIL."
     },
+    "posthog": {
+      "howTo1": "PostHog → Project settings → your project, or your account → Personal API keys",
+      "howTo2": "Create a personal API key (phx_…) with only Read scopes: Web analytics · Read and Project · Read (nothing with Write; keys that can write are refused)",
+      "howTo3": "Paste the Project ID (the number in the project URL) and your region. The number shown is unique visitors, counted by PostHog",
+      "projectId": "Project ID",
+      "host": "Region host (us or eu)",
+      "key": "Personal API key (phx_…)"
+    },
     "choose": {
       "noKey": "No key needed",
       "readKey": "Read-only key",
