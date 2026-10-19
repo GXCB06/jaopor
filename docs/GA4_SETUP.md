@@ -43,6 +43,12 @@ if you test there):
 The email is public on purpose: founders copy it into GA4. The JSON key is secret and only the
 server reads it.
 
+- Tick **Sensitive** when you add `GA4_SERVICE_ACCOUNT_JSON`, so Vercel never shows the value again.
+- Add **both** variables together, the JSON first. With only the email set, Google Analytics
+  appears in Add Startup but connecting fails ("isn't available yet").
+- Leave `NEXT_PUBLIC_GA_ID` alone. It's JaoPor's own site-wide tracking (`G-JYPJ2RFH4N`) and has
+  nothing to do with this source.
+
 ## 3. Redeploy
 
 `NEXT_PUBLIC_*` values are built into the page, so redeploy production (Vercel → Deployments →
