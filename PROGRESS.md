@@ -12,6 +12,27 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-19 — `public.saves` dropped on production; types regenerated; RLS smoke 220/220
+
+**Done** (owner-approved after the read-only dependency audit):
+
+- **Pre-checks:**
+  - project `letfxefyqxxrfujpwtri` (jaopor, healthy);
+  - local vs remote history by name: 36/36 applied, nothing unknown remotely, `drop_saves` the only pending one (28 versions differ: the known MCP apply-time stamping);
+  - path: MCP `apply_migration` with this file's SQL only, no `db push`, no repair or stamping;
+  - SQL is exactly `drop table public.saves;` with no CASCADE;
+  - the table still had 0 rows, 0 external dependents and 3 own policies.
+- **Applied** `20261019044837_drop_saves`, recorded remotely as `20261019052905`.
+- **Catalog fingerprints before vs after** (md5 + counts): relations 327, policies 78, functions 59, triggers 43, table grants 591, column grants 2,889 and constraints 224 are all identical. Only the `saves` table and its 3 policies are gone.
+- **Types regenerated:** the only change is the 33-line `saves` block removed.
+- **Docs:** Design.md "Saved" line (table dropped, how to re-create it); Project.md follow-up note (types no longer hand-copied).
+- **RLS smoke** (fresh snapshots): completed, 220 lines, all as expected, no `(BAD)`. T169 "saves table dropped: t". Before and after snapshots identical, 0 test users and 0 test rows.
+- Real production activity since the last run shows up in the baseline: 6 users, 4 projects (max id 222), and the first saved chat read receipt.
+
+**Files:** `supabase/migrations/20261019044837_drop_saves.sql` (applied; header corrected to "applied 2026-10-19, remote version 20261019052905"), `src/lib/supabase/database.types.ts`, `Design.md`, `Project.md`, `supabase/tests/rls_smoke.sql` (all uncommitted)
+**Verified:** typecheck ✓ · lint ✓ · unit 723 passed / 17 skipped · RLS smoke 220/220 · catalog fingerprints.
+**Next:** owner reviews, then commit and push.
+
 ## 2026-10-19 — Trigger-order fix applied; full RLS smoke passes (224/224); chat read receipts verified on production
 
 **Done** (owner-approved; production `letfxefyqxxrfujpwtri`):

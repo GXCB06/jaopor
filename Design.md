@@ -702,7 +702,7 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - Requests: two Cards (ได้รับ / ส่งไป); rows show avatar, name (→ profile), topic, status pill (pending warning, accepted positive), relative time, message; accepted rows reveal the other side's LINE / email in a `border-positive/30 bg-positive/10` strip. Received pending: ยอมรับ / ข้าม / บล็อก; sent pending: ยกเลิกคำขอ. Opening the page marks notifications read.
 - Connections: followers / following lists (avatar, name, @handle · headline).
 - Settings: per-field visibility as 3-way segmented radios (สาธารณะ / สมาชิก / ซ่อน), directory checkbox, a `border-negative/30` delete-account card (email request until self-service).
-- Saved: honest placeholder. Bookmarks were built (2026-10-15) and removed again at the owner's request (2026-10-18: "we don't need it yet"); the `public.saves` table stays in the database, unused, until a migration drops it.
+- Saved: honest placeholder. Bookmarks were built (2026-10-15) and removed again at the owner's request (2026-10-18: "we don't need it yet"); the `public.saves` table was dropped on 2026-10-19 (migration `20261019044837_drop_saves`). To bring bookmarks back, re-create it from `20261015120000_saves.sql`.
 
 ### Claim an imported listing (`/dashboard/claim`, `/dashboard/claim/[id]`, 2026-10-15)
 
