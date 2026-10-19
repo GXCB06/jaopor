@@ -1,4 +1,4 @@
--- Owner-approved 2026-10-19 (RLS smoke T122b). NOT APPLIED until the owner reviews it.
+-- Owner-approved and applied 2026-10-19 (RLS smoke T122b; remote version 20261019035224).
 --
 -- Bug: PostgreSQL fires BEFORE triggers for the same event in alphabetical order of trigger name.
 -- `startups_public_metrics` (computes public_proof_level from owner_verified_at and the public
