@@ -12,6 +12,26 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-19 — For-sale proposal v2 (owner decisions); GA4, live-check and migration-workflow notes (design / docs only)
+
+**Done** (not committed; no production changes):
+
+- **Design.md for-sale proposal v2** with the owner's decisions:
+  - listing allowed without verified revenue, then no multiple;
+  - multiple = asking price ÷ (MRR × 12), labelled "annualized MRR (MRR × 12)", never revenue collected or a valuation; eligible only for verified, exact-disclosed `public_mrr_cents > 0`;
+  - price stored in THB, USD shown only as a dated estimate;
+  - a moderator can hide the listing alone (`sale_hidden` + `private.listing_moderation`; the owner can't undo it).
+  - It adds a permissions table, data model, moderation flow and acceptance criteria. Still design only.
+- **Read-only findings:**
+  - Site-wide GA tracking (`NEXT_PUBLIC_GA_ID`, default `G-JYPJ2RFH4N`) is already on and is separate from the GA4 *source* variables.
+  - Since the 2026-10-15 trigger fix the funnel shows 13 `add_created` / 11 `add_finished` (step 1 → 2 works for real users).
+  - Conversation 14 has read receipts for both people with 0 unread (the chat fix works live).
+  - CLAUDE.md's database workflow has no note on version mismatch / `db push` / repair; text proposed to the owner, not written.
+
+**Files:** `Design.md` (proposal section only)
+**Verified:** read-only queries (funnel_events counts, conversation_reads vs messages); code read of the GA variables.
+**Next:** owner reviews the proposal, the GA4 checklist and the CLAUDE.md note.
+
 ## 2026-10-19 — `public.saves` dropped on production; types regenerated; RLS smoke 220/220
 
 **Done** (owner-approved after the read-only dependency audit):
