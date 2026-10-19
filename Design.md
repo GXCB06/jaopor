@@ -924,49 +924,86 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - "← กลับไปโอลิมปิกจังหวัด", "จังหวัดใกล้เคียง" + RegionChip, chips of the other provinces in the region. Unknown slug → 404. OG: "{จังหวัด} / อันดับ #X ในโอลิมปิกจังหวัด" + the map with the region lit.
 - Profile stat card ก่อตั้ง/ที่ตั้ง caption: `MapPin` + "{จังหวัด} · อันดับ #X ในโอลิมปิก" linking to the province page (wraps on phones).
 
-### Proposal — For-sale listing (Phase 2 marketplace, v1; NOT built, waits for owner review, 2026-10-19)
+### Proposal — For-sale listing (Phase 2 marketplace, v2 with the owner's decisions of 2026-10-19; NOT built, design only)
 
-Owner request (2026-10-18, TrustMRR's "this startup is for sale" banner as the reference; layout only, our own wording and data). A founder can put a project up for sale with an asking price; visitors see it on the project page and can contact the seller. v1 is listing + contact only: no payments, escrow, offers, affiliate "Earn", or Save (removed 2026-10-18).
+A founder can put a project up for sale with an asking price; visitors see it and can contact the seller. TrustMRR's "for sale" banner is the layout reference only (our own wording and data, no assets). v1 is listing + contact: no payments, escrow, offers, affiliate "Earn", or Save.
 
-**1. Banner on the project page** (above the header, under the breadcrumb; only while `for_sale`):
+**Owner decisions (2026-10-19):**
 
-- Card `rounded-2xl border border-warning/40 bg-warning/5 p-4 sm:p-5` (amber = "for sale", Design.md §1 colour rule).
-- Line 1 (`text-sm font-semibold`): Tag icon + "ผลงานนี้เปิดขาย · ราคาที่เจ้าของตั้ง ฿X" / "This project is for sale · Owner's asking price ฿X". The price is **owner-stated** and says so; it's never styled as verified.
-- Chips (`rounded-full border bg-card px-2.5 py-0.5 text-caption tabular-nums`), each shown only when it has data:
-  - TrendingUp "≈ N× รายได้ต่อปี": asking price ÷ (verified 30-day revenue × 12), one decimal. **Only when revenue is verified and disclosed `exact`**: a band / growth / badge / private project shows no multiple, so the price can't reveal hidden revenue.
-  - Eye "N คนดูประกาศนี้": unique viewers since listing (counted once per visitor per day; aggregate only).
-  - Users "N คนสนใจซื้อ": distinct people who sent a "ซื้อกิจการ" contact request.
-- Right (from `sm`; full width under the chips on phones): primary "ติดต่อผู้ขาย" → the existing contact-request dialog with topic **buy** prefilled (signed-out → sign in, back to the page). Owner sees "แก้ไขประกาศ" instead.
-- A short reason for sale (`sale_note`, ≤ 280 chars), if given, under the line in `text-caption text-muted-foreground`.
+1. A project can be listed **without** verified revenue; it then shows **no** revenue multiple.
+2. For eligible verified recurring revenue, the multiple uses **MRR × 12 = annualized MRR**, labelled as such. It is never presented as money already collected, nor as a valuation.
+3. Asking prices are **stored in THB**. Any other-currency amount is an **estimate** and says so.
+4. Moderators can hide **the sale listing alone**, leaving the project page up.
 
-**2. Elsewhere:**
+**1. UX: the banner on the project page** (above the header, under the breadcrumb; only while the listing is public, see §4):
 
-- StartupCard corner tag: amber "ขาย ฿X" (`text-3xs`, short price `฿1.2M`); it takes the slot the "looking for" ask uses today (Design.md §5 corner tag, 2026-09-29 decision).
-- Directory filter "เปิดขาย" (checkbox in the filter sidebar), sort "ราคา".
-- `/acquire` stays a later step (Phase 2 template row): the Directory layout filtered to for-sale projects, with price / multiple filters.
+- Card `rounded-2xl border border-warning/40 bg-warning/5 p-4 sm:p-5` (amber = "for sale", §1 colour rule).
+- Line 1 (`text-sm font-semibold`): Tag icon + "ผลงานนี้เปิดขาย · ราคาที่เจ้าของตั้ง ฿X" / "For sale · Owner's asking price ฿X". The price is owner-stated and says so; never styled as verified.
+  - Viewer currency set to USD (header switch): the THB price stays first, followed by `text-muted-foreground` "(≈ $Y, ประมาณการจากอัตราแลกเปลี่ยน {date})" / "(≈ $Y estimate at the {date} rate)". The rate is JaoPor's daily FX row, the same one the money formatter uses. Never shown as an exact USD price.
+- Chips (`rounded-full border bg-card px-2.5 py-0.5 text-caption tabular-nums`), each only when it has data:
+  - **Multiple** (TrendingUp): "ราคาขอ ≈ N เท่าของ MRR × 12" / "Asking ≈ N× annualized MRR (MRR × 12)", with an ⓘ:
+    - "MRR × 12 คือรายได้ประจำต่อปีที่คำนวณจาก MRR ปัจจุบัน ไม่ใช่เงินที่ได้รับแล้ว และไม่ใช่การประเมินมูลค่ากิจการ" / "MRR × 12 annualizes today's recurring revenue. It isn't money already collected, and it isn't a valuation."
+    - Plus the MRR source stamp ("ยืนยันผ่าน Stripe · อัปเดต {date}").
+    - **Eligible only when:** revenue is verified, disclosed `exact` (`public_revenue_level = 'exact'`), and `public_mrr_cents > 0`. N = asking_price_thb ÷ (MRR in THB × 12), one decimal; "> 100×" above 100. A band / growth / badge / private level, unverified revenue, or MRR = 0 shows **no** multiple (and no "N/A" either), so the price can't be used to back out hidden revenue.
+  - **Views** (Eye): "N คนดูประกาศนี้": unique viewers since listing (once per viewer per day; aggregate only).
+  - **Interested** (Users): "N คนสนใจซื้อ": distinct people who sent a "ซื้อกิจการ" request for this project.
+- Optional reason for sale (`sale_note`, ≤ 280) under line 1, `text-caption text-muted-foreground`.
+- Action (right from `sm`, full width under the chips on phones): primary "ติดต่อผู้ขาย" opens the existing contact-request dialog with topic **buy** and the project prefilled. Signed-out visitors sign in, then return to the page. The owner sees "แก้ไขประกาศ" instead.
 
-**3. Owner controls** (edit page, new section "เปิดขายผลงาน"):
+**2. UX elsewhere:**
 
-- Switch "เปิดขาย" + asking price in THB (whole baht, > 0, ≤ ฿1,000,000,000) + optional reason (≤ 280).
-- A note that the price is public, shown as "ราคาที่เจ้าของตั้ง", and that the multiple only appears with exact-disclosed verified revenue.
-- Turning it off hides the banner, tag and filter at once; counts are kept for a later relisting.
-- Anonymous projects can list too (founder still visible, as anonymous mode already allows); the banner never adds identity.
+- StartupCard corner tag: amber "ขาย ฿X" (`text-3xs`, short form `฿1.2M`); it takes the "looking for" slot (§5 corner tag, 2026-09-29).
+- Directory filter "เปิดขาย" (filter sidebar) and sort "ราคา". `/acquire` comes later (the Directory layout filtered to listings).
+- Owner, edit page, section "เปิดขายผลงาน":
+  - Switch "เปิดขาย" + asking price in **THB** (whole baht, 1 to ฿1,000,000,000) + optional reason (≤ 280).
+  - Notes: the price is public as "ราคาที่เจ้าของตั้ง"; the multiple appears only with exact-disclosed verified MRR; USD amounts are estimates.
+  - A live preview of the banner.
+- **Moderated listing (owner view):** if a moderator hid the listing, the section shows a `border-destructive/40` note "ผู้ดูแลซ่อนประกาศขายนี้" + the reason + "ติดต่อทีม JaoPor". The switch can't bring it back.
+- Anonymous projects can list (the founder stays visible, as anonymous mode allows); the banner adds no identity.
 
-**4. Data plan (one migration, written for review later; not now):**
+**3. Permissions:**
 
-- `startups`: `for_sale boolean not null default false`, `asking_price_thb integer check (asking_price_thb > 0 and asking_price_thb <= 1000000000)`, `sale_note text check (char_length(sale_note) <= 280)`, `listed_for_sale_at timestamptz` (set by trigger when `for_sale` turns on). Owners update them through column grants; visitors read them (no metric secrecy: the price is meant to be public). `for_sale` requires `asking_price_thb` (check constraint).
-- Views: `listing_views (startup_id, day, viewer_hash)` unique per day; written only by a server route (service role, same hashing as the live pixel: no IP stored); a definer RPC returns the total. No client grants.
-- Interested buyers: `contact_requests.topic` gains `'buy'` and an optional `startup_id`; the count is distinct requesters per startup with topic `buy`, returned by a definer RPC (number only).
-- RLS smoke additions: visitors read for_sale/price but can't write; a non-owner can't list someone's project; clients can't write views or forge interest counts; the multiple isn't computable from public columns when revenue isn't exact.
+| Who                                                    | Can                                                                                                                                                                 | Cannot                                                                                 |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Visitor / signed-in user                               | read a public listing (price, note, listed date, counts); send a "buy" contact request (existing rate limits)                                                       | write any listing field; read who viewed or who is interested; read moderation reasons |
+| Owner                                                  | turn the listing on / off; set price and note (column grants + row policy "owners update own startups"); read own counts and own moderation reason (owner-only RPC) | set `listed_for_sale_at`; clear or set a moderator hide; write view or interest counts |
+| Server (service role)                                  | record views (beacon route, hashed, no IP); set or clear a moderator hide (moderator action only)                                                                   | n/a                                                                                    |
+| Moderator (allow-listed user ids, via a server action) | hide / unhide a listing with a reason; hide a whole project (existing `status = 'hidden'`)                                                                          | edit the price or note                                                                 |
 
-**5. Acceptance (for the build):**
+**4. Data model (one migration, written for review later; not now):**
 
-- Banner, card tag and filter appear only while listed; th / en; desktop + 375 (chips wrap, button full width on phones); light / dark.
-- Multiple hidden for any non-exact revenue level; never shown for unverified revenue.
-- Contact seller reuses contact requests and chat; the founder gets the existing notification.
+- `public.startups`:
+  - `for_sale boolean not null default false`;
+  - `asking_price_thb integer check (asking_price_thb between 1 and 1000000000)`;
+  - `sale_note text check (char_length(sale_note) <= 280)`;
+  - `listed_for_sale_at timestamptz`, set by trigger when `for_sale` turns on; clients can't write it;
+  - check: `for_sale` implies `asking_price_thb is not null`;
+  - **`sale_hidden boolean not null default false`**, set only by the moderation path (a trigger refuses client changes, like `startups_owner_status`).
+  - A **public listing** = `for_sale and not sale_hidden and status = 'published'`. Every query (card, filter, banner) uses this one rule; a hidden project hides its listing too.
+- `private.listing_moderation (startup_id pk, hidden_at, reason, moderator_id, updated_at)`. The reason and moderator stay private; the owner reads their own reason through a definer RPC.
+- `private.listing_views (startup_id, day, viewer_hash)`, unique per day; written by a server route (same hashing as the live pixel, no IP). A definer RPC returns the total.
+- `contact_requests`: topic gains `'buy'`, plus an optional `startup_id` (fk). "Interested" = distinct requesters per startup with topic `buy`, from a definer RPC (number only).
+- No FX stored per listing: the estimate uses the day's `fx_rates` row at display time; the multiple uses the same FX as the MRR display.
+
+**5. Moderation flow:**
+
+1. A listing is reported (the existing reports flow gains target type "listing"), or a moderator finds it.
+2. The moderator hides it with a reason through an allow-listed server action (service role). This sets `sale_hidden = true` and writes `listing_moderation`; the banner, card tag and filter entry disappear at once (revalidate the project's pages).
+3. The project page stays up. The owner sees the hidden note and reason in the edit page and can contact the team.
+4. Unhide is moderator-only and clears both. Toggling the owner's switch off / on never clears a moderator hide.
+5. A whole-project hide (`status = 'hidden'`, existing) still overrides everything.
+
+**6. Acceptance criteria (for the build):**
+
+- A listing shows only while public (rule in §4); th / en; desktop + 375 (chips wrap, button full width); light / dark.
+- Unverified, non-exact, or MRR-0 projects list normally with **no** multiple chip. Eligible ones show "≈ N× annualized MRR (MRR × 12)" with the ⓘ wording above, never "revenue" or "valuation". Unit tests cover eligibility and rounding.
+- The THB price is always shown first. USD appears only as "≈ $Y estimate at the {date} rate".
+- A moderator hide removes the listing everywhere while the project page stays. The owner can't undo it (RLS smoke: an owner clearing `sale_hidden`, writing `listed_for_sale_at`, or reading another owner's moderation reason is denied).
+- Views and interest can't be written or inflated by clients (RLS smoke); counts are aggregate only.
+- Contact seller reuses contact requests + chat; the founder gets the existing notification.
 - No TrustMRR assets, copy or data; no payments in v1.
 
-**Open questions for the owner:** (1) multiple basis: 30-day revenue × 12 (proposed) or MRR × 12? (2) Can a project with no verified revenue list (proposed: yes, no multiple shown)? (3) THB only, or also USD prices for English pages (proposed: THB stored, shown in the viewer's currency like other money)? (4) Moderation: can JaoPor hide a listing (proposed: reuse the existing moderation hide)?
+**Still open:** (a) who the moderators are (proposed: an env allow-list of user ids, no admin UI in v1); (b) whether `/acquire` ships with v1 or after.
 
 ### Directory (`/startups`, Figma "Marketplace")
 
