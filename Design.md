@@ -1003,7 +1003,7 @@ A founder can put a project up for sale with an asking price; visitors see it an
 - Contact seller reuses contact requests + chat; the founder gets the existing notification.
 - No TrustMRR assets, copy or data; no payments in v1.
 
-**Still open:** (a) who the moderators are (proposed: an env allow-list of user ids, no admin UI in v1); (b) whether `/acquire` ships with v1 or after.
+**Decided (owner, 2026-10-19):** (a) moderators are an env allow-list of user ids (server-only `MODERATOR_USER_IDS`, comma-separated); no admin UI in v1. (b) `/acquire` ships **after** v1; v1 is the banner, card tag, directory filter and owner controls.
 
 ### Directory (`/startups`, Figma "Marketplace")
 
