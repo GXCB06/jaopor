@@ -12,6 +12,17 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-19 — For-sale open points decided: moderators via env allow-list, `/acquire` after v1 (docs only)
+
+**Done** (owner: "moderators via env allow-list, /acquire after v1"):
+
+- Design.md for-sale proposal v2: "Still open" → "Decided". Moderators are user ids in a server-only `MODERATOR_USER_IDS` (comma-separated), with no admin UI in v1. `/acquire` ships after v1; v1 = banner, card tag, directory filter, owner controls.
+- Project.md §6 decision row; §7 open item marked decided (the build still waits for the owner's go).
+
+**Files:** `Design.md`, `Project.md`
+**Verified:** diff review (docs only; nothing built, no migration, no env change).
+**Next:** owner says go to build v1. First step: the migration SQL for review (not applied).
+
 ## 2026-10-19 — GA4 guide: three setup lines; CLAUDE.md: migration-version note (docs only)
 
 **Done** (owner: "add the GA4 lines and the CLAUDE.md note"):
