@@ -33,6 +33,28 @@
 **Verified:** typecheck ✓ · lint ✓ · unit 723 passed / 17 skipped · RLS smoke 220/220 · catalog fingerprints.
 **Next:** owner reviews, then commit and push.
 
+## 2026-10-19 — Open items: saves drop prepared, for-sale design, GA4 setup guide, migration header
+
+**Done** (owner: "please proceed" with all four):
+
+- **Migration header:** `20261019034825_owner_verified_trigger_order.sql` line 1 now reads "Owner-approved and applied 2026-10-19 (… remote version 20261019035224)". Comment only; the SQL is unchanged.
+- **Drop `saves` (prepared, NOT applied):** `20261019044837_drop_saves.sql` = `drop table public.saves;` with no CASCADE.
+  - Read-only check on production: 0 rows; no views, foreign keys, functions or triggers depend on it; only its own 3 policies and 3 indexes go with it.
+  - `rls_smoke.sql` T169–T172 (saves privacy) are replaced by T169 "saves table dropped" (`to_regclass('public.saves') is null`).
+  - Types get regenerated after the apply.
+- **For-sale listing:** a design proposal in Design.md (banner, card tag, filter, owner controls, data plan, RLS checks, acceptance, 4 open questions). Not built.
+  - The multiple shows only for verified, exact-disclosed revenue; the price is labelled owner-stated.
+- **GA4:** `docs/GA4_SETUP.md`, the owner's step-by-step guide (Google Cloud service account, the two Vercel variables, redeploy, a ±5% test against GA's Total users, common errors).
+- Fixed a misplaced doc comment in `src/lib/traffic/ga4.ts` (from 316f506).
+
+**Files:** `supabase/migrations/{20261019034825_owner_verified_trigger_order.sql,20261019044837_drop_saves.sql}`, `supabase/tests/rls_smoke.sql`, `Design.md`, `docs/GA4_SETUP.md`, `src/lib/traffic/ga4.ts` (all uncommitted)
+**Verified:** read-only dependency check for `saves`; typecheck, lint and the traffic tests.
+**Next:**
+
+- Owner approves the drop. Then: apply it, regenerate types, re-run `rls_smoke.sql` with snapshots, commit and push.
+- Owner answers the for-sale questions.
+- Owner follows the GA4 guide.
+
 ## 2026-10-19 — Trigger-order fix applied; full RLS smoke passes (224/224); chat read receipts verified on production
 
 **Done** (owner-approved; production `letfxefyqxxrfujpwtri`):
