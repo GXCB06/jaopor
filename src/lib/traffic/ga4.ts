@@ -35,12 +35,12 @@ export function parseServiceAccount(
   }
 }
 
-/** "123456789", "properties/123456789" or a GA URL containing "p123456789" → "123456789". */
 /** "G-XXXXXXX": the tag's Measurement ID, the most common mix-up with the Property ID. */
 export function isMeasurementId(input: string): boolean {
   return /^G-[A-Z0-9]{4,}$/i.test(input.trim());
 }
 
+/** "123456789", "properties/123456789" or a GA URL containing "p123456789" → "123456789". */
 export function parsePropertyId(input: string): string | null {
   const v = input.trim();
   const m =
