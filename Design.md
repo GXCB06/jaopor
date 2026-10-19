@@ -924,6 +924,50 @@ Product decision (user asked to act as PM / marketer / designer): the Claude Des
 - "← กลับไปโอลิมปิกจังหวัด", "จังหวัดใกล้เคียง" + RegionChip, chips of the other provinces in the region. Unknown slug → 404. OG: "{จังหวัด} / อันดับ #X ในโอลิมปิกจังหวัด" + the map with the region lit.
 - Profile stat card ก่อตั้ง/ที่ตั้ง caption: `MapPin` + "{จังหวัด} · อันดับ #X ในโอลิมปิก" linking to the province page (wraps on phones).
 
+### Proposal — For-sale listing (Phase 2 marketplace, v1; NOT built, waits for owner review, 2026-10-19)
+
+Owner request (2026-10-18, TrustMRR's "this startup is for sale" banner as the reference; layout only, our own wording and data). A founder can put a project up for sale with an asking price; visitors see it on the project page and can contact the seller. v1 is listing + contact only: no payments, escrow, offers, affiliate "Earn", or Save (removed 2026-10-18).
+
+**1. Banner on the project page** (above the header, under the breadcrumb; only while `for_sale`):
+
+- Card `rounded-2xl border border-warning/40 bg-warning/5 p-4 sm:p-5` (amber = "for sale", Design.md §1 colour rule).
+- Line 1 (`text-sm font-semibold`): Tag icon + "ผลงานนี้เปิดขาย · ราคาที่เจ้าของตั้ง ฿X" / "This project is for sale · Owner's asking price ฿X". The price is **owner-stated** and says so; it's never styled as verified.
+- Chips (`rounded-full border bg-card px-2.5 py-0.5 text-caption tabular-nums`), each shown only when it has data:
+  - TrendingUp "≈ N× รายได้ต่อปี": asking price ÷ (verified 30-day revenue × 12), one decimal. **Only when revenue is verified and disclosed `exact`**: a band / growth / badge / private project shows no multiple, so the price can't reveal hidden revenue.
+  - Eye "N คนดูประกาศนี้": unique viewers since listing (counted once per visitor per day; aggregate only).
+  - Users "N คนสนใจซื้อ": distinct people who sent a "ซื้อกิจการ" contact request.
+- Right (from `sm`; full width under the chips on phones): primary "ติดต่อผู้ขาย" → the existing contact-request dialog with topic **buy** prefilled (signed-out → sign in, back to the page). Owner sees "แก้ไขประกาศ" instead.
+- A short reason for sale (`sale_note`, ≤ 280 chars), if given, under the line in `text-caption text-muted-foreground`.
+
+**2. Elsewhere:**
+
+- StartupCard corner tag: amber "ขาย ฿X" (`text-3xs`, short price `฿1.2M`); it takes the slot the "looking for" ask uses today (Design.md §5 corner tag, 2026-09-29 decision).
+- Directory filter "เปิดขาย" (checkbox in the filter sidebar), sort "ราคา".
+- `/acquire` stays a later step (Phase 2 template row): the Directory layout filtered to for-sale projects, with price / multiple filters.
+
+**3. Owner controls** (edit page, new section "เปิดขายผลงาน"):
+
+- Switch "เปิดขาย" + asking price in THB (whole baht, > 0, ≤ ฿1,000,000,000) + optional reason (≤ 280).
+- A note that the price is public, shown as "ราคาที่เจ้าของตั้ง", and that the multiple only appears with exact-disclosed verified revenue.
+- Turning it off hides the banner, tag and filter at once; counts are kept for a later relisting.
+- Anonymous projects can list too (founder still visible, as anonymous mode already allows); the banner never adds identity.
+
+**4. Data plan (one migration, written for review later; not now):**
+
+- `startups`: `for_sale boolean not null default false`, `asking_price_thb integer check (asking_price_thb > 0 and asking_price_thb <= 1000000000)`, `sale_note text check (char_length(sale_note) <= 280)`, `listed_for_sale_at timestamptz` (set by trigger when `for_sale` turns on). Owners update them through column grants; visitors read them (no metric secrecy: the price is meant to be public). `for_sale` requires `asking_price_thb` (check constraint).
+- Views: `listing_views (startup_id, day, viewer_hash)` unique per day; written only by a server route (service role, same hashing as the live pixel: no IP stored); a definer RPC returns the total. No client grants.
+- Interested buyers: `contact_requests.topic` gains `'buy'` and an optional `startup_id`; the count is distinct requesters per startup with topic `buy`, returned by a definer RPC (number only).
+- RLS smoke additions: visitors read for_sale/price but can't write; a non-owner can't list someone's project; clients can't write views or forge interest counts; the multiple isn't computable from public columns when revenue isn't exact.
+
+**5. Acceptance (for the build):**
+
+- Banner, card tag and filter appear only while listed; th / en; desktop + 375 (chips wrap, button full width on phones); light / dark.
+- Multiple hidden for any non-exact revenue level; never shown for unverified revenue.
+- Contact seller reuses contact requests and chat; the founder gets the existing notification.
+- No TrustMRR assets, copy or data; no payments in v1.
+
+**Open questions for the owner:** (1) multiple basis: 30-day revenue × 12 (proposed) or MRR × 12? (2) Can a project with no verified revenue list (proposed: yes, no multiple shown)? (3) THB only, or also USD prices for English pages (proposed: THB stored, shown in the viewer's currency like other money)? (4) Moderation: can JaoPor hide a listing (proposed: reuse the existing moderation hide)?
+
 ### Directory (`/startups`, Figma "Marketplace")
 
 - Hero (brand pill, H1, subline, ProviderStrip, SearchBar) then `grid lg:grid-cols-[15rem_1fr] gap-4`.
