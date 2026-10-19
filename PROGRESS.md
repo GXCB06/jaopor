@@ -12,6 +12,17 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-19 — GA4 guide: three setup lines; CLAUDE.md: migration-version note (docs only)
+
+**Done** (owner: "add the GA4 lines and the CLAUDE.md note"):
+
+- `docs/GA4_SETUP.md` §2: tick **Sensitive** for `GA4_SERVICE_ACCOUNT_JSON`; add both variables together (email alone shows the option but connecting fails); leave `NEXT_PUBLIC_GA_ID` (site-wide tracking) alone.
+- `CLAUDE.md` Database workflow: a **Versions** note. MCP stamps the apply-time version, so match local ↔ remote by name, record the remote version in the header + PROGRESS, compare the stored SQL; never `db push` / `migration up` / `migration repair` / manual stamping.
+
+**Files:** `docs/GA4_SETUP.md`, `CLAUDE.md`
+**Verified:** diff review (docs only; no code, database or production settings touched).
+**Next:** owner answers the for-sale open points (moderators, `/acquire` timing); owner does the GA4 setup.
+
 ## 2026-10-19 — For-sale proposal v2 (owner decisions); GA4, live-check and migration-workflow notes (design / docs only)
 
 **Done** (not committed; no production changes):
@@ -23,7 +34,7 @@
   - a moderator can hide the listing alone (`sale_hidden` + `private.listing_moderation`; the owner can't undo it).
   - It adds a permissions table, data model, moderation flow and acceptance criteria. Still design only.
 - **Read-only findings:**
-  - Site-wide GA tracking (`NEXT_PUBLIC_GA_ID`, default `G-JYPJ2RFH4N`) is already on and is separate from the GA4 *source* variables.
+  - Site-wide GA tracking (`NEXT_PUBLIC_GA_ID`, default `G-JYPJ2RFH4N`) is already on and is separate from the GA4 _source_ variables.
   - Since the 2026-10-15 trigger fix the funnel shows 13 `add_created` / 11 `add_finished` (step 1 → 2 works for real users).
   - Conversation 14 has read receipts for both people with 0 unread (the chat fix works live).
   - CLAUDE.md's database workflow has no note on version mismatch / `db push` / repair; text proposed to the owner, not written.
