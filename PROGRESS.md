@@ -12,6 +12,61 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-19 — For-sale listing v1 UI: banner, card tag, directory filter + price sort, owner section, buy request, view count, moderator control
+
+**Done** (owner: "carry straight on with the UI and commit it all together at the end"; spec: Design.md "For-sale listing", built 2026-10-19):
+
+- **Data:** the four `public_*` listing columns join the startups select and arrive as `listing: { priceThb, note, listedAt } | null` (`startup-columns.ts`). Directory filter `forSale` (`public_for_sale`) and sort `price` (cheapest first, unlisted last). `getThbPerUsdDated()` adds the ECB day to the rate for the "≈ $Y estimate at the {date} rate" line.
+- **Pure helpers** `src/lib/listing.ts` (+ tests): `parseAskingPrice` (whole baht 1 to 1,000,000,000), `listingMultiple` (price ÷ (MRR × 12) in baht, one decimal, "> 100×" / "< 0.1×"; null unless non-demo, exact-disclosed MRR > 0 and a rate), `askingPriceUsd`.
+- **Project page:** `ForSaleBanner` under the breadcrumb (amber card, owner-stated price, USD estimate in USD mode only, multiple chip with ⓘ "not money collected, not a valuation" + source, views / interested chips from `listing_stats`, hidden at 0). `ForSaleActions`: owner → "แก้ไขประกาศ" (`#for-sale`), signed-out → sign in and back, else the buy-request dialog. "รายงานประกาศนี้" for signed-in visitors. `ListingViewBeacon` → `/api/listing-view` (daily HMAC, no IP, owner skipped). `ModeratorListingControl`: renders only for `MODERATOR_USER_IDS` (server action), hide with a reason / show again.
+- **Cards:** corner tag "ขาย ฿1.5M" first after demo (Design.md updated: for sale → verified → owner verified → looking for).
+- **Edit page:** 8th section "เปิดขายผลงาน" (`ForSalePanel`): switch, price, reason with counter, notes, listed-since + counts, live banner preview (off / private / no price states), moderator-hidden note with the reason and the team email; saves on its own (`saveListing`), no completion count.
+- **Requests inbox:** topic "ซื้อกิจการ" / "Acquisition" plus the project name (link on the requests page).
+- **Server:** `src/app/actions/listing.ts` (`saveListing`, `sendBuyRequest`, `getModeratorView`, `moderateListing`, all purge the project, home, directory, category and province pages); `src/lib/data/listing.ts` (server-key reads, `isModerator`); `serverEnv.moderatorUserIds`; `.env.example` `MODERATOR_USER_IDS`. Reports accept target `listing`.
+- **Strings:** `ForSale.*` + Directory / Edit / Me / Builder keys in th and en.
+
+**Files:** `src/lib/listing.ts` (+ `.test.ts`), `src/lib/data/{listing,fx,startup-columns,startups,me}.ts`, `src/lib/revenue/fx.ts`, `src/lib/env.ts`, `src/app/actions/{listing,posts}.ts`, `src/app/api/listing-view/route.ts`, `src/components/listing/{ForSaleBanner,ForSaleClient}.tsx`, `src/components/wizard/{ForSalePanel,StartupEditForm}.tsx`, `src/components/{StartupCard,profile/Owner,builder/ReportDialog}.tsx`, `src/app/[locale]/{startup/[slug],startups,dashboard,dashboard/requests,dashboard/[id]/edit}/page.tsx`, `messages/{th,en}.json`, `.env.example`, `Design.md`
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit 730 passed / 17 skipped (7 new) · build ✓ · e2e 125 passed / 21 skipped (desktop + 375).
+- Visual (Playwright, installed Chrome, dark, 1280 + 375, th + en): banner with and without note / multiple / counts, card tags (large + compact), owner panel incl. moderator-hidden state, using a temporary local fixture page (deleted before commit; nothing is listed on production yet). Real pages: `/th/startup/jaopor` (no banner, no moderator strip), `/th/startups?forSale=1` (empty state), `/en/startups?sort=price`; no horizontal scroll anywhere.
+  **Next:**
+- Owner: set `MODERATOR_USER_IDS` in Vercel (Production) if moderators should act; list a project to see it live.
+- After deploy, check a real listing end to end (owner lists → banner / card / filter → buy request → inbox → moderator hide / show).
+- `/acquire` after v1.
+
+## 2026-10-19 — For-sale listing v1: migration applied on production; RLS smoke 245/245; types regenerated
+
+**Done** (owner: "sure" → dry-run, then "apply"):
+
+- **Dry-run first:** `begin;` + the migration + the full `rls_smoke.sql` in one transaction that the smoke's final `raise` rolls back (no COMMIT in the file). 245 lines, no BAD; data snapshot and catalog fingerprints identical before and after; no new objects left behind.
+- **Pre-checks:** project `letfxefyqxxrfujpwtri` (jaopor, ACTIVE_HEALTHY); history by name 37/37 applied, `for_sale_listing` the only pending one; no `db push`, no repair or stamping.
+- **Applied** `20261019123207_for_sale_listing` with MCP `apply_migration`, recorded remotely as **`20261019132206`**. The stored SQL's md5 matched the file (`0b1dcd91…`); the header line was updated afterwards to record the remote version (comment only).
+- **Advisors:** nothing new at WARN. New INFO only: RLS enabled with no policies on `private.listing_moderation` / `private.listing_views` (intended: server-key access only, like `private.startup_identity`) and three unused new indexes. Existing WARNs unchanged: `get_my_startup_metrics` callable by signed-in users (definer) and leaked-password protection off.
+- **RLS smoke on the live schema:** 245 lines, no BAD, same results as the dry-run (T177–T190 included); snapshots and catalog fingerprints identical before and after.
+- **Types regenerated:** +58 lines, only the new columns, `contact_requests.startup_id` and the four functions.
+
+**Files:** `supabase/migrations/20261019123207_for_sale_listing.sql`, `supabase/tests/rls_smoke.sql`, `src/lib/supabase/database.types.ts`, `Design.md`, `Project.md`
+**Verified:** typecheck ✓ · lint ✓ · unit 723 passed / 17 skipped · RLS smoke 245/245 (dry-run + live) · md5 of stored SQL.
+**Next:** the UI (banner, card tag, directory filter, owner controls, buy contact, view beacon, moderator action), built from Design.md and checked at desktop + 375 px.
+
+## 2026-10-19 — For-sale listing v1: migration drafted + RLS tests (NOT applied)
+
+**Done** (owner: "go"; step 1 = migration for review):
+
+- `supabase/migrations/20261019123207_for_sale_listing.sql` (draft, not applied):
+  - `startups`: owner-editable `for_sale` / `asking_price_thb` / `sale_note`; server-only `listed_for_sale_at` / `sale_hidden`; trigger-filled `public_*` copies (the only listing columns clients can read, filled only while the listing is public).
+  - `private.listing_moderation`, `private.listing_views` (RLS on, no client grants).
+  - `contact_requests`: topic `buy` + `startup_id`, with a trigger that requires a public listing owned by the recipient. `reports`: target type `listing`.
+  - Server-key-only functions: `record_listing_view`, `listing_stats`, `listing_for_owner`, `moderate_listing`.
+- `supabase/tests/rls_smoke.sql`: T177–T190 (listing, price check, owner can't touch server-only or public fields, raw price unreadable, functions denied to clients, moderator hide survives the owner's switch, buy-request rules, report a listing, view / interest counts, private project takes the listing down).
+- Design.md data model rewritten to match the draft; FX line corrected (the app's rate comes from `getThbPerUsd`; `fx_rates` is empty on production).
+- Read-only checks on production: startups uses per-column grants (78 readable columns), status defaults to `published`, `contact_requests_guard` rules, 5 projects.
+
+**Files:** `supabase/migrations/20261019123207_for_sale_listing.sql` (new), `supabase/tests/rls_smoke.sql`, `Design.md`
+**Verified:** read-only catalog queries only; nothing applied.
+**Next:** owner reviews the SQL and tests → apply (MCP), advisors, RLS smoke, types → then the UI.
+
 ## 2026-10-19 — For-sale open points decided: moderators via env allow-list, `/acquire` after v1 (docs only)
 
 **Done** (owner: "moderators via env allow-list, /acquire after v1"):
