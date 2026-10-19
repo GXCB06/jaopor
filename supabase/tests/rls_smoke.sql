@@ -32,6 +32,7 @@ declare
   real_name text;
   sys_owner uuid := '00000000-0000-4000-a000-000000000001';
   claim_sid bigint;
+  sale_sid bigint;
 begin
   insert into auth.users (id, email, raw_user_meta_data, aud, role)
   values (a, 'rls-a@test.local', '{"full_name":"Tester A"}', 'authenticated', 'authenticated'),
@@ -1548,5 +1549,179 @@ begin
     out := out || 'T176 client sets unclaimed on insert: denied (good) | ';
   end;
   execute 'reset role';
+  -- T177–T190: for-sale listing (migration 20261019123207_for_sale_listing). Owner A lists a
+  -- project; only the public_* copies are readable; the owner can't touch the server-only fields;
+  -- a moderator hide survives the owner's switch; 'buy' requests must name a public listing.
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  insert into public.startups (owner_id, name, slug, website_url, category, country, province)
+    values (a, 'For Sale Co', 'rls-for-sale', 'https://for-sale.example', 'saas', 'TH', 'bangkok')
+    returning id into sale_sid;
+  update public.startups set for_sale = true, asking_price_thb = 1500000, sale_note = 'moving on'
+    where id = sale_sid;
+  execute 'reset role';
+  out := out || format('T177 listed: public=%s, price=%s, note=%s, listed_at set=%s (expect t / 1500000 / moving on / t) | ',
+    (select public_for_sale from public.startups where id = sale_sid),
+    (select public_asking_price_thb from public.startups where id = sale_sid),
+    (select public_sale_note from public.startups where id = sale_sid),
+    (select public_listed_for_sale_at is not null from public.startups where id = sale_sid));
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  begin
+    update public.startups set asking_price_thb = null where id = sale_sid;
+    out := out || 'T178 listed without a price: ALLOWED (BAD) | ';
+  exception when check_violation then
+    out := out || 'T178 listed without a price: refused (good) | ';
+  end;
+  begin
+    update public.startups set sale_hidden = false where id = sale_sid;
+    out := out || 'T179 owner writes sale_hidden: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T179 owner writes sale_hidden: denied (good) | ';
+  end;
+  begin
+    update public.startups set listed_for_sale_at = now() - interval '1 year' where id = sale_sid;
+    out := out || 'T179b owner backdates listed_for_sale_at: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T179b owner backdates listed_for_sale_at: denied (good) | ';
+  end;
+  begin
+    update public.startups set public_asking_price_thb = 1 where id = sale_sid;
+    out := out || 'T179c owner writes a public_* listing copy: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T179c owner writes a public_* listing copy: denied (good) | ';
+  end;
+  begin
+    select asking_price_thb into n from public.startups where id = sale_sid;
+    out := out || 'T180 a signed-in user reads the raw price: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T180 a signed-in user reads the raw price: denied (good) | ';
+  end;
+  begin
+    perform public.listing_for_owner(sale_sid);
+    out := out || 'T181 a signed-in user calls listing_for_owner: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T181 a signed-in user calls listing_for_owner: denied (good) | ';
+  end;
+  begin
+    perform public.moderate_listing(sale_sid, false, null, a);
+    out := out || 'T181b a signed-in user calls moderate_listing: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T181b a signed-in user calls moderate_listing: denied (good) | ';
+  end;
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  execute 'set local role anon';
+  select public_asking_price_thb into n from public.startups where id = sale_sid;
+  out := out || format('T182 anon reads the public price: %s (expect 1500000) | ', n);
+  begin
+    select sale_hidden::int into n from public.startups where id = sale_sid;
+    out := out || 'T182b anon reads sale_hidden: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T182b anon reads sale_hidden: denied (good) | ';
+  end;
+  begin
+    perform public.record_listing_view(sale_sid, '\x01'::bytea);
+    out := out || 'T182c anon records a view directly: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T182c anon records a view directly: denied (good) | ';
+  end;
+  begin
+    perform public.listing_stats(sale_sid);
+    out := out || 'T182d anon calls listing_stats: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T182d anon calls listing_stats: denied (good) | ';
+  end;
+  begin
+    perform 1 from private.listing_moderation;
+    out := out || 'T182e anon reads listing_moderation: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T182e anon reads listing_moderation: denied (good) | ';
+  end;
+  begin
+    perform 1 from private.listing_views;
+    out := out || 'T182f anon reads listing_views: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T182f anon reads listing_views: denied (good) | ';
+  end;
+  execute 'reset role';
+  -- Moderator hide through the server key.
+  execute 'set local role service_role';
+  perform public.moderate_listing(sale_sid, true, 'test: misleading listing', b);
+  execute 'reset role';
+  out := out || format('T183 moderator hides: public=%s, price=%s, project status=%s (expect f / null / published) | ',
+    (select public_for_sale from public.startups where id = sale_sid),
+    coalesce((select public_asking_price_thb from public.startups where id = sale_sid)::text, 'null'),
+    (select status from public.startups where id = sale_sid));
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  update public.startups set for_sale = false where id = sale_sid;
+  update public.startups set for_sale = true where id = sale_sid;
+  execute 'reset role';
+  out := out || format('T184 owner switches off / on while hidden: public=%s, sale_hidden=%s (expect f / t) | ',
+    (select public_for_sale from public.startups where id = sale_sid),
+    (select sale_hidden from public.startups where id = sale_sid));
+  -- B asks to buy while the listing is hidden.
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  begin
+    insert into public.contact_requests (from_id, to_id, topic, message, startup_id)
+      values (b, a, 'buy', 'interested', sale_sid);
+    out := out || 'T185 buy request to a hidden listing: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T185 buy request to a hidden listing: denied (good) | ';
+  end;
+  execute 'reset role';
+  execute 'set local role service_role';
+  perform public.moderate_listing(sale_sid, false, null, b);
+  execute 'reset role';
+  out := out || format('T186 moderator unhides: public=%s, reason rows=%s (expect t / 0) | ',
+    (select public_for_sale from public.startups where id = sale_sid),
+    (select count(*) from private.listing_moderation where startup_id = sale_sid));
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  begin
+    insert into public.contact_requests (from_id, to_id, topic, message, startup_id)
+      values (b, a, 'buy', 'interested', anon_sid);
+    out := out || 'T187 buy request naming a project the recipient does not own: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T187 buy request naming a project the recipient does not own: denied (good) | ';
+  end;
+  begin
+    insert into public.contact_requests (from_id, to_id, topic, message, startup_id)
+      values (b, a, 'collab', 'hi', sale_sid);
+    out := out || 'T187b startup_id on a non-buy request: ALLOWED (BAD) | ';
+  exception when check_violation then
+    out := out || 'T187b startup_id on a non-buy request: refused (good) | ';
+  end;
+  insert into public.contact_requests (from_id, to_id, topic, message, startup_id)
+    values (b, a, 'buy', 'interested', sale_sid);
+  out := out || 'T187c buy request to a public listing: ok | ';
+  insert into public.reports (reporter_id, target_type, target_id, reason)
+    values (b, 'listing', sale_sid::text, 'fake');
+  out := out || 'T188 report a listing: ok | ';
+  execute 'reset role';
+  -- Views and interest through the server key: two viewers, one of them twice on the same day.
+  execute 'set local role service_role';
+  perform public.record_listing_view(sale_sid, '\x01'::bytea);
+  perform public.record_listing_view(sale_sid, '\x01'::bytea);
+  perform public.record_listing_view(sale_sid, '\x02'::bytea);
+  select views::int, interested::int into n, k from public.listing_stats(sale_sid);
+  out := out || format('T189 stats: views=%s, interested=%s (expect 2 / 1) | ', n, k);
+  j := public.listing_for_owner(sale_sid);
+  out := out || format('T189b owner view: for_sale=%s, price=%s, hidden=%s (expect true / 1500000 / false) | ',
+    j->>'for_sale', j->>'asking_price_thb', j->>'sale_hidden');
+  execute 'reset role';
+  -- Making the project private takes the listing down; views stop counting.
+  perform set_config('request.jwt.claims', json_build_object('sub', a, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  update public.startups set status = 'private' where id = sale_sid;
+  execute 'reset role';
+  execute 'set local role service_role';
+  perform public.record_listing_view(sale_sid, '\x03'::bytea);
+  execute 'reset role';
+  out := out || format('T190 private project: public=%s, views rows=%s (expect f / 2) | ',
+    (select public_for_sale from public.startups where id = sale_sid),
+    (select count(*) from private.listing_views where startup_id = sale_sid));
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;
 end $$;

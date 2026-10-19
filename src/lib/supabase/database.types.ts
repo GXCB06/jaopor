@@ -92,6 +92,7 @@ export type Database = {
           id: number;
           message: string;
           responded_at: string | null;
+          startup_id: number | null;
           status: string;
           to_id: string;
           topic: string;
@@ -102,6 +103,7 @@ export type Database = {
           id?: never;
           message: string;
           responded_at?: string | null;
+          startup_id?: number | null;
           status?: string;
           to_id: string;
           topic: string;
@@ -112,6 +114,7 @@ export type Database = {
           id?: never;
           message?: string;
           responded_at?: string | null;
+          startup_id?: number | null;
           status?: string;
           to_id?: string;
           topic?: string;
@@ -122,6 +125,13 @@ export type Database = {
             columns: ["from_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contact_requests_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
             referencedColumns: ["id"];
           },
           {
@@ -1121,6 +1131,7 @@ export type Database = {
           active_users: number | null;
           ai_tools: string[];
           app_store_url: string | null;
+          asking_price_thb: number | null;
           audience: string | null;
           build_ai_commits: number | null;
           build_commits: number | null;
@@ -1135,6 +1146,7 @@ export type Database = {
           customers: number | null;
           demo_video_url: string | null;
           description: string | null;
+          for_sale: boolean;
           founded_on: string | null;
           founder_message: string | null;
           founder_role: string | null;
@@ -1147,6 +1159,7 @@ export type Database = {
           is_demo: boolean;
           last_synced_at: string | null;
           line_url: string | null;
+          listed_for_sale_at: string | null;
           logo_path: string | null;
           looking_for: string[];
           marketing_channels: string[];
@@ -1167,6 +1180,7 @@ export type Database = {
           public_active_users: number | null;
           public_active_users_band_hi: number | null;
           public_active_users_band_lo: number | null;
+          public_asking_price_thb: number | null;
           public_band_fx_day: string | null;
           public_build_ai_commits: number | null;
           public_build_commits: number | null;
@@ -1178,8 +1192,10 @@ export type Database = {
           public_build_stars: number | null;
           public_build_synced_at: string | null;
           public_customers: number | null;
+          public_for_sale: boolean;
           public_github_repo: string | null;
           public_last_synced_at: string | null;
+          public_listed_for_sale_at: string | null;
           public_mrr_band_hi_thb: number | null;
           public_mrr_band_lo_thb: number | null;
           public_mrr_cents: number | null;
@@ -1191,6 +1207,7 @@ export type Database = {
           public_revenue_growth_pct: number | null;
           public_revenue_level: string | null;
           public_revenue_prev_30d_cents: number | null;
+          public_sale_note: string | null;
           public_traffic_level: string | null;
           public_traffic_provider: string | null;
           public_traffic_synced_at: string | null;
@@ -1204,6 +1221,8 @@ export type Database = {
           revenue_30d_cents: number | null;
           revenue_all_time_cents: number | null;
           revenue_prev_30d_cents: number | null;
+          sale_hidden: boolean;
+          sale_note: string | null;
           slug: string;
           status: string;
           tagline: string | null;
@@ -1225,6 +1244,7 @@ export type Database = {
           active_users?: number | null;
           ai_tools?: string[];
           app_store_url?: string | null;
+          asking_price_thb?: number | null;
           audience?: string | null;
           build_ai_commits?: number | null;
           build_commits?: number | null;
@@ -1239,6 +1259,7 @@ export type Database = {
           customers?: number | null;
           demo_video_url?: string | null;
           description?: string | null;
+          for_sale?: boolean;
           founded_on?: string | null;
           founder_message?: string | null;
           founder_role?: string | null;
@@ -1251,6 +1272,7 @@ export type Database = {
           is_demo?: boolean;
           last_synced_at?: string | null;
           line_url?: string | null;
+          listed_for_sale_at?: string | null;
           logo_path?: string | null;
           looking_for?: string[];
           marketing_channels?: string[];
@@ -1271,6 +1293,7 @@ export type Database = {
           public_active_users?: number | null;
           public_active_users_band_hi?: number | null;
           public_active_users_band_lo?: number | null;
+          public_asking_price_thb?: number | null;
           public_band_fx_day?: string | null;
           public_build_ai_commits?: number | null;
           public_build_commits?: number | null;
@@ -1282,8 +1305,10 @@ export type Database = {
           public_build_stars?: number | null;
           public_build_synced_at?: string | null;
           public_customers?: number | null;
+          public_for_sale?: boolean;
           public_github_repo?: string | null;
           public_last_synced_at?: string | null;
+          public_listed_for_sale_at?: string | null;
           public_mrr_band_hi_thb?: number | null;
           public_mrr_band_lo_thb?: number | null;
           public_mrr_cents?: number | null;
@@ -1295,6 +1320,7 @@ export type Database = {
           public_revenue_growth_pct?: number | null;
           public_revenue_level?: string | null;
           public_revenue_prev_30d_cents?: number | null;
+          public_sale_note?: string | null;
           public_traffic_level?: string | null;
           public_traffic_provider?: string | null;
           public_traffic_synced_at?: string | null;
@@ -1308,6 +1334,8 @@ export type Database = {
           revenue_30d_cents?: number | null;
           revenue_all_time_cents?: number | null;
           revenue_prev_30d_cents?: number | null;
+          sale_hidden?: boolean;
+          sale_note?: string | null;
           slug: string;
           status?: string;
           tagline?: string | null;
@@ -1329,6 +1357,7 @@ export type Database = {
           active_users?: number | null;
           ai_tools?: string[];
           app_store_url?: string | null;
+          asking_price_thb?: number | null;
           audience?: string | null;
           build_ai_commits?: number | null;
           build_commits?: number | null;
@@ -1343,6 +1372,7 @@ export type Database = {
           customers?: number | null;
           demo_video_url?: string | null;
           description?: string | null;
+          for_sale?: boolean;
           founded_on?: string | null;
           founder_message?: string | null;
           founder_role?: string | null;
@@ -1355,6 +1385,7 @@ export type Database = {
           is_demo?: boolean;
           last_synced_at?: string | null;
           line_url?: string | null;
+          listed_for_sale_at?: string | null;
           logo_path?: string | null;
           looking_for?: string[];
           marketing_channels?: string[];
@@ -1375,6 +1406,7 @@ export type Database = {
           public_active_users?: number | null;
           public_active_users_band_hi?: number | null;
           public_active_users_band_lo?: number | null;
+          public_asking_price_thb?: number | null;
           public_band_fx_day?: string | null;
           public_build_ai_commits?: number | null;
           public_build_commits?: number | null;
@@ -1386,8 +1418,10 @@ export type Database = {
           public_build_stars?: number | null;
           public_build_synced_at?: string | null;
           public_customers?: number | null;
+          public_for_sale?: boolean;
           public_github_repo?: string | null;
           public_last_synced_at?: string | null;
+          public_listed_for_sale_at?: string | null;
           public_mrr_band_hi_thb?: number | null;
           public_mrr_band_lo_thb?: number | null;
           public_mrr_cents?: number | null;
@@ -1399,6 +1433,7 @@ export type Database = {
           public_revenue_growth_pct?: number | null;
           public_revenue_level?: string | null;
           public_revenue_prev_30d_cents?: number | null;
+          public_sale_note?: string | null;
           public_traffic_level?: string | null;
           public_traffic_provider?: string | null;
           public_traffic_synced_at?: string | null;
@@ -1412,6 +1447,8 @@ export type Database = {
           revenue_30d_cents?: number | null;
           revenue_all_time_cents?: number | null;
           revenue_prev_30d_cents?: number | null;
+          sale_hidden?: boolean;
+          sale_note?: string | null;
           slug?: string;
           status?: string;
           tagline?: string | null;
@@ -1552,6 +1589,14 @@ export type Database = {
         Returns: Json;
       };
       handle_available: { Args: { p_handle: string }; Returns: boolean };
+      listing_for_owner: { Args: { p_startup: number }; Returns: Json };
+      listing_stats: {
+        Args: { p_startup: number };
+        Returns: {
+          interested: number;
+          views: number;
+        }[];
+      };
       log_add_event: {
         Args: {
           p_attempt: string;
@@ -1568,6 +1613,15 @@ export type Database = {
           p_source: string;
           p_startup: number;
           p_user: string;
+        };
+        Returns: undefined;
+      };
+      moderate_listing: {
+        Args: {
+          p_hide: boolean;
+          p_moderator: string;
+          p_reason: string;
+          p_startup: number;
         };
         Returns: undefined;
       };
@@ -1603,6 +1657,10 @@ export type Database = {
       };
       prune_funnel_events: { Args: never; Returns: number };
       prune_live_pings: { Args: never; Returns: number };
+      record_listing_view: {
+        Args: { p_startup: number; p_viewer_hash: string };
+        Returns: undefined;
+      };
       refresh_activity: { Args: never; Returns: undefined };
       search_startups: {
         Args: { max_rows?: number; q: string };
