@@ -44,6 +44,12 @@ npx shadcn@latest add <component>   # add a shadcn/ui primitive into src/compone
 4. Run [supabase/tests/rls_smoke.sql](supabase/tests/rls_smoke.sql) via `execute_sql`. Every line must read good/expected. It rolls itself back, so nothing needs resetting.
 5. Regenerate `src/lib/supabase/database.types.ts` (MCP `generate_typescript_types`).
 
+- **Versions:** MCP `apply_migration` records the apply-time UTC timestamp as the remote version, so it differs from the
+  local filename (e.g. `20261019044837_drop_saves` → remote `20261019052905`). Match local ↔ remote by **name**, record the
+  remote version in the file header and PROGRESS.md, and check the stored SQL (`supabase_migrations.schema_migrations.statements`)
+  against the file. Never run `supabase db push` / `migration up` (it pairs by version and would re-run ~28 applied
+  migrations), and never `migration repair` or stamp versions by hand.
+
 Unit tests use **Vitest** (`vitest.config.mts`; `server-only` is stubbed in tests). `src/lib/messages.test.ts` parses every th / en message with the same ICU parser next-intl uses (pinned `intl-messageformat`), so a stray `<` or `{` fails the tests instead of showing a raw key in production. End-to-end tests use **Playwright** (`playwright.config.ts`, `e2e/`): signed-out flows only (OAuth can't be automated): every public page in th / en renders without raw keys or next-intl errors, Thai year on Thai pages, no horizontal scroll at 375 px, sign-in redirects keep the exact page, numbers not cut off, round chart ticks. Run them before pushing UI changes; builder profiles need `SUPABASE_SECRET_KEY` locally.
 
 **Verified numbers** (skill `/add-payment-provider` for any new source):
