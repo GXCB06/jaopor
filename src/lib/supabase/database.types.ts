@@ -10,32 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5";
-  };
-  graphql_public: {
-    Tables: {
-      [_ in never]: never;
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json;
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-        };
-        Returns: Json;
-      };
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
+    PostgrestVersion: "14.17";
   };
   public: {
     Tables: {
@@ -1208,6 +1183,7 @@ export type Database = {
           logo_path: string | null;
           looking_for: string[];
           marketing_channels: string[];
+          metric_disclosure: Json;
           mrr_cents: number | null;
           name: string;
           owner_id: string;
@@ -1220,6 +1196,44 @@ export type Database = {
           problem_solved: string | null;
           proof_level: number;
           province: string | null;
+          public_active_subscriptions: number | null;
+          public_active_users: number | null;
+          public_active_users_band_hi: number | null;
+          public_active_users_band_lo: number | null;
+          public_band_fx_day: string | null;
+          public_build_ai_commits: number | null;
+          public_build_commits: number | null;
+          public_build_commits_band_hi: number | null;
+          public_build_commits_band_lo: number | null;
+          public_build_first_commit_at: string | null;
+          public_build_level: string | null;
+          public_build_stack: string[];
+          public_build_stars: number | null;
+          public_build_synced_at: string | null;
+          public_customers: number | null;
+          public_github_repo: string | null;
+          public_last_synced_at: string | null;
+          public_mrr_band_hi_thb: number | null;
+          public_mrr_band_lo_thb: number | null;
+          public_mrr_cents: number | null;
+          public_proof_level: number;
+          public_revenue_30d_band_hi_thb: number | null;
+          public_revenue_30d_band_lo_thb: number | null;
+          public_revenue_30d_cents: number | null;
+          public_revenue_all_time_cents: number | null;
+          public_revenue_growth_pct: number | null;
+          public_revenue_level: string | null;
+          public_revenue_prev_30d_cents: number | null;
+          public_traffic_level: string | null;
+          public_traffic_provider: string | null;
+          public_traffic_synced_at: string | null;
+          public_users_level: string | null;
+          public_verified_provider: string | null;
+          public_visitors_30d: number | null;
+          public_visitors_band_hi: number | null;
+          public_visitors_band_lo: number | null;
+          public_visitors_growth_pct: number | null;
+          public_visitors_prev_30d: number | null;
           revenue_30d_cents: number | null;
           revenue_all_time_cents: number | null;
           revenue_prev_30d_cents: number | null;
@@ -1273,6 +1287,7 @@ export type Database = {
           logo_path?: string | null;
           looking_for?: string[];
           marketing_channels?: string[];
+          metric_disclosure?: Json;
           mrr_cents?: number | null;
           name: string;
           owner_id: string;
@@ -1285,6 +1300,44 @@ export type Database = {
           problem_solved?: string | null;
           proof_level?: number;
           province?: string | null;
+          public_active_subscriptions?: number | null;
+          public_active_users?: number | null;
+          public_active_users_band_hi?: number | null;
+          public_active_users_band_lo?: number | null;
+          public_band_fx_day?: string | null;
+          public_build_ai_commits?: number | null;
+          public_build_commits?: number | null;
+          public_build_commits_band_hi?: number | null;
+          public_build_commits_band_lo?: number | null;
+          public_build_first_commit_at?: string | null;
+          public_build_level?: string | null;
+          public_build_stack?: string[];
+          public_build_stars?: number | null;
+          public_build_synced_at?: string | null;
+          public_customers?: number | null;
+          public_github_repo?: string | null;
+          public_last_synced_at?: string | null;
+          public_mrr_band_hi_thb?: number | null;
+          public_mrr_band_lo_thb?: number | null;
+          public_mrr_cents?: number | null;
+          public_proof_level?: number;
+          public_revenue_30d_band_hi_thb?: number | null;
+          public_revenue_30d_band_lo_thb?: number | null;
+          public_revenue_30d_cents?: number | null;
+          public_revenue_all_time_cents?: number | null;
+          public_revenue_growth_pct?: number | null;
+          public_revenue_level?: string | null;
+          public_revenue_prev_30d_cents?: number | null;
+          public_traffic_level?: string | null;
+          public_traffic_provider?: string | null;
+          public_traffic_synced_at?: string | null;
+          public_users_level?: string | null;
+          public_verified_provider?: string | null;
+          public_visitors_30d?: number | null;
+          public_visitors_band_hi?: number | null;
+          public_visitors_band_lo?: number | null;
+          public_visitors_growth_pct?: number | null;
+          public_visitors_prev_30d?: number | null;
           revenue_30d_cents?: number | null;
           revenue_all_time_cents?: number | null;
           revenue_prev_30d_cents?: number | null;
@@ -1338,6 +1391,7 @@ export type Database = {
           logo_path?: string | null;
           looking_for?: string[];
           marketing_channels?: string[];
+          metric_disclosure?: Json;
           mrr_cents?: number | null;
           name?: string;
           owner_id?: string;
@@ -1350,6 +1404,44 @@ export type Database = {
           problem_solved?: string | null;
           proof_level?: number;
           province?: string | null;
+          public_active_subscriptions?: number | null;
+          public_active_users?: number | null;
+          public_active_users_band_hi?: number | null;
+          public_active_users_band_lo?: number | null;
+          public_band_fx_day?: string | null;
+          public_build_ai_commits?: number | null;
+          public_build_commits?: number | null;
+          public_build_commits_band_hi?: number | null;
+          public_build_commits_band_lo?: number | null;
+          public_build_first_commit_at?: string | null;
+          public_build_level?: string | null;
+          public_build_stack?: string[];
+          public_build_stars?: number | null;
+          public_build_synced_at?: string | null;
+          public_customers?: number | null;
+          public_github_repo?: string | null;
+          public_last_synced_at?: string | null;
+          public_mrr_band_hi_thb?: number | null;
+          public_mrr_band_lo_thb?: number | null;
+          public_mrr_cents?: number | null;
+          public_proof_level?: number;
+          public_revenue_30d_band_hi_thb?: number | null;
+          public_revenue_30d_band_lo_thb?: number | null;
+          public_revenue_30d_cents?: number | null;
+          public_revenue_all_time_cents?: number | null;
+          public_revenue_growth_pct?: number | null;
+          public_revenue_level?: string | null;
+          public_revenue_prev_30d_cents?: number | null;
+          public_traffic_level?: string | null;
+          public_traffic_provider?: string | null;
+          public_traffic_synced_at?: string | null;
+          public_users_level?: string | null;
+          public_verified_provider?: string | null;
+          public_visitors_30d?: number | null;
+          public_visitors_band_hi?: number | null;
+          public_visitors_band_lo?: number | null;
+          public_visitors_growth_pct?: number | null;
+          public_visitors_prev_30d?: number | null;
           revenue_30d_cents?: number | null;
           revenue_all_time_cents?: number | null;
           revenue_prev_30d_cents?: number | null;
@@ -1487,6 +1579,7 @@ export type Database = {
           startups: number;
         }[];
       };
+      get_my_startup_metrics: { Args: { p_startup: number }; Returns: Json };
       get_profile: {
         Args: { p_handle: string; p_viewer?: string };
         Returns: Json;
@@ -1703,9 +1796,6 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

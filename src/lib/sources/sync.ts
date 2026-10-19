@@ -52,6 +52,7 @@ import {
   assertGa4Property,
   fetchGa4Traffic,
   ga4AccessToken,
+  isMeasurementId,
   parsePropertyId,
   parseServiceAccount,
 } from "@/lib/traffic/ga4";
@@ -718,6 +719,11 @@ async function prepare(
       // No founder credential: they added JaoPor's service account as a Viewer. Our token only has
       // the analytics.readonly scope, so it can't write whatever role they granted.
       const host = requireWebsite(ctx.website);
+      if (isMeasurementId(input.propertyId ?? ""))
+        throw new ProviderError(
+          "ga4_measurement_id",
+          "That's the Measurement ID (G-…). Paste the Property ID: numbers only, from Admin → Property details.",
+        );
       const propertyId = parsePropertyId(input.propertyId ?? "");
       if (!propertyId)
         throw new ProviderError(

@@ -16,6 +16,37 @@ async function me() {
   return { supabase, user: data.user };
 }
 
+type Db = Awaited<ReturnType<typeof createClient>>;
+
+/**
+ * Record that I've read a conversation up to `at`. Not an upsert: an upsert's ON CONFLICT DO UPDATE
+ * sets every column it sends, and signed-in users may update only `last_read_at` (column grant), so
+ * Postgres refused every upsert with 42501 and no read was ever saved: the header badge never
+ * cleared (owner QA 2026-10-18). Insert the first time; on a duplicate, update just the time.
+ */
+async function saveReadAt(
+  supabase: Db,
+  conversationId: number,
+  userId: string,
+  at: string,
+): Promise<void> {
+  const { error } = await supabase.from("conversation_reads").insert({
+    conversation_id: conversationId,
+    user_id: userId,
+    last_read_at: at,
+  });
+  if (error?.code === "23505") {
+    const { error: updateError } = await supabase
+      .from("conversation_reads")
+      .update({ last_read_at: at })
+      .eq("conversation_id", conversationId)
+      .eq("user_id", userId);
+    if (updateError) console.error("[chat] mark read:", updateError.code);
+  } else if (error) {
+    console.error("[chat] mark read:", error.code);
+  }
+}
+
 export async function sendMessage(
   conversationId: number,
   body: string,
@@ -44,11 +75,7 @@ export async function sendMessage(
     .single();
   if (error || !data) return { ok: false, error: postErrorKey(error?.code) };
   // I've obviously read everything up to my own message.
-  await supabase.from("conversation_reads").upsert({
-    conversation_id: conversationId,
-    user_id: user.id,
-    last_read_at: data.created_at,
-  });
+  await saveReadAt(supabase, conversationId, user.id, data.created_at);
   return {
     ok: true,
     message: {
@@ -122,11 +149,12 @@ export async function markRead(conversationId: number): Promise<void> {
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
-  await supabase.from("conversation_reads").upsert({
-    conversation_id: conversationId,
-    user_id: user.id,
-    last_read_at: last?.created_at ?? new Date().toISOString(),
-  });
+  await saveReadAt(
+    supabase,
+    conversationId,
+    user.id,
+    last?.created_at ?? new Date().toISOString(),
+  );
 }
 
 /** Block: closes the conversation and blocks the contact requests between the two (until unblocked). */

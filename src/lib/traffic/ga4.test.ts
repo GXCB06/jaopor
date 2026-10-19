@@ -5,6 +5,7 @@ import {
   assertGa4Property,
   fetchGa4Traffic,
   ga4AccessToken,
+  isMeasurementId,
   parsePropertyId,
   parseServiceAccount,
   resetGa4TokenCache,
@@ -63,6 +64,13 @@ describe("parsePropertyId / parseServiceAccount", () => {
     ["", null],
   ])("%s → %s", (input, id) => {
     expect(parsePropertyId(input)).toBe(id);
+  });
+
+  it("recognises a Measurement ID so the founder gets told which ID to paste", () => {
+    expect(isMeasurementId("G-JYPJ2RFH4N")).toBe(true);
+    expect(isMeasurementId(" g-abc123 ")).toBe(true);
+    expect(isMeasurementId("123456789")).toBe(false);
+    expect(isMeasurementId("UA-1234-1")).toBe(false);
   });
 
   it("reads the service account JSON, or null when it isn't set up", () => {

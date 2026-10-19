@@ -267,21 +267,6 @@ export async function getStartupBySlug(
 }
 
 /**
- * Published startups by id (order not guaranteed — callers reorder). Used by the saved page (R3):
- * it reads the user's saved ids first, then resolves them through the same public columns every
- * other card uses, so a saved card shows exactly what the directory shows.
- */
-export async function getStartupsByIds(ids: number[]): Promise<StartupRow[]> {
-  if (ids.length === 0) return [];
-  const mode = await schemaMode();
-  const { data, error } = await from("startups")
-    .select(select(mode))
-    .in("id", ids);
-  if (error) throw error;
-  return rows(mode, data);
-}
-
-/**
  * A renamed project's current slug for one of its old links (UX audit S-9, migration
  * slug_history), or null. Published projects only (RLS), so a hidden project's old link 404s.
  */
@@ -589,7 +574,9 @@ export async function getProjectActivity(): Promise<ActivityProject[]> {
 }
 
 /** Published projects per province (listing, not competing: lib/team, olympics.countByProvince). */
-export async function getProvinceProjectCounts(): Promise<Record<string, number>> {
+export async function getProvinceProjectCounts(): Promise<
+  Record<string, number>
+> {
   const { data, error } = await db()
     .from("startups")
     .select("province, status, is_demo")

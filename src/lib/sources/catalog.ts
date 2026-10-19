@@ -77,20 +77,15 @@ export function sourcesOfKind(kind: SourceKind): SourceId[] {
 }
 
 /**
- * Sources whose proof is bound to an asset the listing already carries — its website (analytics
- * snippet / share link) or its GitHub repo — so proving it also proves who owns the listing.
- * Revenue keys are excluded: holding a payment key shows you took a payment, not which listing is
- * yours. Used by the claim flow (an imported listing can only be claimed with these).
+ * The only proofs that can claim an imported listing (claim flow), because only they show control
+ * of an asset the listing already carries:
+ * - `jaopor`: our snippet, found live on the listing's own website;
+ * - `github`: the repo the listing links, owned by the claimer's signed-in GitHub account.
+ * Analytics accounts (Plausible, Umami, Cloudflare, GA4, PostHog) are NOT proof: anyone can add any
+ * domain to their own analytics account without verifying it (security review 2026-10-18).
+ * Revenue keys aren't either: a payment key shows you took a payment, not which listing is yours.
  */
-export const CLAIM_SOURCES: readonly SourceId[] = [
-  "jaopor",
-  "plausible",
-  "umami",
-  "cloudflare",
-  "ga4",
-  "posthog",
-  "github",
-];
+export const CLAIM_SOURCES: readonly SourceId[] = ["jaopor", "github"];
 
 export function isClaimSource(v: unknown): v is SourceId {
   return (

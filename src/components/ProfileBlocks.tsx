@@ -70,8 +70,9 @@ export function StatCard({
       >
         {value}
       </div>
+      {/* Two lines, never cut mid-word on a 4-across row (founder cards, owner QA 2026-10-18). */}
       {caption && (
-        <div className="line-clamp-2 text-caption text-muted-foreground sm:truncate">
+        <div className="line-clamp-2 text-caption text-muted-foreground">
           {caption}
         </div>
       )}

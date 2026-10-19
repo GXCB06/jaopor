@@ -43,7 +43,8 @@ export type ProviderErrorCode =
   | "no_github_identity" // founder did not sign in with GitHub
   | "no_website" // traffic proof needs a website link first
   | "duplicate_listing" // another of the owner's projects already has this site's numbers
-  | "not_claimable"; // the claim's proof doesn't belong to this imported listing
+  | "not_claimable" // the claim's proof doesn't belong to this imported listing
+  | "ga4_measurement_id"; // a GA4 Measurement ID (G-…) was pasted where the Property ID goes
 
 export class ProviderError extends Error {
   constructor(

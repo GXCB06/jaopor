@@ -641,13 +641,14 @@ export default async function BuilderProfilePage({
 
           {/* Design.md §6 Builder profile key cards (owner 2026-10-13, TrustMRR founder profile):
               always revenue · MRR · followers · projects, in that order. */}
-          <ul className="grid grid-cols-2 gap-3 lg:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
+          {/* Four across from sm (auto-fit wrapped as 3 + 1 in the narrower main column at lg). */}
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <li className="min-w-0 [&>*]:h-full">
               <StatCard
                 label={t("statRevenueTotal")}
                 value={
                   revenueCents > 0 ? (
-                    <Money cents={revenueCents} thbPerUsd={thbPerUsd} />
+                    <Money cents={revenueCents} thbPerUsd={thbPerUsd} full />
                   ) : (
                     "—"
                   )
@@ -662,7 +663,7 @@ export default async function BuilderProfilePage({
                 label={t("statMrrTotal")}
                 value={
                   mrrCents > 0 ? (
-                    <Money cents={mrrCents} thbPerUsd={thbPerUsd} />
+                    <Money cents={mrrCents} thbPerUsd={thbPerUsd} full />
                   ) : (
                     "—"
                   )
@@ -682,11 +683,10 @@ export default async function BuilderProfilePage({
                   counts.newFollowers > 0
                     ? t("statFollowersGrowth", { n: counts.newFollowers })
                     : t("statFollowersOn"),
+                  // GitHub only when it adds something (owner QA 2026-10-18: "GitHub 0").
                   followers &&
-                    t("statGithubFollowers", {
-                      n: followers.followers,
-                      login: followers.login,
-                    }),
+                    followers.followers > 0 &&
+                    t("statGithubFollowers", { n: followers.followers }),
                 ]
                   .filter(Boolean)
                   .join(" · ")}

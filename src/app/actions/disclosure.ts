@@ -1,6 +1,10 @@
 "use server";
 
-import { changedDisclosure, parseDisclosure, type MetricDisclosure } from "@/lib/disclosure";
+import {
+  changedDisclosure,
+  parseDisclosure,
+  type MetricDisclosure,
+} from "@/lib/disclosure";
 import { createClient } from "@/lib/supabase/server";
 import { revalidateStartup } from "./revalidate";
 
@@ -28,17 +32,13 @@ export async function setStartupDisclosure(
 
   // The raw `metric_disclosure` column isn't readable by clients, even the owner: read the
   // owner-scoped value through the definer RPC (returns null for anyone but the owner).
-  const callRpc = supabase.rpc as unknown as (
-    fn: string,
-    args: Record<string, unknown>,
-  ) => Promise<{
-    data: Record<string, unknown> | null;
-    error: { code?: string } | null;
-  }>;
-  const { data: own, error: readError } = await callRpc(
+  const { data, error: readError } = await supabase.rpc(
     "get_my_startup_metrics",
     { p_startup: startupId },
   );
+  // A JSON object for the owner, null for anyone else (the RPC returns jsonb).
+  const own =
+    data && typeof data === "object" && !Array.isArray(data) ? data : null;
   if (readError) return { ok: false, error: "server" };
   if (!own) return { ok: false, error: "forbidden" };
 
@@ -49,11 +49,10 @@ export async function setStartupDisclosure(
   );
   if (!next) return { ok: false, error: "invalid" };
 
-  // RLS re-checks ownership; the column grant re-checks the field. `metric_disclosure` is not in
-  // the generated types yet, hence the cast.
+  // RLS re-checks ownership; the column grant re-checks the field.
   const { error } = await supabase
     .from("startups")
-    .update({ metric_disclosure: next } as never)
+    .update({ metric_disclosure: next })
     .eq("id", startupId);
   if (error) return { ok: false, error: "server" };
 

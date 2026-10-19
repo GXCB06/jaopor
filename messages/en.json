@@ -535,7 +535,8 @@
     "no_github_identity": "Sign in with GitHub at least once so we can confirm the repo is yours.",
     "no_website": "Add the project's own website first (not a Facebook or YouTube page): visitors are matched to it.",
     "duplicate_listing": "Your project “{detail}” already has this website’s numbers connected. One business, one listing: use that project instead.",
-    "not_claimable": "This project can't be claimed with that proof. Use an analytics site or repo that belongs to it, and check the link."
+    "not_claimable": "This project can't be claimed with that proof. Put the JaoPor code on the project's own website, or use the GitHub repo the project links, and check the link.",
+    "ga4_measurement_id": "That's the Measurement ID (starts with G-). Paste the Property ID instead: numbers only, from Admin → Property details."
   },
   "ErrorPage": {
     "notFoundCode": "404",
@@ -827,7 +828,7 @@
   },
   "Claim": {
     "title": "Claim a project",
-    "intro": "Is a project already on JaoPor without you? Find it, prove it's yours with a read-only key or your GitHub repo, and take it over.",
+    "intro": "Is a project already on JaoPor without you? Find it, prove it's yours with the JaoPor code on its website or its own GitHub repo, and take it over.",
     "searchLabel": "Search by name or website",
     "searchPlaceholder": "yourapp.com",
     "search": "Search",
@@ -1546,9 +1547,6 @@
     "received": "Received",
     "sent": "Sent",
     "noSent": "You haven't sent any requests",
-    "savedEmpty": "No saved projects yet",
-    "savedHint": "Tap the bookmark icon on a project page to keep it here",
-    "browse": "Browse projects",
     "followers": "Followers ({n})",
     "following": "Following ({n})",
     "noFollowers": "No followers yet",
@@ -1626,7 +1624,9 @@
     "weekNoCounting": "Your projects aren't counting visitors yet. Add the JaoPor snippet or connect analytics to start.",
     "profileViews": "Profile views",
     "requestsReceived": "Requests received",
-    "noPendingRequests": "No requests waiting"
+    "noPendingRequests": "No requests waiting",
+    "savedSoon": "Saved is coming",
+    "savedSoonHint": "Soon you'll be able to save projects and builders to look at later"
   },
   "Builder": {
     "editProfile": "Edit profile",
@@ -1835,7 +1835,7 @@
     "statWorksNote": "{n, plural, one {# with verified numbers} other {# with verified numbers}}",
     "statFollowersGrowth": "+{n, number} in 30 days",
     "statFollowersOn": "on JaoPor",
-    "statGithubFollowers": "GitHub {n, number} (@{login})"
+    "statGithubFollowers": "GitHub {n, number}"
   },
   "Builders": {
     "title": "Builders",
@@ -2331,11 +2331,5 @@
     "placeholder": "Type a category, e.g. games, education, shop",
     "noMatch": "No such category. Try another word or pick “Other”.",
     "popular": "Popular categories"
-  },
-  "Save": {
-    "save": "Save",
-    "saved": "Saved",
-    "signIn": "Sign in to save",
-    "failed": "Couldn't save. Try again"
   }
 }

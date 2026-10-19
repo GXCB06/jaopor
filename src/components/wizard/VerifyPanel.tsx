@@ -194,7 +194,15 @@ export function VerifyPanel({
   );
 }
 
-export const METRIC_ICON: Record<SourceKind, LucideIcon> = {
+export /**
+ * Google Analytics is offered only once JaoPor's GA4 service account is set up: its public email
+ * (`NEXT_PUBLIC_GA4_SERVICE_EMAIL`, founders add it as a Viewer) plus the key on the server
+ * (`GA4_SERVICE_ACCOUNT_JSON`). Until then the option would be a dead end (owner QA 2026-10-18), so
+ * it isn't shown. Re-enable: set both variables and redeploy; nothing in code changes.
+ */
+const isOffered = (s: SourceId) => s !== "ga4" || ga4ServiceEmail !== null;
+
+const METRIC_ICON: Record<SourceKind, LucideIcon> = {
   revenue: CreditCardIcon,
   traffic: ChartColumnIcon,
   build: GitBranchIcon,
@@ -241,7 +249,9 @@ function VerifyChooser({
   // The snippet needs a website; without one only analytics remain (issue 4, metric-first).
   // A claim only accepts asset-bound sources (the listing's site or its repo), never a key alone.
   const sourcesFor = (kind: SourceKind): SourceId[] => {
-    const list = sourcesOfKind(kind).filter((s) => !claim || isClaimSource(s));
+    const list = sourcesOfKind(kind).filter(
+      (s) => isOffered(s) && (!claim || isClaimSource(s)),
+    );
     return kind === "traffic" && !websiteHost
       ? list.filter((s) => s !== "jaopor")
       : list;
@@ -595,7 +605,10 @@ function SourceGroup({
   onConnected?: (source: SourceId) => void;
 }) {
   const t = useTranslations("Sources");
-  const sources = sourcesOfKind(kind);
+  // A connected source always shows (even GA4 if it were switched off later); others only if offered.
+  const sources = sourcesOfKind(kind).filter(
+    (s) => isOffered(s) || connections.some((c) => c.source === s),
+  );
   const current = connections.find((c) => SOURCE_KIND[c.source] === kind);
   const [selected, setSelected] = useState<SourceId>(
     current?.source ?? sources[0],

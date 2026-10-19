@@ -102,7 +102,8 @@ describe("normalizeStartup", () => {
       id: 1,
       public_revenue_level: null,
       public_verified_provider: null,
-      public_build_stack: null,
+      // Not null in the database; checks the reader still copes if it ever is.
+      public_build_stack: null as unknown as string[],
     });
     expect(r.verification_status).toBe("unverified");
     expect(r.verified_provider).toBeNull();

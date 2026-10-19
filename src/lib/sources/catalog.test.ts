@@ -78,19 +78,23 @@ describe("sources catalog — recommended metric per stage", () => {
   });
 });
 
-// Claim flow: only asset-bound proofs (the listing's site or its repo) can claim an imported
-// listing — a payment key proves you took a payment, not which listing is yours.
+// Claim flow: only proofs of control over the listing's own site or repo can claim an imported
+// listing. A payment key proves you took a payment; an analytics account proves nothing (anyone can
+// add any domain to their own Plausible / GA4 / PostHog …) — security review 2026-10-18.
 describe("sources catalog — claim sources", () => {
-  it("offers the asset-bound sources only", () => {
-    expect(CLAIM_SOURCES).toEqual([
-      "jaopor",
+  it("accepts only the site snippet and the listing's own repo", () => {
+    expect(CLAIM_SOURCES).toEqual(["jaopor", "github"]);
+  });
+
+  it("never lets an analytics account claim a listing", () => {
+    for (const s of [
       "plausible",
       "umami",
       "cloudflare",
       "ga4",
       "posthog",
-      "github",
-    ]);
+    ] as const)
+      expect(isClaimSource(s)).toBe(false);
   });
 
   it("never lets a revenue source claim a listing", () => {
