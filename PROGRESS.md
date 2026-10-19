@@ -12,6 +12,120 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-19 — Trigger-order fix applied; full RLS smoke passes (224/224); chat read receipts verified on production
+
+**Done** (owner-approved; production `letfxefyqxxrfujpwtri`):
+
+- **Migration applied (only this one):** `20261019034825_owner_verified_trigger_order` via MCP `apply_migration`, recorded remotely as version `20261019035224`. Local and remote versions are unpaired, as with earlier migrations; no `migration repair` was run.
+  - It renames `startups_reset_owner_verified` to `startups_clear_owner_verified_on_website_change` and adds a comment.
+  - Verified: same trigger oid (19177), function `private.startups_reset_owner_verified()`, type 19, enabled, column 5 (`website_url`). The definition is identical apart from the name; the old name is gone.
+  - BEFORE UPDATE order is now `startups_anonymity` → `startups_clear_owner_verified_on_website_change` → `startups_owner_status` → `startups_public_metrics` → `startups_reserve_old_slugs` → `startups_set_updated_at` → `startups_validate_vocab`.
+- **Full `rls_smoke.sql` run:** completed with 224 result lines, all matching their expectations, no `(BAD)`.
+  - T122b now gives public level 0.
+  - T122c: badge only gives 1 before the change and 0 after it.
+  - T122d: an unchanged website keeps the badge and level 1.
+  - T122e / T122e2: visitors and build proof keep levels 1 / 2 after the badge clears.
+  - T122f: the order check is true.
+  - T126 shows the renamed trigger; T147 expects and gets `exact`.
+- **Chat read-receipt test** (scratch `chat_read_test.sql`, one rolled-back DO block, mirrors `saveReadAt`): C0–C10 all as expected.
+  - The old upsert is refused with 42501, which reproduces the bug.
+  - The new path works: insert, then 23505 on the duplicate, then update `last_read_at`; unread goes 1 → 0.
+  - The reader can't rewrite `user_id`. The other participant can't read, change or write the receipt (RLS). Anon is denied.
+- **Rollback verified** for both runs: before and after snapshots are byte-identical, with 0 test users and 0 `rls-%` rows; conversations stay at 4 (max id 14) and read records at 0.
+- **Classification:** test-script issues (T122b column, user B, T147 expectation) were fixed in the script. The application bug (trigger order) was fixed by the migration.
+
+**Files:** `supabase/migrations/20261019034825_owner_verified_trigger_order.sql` (applied; its header still says "NOT APPLIED until the owner reviews it": not edited, since applied migrations are never edited), `supabase/tests/rls_smoke.sql` (uncommitted)
+**Verified:** read-only trigger checks; full suite output parsed line by line; snapshot comparisons.
+**Next:** owner's go to commit and push all uncommitted work (review fixes, test script, migration file); then the live checks (chat badge clears, wizard creates a product, founder cards).
+
+## 2026-10-19 — RLS smoke on production completed: 216 of 218 as expected; T122b exposes a real trigger-order bug (stopped)
+
+**Done** (owner-approved; production `letfxefyqxxrfujpwtri`; run with `supabase db query --linked --project-ref … --file supabase/tests/rls_smoke.sql`):
+
+- **Test-script fixes only (approved):**
+  - T122b reads `public_proof_level`; the raw `proof_level` isn't client-readable since the disclosure levels.
+  - Test user B is recreated just before T162. T104 deletes B on purpose, and the anonymous-mode tests need B again.
+- **Run 3 completed:** the single DO block reached its final `raise`, producing 218 result lines with no `(BAD)`. Every result matches its expectation except:
+  - **T122b FAIL (real bug):** `cleared=t, public_proof_level=1 (expect true, 0)`. BEFORE triggers fire alphabetically, so `startups_public_metrics` computes `public_proof_level` while `owner_verified_at` is still set. `startups_reset_owner_verified` then clears the badge, leaving `public_proof_level` stale at 1 until the row's next update.
+    - No production row is affected today: all 3 projects match a recomputation and none has the badge.
+    - Not fixed; the trigger change needs the owner's approval.
+  - **T147 expectation outdated:** it still expects revenue to default to `badge`. Owner decision 2026-10-15 (migration `20261015200000_disclosure_default_exact`) made the default `exact`, which is what ran. The result matches the current design; the expectation text needs updating (owner approval).
+- Notable passes:
+  - T2: a signed-in owner creates a product, confirming the 42501 trigger fix.
+  - T146–T160: disclosure.
+  - T162–T168: anonymous mode.
+  - T169–T172: saves.
+  - T173–T176: the claim flag can't be set or moved by clients.
+- **Rollback verified on all three runs:** before and after snapshots are byte-identical, with 0 test users and 0 `rls-%` rows remaining.
+- **Chat read-receipt test not run:** the suite didn't fully pass, per the owner's instruction.
+
+- **Classification:**
+  - **Test-script issues (confirmed, fixed in the script only):**
+    - T122b read a column clients can no longer read;
+    - T162–T168 used a test user T104 had deleted;
+    - T147's expectation predated the 2026-10-15 `exact` default.
+  - **Application bug (confirmed):** the T122b trigger-order problem. It was found by the corrected test, not caused by it.
+- **Drafted 2026-10-19, NOT applied (owner review pending):**
+  - migration `20261019034825_owner_verified_trigger_order.sql`: `ALTER TRIGGER startups_reset_owner_verified … RENAME TO startups_clear_owner_verified_on_website_change`, plus a comment on the ordering contract. Same event, function and timing; no backfill, since no stale row exists.
+  - regression tests T122c–T122f (website change with no other proof → 0; unchanged website keeps badge and level; visitors / build proof keep levels 1 / 2; the name sorts between `startups_anonymity` and `startups_public_metrics`);
+  - T126 looks up the renamed trigger;
+  - T147 expects `exact`.
+
+**Files:** `supabase/tests/rls_smoke.sql` (T122b, recreate B, T122c–T122f, T126 name, T147 expectation; uncommitted), `supabase/migrations/20261019034825_owner_verified_trigger_order.sql` (new, not applied)
+**Verified:** snapshot comparison (identical); full result list parsed from the run output.
+**Next:**
+
+- Owner decides the T122b fix: a migration so the public level is computed after the badge reset. Options: rename `startups_reset_owner_verified` so it sorts first, or have `startups_public_metrics` treat a website change as clearing the badge.
+- Update T147's expectation to the `exact` default.
+- Re-run; then the chat read-receipt test.
+
+## 2026-10-18 — Review of the opencode batch: claim hijack closed, chat badge fixed, Saves removed, GA4 hidden until set up
+
+**Done** (owner-approved fix list after the review / QA of 32 commits; **not committed, not pushed**):
+
+- **Claim security (high):** `CLAIM_SOURCES` is now only `jaopor` (snippet live on the listing's own site) and `github` (the repo the listing links, owned by the claimer's GitHub login).
+  - Plausible, Umami, Cloudflare, GA4 and PostHog no longer count: anyone can add any domain to their own analytics account without verifying it.
+  - The only ownership-transfer path is `connectSource`'s claim branch. Refresh (PATCH) and disconnect (DELETE) already require the real owner.
+  - New `src/lib/sources/claim.test.ts`: each analytics and revenue source is refused with no writes; the snippet / repo claim only when they match; another user's non-imported listing is refused. Mutation-checked: re-adding Plausible makes it fail.
+  - Claim wording updated (th + en).
+- **Chat unread badge never cleared (root cause):** `markRead` and `sendMessage` used `upsert` on `conversation_reads`. An upsert's `ON CONFLICT DO UPDATE` sets every column sent, but `authenticated` may update only `last_read_at` (column grant), so Postgres refused every write.
+  - Evidence: 0 rows in `conversation_reads` for any conversation; postgres log "permission denied for table conversation_reads" today.
+  - Fix: insert, then update `last_read_at` only on a duplicate (`saveReadAt`); errors are logged instead of swallowed. No migration needed.
+  - The other client upserts were checked and are fine (`follows` ignores duplicates; `private_contacts` grants update on all columns).
+- **Founder page cards:**
+  - four across from `sm` (they wrapped 3 + 1 in the narrower main column at `lg`);
+  - exact amounts (`฿1,980`, like the chart, not `฿2k`);
+  - "GitHub n" only when n > 0, without the @login;
+  - `StatCard` captions wrap to 2 lines instead of being cut off.
+- **GA4 hidden until JaoPor's service account exists** (`isOffered` in VerifyPanel; already-connected projects keep it). Re-enable by setting `NEXT_PUBLIC_GA4_SERVICE_EMAIL` + `GA4_SERVICE_ACCOUNT_JSON` and redeploying.
+  - The owner's "ไม่พบโปรเจค…" after entering an ID is the usual Measurement-ID mix-up (`G-…` pasted for the numeric Property ID). It now has its own error, `ga4_measurement_id`, with an `isMeasurementId` test.
+- **Saves (bookmarks) removed** at the owner's request: Save button, actions, loader, `getStartupsByIds`, `Save.*` / `Me.savedEmpty|savedHint|browse` strings. `/dashboard/saved` is back to its placeholder. The `public.saves` table stays (dropping it needs a migration); RLS smoke T169–T172 still apply.
+- **Types regenerated** from the live DB (`generate_typescript_types`). The disclosure action no longer needs its `as never` / RPC casts. One fixture in `startup-columns.test.ts` casts a deliberate `null` for a NOT NULL column.
+
+**Files:**
+
+- claim: `src/lib/sources/{catalog.ts,catalog.test.ts,claim.test.ts}`;
+- chat: `src/app/actions/chat.ts`;
+- founder cards: `src/app/[locale]/u/[username]/page.tsx`, `src/components/ProfileBlocks.tsx`;
+- GA4: `src/components/wizard/VerifyPanel.tsx`, `src/lib/traffic/{ga4.ts,ga4.test.ts}`, `src/lib/sources/sync.ts`, `src/lib/revenue/types.ts`;
+- Saves removed: `src/app/[locale]/startup/[slug]/page.tsx`, `src/app/[locale]/dashboard/saved/page.tsx`, `src/lib/data/startups.ts`; deleted `src/components/SaveButton.tsx`, `src/app/actions/saves.ts`, `src/lib/data/saves.ts`;
+- types and disclosure: `src/lib/supabase/database.types.ts`, `src/app/actions/disclosure.ts`, `src/lib/data/startup-columns.test.ts`;
+- shared: `messages/{th,en}.json`, `Design.md`.
+
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit 723 passed / 17 skipped · build ✓ · e2e local 125 passed / 0 failed.
+- Founder cards at 1440 / 1024 / 375 (temporary local page, deleted). Project page header at 375 without the Save button.
+- Read-only DB checks: grants, policies, logs, advisors.
+
+**Not run (needs owner approval, production only):**
+
+- `supabase/tests/rls_smoke.sql`: one DO block that rolls back; it leaves only skipped identity values and log lines, with no pg_net / webhooks / cron.
+- A rolled-back check of the chat read fix as `authenticated`.
+- The real signed-in wizard (OAuth can't be automated).
+
+**Next:** owner approves the rolled-back production test run; then commit, push and deploy on the owner's go.
+
 ## 2026-10-15 — Owner disclosure control (C9) + wizard category auto-select (issues 3 & 2)
 
 **Done:**

@@ -917,9 +917,11 @@ begin
   out := out || format('T122 rename + new slug keeps badge: %s (expect true) | ',
     (select owner_verified_at is not null from public.startups where id = sid));
   update public.startups set website_url = 'https://other.test' where id = sid;
-  out := out || format('T122b owner changes website: cleared=%s, proof_level=%s (expect true, 0) | ',
+  -- Read as the signed-in owner, so the public column: raw proof_level isn't client-readable since
+  -- the disclosure levels (20261011130000; T146 checks that). Still expects the badge cleared and 0.
+  out := out || format('T122b owner changes website: cleared=%s, public_proof_level=%s (expect true, 0) | ',
     (select owner_verified_at is null from public.startups where id = sid),
-    (select proof_level from public.startups where id = sid));
+    (select public_proof_level from public.startups where id = sid));
 
   -- T123: the server (service role) path: any website change clears it, even in the same statement
   -- that sets the badge, a change back, a trailing slash, letter case, or http→https.
@@ -946,6 +948,41 @@ begin
   out := out || format('T123b website set to the same value keeps it: %s (expect true) | ',
     (select owner_verified_at is not null from public.startups where id = sid));
 
+  -- T122c–T122f: the full website-change behaviour, including the public proof level (migration
+  -- 20261019034825: the badge reset must fire before startups_public_metrics). sid has no other
+  -- proof here (T121 cleared it); the badge is set from T123b.
+  out := out || format('T122c badge only, before the change: public_proof_level=%s (expect 1) | ',
+    (select public_proof_level from public.startups where id = sid));
+  update public.startups set website_url = 'https://ov-moved.test' where id = sid;
+  out := out || format('T122c website changes, no other proof: cleared=%s, public_proof_level=%s (expect true, 0) | ',
+    (select owner_verified_at is null from public.startups where id = sid),
+    (select public_proof_level from public.startups where id = sid));
+  update public.startups set owner_verified_at = now() where id = sid;
+  update public.startups set website_url = website_url, tagline = 'same site again' where id = sid;
+  out := out || format('T122d unchanged website keeps the badge and the level: kept=%s, public_proof_level=%s (expect true, 1) | ',
+    (select owner_verified_at is not null from public.startups where id = sid),
+    (select public_proof_level from public.startups where id = sid));
+  update public.startups set visitors_30d = 100 where id = sid;
+  update public.startups set website_url = 'https://ov-moved-again.test' where id = sid;
+  out := out || format('T122e website changes, counted visitors remain: cleared=%s, public_proof_level=%s (expect true, 1) | ',
+    (select owner_verified_at is null from public.startups where id = sid),
+    (select public_proof_level from public.startups where id = sid));
+  update public.startups set owner_verified_at = now(), build_commits = 10 where id = sid;
+  update public.startups set website_url = 'https://ov-moved-thrice.test' where id = sid;
+  out := out || format('T122e2 website changes, build proof remains: cleared=%s, public_proof_level=%s (expect true, 2) | ',
+    (select owner_verified_at is null from public.startups where id = sid),
+    (select public_proof_level from public.startups where id = sid));
+  out := out || format('T122f badge reset fires after startups_anonymity and before startups_public_metrics: %s (expect true) | ',
+    (select 'startups_anonymity' collate "C" < tgname::text collate "C"
+            and tgname::text collate "C" < 'startups_public_metrics' collate "C"
+       from pg_trigger
+      where tgrelid = 'public.startups'::regclass
+        and tgname = 'startups_clear_owner_verified_on_website_change'));
+  -- Back to the state T123b left (later tests don't use it, but keep it predictable).
+  update public.startups
+     set visitors_30d = null, build_commits = null, website_url = 'http://OV.test/', owner_verified_at = now()
+   where id = sid;
+
   -- T124: nobody writes the generated level, not even the server.
   begin
     update public.startups set proof_level = 3 where id = sid;
@@ -965,7 +1002,8 @@ begin
     has_function_privilege('authenticated', 'private.startups_reset_owner_verified()', 'EXECUTE'),
     has_function_privilege('anon', 'private.startups_reset_owner_verified()', 'EXECUTE'),
     (select coalesce(array_to_string(proconfig, ','), 'none') from pg_proc where proname = 'startups_reset_owner_verified'),
-    (select pg_get_triggerdef(oid) from pg_trigger where tgname = 'startups_reset_owner_verified'));
+    -- Renamed by 20261019034825 so it fires before startups_public_metrics (T122f).
+    (select pg_get_triggerdef(oid) from pg_trigger where tgname = 'startups_clear_owner_verified_on_website_change'));
 
   -- T127–T131: editable links keep old links (migration 20261008061335_slug_history).
   execute 'reset role';
@@ -1202,9 +1240,10 @@ begin
          revenue_all_time_cents = 19800, visitors_30d = 9, visitors_prev_30d = 6
    where id = pid;
 
-  -- T147: O1 defaults on the first connection: revenue → badge, traffic → exact.
+  -- T147: defaults on the first connection. Since migration 20261015200000_disclosure_default_exact
+  -- (owner decision 2026-10-15) every group starts at exact, so revenue shows its real numbers.
   select to_jsonb(s) into j from public.startups s where id = pid;
-  out := out || format('T147 defaults: disclosure=%s; revenue level=%s mrr=%s provider=%s; traffic level=%s visitors=%s (expect revenue badge + traffic exact; badge, null, stripe; exact, 9) | ',
+  out := out || format('T147 defaults: disclosure=%s; revenue level=%s mrr=%s provider=%s; traffic level=%s visitors=%s (expect revenue exact + traffic exact; exact, 6900, stripe; exact, 9) | ',
     j -> 'metric_disclosure', j ->> 'public_revenue_level', coalesce(j ->> 'public_mrr_cents', 'null'),
     j ->> 'public_verified_provider', j ->> 'public_traffic_level', j ->> 'public_visitors_30d');
 
@@ -1398,6 +1437,12 @@ begin
     out := out || 'T161b client writes a ga4 connection: denied (good) | ';
   end;
   execute 'reset role';
+  -- T104 deletes test user B on purpose (account deletion removes B's messages, A keeps the
+  -- conversation), but T162–T168 below still need B as a project owner. Recreate B with the same
+  -- setup as the opening fixture (auth row → profile via trigger, then the handle), new email.
+  insert into auth.users (id, email, raw_user_meta_data, aud, role)
+  values (b, 'rls-b-again@test.local', '{"full_name":"Tester B"}', 'authenticated', 'authenticated');
+  update public.profiles set handle = 'rls_tester_b' where id = b;
   -- T162–T168: anonymous mode (migration 20261011126000_anonymous_mode). The public row holds
   -- placeholders, the owner reads the real identity, nobody else can, and turning it off restores it.
   perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
