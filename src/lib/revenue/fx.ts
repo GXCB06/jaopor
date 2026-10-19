@@ -46,13 +46,27 @@ const FX_URL = "https://api.frankfurter.dev/v1/latest?from=USD";
 export async function fetchUsdRates(
   fetchImpl: typeof fetch = fetch,
 ): Promise<UsdRates> {
+  return (await fetchUsdRatesDated(fetchImpl)).rates;
+}
+
+/** The rates plus the ECB day they are from ("2026-10-17"), for amounts labelled as estimates. */
+export async function fetchUsdRatesDated(
+  fetchImpl: typeof fetch = fetch,
+): Promise<{ rates: UsdRates; date: string | null }> {
   const res = await fetchImpl(FX_URL, {
     next: { revalidate: 60 * 60 * 6 },
   } as RequestInit);
   if (!res.ok) throw new Error(`FX rates unavailable (${res.status})`);
-  const body = (await res.json()) as { rates: Record<string, number> };
+  const body = (await res.json()) as {
+    rates: Record<string, number>;
+    date?: unknown;
+  };
   const rates: UsdRates = { usd: 1 };
   for (const [code, value] of Object.entries(body.rates))
     rates[code.toLowerCase()] = value;
-  return rates;
+  const date =
+    typeof body.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.date)
+      ? body.date
+      : null;
+  return { rates, date };
 }

@@ -26,8 +26,22 @@ import { cn } from "@/lib/utils";
 // Design.md §5 InfoCard: the profile page is ISR-cached for everyone, so "is the viewer the
 // owner?" is decided in the browser from the session. UI hint only — writes are protected by RLS.
 
-type OwnerCtx = { isOwner: boolean; startupId: number };
-const Ctx = createContext<OwnerCtx>({ isOwner: false, startupId: 0 });
+type OwnerCtx = {
+  isOwner: boolean;
+  startupId: number;
+  /** Null until the session has been read in the browser. */
+  signedIn: boolean | null;
+};
+const Ctx = createContext<OwnerCtx>({
+  isOwner: false,
+  startupId: 0,
+  signedIn: null,
+});
+
+/** The viewer as seen in the browser: owner of this project? signed in at all? */
+export function useOwnerContext(): OwnerCtx {
+  return useContext(Ctx);
+}
 
 export function OwnerProvider({
   ownerId,
@@ -39,12 +53,20 @@ export function OwnerProvider({
   children: React.ReactNode;
 }) {
   const [isOwner, setIsOwner] = useState(false);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
   useEffect(() => {
     createClient()
       .auth.getSession()
-      .then(({ data }) => setIsOwner(data.session?.user.id === ownerId));
+      .then(({ data }) => {
+        setIsOwner(data.session?.user.id === ownerId);
+        setSignedIn(Boolean(data.session));
+      });
   }, [ownerId]);
-  return <Ctx.Provider value={{ isOwner, startupId }}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={{ isOwner, startupId, signedIn }}>
+      {children}
+    </Ctx.Provider>
+  );
 }
 
 /** Renders its children for the owner only (empty-state rule, spec 2.4: visitors see nothing). */

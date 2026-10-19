@@ -58,7 +58,16 @@ import { Link } from "@/i18n/navigation";
 import { PostPreview } from "@/components/posts/PostPreview";
 import { listStartupPostsPublic } from "@/lib/data/posts";
 import { renderNow } from "@/lib/posts";
-import { getThbPerUsd } from "@/lib/data/fx";
+import { getThbPerUsd, getThbPerUsdDated } from "@/lib/data/fx";
+import { getListingStats } from "@/lib/data/listing";
+import { askingPriceUsd, listingMultiple } from "@/lib/listing";
+import { ForSaleBanner } from "@/components/listing/ForSaleBanner";
+import {
+  ForSaleActions,
+  ForSaleReport,
+  ListingViewBeacon,
+  ModeratorListingControl,
+} from "@/components/listing/ForSaleClient";
 import {
   getMoreStartups,
   getProvinceLeaderboard,
@@ -254,6 +263,22 @@ export default async function StartupPage({ params }: Props) {
       ? SOURCE_NAME[startup.verified_provider]
       : null;
 
+  // Design.md "For-sale listing": only while the listing is public (the database decides).
+  const listing = startup.listing ?? null;
+  const [listingStats, fx] = listing
+    ? await Promise.all([getListingStats(startup.id), getThbPerUsdDated()])
+    : [null, null];
+  const listingUsd = listing && fx ? askingPriceUsd(listing.priceThb, fx.rate) : null;
+  const saleMultiple = listing
+    ? listingMultiple({
+        priceThb: listing.priceThb,
+        revenueLevel: startup.disclosure.revenue.level,
+        mrrCents: startup.mrr_cents,
+        isDemo: startup.is_demo,
+        thbPerUsd: fx?.rate ?? thbPerUsd,
+      })
+    : null;
+
   // Design.md §5 Profile layout, no public numbers yet: the early-stage / upgrade card.
   const noNumbers =
     !startup.is_demo &&
@@ -397,6 +422,33 @@ export default async function StartupPage({ params }: Props) {
             <ProjectName name={startup.name} slug={startup.slug} />
           </span>
         </nav>
+
+        {listing && (
+          <>
+            <ForSaleBanner
+              listing={listing}
+              multiple={saleMultiple}
+              multipleSource={verifiedSource}
+              usd={
+                listingUsd !== null
+                  ? { amount: listingUsd, date: fx?.date ?? null }
+                  : null
+              }
+              stats={listingStats}
+              actions={
+                <ForSaleActions
+                  startupId={startup.id}
+                  ownerId={startup.owner_id}
+                  slug={startup.slug}
+                  name={displayName}
+                />
+              }
+              footer={<ForSaleReport startupId={startup.id} />}
+            />
+            <ListingViewBeacon startupId={startup.id} />
+          </>
+        )}
+        <ModeratorListingControl startupId={startup.id} />
 
         <OwnerBar
           done={{

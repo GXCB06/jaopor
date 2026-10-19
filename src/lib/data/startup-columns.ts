@@ -4,6 +4,7 @@ import {
   type DisclosureLevel,
   type MetricGroup,
 } from "@/lib/disclosure";
+import type { PublicListing } from "@/lib/listing";
 import type { Tables } from "@/lib/supabase/database.types";
 import { createPublicClient } from "@/lib/supabase/public";
 
@@ -110,6 +111,17 @@ const PUBLIC_EXTRA = [
   "public_build_commits_band_hi",
 ] as const;
 
+/**
+ * For-sale listing (migration 20261019123207_for_sale_listing): the trigger-filled public copies.
+ * Clients can read nothing else of a listing; they are null / false unless it is public.
+ */
+const LISTING_COLUMNS = [
+  "public_for_sale",
+  "public_asking_price_thb",
+  "public_sale_note",
+  "public_listed_for_sale_at",
+] as const;
+
 /** A range shown at `band` (THB for money, own units otherwise); hi null = "over lo". */
 export type PublicBand = { lo: number; hi: number | null };
 
@@ -165,6 +177,7 @@ export function startupColumns(mode: SchemaMode): string {
         ...STARTUP_BASE_COLUMNS,
         ...Object.values(PUBLIC_TWIN),
         ...PUBLIC_EXTRA,
+        ...LISTING_COLUMNS,
       ].join(", ")
     : "*";
 }
@@ -198,13 +211,18 @@ const level = (v: unknown): GroupDisclosure["level"] =>
 export function normalizeStartup<T extends Loose>(
   mode: SchemaMode,
   row: T,
-): T & Tables<"startups"> & { disclosure: StartupDisclosure } {
+): T &
+  Tables<"startups"> & {
+    disclosure: StartupDisclosure;
+    listing: PublicListing | null;
+  } {
   if (mode === "legacy") {
     const r = row as Loose;
     const has = (v: unknown) => v !== null && v !== undefined;
     const exactIf = (yes: boolean) => (yes ? ("exact" as const) : null);
     return {
       ...row,
+      listing: null,
       disclosure: {
         revenue: {
           level: exactIf(r.verification_status === "verified"),
@@ -235,7 +253,11 @@ export function normalizeStartup<T extends Loose>(
         revenue30dBand: null,
         bandFxDay: null,
       },
-    } as T & Tables<"startups"> & { disclosure: StartupDisclosure };
+    } as T &
+      Tables<"startups"> & {
+        disclosure: StartupDisclosure;
+        listing: PublicListing | null;
+      };
   }
 
   const r = row as Loose;
@@ -245,6 +267,15 @@ export function normalizeStartup<T extends Loose>(
     delete out[pub];
   }
   for (const k of PUBLIC_EXTRA) delete out[k];
+  out.listing =
+    r.public_for_sale === true && typeof r.public_asking_price_thb === "number"
+      ? ({
+          priceThb: r.public_asking_price_thb,
+          note: str(r.public_sale_note),
+          listedAt: str(r.public_listed_for_sale_at),
+        } satisfies PublicListing)
+      : null;
+  for (const k of LISTING_COLUMNS) delete out[k];
   const revenueLevel = level(r.public_revenue_level);
   out.verification_status = revenueLevel ? "verified" : "unverified";
   out.metric_disclosure = {};
@@ -278,5 +309,9 @@ export function normalizeStartup<T extends Loose>(
     ),
     bandFxDay: str(r.public_band_fx_day),
   } satisfies StartupDisclosure;
-  return out as T & Tables<"startups"> & { disclosure: StartupDisclosure };
+  return out as T &
+    Tables<"startups"> & {
+      disclosure: StartupDisclosure;
+      listing: PublicListing | null;
+    };
 }

@@ -55,6 +55,7 @@ export default async function StartupsPage({
   const category = parseList<(typeof CATEGORIES)[number]>(sp.category, isCategory);
   const tool = parseList<(typeof AI_TOOLS)[number]>(sp.tool, isAiTool);
   const verified = one(sp.verified) === "1";
+  const forSale = one(sp.forSale) === "1";
   const type = parseList<ProjectType>(sp.type, (x) =>
     PROJECT_TYPES.includes(x as ProjectType),
   );
@@ -76,6 +77,7 @@ export default async function StartupsPage({
       type,
       lookingFor,
       province,
+      forSale,
       sort,
       page,
     }),
@@ -88,6 +90,7 @@ export default async function StartupsPage({
     category: joinList(category),
     tool: joinList(tool),
     verified: verified ? "1" : undefined,
+    forSale: forSale ? "1" : undefined,
     type: joinList(type),
     lookingFor: joinList(lookingFor),
     province: joinList(province),
@@ -107,7 +110,8 @@ export default async function StartupsPage({
     type.length +
     lookingFor.length +
     province.length +
-    (verified ? 1 : 0);
+    (verified ? 1 : 0) +
+    (forSale ? 1 : 0);
 
   // GET form; each MultiChoice posts one comma-joined field. Changes apply with "Apply".
   const filters = (
@@ -176,6 +180,16 @@ export default async function StartupsPage({
           className="accent-(--brand)"
         />
         {t("verifiedOnly")}
+      </label>
+      <label className="flex items-center gap-2 text-caption">
+        <input
+          type="checkbox"
+          name="forSale"
+          value="1"
+          defaultChecked={forSale}
+          className="accent-(--brand)"
+        />
+        {t("forSaleOnly")}
       </label>
       <div className="flex items-center justify-between gap-2 border-t pt-4">
         <Link

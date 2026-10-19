@@ -5,7 +5,8 @@ import { ProjectName } from "@/components/core/ProjectName";
 import { Link } from "@/i18n/navigation";
 import type { StartupRow } from "@/lib/data/startups";
 import type { LookingFor } from "@/lib/links";
-import { growthPct } from "@/lib/format";
+import { formatMoney, growthPct } from "@/lib/format";
+import type { PublicListing } from "@/lib/listing";
 import { logoUrl } from "@/lib/supabase/logo-url";
 import { cn } from "@/lib/utils";
 import { CopyLinkButton } from "./CopyLinkButton";
@@ -52,6 +53,8 @@ export type CardStartup = Pick<
 > & {
   /** R2 disclosure levels; absent (e.g. the Add-project preview) = every number exact. */
   disclosure?: StartupDisclosure;
+  /** A public for-sale listing (Design.md "For-sale listing"); absent / null = not for sale. */
+  listing?: PublicListing | null;
 };
 
 const compact = (n: number) =>
@@ -161,9 +164,21 @@ function useMetrics(
 function Tag({ startup, large }: { startup: CardStartup; large: boolean }) {
   const t = useTranslations("Card");
   const lf = useTranslations("LookingFor");
+  const sale = useTranslations("ForSale");
   // Compact cards show the demo label under the name (DemoTag) so the name keeps its width.
   if (startup.is_demo)
     return large ? <CornerTag tone="neutral">{t("demo")}</CornerTag> : null;
+  // For sale first (Design.md "For-sale listing" §2): the price stays, even on compact cards.
+  if (startup.listing)
+    return (
+      <CornerTag tone="warning" className="tabular-nums">
+        {sale("cardTag", {
+          price: formatMoney(startup.listing.priceThb, "thb", {
+            compact: true,
+          }),
+        })}
+      </CornerTag>
+    );
   // Compact cards are narrow: the tags shrink to their icon so the name stays readable.
   // Verified revenue only: visitor counts are counted, not verified (Design.md §3).
   if (startup.verification_status === "verified")

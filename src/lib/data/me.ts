@@ -67,6 +67,8 @@ export type RequestRow = {
   /** The other side's private contacts, only after an accepted request (RLS decides). */
   contacts: { line_id: string | null; email: string | null } | null;
   incoming: boolean;
+  /** A "buy" request names the listed project (null once it is gone or unpublished). */
+  startup: { name: string; slug: string } | null;
 };
 
 const PERSON = "id, handle, display_name, avatar_url, headline";
@@ -79,7 +81,8 @@ export async function getMyRequests(userId: string): Promise<RequestRow[]> {
     .select(
       `id, topic, message, status, created_at, from_id, to_id,
        sender:profiles!contact_requests_from_id_fkey(${PERSON}),
-       recipient:profiles!contact_requests_to_id_fkey(${PERSON})`,
+       recipient:profiles!contact_requests_to_id_fkey(${PERSON}),
+       startup:startups!contact_requests_startup_id_fkey(name, slug)`,
     )
     .or(`from_id.eq.${userId},to_id.eq.${userId}`)
     .order("created_at", { ascending: false })
@@ -109,6 +112,7 @@ export async function getMyRequests(userId: string): Promise<RequestRow[]> {
       other: (incoming ? r.sender : r.recipient) ?? null,
       contacts: c ? { line_id: c.line_id, email: c.email } : null,
       incoming,
+      startup: r.startup ?? null,
     };
   });
 }

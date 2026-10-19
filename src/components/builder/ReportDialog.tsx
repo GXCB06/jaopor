@@ -26,7 +26,7 @@ const REASONS = [
 ] as const;
 
 /**
- * Report a user, post or comment: reason + optional note → reports (one per reporter per target).
+ * Report a user, post, comment, message or for-sale listing: reason + optional note → reports (one per reporter per target).
  * With `open` / `onOpenChange` it is controlled (opened from a menu) and renders no trigger.
  */
 export function ReportDialog({
@@ -35,7 +35,7 @@ export function ReportDialog({
   open: controlledOpen,
   onOpenChange,
 }: {
-  targetType: "user" | "post" | "comment" | "message";
+  targetType: "user" | "post" | "comment" | "message" | "listing";
   targetId: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;

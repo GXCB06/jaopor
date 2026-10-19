@@ -196,17 +196,18 @@ export async function deleteComment(id: number): Promise<Result> {
   return { ok: true };
 }
 
-/** One report per person per target (post, comment, user or message); reporting twice is fine.
+/** One report per person per target (post, comment, user, message or listing = startup id);
+ * reporting twice is fine.
  * A message can only be reported by someone in its conversation (enforced by the reports policy). */
 export async function reportTarget(input: {
-  type: "post" | "comment" | "user" | "message";
+  type: "post" | "comment" | "user" | "message" | "listing";
   id: string;
   reason: string;
   note?: string;
 }): Promise<Result> {
   const { supabase, user } = await me();
   if (!user) return { ok: false, error: "signin" };
-  if (!["post", "comment", "user", "message"].includes(input.type))
+  if (!["post", "comment", "user", "message", "listing"].includes(input.type))
     return { ok: false, error: "invalid" };
   if (!REASONS.includes(input.reason)) return { ok: false, error: "invalid" };
   const id = input.id.trim();

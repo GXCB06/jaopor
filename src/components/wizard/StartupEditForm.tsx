@@ -14,6 +14,7 @@ import {
   Loader2Icon,
   QuoteIcon,
   SparklesIcon,
+  TagIcon,
   type LucideIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -77,6 +78,8 @@ import {
 } from "./vocab-options";
 import { VerifyPanel, type ConnectionInfo } from "./VerifyPanel";
 import { DisclosureControl } from "./DisclosureControl";
+import { ForSalePanel, type ForSalePreviewData } from "./ForSalePanel";
+import type { ListingStats, OwnerListing } from "@/lib/data/listing";
 import { VocabCombobox } from "./VocabCombobox";
 import { SOURCE_KIND } from "@/lib/sources/catalog";
 import {
@@ -130,6 +133,7 @@ const SECTIONS = [
   { id: "media", icon: ImageIcon },
   { id: "founder", icon: QuoteIcon },
   { id: "verify", icon: BadgeCheckIcon },
+  { id: "sale", icon: TagIcon },
 ] as const satisfies readonly { id: string; icon: LucideIcon }[];
 type SectionId = (typeof SECTIONS)[number]["id"];
 
@@ -140,6 +144,7 @@ export function StartupEditForm({
   githubLogin,
   screenshots,
   anonymousReady = false,
+  sale = null,
 }: {
   userId: string;
   startup: Tables<"startups"> & {
@@ -150,6 +155,12 @@ export function StartupEditForm({
   };
   /** The anonymous-mode migration is live (else the switch stays hidden). */
   anonymousReady?: boolean;
+  /** For-sale listing (migration for_sale_listing); null leaves the section empty. */
+  sale?: {
+    listing: OwnerListing | null;
+    stats: ListingStats | null;
+    preview: ForSalePreviewData;
+  } | null;
   connections: ConnectionInfo[];
   githubLogin: string | null;
   screenshots: Screenshot[];
@@ -337,6 +348,8 @@ export function StartupEditForm({
       Boolean(f.buildStory.trim()),
     ],
     verify: [connections.length > 0],
+    // Optional: listing a project for sale never counts toward completeness.
+    sale: [],
   };
   // One completeness model (UX audit S-6): what visitors use most weighs most. Verification 30,
   // screenshots 20, description 15, province 10; the other fields share the remaining 25.
@@ -631,7 +644,7 @@ export function StartupEditForm({
               {e(`hint.${id}`)}
             </p>
             {/* DS-3: these two save on their own; everything else waits for the save bar. */}
-            {(id === "media" || id === "verify") && (
+            {(id === "media" || id === "verify" || id === "sale") && (
               <p className="text-2xs text-faint">{e("instantSave")}</p>
             )}
           </div>
@@ -743,7 +756,7 @@ export function StartupEditForm({
                   >
                     <Icon className="size-3.5 shrink-0" aria-hidden="true" />
                     <span className="flex-1">{e(`section.${id}`)}</span>
-                    {complete ? (
+                    {d.length === 0 ? null : complete ? (
                       <CheckCircle2Icon
                         className="size-3.5 shrink-0 text-positive"
                         aria-label={e("complete")}
@@ -1410,6 +1423,20 @@ export function StartupEditForm({
                     initialLevels={startup.levels ?? {}}
                   />
                 </div>
+              )}
+            </div>,
+          )}
+
+          {section(
+            "sale",
+            <div id="for-sale" className="scroll-mt-24 sm:col-span-2">
+              {sale && (
+                <ForSalePanel
+                  startupId={startup.id}
+                  initial={sale.listing}
+                  stats={sale.stats}
+                  preview={sale.preview}
+                />
               )}
             </div>,
           )}

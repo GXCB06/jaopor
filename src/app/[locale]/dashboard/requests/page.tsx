@@ -70,6 +70,14 @@ export default async function RequestsPage({
               <b className="font-semibold">{t("deletedUser")}</b>
             )}
             <span className="text-faint">· {t(`topics.${r.topic}`)}</span>
+            {r.startup && (
+              <Link
+                href={`/startup/${r.startup.slug}`}
+                className="text-faint hover:text-foreground hover:underline"
+              >
+                · {r.startup.name}
+              </Link>
+            )}
             <span
               className={cn(
                 "rounded-full border px-1.5 text-3xs",

@@ -15,6 +15,7 @@ import {
   type OlympicSource,
   type ProvinceRank,
 } from "@/lib/olympics";
+import type { PublicListing } from "@/lib/listing";
 import type { Tables } from "@/lib/supabase/database.types";
 import { createPublicClient } from "@/lib/supabase/public";
 import {
@@ -40,6 +41,8 @@ export type Owner = Pick<
 export type StartupRow = Tables<"startups"> & {
   owner: Owner | null;
   disclosure: StartupDisclosure;
+  /** For-sale listing while it is public, else null (Design.md "Proposal — For-sale listing"). */
+  listing?: PublicListing | null;
 };
 
 // Named FK: startup_members also links startups and profiles (many-to-many), so the plain embed
@@ -167,6 +170,7 @@ export const DIRECTORY_SORTS = [
   "visitors",
   "commits",
   "newest",
+  "price",
 ] as const;
 export type DirectorySort = (typeof DIRECTORY_SORTS)[number];
 /** Project type filter: "app" matches App Store or Google Play. */
@@ -182,6 +186,8 @@ export type DirectoryFilters = {
   type?: ProjectType | ProjectType[];
   lookingFor?: LookingFor | LookingFor[];
   province?: string | string[];
+  /** Public for-sale listings only ("เปิดขาย"). */
+  forSale?: boolean;
   sort?: DirectorySort;
   page?: number;
 };
@@ -191,6 +197,7 @@ const SORT_COLUMN = {
   visitors: "visitors_30d",
   commits: "build_commits",
   newest: "created_at",
+  price: "public_asking_price_thb",
 } as const;
 
 export const PAGE_SIZE = 24;
@@ -222,6 +229,11 @@ export async function listStartups(
   if (filters.verified) query = withRevenueShown(mode, query);
   if (lookingFor.length) query = query.overlaps("looking_for", lookingFor);
   if (types.length) query = query.or(typeFilter(types));
+  // For-sale listings exist only in the public schema (public_for_sale is trigger-maintained).
+  if (filters.forSale) {
+    if (mode !== "public") return { rows: [], total: 0 };
+    query = query.eq("public_for_sale", true);
+  }
   if (filters.q) {
     // Strip PostgREST filter syntax characters before building the OR expression.
     const term = filters.q
@@ -235,13 +247,24 @@ export async function listStartups(
       );
   }
   const page = Math.max(1, filters.page ?? 1);
+  const sort = filters.sort ?? "mrr";
+  // "Price": cheapest listing first, unlisted projects (no public price) last.
+  if (sort === "price") {
+    if (mode !== "public") return { rows: [], total: 0 };
+    const { data, error, count } = await query
+      .order("public_asking_price_thb", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+    if (error) throw error;
+    return { rows: rows(mode, data), total: count ?? 0 };
+  }
   // Round 3 "verified first": verified numbers, then owner verified, then the rest (demos last).
   // "Newest" stays purely chronological.
-  if ((filters.sort ?? "mrr") !== "newest")
+  if (sort !== "newest")
     query = query.order(metricColumn(mode, "proof_level"), {
       ascending: false,
     });
-  const sortBy = SORT_COLUMN[filters.sort ?? "mrr"];
+  const sortBy = SORT_COLUMN[sort];
   // R2: a hidden value never orders (public columns are null below exact, so it sorts last).
   const { data, error, count } = await query
     .order(sortBy === "created_at" ? sortBy : metricColumn(mode, sortBy), {

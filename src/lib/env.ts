@@ -30,4 +30,15 @@ export const serverEnv = {
    */
   ga4ServiceAccount: () =>
     process.env.GA4_SERVICE_ACCOUNT_JSON?.trim() || undefined,
+  /**
+   * Optional: the moderators (owner decision 2026-10-19), comma-separated user ids. They can hide
+   * or restore a for-sale listing; there is no admin UI in v1. Unset → nobody can.
+   */
+  moderatorUserIds: (): string[] =>
+    (process.env.MODERATOR_USER_IDS ?? "")
+      .split(",")
+      .map((id) => id.trim().toLowerCase())
+      .filter((id) =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id),
+      ),
 };

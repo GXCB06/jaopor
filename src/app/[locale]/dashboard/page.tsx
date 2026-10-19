@@ -443,6 +443,7 @@ export default async function DashboardPage({
                           <span className="text-faint">
                             {" "}
                             · {t(`topics.${r.topic}`)}
+                            {r.startup && ` · ${r.startup.name}`}
                           </span>
                         </span>
                         <span className="line-clamp-2 text-muted-foreground">

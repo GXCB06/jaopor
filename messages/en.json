@@ -179,14 +179,16 @@
       "mrr": "Top MRR",
       "visitors": "Most visitors",
       "commits": "Most commits",
-      "newest": "Newest"
+      "newest": "Newest",
+      "price": "Lowest price"
     },
     "province": "Province",
     "allProvinces": "All provinces",
     "welcomeTitle": "Welcome to JaoPor 👋",
     "welcomeBody": "Look around at what Thai builders are making. Building something yourself, however small? Add it whenever you're ready.",
     "welcomeCta": "Add my project",
-    "welcomeClose": "Close welcome message"
+    "welcomeClose": "Close welcome message",
+    "forSaleOnly": "For sale only"
   },
   "Profile": {
     "teamProject": "By the JaoPor team · not ranked",
@@ -967,7 +969,8 @@
       "stack": "Tech & marketing",
       "media": "Images & video",
       "founder": "Founder",
-      "verify": "Verify numbers"
+      "verify": "Verify numbers",
+      "sale": "For sale"
     },
     "hint": {
       "basics": "Name, tagline and a short description people see first",
@@ -976,7 +979,8 @@
       "stack": "What you built it with and where customers come from",
       "media": "Screenshots sell a project best; the first one is the cover",
       "founder": "Your story: why you built it, and who you hope it reaches",
-      "verify": "Connect payments, analytics or GitHub so your numbers are trusted"
+      "verify": "Connect payments, analytics or GitHub so your numbers are trusted",
+      "sale": "Set a price and hear from interested buyers (optional)"
     },
     "sectionsLabel": "Profile sections",
     "progress": "Profile {pct}% complete",
@@ -1377,7 +1381,8 @@
       "cofounder": "Co-founder",
       "job": "Job",
       "collab": "Collaboration",
-      "other": "Other"
+      "other": "Other",
+      "buy": "Acquisition"
     },
     "morePending": "+{n} more waiting",
     "contactsNote": "LINE / email are shown only after you accept",
@@ -1665,7 +1670,8 @@
       "cofounder": "Co-founder",
       "job": "Job",
       "collab": "Collaboration",
-      "other": "Other"
+      "other": "Other",
+      "buy": "Acquisition"
     },
     "message": "Message",
     "messagePh": "Hi! I'm working on…",
@@ -1791,7 +1797,8 @@
       "user": "Report this user",
       "post": "Report this post",
       "comment": "Report this comment",
-      "message": "Report this message"
+      "message": "Report this message",
+      "listing": "Report this listing"
     },
     "breadcrumb": "Breadcrumb",
     "breadcrumbBuilders": "Builders",
@@ -2331,5 +2338,87 @@
     "placeholder": "Type a category, e.g. games, education, shop",
     "noMatch": "No such category. Try another word or pick “Other”.",
     "popular": "Popular categories"
+  },
+  "ForSale": {
+    "title": "For sale",
+    "askingPrice": "Owner's asking price {price}",
+    "usdEstimate": "(≈ {usd} estimate at the {date} rate)",
+    "usdEstimateNoDate": "(≈ {usd} estimate at today's rate)",
+    "multiple": "Asking ≈ {n}× annualized MRR (MRR × 12)",
+    "multipleOver": "Asking > 100× annualized MRR (MRR × 12)",
+    "multipleUnder": "Asking < 0.1× annualized MRR (MRR × 12)",
+    "multipleHelpLabel": "What is this multiple?",
+    "multipleHelp": "MRR × 12 annualizes today's recurring revenue. It isn't money already collected, and it isn't a valuation.",
+    "multipleSource": "MRR verified via {source}",
+    "views": "{n, plural, one {# view} other {# views}}",
+    "viewsHelp": "Each viewer counts once a day, since the latest listing began",
+    "interested": "{n, plural, one {# interested buyer} other {# interested buyers}}",
+    "listedSince": "Listed since {date}",
+    "contact": "Contact the seller",
+    "edit": "Edit listing",
+    "dialogTitle": "Contact the seller of {name}",
+    "dialogHint": "Say who you are, what interests you and a rough budget. Contact details appear once the owner accepts.",
+    "message": "Message",
+    "messagePh": "Hi, I'm interested in buying this…",
+    "send": "Send request",
+    "sent": "Request sent to the seller",
+    "rules": "Up to 5 requests a day · Not a binding offer; JaoPor isn't a party to any sale",
+    "cardTag": "For sale {price}",
+    "errors": {
+      "empty": "Write a message first",
+      "signin": "Sign in first",
+      "self": "This is your own project",
+      "pending": "You already have a request waiting for this owner",
+      "limit": "You've sent 5 requests today. Try again tomorrow",
+      "unavailable": "This listing is no longer open",
+      "invalid": "Something's wrong with that request",
+      "failed": "Couldn't send. Try again"
+    },
+    "owner": {
+      "switchLabel": "List this project for sale",
+      "intro": "Set an asking price. The listing then shows on the project page, its card and the \"For sale\" filter; buyers reach you through a contact request.",
+      "price": "Asking price (THB)",
+      "priceHint": "Whole baht, ฿1 to ฿1,000,000,000 · shown as \"Owner's asking price\"",
+      "note": "Reason for selling",
+      "notePh": "e.g. no time to run it, moving on to a new project",
+      "noteMultiple": "The price-to-MRR × 12 multiple shows only when MRR is verified and shown as an exact number",
+      "noteUsd": "The price is stored in baht; dollar amounts are shown as estimates only",
+      "noteContact": "Buyers send an \"Acquisition\" contact request to your requests inbox",
+      "preview": "What visitors see",
+      "previewOff": "Off: visitors don't see a listing (price and reason are kept as a draft)",
+      "previewPrivate": "This project is private; the listing shows once it's published",
+      "stats": "{views} views · {interested} interested",
+      "save": "Save listing",
+      "saved": "Listing saved",
+      "hiddenTitle": "A moderator hid this listing",
+      "hiddenReason": "Reason: {reason}",
+      "hiddenBody": "The project page still shows. Switching the listing off and on won't bring it back.",
+      "hiddenContact": "Contact the JaoPor team",
+      "errors": {
+        "price": "The price must be a whole number from 1 to 1,000,000,000 baht",
+        "priceRequired": "Add a price before listing",
+        "note": "The reason can be up to 280 characters",
+        "signin": "Sign in first",
+        "forbidden": "You can't edit this project",
+        "failed": "Couldn't save. Try again"
+      }
+    },
+    "mod": {
+      "label": "Moderator · listing",
+      "shown": "shown",
+      "hidden": "hidden",
+      "hide": "Hide listing",
+      "restore": "Show listing again",
+      "reason": "Reason (the owner sees it)",
+      "confirmHide": "Hide listing",
+      "hiddenDone": "Listing hidden",
+      "restoredDone": "Listing shown again",
+      "errors": {
+        "reason": "Add a reason (up to 500 characters)",
+        "forbidden": "Moderators only",
+        "invalid": "Something's wrong with that request",
+        "failed": "Didn't work. Try again"
+      }
+    }
   }
 }

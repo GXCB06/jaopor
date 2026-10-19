@@ -8,6 +8,10 @@ import { getConnections, getGithubLogin } from "@/lib/data/connections";
 import type { Screenshot } from "@/lib/media";
 import { createClient } from "@/lib/supabase/server";
 import { AnonymousChip } from "@/components/core/AnonymousChip";
+import { getThbPerUsdDated } from "@/lib/data/fx";
+import { getListingStats, getOwnerListing } from "@/lib/data/listing";
+import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
+import { createPublicClient } from "@/lib/supabase/public";
 
 export const metadata = { robots: { index: false } };
 
@@ -26,8 +30,17 @@ export default async function EditStartupPage({
     : null;
   if (!startup || startup.owner_id !== userId) notFound();
 
-  const [t, connections, githubLogin, shots, anonymousReady] =
-    await Promise.all([
+  const [
+    t,
+    connections,
+    githubLogin,
+    shots,
+    anonymousReady,
+    listing,
+    listingStats,
+    fx,
+    publicRevenue,
+  ] = await Promise.all([
       getTranslations("Profile"),
       getConnections(startup.id),
       getGithubLogin(),
@@ -39,7 +52,19 @@ export default async function EditStartupPage({
         .order("position")
         .order("id"),
       anonymousModeReady(),
+      // For-sale listing: ownership is checked above, so the raw fields may be shown.
+      getOwnerListing(startup.id),
+      getListingStats(startup.id),
+      getThbPerUsdDated(),
+      // The preview uses what visitors see (public copies; nothing while the project is private).
+      createPublicClient()
+        .from("startups")
+        .select("public_revenue_level, public_mrr_cents, public_verified_provider")
+        .eq("id", startup.id)
+        .maybeSingle(),
     ]);
+  const pub = publicRevenue.data;
+  const level = pub?.public_revenue_level;
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-8">
@@ -58,6 +83,26 @@ export default async function EditStartupPage({
         githubLogin={githubLogin}
         screenshots={(shots.data ?? []) as Screenshot[]}
         anonymousReady={anonymousReady}
+        sale={{
+          listing,
+          stats: listingStats,
+          preview: {
+            status: startup.status,
+            isDemo: startup.is_demo,
+            revenueLevel:
+              level === "exact" ||
+              level === "band" ||
+              level === "growth" ||
+              level === "badge"
+                ? level
+                : null,
+            mrrCents: pub?.public_mrr_cents ?? null,
+            source: isSource(pub?.public_verified_provider)
+              ? SOURCE_NAME[pub.public_verified_provider]
+              : null,
+            fx,
+          },
+        }}
       />
     </main>
   );
