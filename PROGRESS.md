@@ -24,7 +24,10 @@
 
 - **Visitor counting for JaoPor itself (found while checking the snippet):** project 105 lists `https://jaopor-landing.vercel.app/` as its website, but visitors use `jaopor.vercel.app`, and `/api/collect` only accepts beacons from the listed domain, so nothing has been counted since 2026-10-12. The landing repo now has the snippet in its `<head>` (commit 1b77130 in jaopor-landing, not pushed; the real `hasOwnerSnippet` passes on its built th / en HTML).
 
-**Next:** owner: push the landing; switch project 105's website to `https://jaopor.vercel.app` so the app's and the homepage's beacons both count; test a buy request from a second account; set `MODERATOR_USER_IDS`.
+- **Done 2026-10-20 (owner-approved, database):** both repos pushed and deployed (app `4f31e01`, landing `1b77130`). Project 105 `website_url` → `https://jaopor.vercel.app` (was `https://jaopor-landing.vercel.app/`; no visitor rows for 9 days confirmed the cause). The collect route also needs `owner_verified_at`, which had been cleared by the earlier website change; the owner's "ตรวจอีกครั้ง" press never reached `syncSource` (no `provider_connections` request in the Supabase API logs), so after the real `findOwnerSnippet("https://jaopor.vercel.app", "105")` returned `found`, `owner_verified_at` was set by SQL (owner: "ทำข้อ 2 เลย"). First visitor row recorded 2026-10-20.
+- **Button not yet explained:** without a session the PATCH route answers 401 as designed (same-origin gate passes); Vercel runtime logs return 403 to Claude, so the failing step (401 sign-in vs 404 owner) can't be seen.
+
+**Next:** find why "ตรวจอีกครั้ง" stopped before `syncSource` (owner shares the toast text, or Vercel log access); owner tests a buy request from a second account; sets `MODERATOR_USER_IDS`.
 
 ## 2026-10-19 — For-sale listing v1 UI: banner, card tag, directory filter + price sort, owner section, buy request, view count, moderator control
 
