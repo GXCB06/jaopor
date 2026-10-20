@@ -12,6 +12,19 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-20 — Sticky sale pill on the project page; first live listing checked
+
+**Done** (owner: the sale badge should follow the scroll, like the navbar):
+
+- StickyIdentity (the bar that slides under the site header once the name scrolls away) now carries an amber "ขาย ฿30,000" pill (compact "ขาย ฿30k" below `sm`) while the listing is public. It links to the banner (`#for-sale`, `scroll-mt-28`), where "ติดต่อผู้ขาย" is. No second sticky bar. Spec added to Design.md first.
+- First live listing (owner, JaoPor, ฿30,000) checked on production: banner th / en, "≈ 1.3× MRR × 12" (MRR $59), USD estimate in USD mode, directory filter finds it, card tag "ขาย ฿30K", no horizontal scroll. The 6 views recorded so far are Claude's automated checks (owner decides whether to clear them).
+
+**Files:** `src/app/[locale]/startup/[slug]/page.tsx`, `src/components/listing/ForSaleBanner.tsx`, `Design.md`
+**Verified:** typecheck ✓ · lint ✓ · unit 730 passed / 17 skipped · build ✓ · e2e 125 passed / 21 skipped · Playwright on the local page (production data): after scrolling the pill shows at 1280 and 375; clicking it brings the banner to 126 px from the top (under header + bar); no horizontal scroll.
+- **Visitor counting for JaoPor itself (found while checking the snippet):** project 105 lists `https://jaopor-landing.vercel.app/` as its website, but visitors use `jaopor.vercel.app`, and `/api/collect` only accepts beacons from the listed domain, so nothing has been counted since 2026-10-12. The landing repo now has the snippet in its `<head>` (commit 1b77130 in jaopor-landing, not pushed; the real `hasOwnerSnippet` passes on its built th / en HTML).
+
+**Next:** owner: push the landing; switch project 105's website to `https://jaopor.vercel.app` so the app's and the homepage's beacons both count; test a buy request from a second account; set `MODERATOR_USER_IDS`.
+
 ## 2026-10-19 — For-sale listing v1 UI: banner, card tag, directory filter + price sort, owner section, buy request, view count, moderator control
 
 **Done** (owner: "carry straight on with the UI and commit it all together at the end"; spec: Design.md "For-sale listing", built 2026-10-19):

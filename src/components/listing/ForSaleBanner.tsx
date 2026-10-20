@@ -19,6 +19,7 @@ export function ForSaleBanner({
   stats,
   actions,
   footer,
+  id,
   className,
 }: {
   listing: PublicListing;
@@ -30,6 +31,8 @@ export function ForSaleBanner({
   stats: { views: number; interested: number } | null;
   actions?: React.ReactNode;
   footer?: React.ReactNode;
+  /** Anchor for the sticky sale pill (`#for-sale`); it lands under the header + sticky bar. */
+  id?: string;
   className?: string;
 }) {
   const t = useTranslations("ForSale");
@@ -62,9 +65,10 @@ export function ForSaleBanner({
 
   return (
     <section
+      id={id}
       aria-labelledby="for-sale-title"
       className={cn(
-        "space-y-3 rounded-2xl border border-warning/40 bg-warning/5 p-4 sm:p-5",
+        "scroll-mt-28 space-y-3 rounded-2xl border border-warning/40 bg-warning/5 p-4 sm:p-5",
         className,
       )}
     >

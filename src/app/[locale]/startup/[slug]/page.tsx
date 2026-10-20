@@ -5,6 +5,7 @@ import {
   FlaskConicalIcon,
   MapPinIcon,
   EyeOffIcon,
+  TagIcon,
   UsersIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -77,7 +78,7 @@ import {
   getScreenshots,
   getStartupBySlug,
 } from "@/lib/data/startups";
-import { money, moneyFull } from "@/lib/format";
+import { formatMoney, money, moneyFull } from "@/lib/format";
 import { projectLinks, websiteHost } from "@/lib/links";
 import { publicEnv } from "@/lib/public-env";
 import { cn } from "@/lib/utils";
@@ -200,6 +201,7 @@ export default async function StartupPage({ params }: Props) {
     listStartupPostsPublic(startup.id, 3).catch(() => []),
     getTranslations("Anonymous"),
   ]);
+  const sale = await getTranslations("ForSale");
   // Design.md §5 Anonymous projects: the public row only holds placeholders.
   const anonymous = isAnonymousSlug(startup.slug);
   const displayName = anonymous ? an("name") : startup.name;
@@ -426,6 +428,7 @@ export default async function StartupPage({ params }: Props) {
         {listing && (
           <>
             <ForSaleBanner
+              id="for-sale"
               listing={listing}
               multiple={saleMultiple}
               multipleSource={verifiedSource}
@@ -479,6 +482,27 @@ export default async function StartupPage({ params }: Props) {
           <p className="min-w-0 flex-1 truncate text-sm font-bold">
             <ProjectName name={startup.name} slug={startup.slug} />
           </p>
+          {/* Design.md "For-sale listing": the sale badge follows the scroll in this bar. */}
+          {listing && (
+            <a
+              href="#for-sale"
+              className="inline-flex h-7 shrink-0 items-center gap-1 rounded-md border border-warning/40 bg-warning/10 px-2 text-caption font-semibold text-warning tabular-nums hover:bg-warning/15"
+            >
+              <TagIcon className="size-3.5" aria-hidden="true" />
+              <span className="sm:hidden">
+                {sale("cardTag", {
+                  price: formatMoney(listing.priceThb, "thb", {
+                    compact: true,
+                  }),
+                })}
+              </span>
+              <span className="max-sm:hidden">
+                {sale("cardTag", {
+                  price: formatMoney(listing.priceThb, "thb"),
+                })}
+              </span>
+            </a>
+          )}
           {primary && (
             <a
               href={primary.url}
