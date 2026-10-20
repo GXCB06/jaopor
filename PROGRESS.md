@@ -21,6 +21,7 @@
 
 **Files:** `src/app/[locale]/startup/[slug]/page.tsx`, `src/components/listing/ForSaleBanner.tsx`, `Design.md`
 **Verified:** typecheck ✓ · lint ✓ · unit 730 passed / 17 skipped · build ✓ · e2e 125 passed / 21 skipped · Playwright on the local page (production data): after scrolling the pill shows at 1280 and 375; clicking it brings the banner to 126 px from the top (under header + bar); no horizontal scroll.
+
 - **Visitor counting for JaoPor itself (found while checking the snippet):** project 105 lists `https://jaopor-landing.vercel.app/` as its website, but visitors use `jaopor.vercel.app`, and `/api/collect` only accepts beacons from the listed domain, so nothing has been counted since 2026-10-12. The landing repo now has the snippet in its `<head>` (commit 1b77130 in jaopor-landing, not pushed; the real `hasOwnerSnippet` passes on its built th / en HTML).
 
 **Next:** owner: push the landing; switch project 105's website to `https://jaopor.vercel.app` so the app's and the homepage's beacons both count; test a buy request from a second account; set `MODERATOR_USER_IDS`.
