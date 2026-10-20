@@ -12,6 +12,17 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-20 — Sources route logs each refused request (to trace the "ตรวจอีกครั้ง" button)
+
+**Done** (owner: "sure go on", option 3):
+
+- `/api/startups/[id]/sources/[source]` now writes one `console.warn` per refused request: method, source (sanitised, ≤ 32 chars), step (`same-origin` / `params` / `session` / `owner` / `cooldown`) and status. A 401 also says whether a Supabase auth cookie was sent at all (`auth-cookie=true|false`), to tell "not sent" from "expired". A failed PATCH sync logs its error code. No user id, key or body is logged.
+- Why: the owner's press on 2026-10-20 never reached `syncSource`, and Claude can't read Vercel's logs (403), so the failing step couldn't be seen.
+
+**Files:** `src/app/api/startups/[id]/sources/[source]/route.ts`
+**Verified:** typecheck ✓ · lint ✓ · unit 730 passed / 17 skipped. Behaviour unchanged (same responses); only log lines added.
+**Next:** next time a button fails, the owner opens Vercel → jaopor → Logs and filters for `[sources]`; that line names the step. Fix the cause then.
+
 ## 2026-10-20 — Sticky sale pill on the project page; first live listing checked
 
 **Done** (owner: the sale badge should follow the scroll, like the navbar):

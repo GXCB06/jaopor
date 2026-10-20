@@ -23,6 +23,31 @@ export const maxDuration = 120;
 const REFRESH_COOLDOWN_MS = 10 * 60 * 1000;
 const MAX_FIELD = 500;
 
+/**
+ * One line in the Vercel logs per refused request, so a button that "does nothing" can be traced
+ * (2026-10-20: a JaoPor "ตรวจอีกครั้ง" press never reached syncSource and the step was unknowable).
+ * Method, source, step and status only: never the user, the key or the request body.
+ */
+function refused(
+  req: Request,
+  source: string,
+  step: string,
+  res: Response,
+  extra = "",
+): Response {
+  // `source` may be unvalidated (it comes from the URL): keep it short and plain in the log.
+  const safe = source.replace(/[^a-z0-9_-]/gi, "?").slice(0, 32);
+  console.warn(
+    `[sources] ${req.method} ${safe} refused at ${step} (${res.status})${extra}`,
+  );
+  return res;
+}
+
+/** Whether the request carried a Supabase auth cookie at all (tells "not sent" from "expired"). */
+function hasAuthCookie(req: Request): boolean {
+  return /(?:^|;\s*)sb-[^=]*-auth-token/.test(req.headers.get("cookie") ?? "");
+}
+
 const VERIFY_CODE_SET = new Set<string>(VERIFY_CODES);
 const VERIFY_SOURCE_SET = new Set<string>(VERIFY_SOURCES);
 
@@ -66,16 +91,34 @@ function logVerifyResult(
 type Ctx = RouteContext<"/api/startups/[id]/sources/[source]">;
 
 async function authorize(req: Request, ctx: Ctx) {
-  if (!isSameOriginJson(req))
-    return { error: json({ error: "bad_request" }, 400) };
   const { id, source } = await ctx.params;
+  if (!isSameOriginJson(req))
+    return {
+      error: refused(
+        req,
+        source,
+        "same-origin",
+        json({ error: "bad_request" }, 400),
+      ),
+    };
   const startupId = Number(id);
   if (!Number.isSafeInteger(startupId) || startupId <= 0 || !isSource(source))
-    return { error: json({ error: "not_found" }, 404) };
+    return {
+      error: refused(req, source, "params", json({ error: "not_found" }, 404)),
+    };
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims.sub;
-  if (!userId) return { error: json({ error: "unauthorized" }, 401) };
+  if (!userId)
+    return {
+      error: refused(
+        req,
+        source,
+        "session",
+        json({ error: "unauthorized" }, 401),
+        ` auth-cookie=${hasAuthCookie(req)}`,
+      ),
+    };
   return { startupId, userId, source: source as SourceId };
 }
 
@@ -145,7 +188,12 @@ export async function PATCH(req: Request, ctx: Ctx) {
     .eq("id", auth.startupId)
     .maybeSingle();
   if (!startup || startup.owner_id !== auth.userId)
-    return json({ error: "not_found" }, 404);
+    return refused(
+      req,
+      auth.source,
+      "owner",
+      json({ error: "not_found" }, 404),
+    );
 
   const { data: conn } = await admin
     .from("provider_connections")
@@ -156,12 +204,19 @@ export async function PATCH(req: Request, ctx: Ctx) {
   const last = conn?.last_synced_at ? Date.parse(conn.last_synced_at) : 0;
   const waitMs = last + REFRESH_COOLDOWN_MS - Date.now();
   if (waitMs > 0)
-    return json(
-      { error: "cooldown", retryAfterSeconds: Math.ceil(waitMs / 1000) },
-      429,
+    return refused(
+      req,
+      auth.source,
+      "cooldown",
+      json(
+        { error: "cooldown", retryAfterSeconds: Math.ceil(waitMs / 1000) },
+        429,
+      ),
     );
 
   const result = await syncSource(admin, auth.startupId, auth.source);
+  if (!result.ok)
+    console.warn(`[sources] PATCH ${auth.source} sync failed: ${result.code}`);
   // A waiting JaoPor snippet has never synced, so this cooldown doesn't apply to it; its "check
   // again" is rate-limited per project inside syncSource (checkOwner, shared by every instance).
   return result.ok
