@@ -1,4 +1,6 @@
--- Add-startup wizard v4 (Design.md §5, owner 2026-10-25). DRAFT for owner review: NOT applied.
+-- Add-startup wizard v4 (Design.md §5, owner 2026-10-25). Owner-approved and applied 2026-10-25
+-- (remote version 20261025030932) after a rolled-back dry-run on production (RLS smoke 248 lines,
+-- no BAD; T191-T193 good). The stored SQL matched this file (md5) before this header was updated.
 --
 -- 1. A new project starts as a private draft: clients may now set `status` on insert, limited to
 --    'published' or 'private' (the moderators' 'hidden' stays server-only, as on update in
