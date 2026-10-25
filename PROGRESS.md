@@ -12,6 +12,31 @@
 > **Next:** the immediate follow-up
 > ```
 
+## 2026-10-25 — Add-startup wizard v4 (drafts, every field, AI autofill, celebration), missions + welcome tour, video links in the feed (migration drafted, NOT applied)
+
+**Done** (owner 2026-10-25: few users, listings incomplete, "no skip / later", AI autofill everywhere, a celebration, a tutorial + missions, video in the feed; decided: every product field required + ≥ 1 verified source, Gemini, video by link):
+
+- **Data first (read-only):** 10 users, 5 real projects; 2 with screenshots, 3 with a description, 1 with a connected source. Funnel (30 d): 6 opened → 4 created → 4 finished. Small sample; the bigger problem is reach.
+- **Wizard v4** (Design.md §5): 4 steps, ① ลงผลงาน → ② รายละเอียด → ③ ภาพผลงาน → ④ ยืนยันตัวเลข.
+  - Step 1 creates the project as a **private draft** (`status = 'private'`); tagline and logo are now required.
+  - Step 2 `WizardDetailsStep`: loads the draft, runs Gemini autofill once for every empty field, "ยังขาด: …" until description, value, problem, audience, pricing, AI tools (≥ 1), stack (≥ 1) and founded month are filled; team size and funding optional, unlabelled.
+  - Step 3: ScreenshotsManager, ≥ 1 to continue. Step 4: VerifyPanel; "เผยแพร่ผลงาน" only once a source is connected; no skip.
+  - Publish → `published` + revalidate → `PublishCelebration` (CSS keyframes `celebrate-pop` / `confetti-fall`, tokens, reduced-motion safe, Esc / click) → the profile with the share dialog.
+  - Resume: `/new?draft={id}` (the owner's own private draft) opens at its first incomplete step; the dashboard shows "ร่าง · ทำต่อให้เสร็จ".
+  - No "skip / later" wording left in the wizard; onboarding also lost its skip button and "เพิ่มทีหลัง" hints (headline + province and ≥ 1 skill required; `quick` only changes the last button).
+  - Funnel: new `add_step` (choice `details` / `media` / `verify`); `add_finished.skipped` is always false now.
+- **AI autofill (phase B):** `lib/autofill.ts` schema, prompt and strict parser gain `aiTools` (only tools the page names) and `founded` (YYYY-MM, only a stated date, 1990 to this month); tests.
+- **Missions + tour (phase C):** the dashboard's setup checklist became "ภารกิจเจ้าพ่อ" (7 missions: ลงผลงานแรก · ยืนยันตัวเลข · โปรไฟล์ครบ · โพสต์อัปเดตแรก · ติดตามคนสร้าง 3 คน · ดูอันดับจังหวัด · แชร์หน้าผลงาน); 1–5 counted server-side (`lib/missions.ts` + tests), 6–7 are browser flags set on /olympics and when the share dialog opens. `WelcomeTour`: 4 slides once per browser.
+- **Feed video (phase D):** `feedVideoEmbed` (YouTube incl. Shorts / Live, TikTok, Loom, Facebook videos / watch / Reels / fb.watch; tests) → `PostVideo` plays in the post (click to load, OG image as poster, 9:16 for vertical clips); composer hint.
+- **Migration** `20261025021918_wizard_v4_drafts` (drafted, **not applied**): insert grant on `status` + trigger allowing only `published` / `private` from clients; funnel `add_step` (event check + `private.log_add_event`). RLS smoke T191–T193 added. The new wizard code needs it live before deploy.
+
+**Files:** `supabase/migrations/20261025021918_wizard_v4_drafts.sql` (new), `supabase/tests/rls_smoke.sql`, `src/components/wizard/{StartupWizard,WizardParts,WizardDetailsStep,PublishCelebration}.tsx`, `src/components/profile-edit/OnboardingFlow.tsx`, `src/components/dashboard/{MissionsCard,WelcomeTour}.tsx`, `src/components/core/MissionMark.tsx`, `src/components/posts/{PostCard,PostVideo,Composer}.tsx`, `src/components/share/ShareStudio.tsx`, `src/app/[locale]/{new,dashboard,dashboard/startups,olympics}/page.tsx`, `src/lib/{wizard-details,missions,autofill,media}.ts` (+ tests), `src/lib/analytics/{funnel-types,add-funnel.test}.ts`, `src/app/globals.css`, `messages/{th,en}.json`, `Design.md`, `Project.md`
+**Verified:**
+
+- typecheck ✓ · lint ✓ · unit 740 passed / 17 skipped (17 new) · build ✓ · e2e 125 passed / 21 skipped (a first run had one Olympics dropdown timeout from a dev-server "Unexpected end of JSON input" on first compile; it passed alone and on a full rerun).
+- Visual (Playwright, dark, 1280 + 375, temporary local fixture page, deleted): stepper (steps 2 and 4), details step with real JaoPor data, upload area, missions card, tour slide 1, celebration, 16:9 and 9:16 video players; no horizontal scroll. The real flow needs sign-in and the migration, so it is checked on production after the apply.
+  **Next:** owner approves the migration (rolled-back dry-run, then apply, advisors, RLS smoke, types) → push → walk through the real wizard on production.
+
 ## 2026-10-20 — Sources route logs each refused request (to trace the "ตรวจอีกครั้ง" button)
 
 **Done** (owner: "sure go on", option 3):
