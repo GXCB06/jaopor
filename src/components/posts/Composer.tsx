@@ -212,14 +212,17 @@ export function Composer({
         )}
 
         {showLink && (
-          <input
-            value={link}
-            inputMode="url"
-            placeholder={t("linkPh")}
-            aria-label={t("linkLabel")}
-            onChange={(e) => setLink(e.target.value)}
-            className={cn(inputClass, "sm:ml-12 sm:w-[calc(100%-3rem)]")}
-          />
+          <>
+            <input
+              value={link}
+              inputMode="url"
+              placeholder={t("linkPh")}
+              aria-label={t("linkLabel")}
+              onChange={(e) => setLink(e.target.value)}
+              className={cn(inputClass, "sm:ml-12 sm:w-[calc(100%-3rem)]")}
+            />
+            <p className="text-2xs text-faint sm:ml-12">{t("videoHint")}</p>
+          </>
         )}
 
         <div className="flex flex-wrap items-center gap-2 sm:ml-12">

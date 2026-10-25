@@ -30,6 +30,7 @@ import {
 } from "@/lib/share-card";
 import { SWATCHES, SWATCH_IDS, type SwatchId } from "@/lib/share-palette";
 import { cn } from "@/lib/utils";
+import { markLocalMission } from "@/lib/missions";
 import { copy } from "./copy";
 
 // Design.md §5 ShareStudio (spec 6.5): link + Copy ("copied ✓" 2 s), SegmentedControl tabs
@@ -147,6 +148,8 @@ export function ShareStudio({
 
   function onOpenChange(next: boolean) {
     setManual(next);
+    // Dashboard mission "แชร์หน้าผลงาน" (browser flag).
+    if (next) markLocalMission("share");
     if (!next && auto) {
       setDismissed(true);
       const u = new URL(window.location.href);

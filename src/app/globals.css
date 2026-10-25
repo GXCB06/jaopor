@@ -412,6 +412,30 @@ li:nth-child(5n + 5) > .card-rise {
   }
 }
 
+/* Wizard v4 publish celebration (Design.md §5): the ring + logo pop in, confetti bits fall once.
+   Transform + opacity only; the reduced-motion block above makes both instant. */
+@keyframes celebrate-pop {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+@keyframes confetti-fall {
+  from {
+    opacity: 1;
+    translate: 0 -20vh;
+    rotate: 0deg;
+  }
+  to {
+    opacity: 0;
+    translate: var(--confetti-x, 0) 70vh;
+    rotate: var(--confetti-r, 360deg);
+  }
+}
 @keyframes section-rise {
   from {
     opacity: 0;

@@ -9,12 +9,11 @@ import {
   CircleCheckIcon,
   CreditCardIcon,
   EyeIcon,
+  ImageIcon,
   InfoIcon,
   Link2Icon,
   MapPinIcon,
-  MedalIcon,
   PencilLineIcon,
-  Share2Icon,
   ShieldCheckIcon,
   SproutIcon,
   type LucideIcon,
@@ -70,6 +69,11 @@ import {
   WizardStepper,
 } from "./WizardParts";
 import { Card } from "@/components/core/Card";
+import type { Screenshot } from "@/lib/media";
+import type { ConnectionInfo } from "./VerifyPanel";
+import { WizardDetailsStep } from "./WizardDetailsStep";
+import { ScreenshotsManager } from "./ScreenshotsManager";
+import { PublishCelebration } from "./PublishCelebration";
 
 // Step 2 only: kept out of the first screen's JavaScript, then fetched in the background as soon as
 // step 1 shows (see the effect below), so it is ready by the time the project is created.
@@ -77,11 +81,11 @@ const loadVerifyPanel = () =>
   import("./VerifyPanel").then((m) => m.VerifyPanel);
 const VerifyPanel = dynamic(loadVerifyPanel);
 
-// Design.md §5 Add-startup wizard v2 (first-user test 2026-10-05: "adding a startup is hard").
-// 1) List it: the project link first, which auto-fills name, one-liner and logo from the site;
-//    then category.  2) Verify: the VerifyPanel metric chooser ("What do you want to prove?"), or
-//    skip.
-// AI tools, looking-for, screenshots and the rest are added later on /dashboard/[id]/edit.
+// Design.md §5 Add-startup wizard v4 (owner 2026-10-25: finish everything here, nothing "later").
+// 1) List it: link (auto-fills name, one-liner, logo), category, province → a private DRAFT.
+// 2) Details: AI drafts every field from the website; all product fields required.
+// 3) Screenshots: at least one.  4) Verify: at least one source, then "Publish" + the celebration.
+// A draft that was left resumes at its first incomplete step (/new?draft={id}).
 
 const MAX_LOGO_BYTES = 1024 * 1024;
 const TAGLINE_MAX = 140;
@@ -155,9 +159,21 @@ export function StartupWizard({
   githubLogin,
   defaultProvince,
   anonymousReady = false,
+  resume = null,
 }: {
   userId: string;
   githubLogin: string | null;
+  /** A draft to finish (Design.md wizard v4 "Draft until complete"); null = a new project. */
+  resume?: {
+    id: number;
+    slug: string;
+    website: string | null;
+    name: string;
+    logoSrc: string | null;
+    detailsDone: boolean;
+    shots: Screenshot[];
+    connections: ConnectionInfo[];
+  } | null;
   /** The founder's profile province: the project's starts the same (UX audit M-10). */
   defaultProvince: string;
   /** The anonymous-mode migration is live (else the checkbox stays hidden). */
@@ -170,7 +186,13 @@ export function StartupWizard({
   const lt = useTranslations("Links");
   const router = useRouter();
 
-  const [step, setStep] = useState<1 | 2>(1);
+  // A resumed draft opens at its first incomplete step.
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(() =>
+    !resume ? 1 : !resume.detailsDone ? 2 : resume.shots.length === 0 ? 3 : 4,
+  );
+  const [shotCount, setShotCount] = useState(resume?.shots.length ?? 0);
+  const [publishing, setPublishing] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
   // Step 2 stage choice (not stored): "early" puts the no-key proof first.
   const [stage, setStage] = useState<"early" | "revenue" | null>(null);
   // One random id per add-project attempt; kept in the session draft so a refresh continues it.
@@ -182,10 +204,16 @@ export function StartupWizard({
     website: string | null;
     column?: LinkColumn;
     logo?: string | null;
-  } | null>(null);
+  } | null>(
+    resume
+      ? { id: resume.id, slug: resume.slug, website: resume.website }
+      : null,
+  );
   // Something connected (the footer's primary button) vs. a proven number (revenue or build proof):
   // only the latter opens the profile with the "Verified!" share dialog (Design.md §3 Moments).
-  const [verified, setVerified] = useState(false);
+  const [verified, setVerified] = useState(
+    (resume?.connections.length ?? 0) > 0,
+  );
   const [proven, setProven] = useState(false);
   // Step 2: the groups connected here and the owner's disclosure choice for each (Issue 3 / C9).
   // A connection defaults to the same level the database trigger sets (O1).
@@ -197,7 +225,7 @@ export function StartupWizard({
   const [link, setLink] = useState("");
   // A1.2: the detected link type can be corrected (null = use the detection).
   const [linkChoice, setLinkChoice] = useState<LinkChoice | null>(null);
-  const [name, setName] = useState("");
+  const [name, setName] = useState(resume?.name ?? "");
   const [tagline, setTagline] = useState("");
   // No default: a preselected "AI" silently miscategorised projects (UX audit M-9).
   const [category, setCategory] = useState("");
@@ -206,7 +234,9 @@ export function StartupWizard({
   const [anonymous, setAnonymous] = useState(false);
   // An uploaded logo and its object URL for the preview tile.
   const [logo, setLogo] = useState<{ file: File; url: string } | null>(null);
-  const [autoLogo, setAutoLogo] = useState<string | null>(null);
+  const [autoLogo, setAutoLogo] = useState<string | null>(
+    resume?.logoSrc ?? null,
+  );
   // Suggested from the pasted website: now preselected when the founder hasn't chosen (Issue 2),
   // but a manual choice is never overwritten by an async preview result.
   const [suggestedCategory, setSuggestedCategory] = useState<string | null>(
@@ -237,6 +267,7 @@ export function StartupWizard({
     "jaopor:draft:new-startup",
     { step, saved, name, link, tagline, category, province, attemptId },
     (d) => {
+      if (resume) return;
       setStep(d.step);
       setSaved(d.saved);
       setName(d.name ?? "");
@@ -366,6 +397,8 @@ export function StartupWizard({
       failAdd("province_missing");
       return setError(t("provinceRequired"));
     }
+    if (!tagline.trim()) return setError(t("taglineRequired"));
+    if (!logo && !autoLogo) return setError(t("logoRequired"));
     if (logo && logo.file.size > MAX_LOGO_BYTES) {
       failAdd("logo_too_big");
       return setError(t("logoTooBig"));
@@ -434,6 +467,8 @@ export function StartupWizard({
             logo_path: logoPath,
             // Masked by the database before the row is ever visible (migration anonymous_mode).
             ...(anonymous ? { is_anonymous: true } : {}),
+            // A draft only the owner sees until the last step publishes it (wizard v4).
+            status: "private",
           })
           .select("id, slug, website_url")
           .single();
@@ -468,11 +503,24 @@ export function StartupWizard({
     }
   }
 
+  // Step 4 → public: the draft becomes published, then the celebration, then the profile.
+  async function publish() {
+    if (!saved || !verified) return;
+    setError(null);
+    setPublishing(true);
+    const { error: dbErr } = await createClient()
+      .from("startups")
+      .update({ status: "published" })
+      .eq("id", saved.id);
+    setPublishing(false);
+    if (dbErr) return setError(common("genericError"));
+    logAddEvent(attemptId, "add_finished", saved.id, { skipped: false });
+    clearDraft();
+    await revalidateStartup(saved.id);
+    setCelebrate(true);
+  }
   const goToProfile = () => {
     if (!saved) return;
-    logAddEvent(attemptId, "add_finished", saved.id, { skipped: !verified });
-    clearDraft();
-    void revalidateStartup(saved.id);
     router.push({
       pathname: `/startup/${saved.slug}`,
       // Post-listing share moment (Design.md §9): the profile opens the share dialog.
@@ -480,10 +528,22 @@ export function StartupWizard({
     });
   };
 
+  // Funnel: entering steps 2-4 (once per attempt and step; the database dedupes).
+  useEffect(() => {
+    if (!saved || step === 1) return;
+    logAddEvent(attemptId, "add_step", saved.id, {
+      choice: step === 2 ? "details" : step === 3 ? "media" : "verify",
+    });
+  }, [step, saved, attemptId]);
+
   const topRef = useStepScroll<HTMLDivElement>(step);
   // Design.md §5 wizard v3: each part of step 1 shows a check once it's complete.
   const linkDone = Boolean(parsed) && !existing;
-  const aboutDone = Boolean(name.trim()) && Boolean(category);
+  const aboutDone =
+    Boolean(name.trim()) &&
+    Boolean(category) &&
+    Boolean(tagline.trim()) &&
+    Boolean(logo || autoLogo);
   const placeDone = Boolean(province);
   const sectionsDone = [linkDone, aboutDone, placeDone].filter(Boolean).length;
   // S-2: the card as it will look in the list, updating as they type (not a link).
@@ -512,6 +572,13 @@ export function StartupWizard({
       tabIndex={-1}
       className="scroll-mt-20 space-y-6 outline-none"
     >
+      {celebrate && (
+        <PublishCelebration
+          name={anonymous ? an("name") : name.trim()}
+          logoSrc={anonymous ? null : shownLogo}
+          onDone={goToProfile}
+        />
+      )}
       <WizardStepper step={step} />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
         <div className="min-w-0">
@@ -643,7 +710,6 @@ export function StartupWizard({
                   <Field
                     label={t("tagline")}
                     htmlFor="tagline"
-                    optional={common("optional")}
                     className="sm:col-span-2"
                     action={
                       <span className="text-2xs text-faint tabular-nums">
@@ -653,6 +719,7 @@ export function StartupWizard({
                   >
                     <input
                       id="tagline"
+                      required
                       maxLength={TAGLINE_MAX}
                       placeholder={t("taglinePlaceholder")}
                       value={tagline}
@@ -664,7 +731,6 @@ export function StartupWizard({
                 <Field
                   label={t("logo")}
                   htmlFor="logo"
-                  optional={common("optional")}
                   hint={
                     logo
                       ? t("logoHint")
@@ -752,33 +818,97 @@ export function StartupWizard({
                     ? common("loading")
                     : saved
                       ? t("saveAndContinue")
-                      : t("createAndContinue")}
+                      : t("createDraft")}
                 </Button>
-                {/* Issue 3: say what step 2 is for before the button is pressed. */}
+                {/* What the next steps are, before the button is pressed. */}
                 <p className="mt-2 text-caption text-muted-foreground">
-                  {t("nextVerifyHint")}
+                  {t("nextStepsHint")}
                 </p>
               </div>
             </form>
           )}
 
-          {/* Hidden, not unmounted, on the way back to step 1: sources connected here stay marked. */}
-          {saved && (
-            <div className="space-y-5" hidden={step !== 2}>
-              <div className="flex items-start gap-3 rounded-xl border border-positive/30 bg-positive/5 p-4">
-                <CircleCheckIcon
-                  className="mt-0.5 size-5 shrink-0 text-positive"
-                  aria-hidden="true"
-                />
-                <div className="min-w-0 space-y-0.5">
-                  <p className="text-sm font-semibold">{t("createdTitle")}</p>
-                  <p className="text-caption text-muted-foreground">
-                    {t("createdBody", {
-                      name: anonymous ? an("name") : name.trim(),
-                    })}
-                  </p>
-                </div>
+          {/* The draft note, above steps 2-4. */}
+          {saved && step > 1 && (
+            <div className="mb-5 flex items-start gap-3 rounded-xl border border-positive/30 bg-positive/5 p-4">
+              <CircleCheckIcon
+                className="mt-0.5 size-5 shrink-0 text-positive"
+                aria-hidden="true"
+              />
+              <div className="min-w-0 space-y-0.5">
+                <p className="text-sm font-semibold">{t("draftTitle")}</p>
+                <p className="text-caption text-muted-foreground">
+                  {t("draftBody", {
+                    name: anonymous ? an("name") : name.trim(),
+                  })}
+                </p>
               </div>
+            </div>
+          )}
+
+          {saved && step === 2 && (
+            <div className="space-y-4">
+              <WizardDetailsStep
+                startupId={saved.id}
+                hasWebsite={Boolean(ownWebsiteHost(saved.website))}
+                onSaved={() => setStep(3)}
+              />
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setError(null);
+                  setStep(1);
+                }}
+                className="px-3 text-muted-foreground"
+              >
+                <ArrowLeftIcon aria-hidden="true" />
+                {common("back")}
+              </Button>
+            </div>
+          )}
+
+          {saved && step === 3 && (
+            <div className="space-y-4">
+              <WizardSection
+                icon={ImageIcon}
+                title={t("media.title")}
+                hint={t("media.hint")}
+                done={shotCount > 0}
+              >
+                <ScreenshotsManager
+                  startupId={saved.id}
+                  initial={resume?.id === saved.id ? resume.shots : []}
+                  onCountChange={setShotCount}
+                />
+              </WizardSection>
+              <div className="flex flex-wrap items-center gap-3 border-t pt-4">
+                <Button
+                  variant="ghost"
+                  onClick={() => setStep(2)}
+                  className="px-3 text-muted-foreground"
+                >
+                  <ArrowLeftIcon aria-hidden="true" />
+                  {common("back")}
+                </Button>
+                <p className="flex-1 text-caption text-muted-foreground">
+                  {shotCount === 0
+                    ? t("missing", { items: t("stepMedia") })
+                    : ""}
+                </p>
+                <Button
+                  onClick={() => setStep(4)}
+                  disabled={shotCount === 0}
+                  className="px-4"
+                >
+                  {t("next")}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Hidden, not unmounted, on the way back: sources connected here stay marked. */}
+          {saved && (
+            <div className="space-y-5" hidden={step !== 4}>
               {/* Design.md §5 wizard v3.2: step 2 as two cards like step 1. Stage first: no
                   revenue yet → no-key proof first. */}
               <WizardSection
@@ -862,7 +992,9 @@ export function StartupWizard({
                   order={stage === "early" ? EARLY_ORDER : undefined}
                   recommend={recommendedMetric(stage)}
                   startupId={saved.id}
-                  connections={[]}
+                  connections={
+                    resume?.id === saved.id ? resume.connections : []
+                  }
                   websiteHost={ownWebsiteHost(saved.website)}
                   githubLogin={githubLogin}
                   attemptId={attemptId}
@@ -877,11 +1009,19 @@ export function StartupWizard({
                     setDisclosure((d) =>
                       d[group]
                         ? d
-                        : { ...d, [group]: DEFAULT_LEVEL_FOR_NEW_CONNECTION[group] },
+                        : {
+                            ...d,
+                            [group]: DEFAULT_LEVEL_FOR_NEW_CONNECTION[group],
+                          },
                     );
                   }}
                 />
               </WizardSection>
+              {error && (
+                <p role="alert" className="text-sm text-destructive">
+                  {error}
+                </p>
+              )}
               {connectedGroups.length > 0 && (
                 <Card className="p-4">
                   <DisclosureControl
@@ -897,28 +1037,22 @@ export function StartupWizard({
                   variant="ghost"
                   onClick={() => {
                     setError(null);
-                    setStep(1);
+                    setStep(3);
                   }}
                   className="px-3 text-muted-foreground"
                 >
                   <ArrowLeftIcon aria-hidden="true" />
                   {common("back")}
                 </Button>
-                <p className="flex-1 text-xs text-muted-foreground">
-                  {verified ? "" : t("verifyLater")}
+                <p className="flex-1 text-caption text-muted-foreground">
+                  {verified ? "" : t("verifyRequired")}
                 </p>
                 <Button
-                  variant={
-                    verified || stage === "early" ? "default" : "outline"
-                  }
-                  onClick={goToProfile}
+                  onClick={() => void publish()}
+                  disabled={!verified || publishing}
                   className="px-4"
                 >
-                  {verified
-                    ? t("goToProfile")
-                    : stage === "early"
-                      ? t("publishNow")
-                      : t("skipToProfile")}
+                  {publishing ? t("publishing") : t("publish")}
                 </Button>
               </div>
             </div>
@@ -928,24 +1062,37 @@ export function StartupWizard({
         <aside className="hidden space-y-4 lg:sticky lg:top-20 lg:block">
           {preview}
           <Card className="space-y-3 p-4">
-            <p className="text-xs font-semibold">{t("afterTitle")}</p>
+            <p className="text-xs font-semibold">{t("beforeTitle")}</p>
             <ul className="space-y-2.5">
               {(
                 [
-                  [ShieldCheckIcon, t("afterVerify")],
-                  [Share2Icon, t("afterShare")],
-                  [MedalIcon, t("afterOlympics")],
+                  [Link2Icon, t("stepBasics"), Boolean(saved)],
+                  [PencilLineIcon, t("stepDetails"), step > 2],
+                  [ImageIcon, t("stepMedia"), shotCount > 0 && step > 3],
+                  [ShieldCheckIcon, t("stepVerify"), verified],
                 ] as const
-              ).map(([Icon, text]) => (
+              ).map(([Icon, text, ok]) => (
                 <li
                   key={text}
                   className="flex items-start gap-2.5 text-caption text-muted-foreground"
                 >
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary">
-                    <Icon
-                      className="size-3.5 text-brand-text"
-                      aria-hidden="true"
-                    />
+                  <span
+                    className={cn(
+                      "flex size-6 shrink-0 items-center justify-center rounded-full",
+                      ok ? "bg-positive/10" : "bg-secondary",
+                    )}
+                  >
+                    {ok ? (
+                      <CircleCheckIcon
+                        className="size-3.5 text-positive"
+                        aria-label={t("stepDone")}
+                      />
+                    ) : (
+                      <Icon
+                        className="size-3.5 text-brand-text"
+                        aria-hidden="true"
+                      />
+                    )}
                   </span>
                   {text}
                 </li>

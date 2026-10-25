@@ -13,6 +13,8 @@ import { shareLinks } from "@/lib/share";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { cn } from "@/lib/utils";
 import { Avatar, LinkCard, PostImages, PostTypeChip } from "./bits";
+import { PostVideo } from "./PostVideo";
+import { feedVideoEmbed } from "@/lib/media";
 import { LikeButton } from "./LikeButton";
 import { PostMenu } from "./PostMenu";
 
@@ -37,6 +39,8 @@ export function PostCard({
   const t = useTranslations("Posts");
   const locale = useLocale();
   const isAuthor = viewerId === post.authorId;
+  // A YouTube / TikTok / Loom / Facebook link plays in the post instead of a link card.
+  const video = feedVideoEmbed(post.linkUrl);
   const milestone = post.type === "milestone";
   const ms = milestone ? parseMilestoneKey(post.milestoneKey) : null;
   // Milestones are written in Thai; show them in the visitor's language from their key.
@@ -176,7 +180,15 @@ export function PostCard({
         </p>
       )}
 
-      {post.linkUrl && <LinkCard url={post.linkUrl} preview={post.preview} />}
+      {video ? (
+        <PostVideo
+          video={video}
+          poster={post.preview?.image ?? null}
+          title={post.preview?.title ?? t("videoTitle")}
+        />
+      ) : (
+        post.linkUrl && <LinkCard url={post.linkUrl} preview={post.preview} />
+      )}
       <PostImages images={post.images} />
 
       {firstComment?.author && (

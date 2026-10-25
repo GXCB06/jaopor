@@ -7,6 +7,7 @@ export const FUNNEL_EVENTS = [
   "add_opened",
   "add_failed",
   "add_created",
+  "add_step",
   "verify_chose",
   "add_finished",
 ] as const;
@@ -23,6 +24,10 @@ export const ADD_FAILED_CODES = [
   "server",
 ] as const;
 export type AddFailedCode = (typeof ADD_FAILED_CODES)[number];
+
+/** Wizard v4 (migration _wizard_v4_drafts): entering step 2 / 3 / 4, stored as `choice`. */
+export const ADD_STEP_CHOICES = ["details", "media", "verify"] as const;
+export type AddStepChoice = (typeof ADD_STEP_CHOICES)[number];
 
 /** A2: the verify chooser is metric-first, so we record the metric the founder picked. */
 export const VERIFY_CHOICES = ["revenue", "traffic", "build"] as const;

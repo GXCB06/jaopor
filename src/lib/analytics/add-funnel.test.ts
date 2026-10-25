@@ -13,6 +13,7 @@ vi.mock("@/lib/supabase/client", () => ({
 import {
   ADD_FAILED_CODES,
   FUNNEL_EVENTS,
+  ADD_STEP_CHOICES,
   VERIFY_CHOICES,
   VERIFY_CODES,
   VERIFY_SOURCES,
@@ -87,7 +88,8 @@ describe("whitelist parity with the migration SQL", () => {
     (f) =>
       f.endsWith("_ga4_traffic_source.sql") ||
       f.endsWith("_polar_source.sql") ||
-      f.endsWith("_posthog_source.sql"),
+      f.endsWith("_posthog_source.sql") ||
+      f.endsWith("_wizard_v4_drafts.sql"),
   );
   const sql = file
     ? [file, ...later]
@@ -103,6 +105,7 @@ describe("whitelist parity with the migration SQL", () => {
     for (const v of [
       ...FUNNEL_EVENTS,
       ...ADD_FAILED_CODES,
+      ...ADD_STEP_CHOICES,
       ...VERIFY_CHOICES,
       ...VERIFY_SOURCES,
       ...VERIFY_CODES,

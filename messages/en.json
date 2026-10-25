@@ -480,9 +480,9 @@
     "autofillPrivacy": "We only read the name, description and logo from your home page",
     "autofillPrivacyStore": "We only read the name, tagline and icon from the App Store / Google Play page",
     "limitAhead": "You already have 5 projects (the maximum). Edit or delete one in My projects.",
-    "subtitle": "3 steps, about 2 minutes. You can change everything later.",
+    "subtitle": "4 steps, about 5 minutes. AI drafts the details for you.",
     "stepsLabel": "Steps to add your project",
-    "stepBasicsHint": "Link, name, category, province",
+    "stepBasicsHint": "Link, name, logo, province",
     "stepRevenueHint": "Optional, can wait",
     "stepProfile": "Open your page",
     "stepProfileHint": "Ready to share",
@@ -510,8 +510,9 @@
     "intro": {
       "autofill": "One link, we fill in the rest",
       "editLater": "Change anything later",
-      "live": "Public as soon as you publish",
-      "verified": "Verified numbers come in step 2"
+      "live": "Goes public once every step is done",
+      "verified": "Every project has at least one verified number",
+      "ai": "AI drafts the details"
     },
     "visibility": {
       "public": "Show the name",
@@ -520,6 +521,48 @@
       "anonymous": "Keep it anonymous",
       "anonymousHint": "Hide the name, logo and links but still show verified numbers. For when you're not ready to say which project it is.",
       "locked": "Change it on the edit page once the project exists."
+    },
+    "stepDetails": "Details",
+    "stepDetailsHint": "AI drafts, you check",
+    "stepMedia": "Screenshots",
+    "stepMediaHint": "At least 1",
+    "stepVerify": "Verify",
+    "stepVerifyHint": "At least 1 source",
+    "createDraft": "Create draft and continue",
+    "nextStepsHint": "Next: details (AI drafts) → screenshots → verify a number → publish",
+    "taglineRequired": "Add a one-liner about what it does",
+    "logoRequired": "Add a logo (paste your website and we'll fetch it, or upload one)",
+    "draftTitle": "Draft created",
+    "draftBody": "{name} is a draft only you can see. It goes public once all 4 steps are done.",
+    "missing": "Still missing: {items}",
+    "next": "Next",
+    "publish": "Publish",
+    "publishing": "Publishing…",
+    "verifyRequired": "Every project on JaoPor has at least one verified number",
+    "beforeTitle": "Before publishing",
+    "details": {
+      "title": "What it does, and for whom",
+      "hint": "AI reads your website and drafts this. Check it and make it accurate.",
+      "aiIdle": "AI can draft this from your website",
+      "aiReading": "AI is reading your website…",
+      "aiDone": "✨ AI filled {n, plural, one {# field} other {# fields}}. Check and edit any of them.",
+      "aiNothing": "AI found nothing on the site. Fill it in yourself.",
+      "aiRetry": "Let AI fill again",
+      "noWebsite": "This link isn't the project's own website, so AI can't read it. Fill it in yourself."
+    },
+    "media": {
+      "title": "What it looks like",
+      "hint": "Screenshots help people get it fastest. Add at least one."
+    },
+    "celebrate": {
+      "title": "Published!",
+      "body": "{name} is live on JaoPor",
+      "go": "Go to the project page"
+    },
+    "resume": {
+      "chip": "Draft",
+      "cta": "Finish it",
+      "loadFailed": "Couldn't open this draft. Try again from your dashboard."
     }
   },
   "Errors": {
@@ -1589,7 +1632,7 @@
       "statusTitle": "What are you looking for right now?",
       "statusHint": "You can change this any time in your profile",
       "skillsTitle": "Your skills",
-      "skillsHint": "You can skip this and add them later",
+      "skillsHint": "Pick at least one skill. People looking for teammates search by these.",
       "skip": "Skip for now",
       "finish": "Finish",
       "quickTitle": "Pick a username, then add your project",
@@ -1955,7 +1998,10 @@
       "revenue": "{name} passed ฿{amount} in total revenue",
       "stars": "{name} reached ★{amount} on GitHub"
     },
-    "imageCount": "{n, plural, one {# image} other {# images}}"
+    "imageCount": "{n, plural, one {# image} other {# images}}",
+    "playVideo": "Play video: {title}",
+    "videoTitle": "Video",
+    "videoHint": "Paste a YouTube, TikTok or Facebook link and the clip plays right in the feed"
   },
   "Feed": {
     "title": "Feed",
@@ -2420,5 +2466,64 @@
         "failed": "Didn't work. Try again"
       }
     }
+  },
+  "Missions": {
+    "title": "JaoPor missions",
+    "hint": "Finish them to get the most out of JaoPor",
+    "done": "done",
+    "allDone": "All missions done. Thanks for being part of JaoPor.",
+    "dismiss": "Hide",
+    "items": {
+      "firstStartup": {
+        "title": "List your first project",
+        "why": "Show people what you're building"
+      },
+      "verify": {
+        "title": "Verify a number",
+        "why": "Real numbers on your card and the leaderboards"
+      },
+      "profile": {
+        "title": "Complete your profile",
+        "why": "Headline, province and skills so people find you"
+      },
+      "firstPost": {
+        "title": "Post your first update",
+        "why": "Share progress in the builders' feed"
+      },
+      "follow3": {
+        "title": "Follow 3 builders",
+        "why": "See their updates in your feed"
+      },
+      "olympics": {
+        "title": "See your province's rank",
+        "why": "Your work counts for your province"
+      },
+      "share": {
+        "title": "Share your project page",
+        "why": "Ready-made images with verified numbers"
+      }
+    }
+  },
+  "Tour": {
+    "real": {
+      "title": "Real work, real numbers",
+      "body": "List what you build, then verify revenue, visitors or commits from the real source. No need to take anyone's word for it."
+    },
+    "feed": {
+      "title": "The builders' feed",
+      "body": "Post progress, add clips from YouTube or TikTok, and see what others are making."
+    },
+    "olympics": {
+      "title": "Province Olympics",
+      "body": "Every project helps your province climb. See what each province is building."
+    },
+    "missions": {
+      "title": "Your missions",
+      "body": "Start with the missions card on this page, one at a time, and you'll have seen all of JaoPor."
+    },
+    "position": "Slide {n} of {of}",
+    "next": "Next",
+    "back": "Back",
+    "start": "Let's go"
   }
 }

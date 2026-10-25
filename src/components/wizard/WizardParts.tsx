@@ -18,13 +18,14 @@ import { cn } from "@/lib/utils";
 // Design.md §5 Add-startup wizard v3 (owner 2026-10-13: "plain text … no interactive experience"):
 // a three-step stepper and the numbered section cards of step 1.
 
-/** ① ลงผลงาน → ② ยืนยันตัวเลข → ③ เปิดหน้าผลงาน; `step` is the current one (1 or 2). */
-export function WizardStepper({ step }: { step: 1 | 2 }) {
+/** v4: ① ลงผลงาน → ② รายละเอียด → ③ ภาพผลงาน → ④ ยืนยันตัวเลข; `step` is the current one. */
+export function WizardStepper({ step }: { step: 1 | 2 | 3 | 4 }) {
   const t = useTranslations("Wizard");
   const steps = [
     { label: t("stepBasics"), hint: t("stepBasicsHint") },
-    { label: t("stepRevenue"), hint: t("stepRevenueHint") },
-    { label: t("stepProfile"), hint: t("stepProfileHint") },
+    { label: t("stepDetails"), hint: t("stepDetailsHint") },
+    { label: t("stepMedia"), hint: t("stepMediaHint") },
+    { label: t("stepVerify"), hint: t("stepVerifyHint") },
   ];
   return (
     <ol aria-label={t("stepsLabel")} className="flex items-start">
@@ -273,7 +274,7 @@ export function WizardIntro() {
   const t = useTranslations("Wizard");
   const chips = [
     [SparklesIcon, t("intro.autofill")],
-    [PencilLineIcon, t("intro.editLater")],
+    [PencilLineIcon, t("intro.ai")],
     [GlobeIcon, t("intro.live")],
     [BadgeCheckIcon, t("intro.verified")],
   ] as const;

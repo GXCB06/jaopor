@@ -106,3 +106,18 @@ describe("helpers", () => {
     expect(prompt).toContain("Thai");
   });
 });
+
+describe("parseDraft: AI tools and founded month (wizard v4)", () => {
+  it("keeps only known AI tools, deduplicated", () => {
+    expect(
+      parseDraft({ aiTools: ["claude-code", "cursor", "made-up", "cursor", 3] })
+        .aiTools,
+    ).toEqual(["claude-code", "cursor"]);
+  });
+
+  it("accepts YYYY-MM from 1990 to this month, nothing else", () => {
+    expect(parseDraft({ founded: "2025-03" }).founded).toBe("2025-03");
+    for (const bad of ["2025", "2025-13", "1989-12", "3000-01", "march 2025"])
+      expect(parseDraft({ founded: bad }).founded, bad).toBeUndefined();
+  });
+});

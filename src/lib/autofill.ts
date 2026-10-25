@@ -2,7 +2,7 @@
 // README) into a draft for the edit form. Pure helpers only (no I/O), so everything is testable:
 // page extraction, a free no-AI draft from the page's own metadata, the prompt for the optional
 // free Gemini model, and strict validation of whatever the model returns.
-import { AUDIENCES } from "./catalog";
+import { AI_TOOLS, AUDIENCES, type AiTool } from "./catalog";
 import { CATEGORIES, isCategory, type Category } from "./config/categories";
 import { STACK_LIST } from "./config/stack";
 import {
@@ -23,6 +23,10 @@ export type AutofillDraft = {
   pricingCurrency?: (typeof PRICING_CURRENCIES)[number];
   pricingPeriod?: PricingPeriod;
   pricingNote?: string;
+  /** AI tools the page itself says it was built with (wizard v4). */
+  aiTools?: AiTool[];
+  /** "YYYY-MM": only a launch / founding date the page states. */
+  founded?: string;
 };
 
 export type PageInfo = {
@@ -200,6 +204,8 @@ export const DRAFT_SCHEMA = {
     pricingAmount: { type: "NUMBER" },
     pricingCurrency: { type: "STRING", enum: [...PRICING_CURRENCIES] },
     pricingNote: { type: "STRING" },
+    aiTools: { type: "ARRAY", items: { type: "STRING", enum: [...AI_TOOLS] } },
+    founded: { type: "STRING" },
   },
 } as const;
 
@@ -221,7 +227,9 @@ export function buildPrompt(
     `Fields: tagline (<= 120 chars, what it is + for whom), description (2-4 short sentences, <= 600 chars),`,
     `valueProposition (<= 200 chars), problemSolved (<= 200 chars), audience (b2b/b2c/both),`,
     `category (one of the allowed slugs), techStack (only tools clearly used, from the allowed slugs),`,
-    `pricing only if the page states it (period month/year/once/free, amount, THB/USD, short note).`,
+    `pricing only if the page states it (period month/year/once/free, amount, THB/USD, short note),`,
+    `aiTools only if the material names the AI tools it was built with (allowed slugs only),`,
+    `founded as YYYY-MM only if a launch or founding date is stated (a year alone → YYYY-01).`,
     ``,
     `<website>`,
     `title: ${page.title}`,
@@ -277,6 +285,24 @@ export function parseDraft(raw: unknown): AutofillDraft {
       draft.pricingCurrency = currency as AutofillDraft["pricingCurrency"];
     }
   }
+  if (Array.isArray(o.aiTools))
+    draft.aiTools = [
+      ...new Set(
+        o.aiTools.filter(
+          (s): s is AiTool =>
+            typeof s === "string" &&
+            (AI_TOOLS as readonly string[]).includes(s),
+        ),
+      ),
+    ].slice(0, 8);
+  const founded = str("founded");
+  const m = founded?.match(/^(\d{4})-(0[1-9]|1[0-2])$/);
+  if (
+    m &&
+    Number(m[1]) >= 1990 &&
+    founded! <= new Date().toISOString().slice(0, 7)
+  )
+    draft.founded = founded;
   for (const k of Object.keys(draft) as (keyof AutofillDraft)[])
     if (draft[k] === undefined) delete draft[k];
   return draft;

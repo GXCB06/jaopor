@@ -1,7 +1,5 @@
 import {
-  ArrowRightIcon,
   ArrowUpRightIcon,
-  CheckIcon,
   PencilIcon,
   PlugIcon,
   PlusIcon,
@@ -25,10 +23,12 @@ import {
   getMyRequests,
   getMySkills,
 } from "@/lib/data/me";
-import { SETUP_STEPS, setupChecklist, type SetupStep } from "@/lib/profile";
+import { serverMissions, type Mission } from "@/lib/missions";
+import { createClient } from "@/lib/supabase/server";
+import { MissionsCard } from "@/components/dashboard/MissionsCard";
+import { WelcomeTour } from "@/components/dashboard/WelcomeTour";
 import { SOURCE_NAME, isSource } from "@/lib/sources/catalog";
 import { logoUrl } from "@/lib/supabase/public";
-import { cn } from "@/lib/utils";
 import { AnonymousChip } from "@/components/core/AnonymousChip";
 
 export async function generateMetadata({
@@ -72,22 +72,36 @@ export default async function DashboardPage({
     ]);
   const first = dash.startups[0];
   const owned = dash.startups.filter((s) => s.owner_id === userId);
-  const done = setupChecklist({
-    startups: dash.startups.length,
+  const published = owned.filter((s) => s.status === "published");
+  const supabase = await createClient();
+  const [{ count: postCount }, { count: followCount }] = await Promise.all([
+    supabase
+      .from("posts")
+      .select("id", { count: "exact", head: true })
+      .eq("author_id", userId)
+      .eq("is_auto", false),
+    supabase
+      .from("follows")
+      .select("following_id", { count: "exact", head: true })
+      .eq("follower_id", userId),
+  ]);
+  const missions = serverMissions({
+    publishedStartups: published.length,
+    verifiedStartups: owned.filter(isVerified).length,
+    headline: profile?.headline ?? null,
     province: profile?.province ?? null,
-    verifiedStartups: dash.startups.filter(isVerified).length,
     skills: skills.length,
-    screenshots: dash.screenshots,
+    posts: postCount ?? 0,
+    follows: followCount ?? 0,
   });
-  const doneCount = SETUP_STEPS.filter((s) => done[s]).length;
-  const next = SETUP_STEPS.find((s) => !done[s]);
-  const stepHref: Record<SetupStep, string> = {
-    account: "/dashboard/profile",
+  const missionHref: Record<Mission, string> = {
     firstStartup: "/new",
-    province: "/dashboard/profile#province",
     verify: first ? `/dashboard/${first.id}/edit#verify-revenue` : "/new",
-    skillsStatus: "/dashboard/profile#skills",
-    screenshots: first ? `/dashboard/${first.id}/edit#screenshots` : "/new",
+    profile: "/dashboard/profile",
+    firstPost: "/feed",
+    follow3: "/builders",
+    olympics: "/olympics",
+    share: published[0] ? `/startup/${published[0].slug}` : "/new",
   };
   const pending = requests.filter((r) => r.incoming && r.status === "pending");
   const firstName = (profile?.display_name ?? profile?.handle ?? "").split(
@@ -129,89 +143,9 @@ export default async function DashboardPage({
         </div>
       </header>
 
-      {/* Setup checklist */}
-      {doneCount < SETUP_STEPS.length && (
-        <Card className="p-5">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <h2 className="text-sm font-bold">{t("setupTitle")}</h2>
-            <span className="text-caption text-faint tabular-nums">
-              {doneCount} / {SETUP_STEPS.length}
-            </span>
-            <div
-              className="h-1.5 min-w-24 flex-1 overflow-hidden rounded-full bg-secondary"
-              role="progressbar"
-              aria-valuenow={doneCount}
-              aria-valuemin={0}
-              aria-valuemax={SETUP_STEPS.length}
-              aria-label={t("setupTitle")}
-            >
-              <div
-                className="h-full rounded-full bg-brand"
-                style={{ width: `${(doneCount / SETUP_STEPS.length) * 100}%` }}
-              />
-            </div>
-            <span className="text-2xs text-faint">{t("setupHint")}</span>
-          </div>
-          <ol className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {SETUP_STEPS.map((step) => {
-              const isDone = done[step];
-              const isNext = step === next;
-              const inner = (
-                <>
-                  <span
-                    className={cn(
-                      "flex size-5 shrink-0 items-center justify-center rounded-full border",
-                      isDone &&
-                        "border-positive/40 bg-positive/10 text-positive",
-                      isNext && "border-brand",
-                    )}
-                  >
-                    {isDone && (
-                      <CheckIcon className="size-3" aria-hidden="true" />
-                    )}
-                  </span>
-                  <span
-                    className={cn(
-                      "min-w-0 flex-1 truncate",
-                      isDone && "text-faint",
-                    )}
-                  >
-                    {t(`setup.${step}`)}
-                  </span>
-                  {!isDone && (
-                    <ArrowRightIcon
-                      className="size-3.5 shrink-0"
-                      aria-hidden="true"
-                    />
-                  )}
-                </>
-              );
-              const cls = cn(
-                "flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-caption",
-                isNext
-                  ? "border-brand bg-brand/10 font-semibold"
-                  : isDone
-                    ? "bg-background/40"
-                    : "hover:bg-accent",
-              );
-              return (
-                <li key={step}>
-                  {isDone ? (
-                    <span className={cls}>
-                      {inner}
-                      <span className="sr-only">{t("done")}</span>
-                    </span>
-                  ) : (
-                    <Link href={stepHref[step]} className={cls}>
-                      {inner}
-                    </Link>
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-        </Card>
-      )}
+      {/* Design.md §6 Missions "ภารกิจเจ้าพ่อ" + the one-time welcome tour (owner 2026-10-25). */}
+      <MissionsCard done={missions} href={missionHref} />
+      <WelcomeTour />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         {/* My works */}

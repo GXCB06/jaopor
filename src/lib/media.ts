@@ -111,3 +111,86 @@ export function videoEmbed(url: string | null | undefined): VideoEmbed | null {
   }
   return null;
 }
+
+/** A video link in a feed post, played in place (Design.md §5 PostCard, owner 2026-10-25). */
+export type FeedVideo = {
+  provider: "youtube" | "tiktok" | "loom" | "facebook";
+  embedUrl: string;
+  /** TikTok, Reels and Shorts are 9:16; everything else 16:9. */
+  vertical: boolean;
+};
+
+/**
+ * YouTube (watch, youtu.be, Shorts, Live), TikTok, Loom and Facebook (videos, watch, Reels,
+ * fb.watch) links → an embed that loads only when played. Anything else stays a link card.
+ * YouTube uses the no-cookie host; the others are the providers' own players.
+ */
+export function feedVideoEmbed(
+  url: string | null | undefined,
+): FeedVideo | null {
+  if (!url || url.length > 500) return null;
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    return null;
+  }
+  if (u.protocol !== "https:") return null;
+  const host = u.hostname.replace(/^(www\.|m\.)/, "");
+  const id = (s: string | null | undefined) =>
+    s && /^[A-Za-z0-9_-]{6,64}$/.test(s) ? s : null;
+  const seg = u.pathname.split("/").filter(Boolean);
+
+  if (host === "youtube.com" || host === "youtu.be") {
+    const shorts = seg[0] === "shorts";
+    const v =
+      host === "youtu.be"
+        ? id(seg[0])
+        : shorts || seg[0] === "live"
+          ? id(seg[1])
+          : id(u.searchParams.get("v"));
+    return v
+      ? {
+          provider: "youtube",
+          embedUrl: `https://www.youtube-nocookie.com/embed/${v}?autoplay=1`,
+          vertical: shorts,
+        }
+      : null;
+  }
+  if (host === "tiktok.com") {
+    const v = seg[0]?.startsWith("@") && seg[1] === "video" ? seg[2] : null;
+    return v && /^[0-9]{6,30}$/.test(v)
+      ? {
+          provider: "tiktok",
+          embedUrl: `https://www.tiktok.com/embed/v2/${v}`,
+          vertical: true,
+        }
+      : null;
+  }
+  if (host === "loom.com") {
+    const v = seg[0] === "share" ? id(seg[1]) : null;
+    return v
+      ? {
+          provider: "loom",
+          embedUrl: `https://www.loom.com/embed/${v}?autoplay=1`,
+          vertical: false,
+        }
+      : null;
+  }
+  if (host === "facebook.com" || host === "fb.watch") {
+    const reel = seg[0] === "reel" && /^[0-9]{6,30}$/.test(seg[1] ?? "");
+    const video =
+      (seg[1] === "videos" && /^[0-9]{6,30}$/.test(seg[2] ?? "")) ||
+      (seg[0] === "watch" &&
+        /^[0-9]{6,30}$/.test(u.searchParams.get("v") ?? ""));
+    const short = host === "fb.watch" && id(seg[0]) !== null;
+    if (!reel && !video && !short) return null;
+    const href = `https://${host === "fb.watch" ? "fb.watch" : "www.facebook.com"}${u.pathname}${seg[0] === "watch" ? u.search : ""}`;
+    return {
+      provider: "facebook",
+      embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(href)}&show_text=false&autoplay=true`,
+      vertical: reel,
+    };
+  }
+  return null;
+}

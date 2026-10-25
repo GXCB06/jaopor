@@ -23,6 +23,7 @@ import type { Tables } from "@/lib/supabase/database.types";
 import { logoUrl } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
+import { detailsCompleteRow } from "@/lib/wizard-details";
 import { AnonymousChip } from "@/components/core/AnonymousChip";
 
 export async function generateMetadata({
@@ -121,12 +122,13 @@ export default async function DashboardStartupsPage({
   const shotsOf = (id: number) =>
     (shotRows ?? []).filter((r) => r.startup_id === id).length;
 
-  const [t, nav, p, format, thbPerUsd] = await Promise.all([
+  const [t, nav, p, format, thbPerUsd, wz] = await Promise.all([
     getTranslations("Dashboard"),
     getTranslations("Nav"),
     getTranslations("Profile"),
     getFormatter(),
     getThbPerUsd(),
+    getTranslations("Wizard"),
   ]);
 
   return (
@@ -163,6 +165,10 @@ export default async function DashboardStartupsPage({
                 ? "statusError"
                 : "statusUnverified";
             const { pct, missing } = completeness(s, shotsOf(s.id));
+            // Wizard v4: a private project that never finished the add flow is a draft to resume.
+            const draft =
+              s.status === "private" &&
+              (shotsOf(s.id) === 0 || !detailsCompleteRow(s) || !verified);
             return (
               <li key={s.id} className="space-y-4 rounded-lg border p-4">
                 <div className="flex items-start gap-3">
@@ -195,10 +201,23 @@ export default async function DashboardStartupsPage({
                           {t("hidden")}
                         </span>
                       )}
-                      {s.status === "private" && (
+                      {s.status === "private" && !draft && (
                         <span className="inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-2xs text-muted-foreground">
                           {t("private")}
                         </span>
+                      )}
+                      {draft && (
+                        <>
+                          <span className="rounded-md border border-warning/40 px-1.5 py-0.5 text-2xs font-bold text-warning">
+                            {wz("resume.chip")}
+                          </span>
+                          <Link
+                            href={`/new?draft=${s.id}`}
+                            className="text-2xs font-semibold text-brand-text hover:underline"
+                          >
+                            {wz("resume.cta")} →
+                          </Link>
+                        </>
                       )}
                     </div>
                   </div>

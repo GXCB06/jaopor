@@ -2,6 +2,7 @@ import { ChevronRightIcon, FlameIcon, PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Card } from "@/components/core/Card";
+import { MissionMark } from "@/components/core/MissionMark";
 import { MetricSwitch } from "@/components/olympics/MetricSwitch";
 import { OlympicsBoard, RankChange } from "@/components/olympics/OlympicsBoard";
 import { OlympicsMap } from "@/components/olympics/OlympicsMap";
@@ -141,6 +142,7 @@ export default async function OlympicsPage({
 
   return (
     <main className="mx-auto w-full max-w-page px-4 pt-6">
+      <MissionMark mission="olympics" />
       <nav
         aria-label="breadcrumb"
         className="mb-4 flex items-center gap-1.5 text-2xs text-faint"
