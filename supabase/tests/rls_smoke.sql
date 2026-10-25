@@ -33,6 +33,7 @@ declare
   sys_owner uuid := '00000000-0000-4000-a000-000000000001';
   claim_sid bigint;
   sale_sid bigint;
+  draft_sid bigint;
 begin
   insert into auth.users (id, email, raw_user_meta_data, aud, role)
   values (a, 'rls-a@test.local', '{"full_name":"Tester A"}', 'authenticated', 'authenticated'),
@@ -1723,5 +1724,33 @@ begin
   out := out || format('T190 private project: public=%s, views rows=%s (expect f / 2) | ',
     (select public_for_sale from public.startups where id = sale_sid),
     (select count(*) from private.listing_views where startup_id = sale_sid));
+  -- T191–T193: wizard v4 drafts (migration 20261025021918_wizard_v4_drafts). A project can start as
+  -- a private draft that visitors can't see; a client can never insert it as 'hidden'; the funnel
+  -- records add_step once per step and ignores anything else.
+  perform set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  insert into public.startups (owner_id, name, slug, website_url, category, country, province, status)
+    values (b, 'Draft Co', 'rls-draft-co', 'https://draft.example', 'saas', 'TH', 'bangkok', 'private')
+    returning id into draft_sid;
+  begin
+    insert into public.startups (owner_id, name, slug, website_url, category, country, province, status)
+      values (b, 'Sneaky Hidden', 'rls-sneaky-hidden', 'https://hidden.example', 'saas', 'TH', 'bangkok', 'hidden');
+    out := out || 'T192 client inserts a hidden project: ALLOWED (BAD) | ';
+  exception when insufficient_privilege then
+    out := out || 'T192 client inserts a hidden project: denied (good) | ';
+  end;
+  perform public.log_add_event(gen_random_uuid(), 'add_step', draft_sid, '{"choice":"details"}'::jsonb);
+  perform public.log_add_event(gen_random_uuid(), 'add_step', draft_sid, '{"choice":"bogus"}'::jsonb);
+  perform public.log_add_event(gen_random_uuid(), 'add_step', draft_sid, '{"step":3}'::jsonb);
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  execute 'set local role anon';
+  select count(*) into n from public.startups where id = draft_sid;
+  execute 'reset role';
+  out := out || format('T191 private draft: status=%s, anon sees %s (expect private / 0) | ',
+    (select status from public.startups where id = draft_sid), n);
+  out := out || format('T193 add_step rows for the draft: %s, choice=%s (expect 1 / details) | ',
+    (select count(*) from analytics.funnel_events where startup_id = draft_sid and event = 'add_step'),
+    (select string_agg(props ->> 'choice', ',') from analytics.funnel_events where startup_id = draft_sid and event = 'add_step'));
   raise exception 'RLS_TEST_RESULTS (rolled back): %', out;
 end $$;
